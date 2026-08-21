@@ -5,11 +5,38 @@ not yet carried into the console. Working document — prune entries when they
 ship, note the commit. Items marked **[Eli]** are owner feedback; do not drop
 them without asking.
 
-> **Lost message:** one batch of Eli's feedback (sent ~2026-08-21 afternoon,
-> after the review-workbench upload) never arrived and its contents are
-> unknown. Eli: re-send, and these rows get filled in.
+> **Lost message:** one batch of Eli's feedback (~2026-08-21 afternoon) never
+> arrived. The mobile round below (2:18 PM screenshot) may reconstruct part of
+> it; Eli — if more of the lost batch surfaces, send it and it lands here.
 
 ## Owner feedback queue
+
+### Mobile round 2 — 2026-08-21 2:18 PM (port build, phone)
+
+- **[Eli] Mode display: segmented pill.** Exactly three chat modes exist
+  (conversation/DM · roleplay · GM/game). Render mode eligibility as a
+  fixed-width three-segment pill with active/inactive color per segment —
+  constant width makes rows skimmable regardless of which modes are on.
+- **[Eli] At-a-glance information design.** The three views don't yet answer
+  "lay of the land / what needs review" at a glance. Think through what
+  matters most per view, then interview Eli for his user opinions. (Interview
+  sent 2026-08-21; answers pending.)
+- **[Eli] Import scope global?** Open question: should the Sources chat-scope
+  selector be a tool-wide (or console-wide) scope across all views?
+- **[Eli] Facets + search constant across Review and Vault.** Same facet rail
+  and search bar on both surfaces (Vault has search but different facets;
+  Review has facets but no search).
+- **[Eli] BUG: facet sheet doesn't fit one mobile screen** in the port build
+  (regression vs. the prototype's column layout, or content growth).
+- **[Eli] BUG: tapping a claim row on mobile doesn't open details.** Cause
+  found: `Review.tsx` `focusRow` gates `detailKey` on `desktop`; mobile tap
+  only moves the cursor. Fix: open stacked detail on mobile tap.
+- **[Eli] BUG/copy: Review tab badge says 2 with 17 pending items.** Badge
+  shows draft count, not claim count — internal packaging leaking into nav.
+  Show pending claims (17) to match the Decided meter.
+- **[Eli] Mobile chip rail: three buttons only.** Default mobile rail should
+  be [Filter] [Group by] [Sort by] (each opening its chooser), plus a sort
+  direction toggle; today's group/sort chips overflow offscreen.
 
 - **[Eli] Categorical type colors everywhere** — landed in the memory tool
   (`.type-*` + DESIGN.md rule). Sweep the rest of the console when other tools
