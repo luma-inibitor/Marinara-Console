@@ -1,0 +1,5 @@
+dist/
+entries.json
+mockups/data.js
+node_modules/
+shots/

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en" data-screen="boot" data-mode="find">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0d12">
+<title>Lorebook Mobile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<!-- ══ BOOT / ERROR ══ -->
+<section class="s-boot" id="boot">
+  <div class="bootbox">
+    <div class="bootmark">◤</div>
+    <p class="bootmsg" id="bootmsg">Reaching engine…</p>
+    <p class="bootsub" id="bootsub"></p>
+    <button class="retry" id="retry" hidden>Retry</button>
+  </div>
+</section>
+
+<!-- ══ BOOK PICKER ══ -->
+<section class="s-pick">
+  <div class="pickhead">
+    <h1>Lorebooks</h1>
+    <p id="picksub">—</p>
+  </div>
+  <div id="picker"></div>
+</section>
+
+<!-- ══ AUDIT LIST ══ -->
+<div class="s-list">
+  <header class="console">
+    <div class="hrow">
+      <button class="back" data-act="to-picker" aria-label="Back to lorebooks">‹</button>
+      <h1 class="title" id="bookname">—</h1>
+      <button class="tagbtn" data-act="open-tags" aria-label="Tag distribution">#</button>
+    </div>
+
+    <div class="probe">
+      <div class="modeswap" role="group" aria-label="Search mode">
+        <button data-act="mode" data-mode="find" aria-pressed="true">Find</button>
+        <button class="t" data-act="mode" data-mode="test" aria-pressed="false">Test</button>
+      </div>
+      <div class="pwrap">
+        <input id="probe" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Search entries…">
+        <span class="res" id="res"></span>
+      </div>
+    </div>
+
+    <div class="meter" id="meter"></div>
+
+    <div class="sortbar" id="sortbar">
+      <button class="sb" data-act="sort" data-key="tokens" aria-pressed="true">Tokens <span class="ar">↓</span></button>
+      <button class="sb" data-act="sort" data-key="order" aria-pressed="false">Order</button>
+      <button class="sb" data-act="sort" data-key="keys" aria-pressed="false">Keys</button>
+      <button class="sb" data-act="sort" data-key="name" aria-pressed="false">Title</button>
+      <button class="sb" data-act="sort" data-key="updated" aria-pressed="false">Edited</button>
+      <button class="sb" data-act="group" aria-pressed="false">Group by tag</button>
+      <button class="sb flagged" data-act="flagged" aria-pressed="false">Flagged <b id="flagn">0</b></button>
+    </div>
+
+    <div class="selbar" id="selbar" hidden>
+      <span class="selcount" id="selcount">0 selected</span>
+      <button data-act="sel-enable">Enable</button>
+      <button data-act="sel-disable">Disable</button>
+      <button data-act="sel-tag">Add tag…</button>
+      <button data-act="sel-clear">Done</button>
+    </div>
+  </header>
+
+  <main class="rows" id="rows"></main>
+</div>
+
+<!-- ══ TAG PANEL ══ -->
+<section class="s-tags">
+  <div class="thead">
+    <button class="back" data-act="to-list" aria-label="Back to entries">‹</button>
+    <h2>Tags</h2>
+    <span class="tcount" id="tagsub"></span>
+  </div>
+  <div id="taglist"></div>
+</section>
+
+<!-- ══ FULLSCREEN TEXT ══ -->
+<section class="s-full" id="full"></section>
+
+<nav class="dock" id="dock">
+  <button class="dbtn" data-act="select-mode">☰ Select</button>
+  <button class="dbtn" data-act="open-tags"># Tags</button>
+  <button class="dbtn pri" data-act="new-entry">＋ Add Entry</button>
+</nav>
+
+<div class="toast" id="toast" hidden></div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

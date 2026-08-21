@@ -1,0 +1,78 @@
+/* Marinara Console — design tokens. Single source of visual truth.
+   Dark-only for now; the [data-theme] hook exists so light is a token swap,
+   not a rewrite. Density via [data-density]. See design/DESIGN.md §1. */
+
+:root,
+:root[data-theme="dark"] {
+  /* ── surface ladder (canvas → raised) ── */
+  --canvas: #0b0d12;
+  --surface-1: #12161d;
+  --surface-2: #1a202a;
+  --surface-3: #232b37;
+  --edge: #232a38;
+  --edge-strong: #33405a;
+
+  /* ── text — AA-checked against --canvas/--surface-1 ──
+     text      ~13.9:1   data/prose default
+     dim       ~6.4:1    secondary data, meta lines
+     faint     ~3.9:1    RESTRICTED: decorative / ≥12px non-essential only */
+  --text: #e2e8f1;
+  --text-dim: #8b95a3;
+  --text-faint: #667080;
+
+  /* ── semantic status (mirrors engine STATUS_DOT_COLOR) — reserved ── */
+  --ok: #34d399;        /* emerald-400 — normal/active/success   */
+  --warn: #fde047;      /* yellow-300  — constant/attention      */
+  --danger: #f87171;    /* red-400     — selective/destructive   */
+  --off: #4a5364;       /* disabled — non-text use only          */
+
+  /* ── chrome ── */
+  --accent: #7d9bf0;    /* interactive only: focus, selection, primary */
+  --accent-ink: #0b0f1a;
+  --flag: #e8734a;      /* computed outliers only */
+
+  /* soft washes for status-tinted fills (text on top must still pass AA) */
+  --ok-wash: rgba(52, 211, 153, 0.11);
+  --warn-wash: rgba(253, 224, 71, 0.11);
+  --danger-wash: rgba(248, 113, 113, 0.11);
+  --accent-wash: rgba(125, 155, 240, 0.13);
+  --flag-wash: rgba(232, 115, 74, 0.12);
+
+  /* ── type ── */
+  --font-label: "Archivo Variable", "Archivo", system-ui, sans-serif;
+  --font-data: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+  --font-prose: "Source Sans 3 Variable", "Source Sans 3", system-ui, sans-serif;
+
+  --fs-label-s: 9.5px;   /* caps + tracking */
+  --fs-label: 10.5px;
+  --fs-data-s: 11px;
+  --fs-data: 12.5px;
+  --fs-data-l: 14px;
+  --fs-prose: 14px;
+  --fs-title: 15px;      /* row titles */
+  --fs-head: 17px;       /* screen headings */
+
+  /* ── space (4px grid) ── */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px;
+  --row-pad-y: 8px;
+  --row-pad-x: 10px;
+  --panel-pad: 12px;
+
+  /* ── shape / interaction ── */
+  --r-s: 6px; --r-m: 8px; --r-l: 10px;
+  --tap: 44px;           /* primary target floor */
+  --tap-2: 34px;         /* secondary chip floor (spaced ≥8px) */
+  --hairline: 1px solid var(--edge);
+  --focus-ring: 0 0 0 2px var(--canvas), 0 0 0 4px var(--accent);
+
+  /* ── motion ── */
+  --t-fast: 120ms;
+  --t-med: 200ms;
+}
+
+:root[data-density="compact"] {
+  --row-pad-y: 4px;
+  --row-pad-x: 8px;
+  --panel-pad: 8px;
+  --fs-title: 14px;
+}

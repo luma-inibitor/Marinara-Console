@@ -1,0 +1,73 @@
+/* Marinara Console — base plumbing on top of tokens.css. */
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }   /* beats any class display rule */
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font-prose);
+  font-size: var(--fs-prose);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+  color-scheme: dark;
+}
+
+#app { height: 100%; }
+
+button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+input, textarea, select { font-family: inherit; color: inherit; }
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--r-s);
+}
+
+/* ── type utilities — the three faces, pre-styled ── */
+.t-label {
+  font-family: var(--font-label);
+  font-variation-settings: "wdth" 110;
+  font-weight: 600;
+  font-size: var(--fs-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.t-label-s { font-size: var(--fs-label-s); letter-spacing: 0.12em; }
+.t-data {
+  font-family: var(--font-data);
+  font-size: var(--fs-data);
+  font-variant-ligatures: none;       /* literal characters matter */
+  font-variant-numeric: tabular-nums;
+}
+.t-num { font-variant-numeric: tabular-nums; font-family: var(--font-data); }
+
+/* mono meta line with · separators */
+.meta { font-family: var(--font-data); font-size: var(--fs-data-s); color: var(--text-dim);
+  font-variant-ligatures: none; }
+.meta > * + *::before { content: "·"; margin: 0 6px; color: var(--edge-strong); }
+
+/* hairline separators, not grids */
+.rule { border: 0; border-top: var(--hairline); margin: 0; }
+
+/* padded hit area without visual growth */
+.hit { position: relative; }
+.hit::after { content: ""; position: absolute; inset: calc((var(--tap) - 100%) / -2); }
+
+/* scrollbars: thin, quiet */
+* { scrollbar-width: thin; scrollbar-color: var(--surface-3) transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
