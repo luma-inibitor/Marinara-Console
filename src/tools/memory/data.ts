@@ -148,6 +148,7 @@ export const importPreview = (source: string) =>
   api<ImportPreview>(`${LTM}/import/preview`, { method: "POST", body: { source } });
 export const importSourceNotes = (body: Record<string, unknown>) =>
   api<ImportResult>(`${LTM}/import/source-notes`, { method: "POST", body });
+export const rebuildIndexes = () => api(`${LTM}/rebuild`, { method: "POST", body: {} });
 export const backupExportUrl = () => `/api${LTM}/backup/export`;
 
 // ── review rows ─────────────────────────────────────────────────────

@@ -5,12 +5,13 @@
 
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { openOverlay, closeTopOverlay } from "./overlays";
+import { refreshLtmStatus } from "./MemoryTool";
 import { toast } from "../../shell/toast";
 import {
   type Note, type NoteType, fetchNotes, patchNote, deleteNote,
   SECTION_CAP, KEYWORD_CAP,
 } from "./data";
-import { t } from "./strings";
+import { t, OURS } from "./strings";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
 
@@ -123,7 +124,13 @@ export function Vault() {
           </div>
         </header>
         <main class="rows mem-rows">
-          {visible.length === 0 && <p class="empty">{t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")}</p>}
+          {visible.length === 0 && (
+            <p class="empty">
+              {query.trim() || typeFilter
+                ? t("memoryvault.filteredEmptyDescription", { value1: query.trim() ? t("memoryvault.filteredEmptySearch", { value1: query.trim() }) : (typeFilter ?? "") })
+                : t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")}
+            </p>
+          )}
           {visible.map((n) => <NoteRow key={n.id} note={n} isOpen={openId === n.id} onOpen={() => setOpenId(n.id)} />)}
         </main>
       </div>
@@ -161,7 +168,7 @@ function NoteRow(props: { note: Note; isOpen: boolean; onOpen: () => void }) {
             <span class={`chip-min type-${n.type}`}>{n.type.replaceAll("_", " ")}</span>
             {n.status !== "active" && <><i class="sep" data-contrast-exempt>·</i>{n.status}</>}
             <i class="sep" data-contrast-exempt>·</i><span class="dim">{(n.modes ?? []).join(" ")}</span>
-            {p >= 0.8 && <><i class="sep" data-contrast-exempt>·</i><span class="fl">{p >= 1 ? "over the limit" : "near a limit"}</span></>}
+            {p >= 0.8 && <><i class="sep" data-contrast-exempt>·</i><span class="fl">{p >= 1 ? OURS.overLimit : OURS.nearLimit}</span></>}
           </span>
           {p >= 0.5 && (
             <span class="pbar"><i class={p >= 1 ? "is-over" : p >= 0.8 ? "is-near" : ""} style={`width:${Math.min(p * 100, 100)}%`} /></span>
@@ -206,6 +213,7 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
       await patchNote(n.id, patch);
       toast(t("memoryvault.saved"));
       await props.onChanged();
+      void refreshLtmStatus(); // a vault save triggers an index rebuild
     } catch (error) {
       toast((error as Error).message, { kind: "error" });
     }
@@ -231,7 +239,10 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
   };
 
   const remove = async () => {
-    if (!confirm(t("sourcesworkspace.deleteImportedSourceKeepExtractedMessage", { value1: n.title ?? n.id }))) return;
+    const message = n.type === "source"
+      ? t("sourcesworkspace.deleteImportedSourceKeepExtractedMessage", { value1: n.title ?? n.id })
+      : `${t("sourcesworkspace.deletePermanently")}: ${n.title ?? n.id}? ${t("sourcesworkspace.deleteImportedSourceWithExtractedMessage", { value1: "" }).split("?")[1]?.trim() ?? "This cannot be undone."}`;
+    if (!confirm(message)) return;
     try {
       await deleteNote(n.id);
       toast(`Deleted ${n.title ?? n.id}`);

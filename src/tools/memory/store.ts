@@ -45,12 +45,31 @@ export const facetSheetOpen = signal(false);
 export const saveState = signal<"saved" | "saving" | "failed">("saved");
 export const applying = signal(false);
 export const preflight = signal<{ ready: number; blockedN: number; auto: number; perDraft: Array<{ draftId: string; pf: PreflightResponse }>; error?: string } | null>(null);
+export const preflightPending = signal(false);
+export const applyProgress = signal<{ done: number; total: number } | null>(null);
 export const lastFailures = signal<Array<{ title: string; fix: string; msg: string; n: number }>>([]);
 export const pressure = signal<Map<string, SectionPressure>>(new Map());
 
 const undoStack: Array<{ label: string; entries: Array<[string, Decision | null]> }> = [];
 
 // ── derived ─────────────────────────────────────────────────────────
+
+/** row key -> preflight outcome, for row badges and dock enumeration. */
+export const preflightRowState = computed(() => {
+  const auto = new Map<string, true>();
+  const blockedRows = new Map<string, string>(); // key -> first blocker message
+  const pf = preflight.value;
+  if (pf) {
+    for (const { draftId, pf: draftPf } of pf.perDraft) {
+      for (const row of draftPf.rows) {
+        const key = `${draftId}:${row.mutationId}`;
+        if (row.autoIncluded) auto.set(key, true);
+        if (row.status === "blocked") blockedRows.set(key, row.blockers[0]?.message ?? "blocked");
+      }
+    }
+  }
+  return { auto, blockedRows };
+});
 
 export const tally = computed(() => {
   let keep = 0, drop = 0;
@@ -151,6 +170,10 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") flushLedger();
 });
 window.addEventListener("pagehide", flushLedger);
+
+export function retryPersist() {
+  void persistNow();
+}
 
 async function loadPersisted() {
   // Never clobber decisions that haven't been persisted yet (remount inside
@@ -308,6 +331,7 @@ function preflightBody(list: Row[]) {
 
 export function schedulePreflight() {
   clearTimeout(preflightTimer);
+  preflightPending.value = true;
   preflightTimer = setTimeout(() => void runPreflight(), 500);
 }
 
@@ -325,6 +349,7 @@ async function runPreflight() {
   const byDraft = keepsByDraft();
   if (!byDraft.size) {
     preflight.value = null;
+    preflightPending.value = false;
     return;
   }
   try {
@@ -345,6 +370,7 @@ async function runPreflight() {
     if (seq !== preflightSeq) return;
     preflight.value = { ready: 0, blockedN: 0, auto: 0, perDraft: [], error: (error as Error).message };
   }
+  if (seq === preflightSeq) preflightPending.value = false;
 }
 
 // ── apply ───────────────────────────────────────────────────────────
@@ -401,7 +427,11 @@ export async function applyDecided() {
   const dec = new Map(decisions.value);
   const ed = new Map(edited.value);
   const draftIds = new Set([...dropsByDraft.keys(), ...keeps.keys()]);
+  let draftIndex = 0;
+  applyProgress.value = { done: 0, total: draftIds.size };
   for (const draftId of draftIds) {
+    draftIndex += 1;
+    applyProgress.value = { done: draftIndex, total: draftIds.size };
     const drops = dropsByDraft.get(draftId) ?? [];
     if (drops.length) {
       try {
@@ -454,6 +484,7 @@ export async function applyDecided() {
   decisions.value = dec;
   edited.value = ed;
   applying.value = false;
+  applyProgress.value = null;
   preflight.value = null;
   undoStack.length = 0; // snapshots reference applied keys; undoing them would lie
   canUndo.value = false;

@@ -44,8 +44,9 @@ export const OURS = {
   facetsYours: "yours",
   // Batch reporting: the product reports per draft; we report per batch.
   autoIncluded: (n: number) => `${n} added as dependencies`,
-  groupBy: "group by",
-  sortBy: "sort by",
+  // Empty queue: the product has no string for this state (its own empty
+  // state names the Sources screen's condition).
+  queueEmpty: "Nothing is waiting on review.",
   // Disposition names: schema values the product computes but never labels.
   disposition: { new: "new", merge: "merge", rewrite: "rewrite" } as Record<string, string>,
 };

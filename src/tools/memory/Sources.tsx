@@ -9,7 +9,7 @@ import { api } from "../../shell/api";
 import { toast } from "../../shell/toast";
 import { type ImportPreview, type ImportResult, importPreview, importSourceNotes } from "./data";
 import { t } from "./strings";
-import { focusSource } from "./MemoryTool";
+import { focusSource, refreshLtmStatus } from "./MemoryTool";
 
 const KINDS = [
   { source: "characters", label: () => t("sourcesworkspace.characters"), emptyWhy: () => t("memoryvault.noMatchingCharacters") },
@@ -66,23 +66,34 @@ export function Sources() {
     });
   };
 
+  const [importStep, setImportStep] = useState("");
   const runImport = async () => {
     setImporting(true);
-    const out: typeof results = [];
-    for (const [source, set] of selected) {
-      if (!set.size) continue;
-      try {
-        const body: Record<string, unknown> = { source, sourceIds: [...set], extract: true };
-        if (chatId) body.chatId = chatId;
-        out.push(await importSourceNotes(body));
-      } catch (error) {
-        out.push({ source, error: (error as Error).message });
+    setResults([]);
+    const batches = [...selected.entries()].filter(([, set]) => set.size);
+    const total = batches.reduce((n, [, set]) => n + set.size, 0);
+    let done = 0;
+    // One request per source so results stream in and progress is real —
+    // each import is a model call and can take a while.
+    for (const [source, set] of batches) {
+      for (const id of set) {
+        done += 1;
+        setImportStep(`${done}/${total}`);
+        try {
+          const body: Record<string, unknown> = { source, sourceIds: [id], extract: true };
+          if (chatId) body.chatId = chatId;
+          const res = await importSourceNotes(body);
+          setResults((prev) => [...prev, res]);
+        } catch (error) {
+          setResults((prev) => [...prev, { source, error: (error as Error).message }]);
+        }
       }
     }
-    setResults(out);
+    setImportStep("");
     setSelected(new Map());
     setImporting(false);
     await loadPreviews();
+    void refreshLtmStatus();
   };
 
   return (
@@ -108,7 +119,14 @@ export function Sources() {
 
         {KINDS.map(({ source, label, emptyWhy }) => {
           const preview = previews.get(source);
-          if (!preview) return null;
+          if (!preview) {
+            return (
+              <div key={source}>
+                <div class="grouphead"><span class="gn t-prose">{label()}</span>
+                  <span class="t-data dim">scanning…</span></div>
+              </div>
+            );
+          }
           if ("error" in preview) {
             return <div key={source} class="mem-card is-danger"><b class="t-prose">{label()}</b><p class="t-data dim">{preview.error}</p></div>;
           }
@@ -146,7 +164,7 @@ export function Sources() {
         <div class="apply-dock">
           <span class="dock-info t-data">{totalSelected} selected</span>
           <button class="dock-primary t-label" disabled={importing} onClick={() => void runImport()}>
-            {importing ? "Importing…" : t("sourcesworkspace.importSelected_7fb57e8")}
+            {importing ? `Importing ${importStep}…` : t("sourcesworkspace.importSelected_7fb57e8")}
           </button>
         </div>
       )}

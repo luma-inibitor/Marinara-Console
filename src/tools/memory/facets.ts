@@ -8,7 +8,9 @@
 
 import { type Row, type Note } from "./data";
 import { t, OURS } from "./strings";
-import { decisions, edited, notesById, rowOverflows } from "./store";
+import { decisions, edited, notesById, rowOverflows, pressure } from "./store";
+import { SECTION_CAP } from "./data";
+import { OURS as O2 } from "./strings";
 
 const DATE_RE = /\[\d{4}-\d{2}-\d{2}\]/;
 const tokensOf = (s: string) => Math.ceil(s.length / 4);
@@ -30,6 +32,10 @@ function qualityFlags(r: Row): string[] | null {
   if (r.mutation.confidence < 0.7) f.push("low confidence");
   if (((notesById.value.get(r.targetId) as Note | undefined)?.keywords ?? []).length >= 25) f.push("target near keyword cap");
   if (rowOverflows(r)) f.push("section would overflow");
+  else if (r.parts.some((p) => {
+    const proj = pressure.value.get(`${r.targetId} ${p.key}`)?.projected ?? 0;
+    return proj >= SECTION_CAP * 0.8;
+  })) f.push(O2.nearLimit);
   return f.length ? f : null;
 }
 

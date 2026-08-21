@@ -12,10 +12,13 @@ import { t, OURS } from "./strings";
 import {
   rows, blocked, rejections, loading, loadError, review,
   decisions, edited, cursor, detailKey, facetSheetOpen, saveState,
-  activeFacets, groupBy, sortBy, sortDir, tally, preflight, applying, lastFailures,
-  droppedDependencyWarnings, canUndo, notesById, rowOverflows,
-  refresh, setDecision, cycleDecision, bulkDecide, undo, applyDecided,
+  activeFacets, groupBy, sortBy, sortDir, tally, preflight, preflightPending,
+  preflightRowState, applying, applyProgress, lastFailures,
+  droppedDependencyWarnings, canUndo, notesById, rowOverflows, pressure,
+  refresh, retryPersist, setDecision, cycleDecision, bulkDecide, undo, applyDecided,
 } from "./store";
+import { SECTION_CAP as CAP } from "./data";
+import { refreshLtmStatus } from "./MemoryTool";
 import { openOverlay, closeTopOverlay } from "./overlays";
 import { signal } from "@preact/signals";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
@@ -105,10 +108,11 @@ export function Review() {
     if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
     const el = ev.target as HTMLElement;
     if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT") return;
-    // A focused button owns Space/Enter (and the letter keys would surprise);
-    // only navigation keys pass through.
-    const onButton = el.tagName === "BUTTON" || Boolean(el.closest("button"));
-    if (onButton && !["j", "k", "ArrowDown", "ArrowUp", "Escape", "u", "?"].includes(ev.key)) return;
+    // A focused button OUTSIDE the rows (chips, header controls) owns its own
+    // Space/Enter; buttons inside a row are part of the list composite, so
+    // the triage keys keep working after tapping a row.
+    const button = el.closest("button");
+    if (button && !button.closest(".mem-row") && !["j", "k", "ArrowDown", "ArrowUp", "Escape", "u", "?"].includes(ev.key)) return;
     switch (ev.key) {
       case "j": case "ArrowDown": ev.preventDefault(); move(1); break;
       case "k": case "ArrowUp": ev.preventDefault(); move(-1); break;
@@ -157,12 +161,23 @@ export function Review() {
           <div class="hrow">
             <h1 class="console-title">{t("reviewqueue.reviewQueue")}</h1>
             <span class="t-data mem-save" data-contrast-exempt>
-              {saveState.value === "saving" ? "Autosaving…" : saveState.value === "failed" ? "Save FAILED" : ""}
+              {saveState.value === "saving" ? "Autosaving…"
+                : saveState.value === "failed"
+                  ? <span class="is-drop">Save FAILED <button class="chip" onClick={retryPersist}>Retry</button></span>
+                  : "Saved"}
             </span>
+            <button class="icon-btn t-data" aria-label="Refresh queue" title="Refresh" onClick={() => void refresh()}>↻</button>
             <a class="icon-btn" href={backupExportUrl()} download title={OURS.restorePoint} aria-label="Export backup">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 12.5V14h12v-1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
           </div>
+
+          {review.value && (
+            <div class="gen-line t-data" data-contrast-exempt>
+              generated {new Date(review.value.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              {review.value.counts.deduplications > 0 && <> · {review.value.counts.deduplications} deduped upstream</>}
+            </div>
+          )}
 
           {/* decision meter: tally as data, one line */}
           <div class="meter">
@@ -239,7 +254,7 @@ export function Review() {
           <Obligations />
           <Failures />
           {shown.length === 0 && rows.value.length === 0 && !blocked.value.length && (
-            <p class="empty">{t("sourcesworkspace.noNewOrRetryableSourcesAreReadyToImport")}</p>
+            <p class="empty">{OURS.queueEmpty}</p>
           )}
           {shown.length === 0 && rows.value.length > 0 && (
             <p class="empty">No proposals match the active facets.</p>
@@ -416,6 +431,7 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
             stored · {storedSections.length}
           </button>
         )}
+        <GroupPressure groupId={g.id} isTarget={groupBy.value === "target"} />
         {g.rows.length > 1 && (
           <span class="ghead-acts">
             <button class="chip gk" aria-label={`Keep all ${g.rows.length} in ${g.label}`}
@@ -444,6 +460,9 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
 function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: string) => void }) {
   const r = props.row;
   const d = decisions.value.get(r.key);
+  const pfState = preflightRowState.value;
+  const isAuto = pfState.auto.has(r.key) && d !== "keep";
+  const blockedMsg = d === "keep" ? pfState.blockedRows.get(r.key) : undefined;
   const isFocused = cursor.value === r.key;
   const isOpen = detailKey.value === r.key;
   return (
@@ -467,6 +486,8 @@ function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: stri
             {r.duplicateOf && <><i class="sep" data-contrast-exempt>·</i><span class="fl">dupe</span></>}
             {rowOverflows(r) && <><i class="sep" data-contrast-exempt>·</i><span class="fl">{OURS.overLimit}</span></>}
             {edited.value.has(r.key) && <><i class="sep" data-contrast-exempt>·</i><span class="is-keep">{t("reviewqueue.editedChange")}</span></>}
+        {isAuto && <><i class="sep" data-contrast-exempt>·</i><span class="dep-tag">sent as dependency</span></>}
+        {blockedMsg && <><i class="sep" data-contrast-exempt>·</i><span class="is-drop" title={blockedMsg}>blocked</span></>}
           </span>
         </button>
         <span class="num">
@@ -478,7 +499,25 @@ function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: stri
   );
 }
 
+function GroupPressure(props: { groupId: string; isTarget: boolean }) {
+  if (!props.isTarget) return null;
+  let worst: { key: string; current: number; projected: number } | null = null;
+  for (const [, p] of pressure.value) {
+    if (p.noteId !== props.groupId) continue;
+    if (!worst || p.projected > worst.projected) worst = p;
+  }
+  if (!worst || worst.projected < CAP * 0.8) return null;
+  const over = worst.projected > CAP;
+  const fmt = (n: number) => `${(n / 1000).toFixed(1)}k`;
+  return (
+    <span class={`t-data ${over ? "is-drop" : "fl"}`} title={`${worst.key}: stored ${worst.current.toLocaleString()} ch, ${worst.projected.toLocaleString()} after this batch, cap ${CAP.toLocaleString()}`}>
+      {worst.key} {fmt(worst.current)}→{fmt(worst.projected)} / {fmt(CAP)}
+    </span>
+  );
+}
+
 function Obligations() {
+  const [extracting, setExtracting] = useState<string | null>(null); // "2/5" while running
   if (!blocked.value.length) return null;
   const byCode = new Map<string, { message: string; items: typeof blocked.value }>();
   for (const b of blocked.value) {
@@ -489,9 +528,12 @@ function Obligations() {
     }
   }
   const reextract = async (items: typeof blocked.value) => {
-    for (const b of items) {
-      try { await extractNote(b.sourceNoteId); } catch (error) { toast((error as Error).message, { kind: "error" }); }
+    if (extracting) return;
+    for (let i = 0; i < items.length; i++) {
+      setExtracting(`${i + 1}/${items.length}`);
+      try { await extractNote(items[i].sourceNoteId); } catch (error) { toast((error as Error).message, { kind: "error" }); }
     }
+    setExtracting(null);
     await refresh();
   };
   return (
@@ -500,8 +542,20 @@ function Obligations() {
         <div key={code} class="mem-card">
           <div class="t-data"><span class="fl">{code.replaceAll("_", " ")}</span> <b>{items.length}</b> draft{items.length === 1 ? "" : "s"} blocked · {items.reduce((n, b) => n + b.mutationCount, 0)} claims held</div>
           <p class="t-prose dim">{message}</p>
+          <div class="blocked-srcs">
+            {items.map((b) => (
+              <span key={b.draftId} class="t-data blocked-src">
+                <NoteRef id={b.sourceNoteId} label={b.sourceTitle} /> <span class="dim">· {b.mutationCount} claim{b.mutationCount === 1 ? "" : "s"}</span>
+              </span>
+            ))}
+          </div>
           {["source_stale", "source_context_unbound"].includes(code) && (
-            <button class="chip" onClick={() => void reextract(items)}>{t("memoryvault.extractToReview")}</button>
+            <>
+              <button class="chip" disabled={Boolean(extracting)} onClick={() => void reextract(items)}>
+                {extracting ? `Extracting ${extracting}…` : t("memoryvault.extractToReview")}
+              </button>
+              <p class="t-prose dim reex-note">Re-extracting calls the model once per source and replaces each blocked draft with a fresh one.</p>
+            </>
           )}
         </div>
       ))}
@@ -551,9 +605,17 @@ function ApplyDock() {
   // reset (the keyboard has `u`; the dock is the only touch path).
   if (!c.keep && !c.drop && !canUndo.value) return null;
   const pf = preflight.value;
+  const checking = preflightPending.value;
+  const progress = applyProgress.value;
   const warnings = droppedDependencyWarnings.value;
   const applyCount = (pf?.ready ?? 0) + c.drop;
   const offerRestore = c.keep + c.drop >= RESTORE_POINT_THRESHOLD;
+  const rowByKey = new Map(rows.value.map((row) => [row.key, row]));
+  const pfState = preflightRowState.value;
+  const autoRows = [...pfState.auto.keys()].map((k) => rowByKey.get(k)).filter(Boolean) as Row[];
+  const blockedRows = [...pfState.blockedRows.entries()]
+    .map(([k, why]) => ({ row: rowByKey.get(k), why }))
+    .filter((x) => x.row) as Array<{ row: Row; why: string }>;
   return (
     <div class="apply-dock">
       <div class="dock-info t-data">
@@ -562,15 +624,35 @@ function ApplyDock() {
         {c.edited > 0 && <span> · {c.edited} edited</span>}
         <br />
         <span class="dim">
-          {c.willSend} draft{c.willSend === 1 ? "" : "s"} will be sent{c.stayPending ? ` · ${c.stayPending} stay pending` : ""}
-          {pf?.error ? <span class="is-drop"> · {pf.error}</span> : pf ? <> · {pf.ready} ready{pf.blockedN ? <span class="is-drop"> · {pf.blockedN} blocked</span> : null}{pf.auto ? ` · ${OURS.autoIncluded(pf.auto)}` : ""}</> : null}
-          {warnings.length > 0 && <span class="is-drop"> · {warnings.length} kept claim{warnings.length === 1 ? "" : "s"} depend on a dropped create</span>}
+          {progress ? <>Applying draft {progress.done}/{progress.total}…</> : <>
+            {c.willSend} draft{c.willSend === 1 ? "" : "s"} will be sent{c.stayPending ? ` (${c.stayPending} still hold undecided claims)` : ""}
+            {pf?.error
+              ? <span class="is-drop"> · {pf.error} <button class="chip" onClick={() => void refresh()}>Retry</button></span>
+              : checking
+                ? <> · checking with the engine…</>
+                : pf
+                  ? <> · {pf.ready} ready{pf.blockedN ? <span class="is-drop"> · {pf.blockedN} blocked</span> : null}</>
+                  : null}
+          </>}
         </span>
-        {offerRestore && <><br /><a class="t-data restore-link" href={backupExportUrl()} download>{OURS.restorePoint}</a></>}
+        {!checking && autoRows.length > 0 && (
+          <details class="dock-detail"><summary>{OURS.autoIncluded(autoRows.length)}</summary>
+            {autoRows.map((row) => <div key={row.key} class="dim dock-detail-row">→ {row.targetTitle}: {row.text.slice(0, 80)}</div>)}
+          </details>
+        )}
+        {!checking && blockedRows.length > 0 && (
+          <details class="dock-detail is-drop"><summary>{blockedRows.length} blocked — held back from Apply</summary>
+            {blockedRows.map(({ row, why }) => <div key={row.key} class="dim dock-detail-row">→ {row.targetTitle}: {why}</div>)}
+          </details>
+        )}
+        {warnings.length > 0 && <div class="is-drop">{warnings.length} kept claim{warnings.length === 1 ? "" : "s"} depend on a dropped create — they will fail; keep the create or drop them</div>}
+        {offerRestore && <><br /><a class="t-data restore-link" href={backupExportUrl()} download onClick={() => toast(OURS.restorePointDone)}>{OURS.restorePoint}</a></>}
       </div>
       <button class="chip" disabled={!canUndo.value} onClick={undo}>Undo</button>
-      <button class="dock-primary t-label" disabled={applying.value || (c.keep > 0 && !pf) || Boolean(pf?.error)} onClick={() => void applyDecided()}>
-        {applying.value ? t("reviewqueue.accepting") : `Apply decided (${applyCount})`}
+      <button class="dock-primary t-label" disabled={applying.value || checking || (c.keep > 0 && !pf) || Boolean(pf?.error)} onClick={() => void applyDecided()}>
+        {applying.value ? (progress ? `Applying ${progress.done}/${progress.total}…` : t("reviewqueue.accepting"))
+          : checking ? "Apply decided (…)"
+          : `Apply decided (${applyCount})`}
       </button>
     </div>
   );

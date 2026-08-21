@@ -11,7 +11,8 @@ import { useState } from "preact/hooks";
 import { toast } from "../../shell/toast";
 import { type Row, type Mutation } from "./data";
 import { t, OURS } from "./strings";
-import { decisions, edited, rows, notesById, setDecision, setEdited } from "./store";
+import { decisions, edited, rows, notesById, pressure, setDecision, setEdited } from "./store";
+import { SECTION_CAP } from "./data";
 import { NoteRef } from "./NotePeek";
 
 /** Human sentence for kind × disposition — the verb line. */
@@ -100,6 +101,12 @@ export function ClaimDetail({ row }: { row: Row }) {
             <div class="proposed-zone">
               <span class="zone-tag t-label t-label-s is-proposed">
                 {m.kind === "update_section" ? "proposed replacement" : stored ? "proposed addition" : "proposed"} · {value.length.toLocaleString()} ch
+                {(() => {
+                  const p = pressure.value.get(`${r.targetId} ${s.label}`);
+                  if (!p || p.projected < SECTION_CAP * 0.8) return null;
+                  const over = p.projected > SECTION_CAP;
+                  return <span class={over ? " is-drop" : " fl"}> · {(p.projected / 1000).toFixed(1)}k / {(SECTION_CAP / 1000).toFixed(0)}k after batch</span>;
+                })()}
               </span>
               <textarea
                 class="t-prose edit-area"

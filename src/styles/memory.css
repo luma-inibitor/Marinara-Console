@@ -43,6 +43,21 @@
   font-size: var(--fs-data-s); white-space: nowrap; }
 
 .mem-save { color: var(--text-dim); font-size: var(--fs-data-s); }
+.mem-save .chip { min-height: 26px; padding: 0 8px; margin-left: 4px; }
+.gen-line { color: var(--text-faint); font-size: 10px; margin-top: 2px; }
+.dep-tag { color: var(--accent); }
+.health-banner { display: flex; align-items: center; gap: var(--s3);
+  padding: var(--s2) var(--s3); background: var(--warn-wash);
+  border-bottom: 1px solid color-mix(in srgb, var(--warn) 35%, transparent);
+  font-size: 13px; }
+.health-banner .action-sec { flex: 0 0 auto; min-height: 36px; }
+.blocked-srcs { display: flex; flex-direction: column; gap: 3px; margin: var(--s2) 0; }
+.blocked-src { font-size: var(--fs-data-s); }
+.reex-note { margin-top: 6px; font-size: 12px; }
+.dock-detail { margin-top: 3px; font-size: var(--fs-data-s); }
+.dock-detail summary { cursor: pointer; color: var(--accent); }
+.dock-detail.is-drop summary { color: var(--danger); }
+.dock-detail-row { padding: 2px 0 0 var(--s3); overflow-wrap: anywhere; }
 
 /* ══ decision meter ══ */
 .mbar .m-keep { background: var(--ok); opacity: 0.75; }
