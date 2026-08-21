@@ -142,3 +142,23 @@
 @media (max-width: 899px) {
   .ta.is-fill { min-height: 0; }
 }
+
+/* ── §1 type-role corrections (critique finding B7) ── */
+
+/* A number inside a chip inherited the chip's 9.5px tracked uppercase label
+   styling, so it read as a label rather than a value. Numbers are data. */
+.chip .t-num {
+  font-family: var(--font-data);
+  font-size: var(--fs-data); letter-spacing: 0; text-transform: none;
+  color: var(--text);
+}
+
+/* Errors are prose, not data — they are sentences, and mono at the data size
+   made them read as machine output the user could not act on. */
+.empty p:not(.t-label),
+.empty > *:not(p):not(.t-label) {
+  font-family: var(--font-prose); font-size: var(--fs-prose);
+  color: var(--text-dim); line-height: 1.5; max-width: 46ch;
+}
+.empty { text-align: center; padding: var(--s5) var(--s3); }
+.empty .t-label { color: var(--text); margin-bottom: var(--s2); }

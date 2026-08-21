@@ -149,9 +149,12 @@
 .ta.is-mono { font-family: var(--font-data); font-size: var(--fs-data); line-height: 1.6;
   font-variant-ligatures: none; }
 .ta:focus { border-color: var(--accent); }
-.tin { width: 100%; height: 40px; background: var(--canvas); border: var(--hairline);
-  border-radius: var(--r-m); color: var(--text); font-family: var(--font-label);
-  font-weight: 600; font-size: 13.5px; padding: 0 var(--s3); outline: none; }
+/* A name is user-authored content, so it takes the prose face — the label face
+   at body size read as a static heading, not an editable field (§1 type roles).
+   Height meets the 44px touch floor. */
+.tin { width: 100%; min-height: var(--tap); background: var(--canvas); border: var(--hairline);
+  border-radius: var(--r-m); color: var(--text); font-family: var(--font-prose);
+  font-weight: 500; font-size: var(--fs-prose); padding: 0 var(--s3); outline: none; }
 .tin:focus { border-color: var(--accent); }
 .fieldbar { display: flex; justify-content: flex-end; margin-bottom: 6px; }
 
