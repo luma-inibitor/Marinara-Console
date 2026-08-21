@@ -336,32 +336,30 @@ function FacetSheet(props: { shown: Row[] }) {
           <button class="hit peek-x" aria-label="Close" onClick={closeTopOverlay}>×</button>
         </header>
         {!anyValues && <p class="t-prose dim">No facet values in this slice.</p>}
-        <div class="facet-cols">
-          {(["computed", "model", "yours"] as const).map((src) => {
-            const defs = bySource[src].filter((f) => (counts.get(f.id)?.size ?? 0) > 0);
-            if (!defs.length) return null;
-            return (
-              <div key={src}>
-                <h3 class="t-label t-label-s facet-src">{OURS[src === "computed" ? "facetsComputed" : src === "model" ? "facetsFromModel" : "facetsYours"]}</h3>
-                {defs.map((f) => (
-                  <div key={f.id} class="facet-group">
-                    <h4 class="t-label t-label-s">{f.label}</h4>
-                    {[...counts.get(f.id)!.entries()].sort((a, b) => b[1] - a[1]).map(([value, n]) => {
-                      const on = activeFacets.value.get(f.id)?.has(value) ?? false;
-                      return (
-                        <button key={value} class={`facet-row ${on ? "is-on" : ""}`} aria-pressed={on}
-                          onClick={() => toggleFacet(f.id, value)}>
-                          <span class="fv t-data">{value}</span>
-                          <span class="fc t-data">{n}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
+        {(["computed", "model", "yours"] as const).map((src) => {
+          const defs = bySource[src].filter((f) => (counts.get(f.id)?.size ?? 0) > 0);
+          if (!defs.length) return null;
+          return (
+            <div key={src} class="facet-block">
+              <h3 class="t-label t-label-s facet-src">{OURS[src === "computed" ? "facetsComputed" : src === "model" ? "facetsFromModel" : "facetsYours"]}</h3>
+              {defs.map((f) => (
+                <div key={f.id} class="facet-line">
+                  <span class="flabel t-label t-label-s">{f.label}</span>
+                  {[...counts.get(f.id)!.entries()].sort((a, b) => b[1] - a[1]).map(([value, n]) => {
+                    const on = activeFacets.value.get(f.id)?.has(value) ?? false;
+                    return (
+                      <button key={value} class="facet-chip t-data" aria-pressed={on}
+                        onClick={() => toggleFacet(f.id, value)}>
+                        <span class="fv">{value}</span>
+                        <span class="fc">{n}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </aside>
     </div>
   );
