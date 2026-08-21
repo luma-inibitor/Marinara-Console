@@ -50,6 +50,14 @@
 .is-keep { color: var(--ok); }
 .is-drop { color: var(--danger); }
 .rail-gap { flex: 0 0 auto; width: 1px; align-self: stretch; margin: 4px 2px; background: var(--edge); }
+/* mobile three-button rail: constant width so the row scans as columns */
+.chip.ctl { flex: 0 0 108px; width: 108px; justify-content: flex-start; gap: 6px; overflow: hidden; }
+.chip.ctl .ctl-k { flex: 0 0 auto; }
+.chip.ctl .ctl-v { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  font-family: var(--font-data); text-transform: none; letter-spacing: 0.02em;
+  font-size: 10.5px; color: var(--text); text-align: right; }
+/* chip rail: mandated secondary spacing + an edge fade so overflow is discoverable */
+.chiprail { gap: var(--s2); mask-image: linear-gradient(90deg, #000 94%, transparent); }
 
 /* ══ claim rows ══ */
 .mem-rows { padding-bottom: 132px; }
@@ -90,6 +98,13 @@
 .snippet { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
   overflow: hidden; font-size: 12.5px; margin-top: 2px; }
 
+/* group heads pin below the sticky console, and carry the bulk actions */
+.mem-rows .grouphead { top: var(--console-h, 0px); }
+.ghead-acts { display: inline-flex; gap: var(--s2); margin-left: auto; }
+.ghead-acts .chip { min-height: 28px; padding: 0 8px; font-size: 9px; }
+.ghead-acts .gk { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+.ghead-acts .gd { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
+
 /* stored-sections block under a target group head */
 .stored-block { padding: var(--s2) var(--s3); background: var(--surface-1); border-bottom: var(--hairline); }
 .stored-section { margin-bottom: var(--s2); }
@@ -106,6 +121,9 @@
     border-radius: 0; border-top: none; border-left: 1px solid var(--edge-strong); }
 }
 .peek-head { display: flex; align-items: center; gap: var(--s2); margin-bottom: var(--s2); }
+.sheet-head { position: sticky; top: calc(-1 * var(--panel-pad)); z-index: 2;
+  background: var(--surface-1); margin: calc(-1 * var(--s3)) calc(-1 * var(--s3)) var(--s2);
+  padding: var(--s2) var(--s3); border-bottom: var(--hairline); }
 .peek-title { flex: 1; min-width: 0; font-weight: 600; }
 .peek-x { font-size: 18px; color: var(--text-dim); width: 38px; height: 38px; }
 .peek-meta { color: var(--text-dim); font-size: var(--fs-data-s); overflow-wrap: anywhere; }
@@ -121,19 +139,21 @@
 .facet-group h4 { margin: var(--s2) 0 2px; color: var(--text-dim); }
 .facet-row { display: flex; align-items: center; gap: var(--s2); width: 100%;
   min-height: 34px; padding: 2px var(--s2); border-radius: var(--r-s);
-  text-align: left; color: var(--text-dim); }
-.facet-row .fv { flex: 1; min-width: 0; font-size: 13px; }
+  margin-bottom: 2px; text-align: left; color: var(--text-dim); }
+.facet-row .fv { font-family: var(--font-data); font-size: 12px; text-transform: none; }
+.option-sheet { max-height: 50vh; }
+.facet-row .fv { flex: 1; min-width: 0; }
 .facet-row .fc { color: var(--text-dim); font-size: var(--fs-data-s); }
 .facet-row.is-on { background: var(--surface-2); color: var(--text); }
 .facet-row.is-on::before { content: "✓"; color: var(--accent); font-size: 11px; }
 
 /* ══ apply dock ══ */
-.apply-dock { position: fixed; z-index: 40; inset: auto 0 0 0;
+.apply-dock { position: fixed; z-index: 40; inset: auto 0 calc(53px + env(safe-area-inset-bottom)) 0;
   display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap;
-  padding: var(--s2) var(--s3) calc(var(--s2) + env(safe-area-inset-bottom));
+  padding: var(--s2) var(--s3);
   background: color-mix(in srgb, var(--surface-1) 96%, transparent);
   backdrop-filter: blur(10px); border-top: 1px solid var(--edge-strong); }
-@media (min-width: 900px) { .apply-dock { left: 64px; } }
+@media (min-width: 900px) { .apply-dock { inset: auto 0 0 84px; padding-bottom: var(--s2); } }
 .dock-info { flex: 1 1 100%; font-size: var(--fs-data-s); line-height: 1.5; }
 @media (min-width: 700px) { .dock-info { flex: 1 1 auto; } }
 .dock-primary { min-height: var(--tap); padding: 0 var(--s4); border-radius: var(--r-m);

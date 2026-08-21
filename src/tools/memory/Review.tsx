@@ -12,15 +12,21 @@ import { t, OURS } from "./strings";
 import {
   rows, blocked, rejections, loading, loadError, review,
   decisions, edited, cursor, detailKey, facetSheetOpen, saveState,
-  activeFacets, groupBy, sortBy, tally, preflight, applying, lastFailures,
+  activeFacets, groupBy, sortBy, sortDir, tally, preflight, applying, lastFailures,
   droppedDependencyWarnings, canUndo, notesById, rowOverflows,
   refresh, setDecision, cycleDecision, bulkDecide, undo, applyDecided,
 } from "./store";
+import { openOverlay, closeTopOverlay } from "./overlays";
+import { signal } from "@preact/signals";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef } from "./NotePeek";
 
 const RESTORE_POINT_THRESHOLD = 20;
+
+// Mobile choosers for group/sort (three-button rail).
+const groupSheetOpen = signal(false);
+const sortSheetOpen = signal(false);
 
 function useIsDesktop(): boolean {
   const [is, setIs] = useState(() => window.matchMedia("(min-width: 900px)").matches);
@@ -39,13 +45,24 @@ export function Review() {
 
   useEffect(() => { void refresh(true); }, []);
 
+  // Sticky group heads pin below the sticky console, not under it.
+  useEffect(() => {
+    const el = listRef.current?.querySelector(".console") as HTMLElement | null;
+    if (!el) return;
+    const set = () => listRef.current?.style.setProperty("--console-h", `${el.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  });
+
   const shown = useMemo(
     () => applyFilters(rows.value, activeFacets.value),
     [rows.value, activeFacets.value, decisions.value, edited.value],
   );
   const groups = useMemo(
-    () => buildGroups(shown, groupBy.value, sortBy.value),
-    [shown, groupBy.value, sortBy.value],
+    () => buildGroups(shown, groupBy.value, sortBy.value, sortDir.value),
+    [shown, groupBy.value, sortBy.value, sortDir.value],
   );
   const visibleKeys = useMemo(() => groups.flatMap((g) => g.rows.map((r) => r.key)), [groups]);
 
@@ -106,8 +123,10 @@ export function Review() {
       }
       case "u": ev.preventDefault(); undo(); break;
       case "Escape":
-        if (facetSheetOpen.value) { ev.preventDefault(); facetSheetOpen.value = false; }
-        else if (detailKey.value && !desktop) { ev.preventDefault(); detailKey.value = null; }
+        // Overlays (sheet, peek, stacked detail) are closed by the document-
+        // level overlay stack; here Escape only clears the pane/cursor.
+        if (detailKey.value && desktop) { ev.preventDefault(); detailKey.value = null; }
+        else if (cursor.value) { ev.preventDefault(); cursor.value = null; }
         break;
     }
   };
@@ -119,8 +138,14 @@ export function Review() {
     return <div class="screen"><div class="empty">{t("reviewqueue.loadingPendingReviewDrafts")}</div></div>;
   }
 
+  // The stacked detail participates in the overlay stack (back/Escape close it).
+  const stackOpen = !desktop && Boolean(detailKey.value);
+  useEffect(() => {
+    if (stackOpen) openOverlay(() => { detailKey.value = null; });
+  }, [stackOpen]);
+
   const c = tally.value;
-  const total = review.value?.counts.mutations ?? 0;
+  const total = rows.value.length;
   const detailRow = detailKey.value ? rows.value.find((r) => r.key === detailKey.value) ?? null : null;
   const showDetailPane = desktop;
   const showDetailStack = !desktop && detailRow;
@@ -134,7 +159,9 @@ export function Review() {
             <span class="t-data mem-save" data-contrast-exempt>
               {saveState.value === "saving" ? "Autosaving…" : saveState.value === "failed" ? "Save FAILED" : ""}
             </span>
-            <a class="icon-btn t-data" href={backupExportUrl()} download title={OURS.restorePoint} aria-label="Export backup">⭳</a>
+            <a class="icon-btn" href={backupExportUrl()} download title={OURS.restorePoint} aria-label="Export backup">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 12.5V14h12v-1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
           </div>
 
           {/* decision meter: tally as data, one line */}
@@ -145,33 +172,56 @@ export function Review() {
               <span class="m-drop" style={`width:${total ? (c.drop / total) * 100 : 0}%`} />
             </span>
             <span class="t-data mval">
-              <b class="is-keep">{c.keep}</b> · <b class="is-drop">{c.drop}</b>
+              <b class="is-keep">✓{c.keep}</b> · <b class="is-drop">✗{c.drop}</b>
               <span class="of"> / {total}</span>
             </span>
           </div>
 
           <div class="chiprail">
-            <button class="chip" aria-pressed={facetSheetOpen.value} onClick={() => { facetSheetOpen.value = !facetSheetOpen.value; }}>
-              Facets{activeFacetCount() > 0 && <b class="ar">{activeFacetCount()}</b>}
-            </button>
-            <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
-            <QuickChip facet="flags" value="restates vault" label="Restates" flag />
-            <QuickChip facet="flags" value="duplicate incoming" label="Dupes" flag />
-            <QuickChip facet="conflicts" value="has conflicts" label="Conflicts" flag />
-            <span class="rail-gap" />
-            {Object.entries(GROUPERS).map(([id, g]) => (
-              <button key={id} class="chip" aria-pressed={groupBy.value === id}
-                onClick={() => { groupBy.value = id as typeof groupBy.value; }}>
-                {g.label}
-              </button>
-            ))}
-            <span class="rail-gap" />
-            {Object.entries(SORTERS).map(([id, s]) => (
-              <button key={id} class="chip" aria-pressed={sortBy.value === id}
-                onClick={() => { sortBy.value = id as typeof sortBy.value; }}>
-                ↓ {s.label}
-              </button>
-            ))}
+            {desktop ? (
+              <>
+                <button class="chip" aria-pressed={facetSheetOpen.value} onClick={openFacetSheet}>
+                  Facets{activeFacetCount() > 0 && <b class="ar">{activeFacetCount()}</b>}
+                </button>
+                <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
+                <QuickChip facet="flags" value="restates vault" label="Restates" flag />
+                <QuickChip facet="flags" value="duplicate incoming" label="Dupes" flag />
+                <QuickChip facet="conflicts" value="has conflicts" label="Conflicts" flag />
+                <span class="rail-gap" />
+                {Object.entries(GROUPERS).map(([id, g]) => (
+                  <button key={id} class="chip" aria-pressed={groupBy.value === id}
+                    onClick={() => { groupBy.value = id as typeof groupBy.value; }}>
+                    {g.label}
+                  </button>
+                ))}
+                <span class="rail-gap" />
+                {Object.entries(SORTERS).map(([id, s]) => (
+                  <button key={id} class="chip" aria-pressed={sortBy.value === id}
+                    onClick={() => {
+                      if (sortBy.value === id) sortDir.value = (sortDir.value === 1 ? -1 : 1);
+                      else { sortBy.value = id as typeof sortBy.value; sortDir.value = 1; }
+                    }}>
+                    {sortDir.value === 1 || sortBy.value !== id ? "↓" : "↑"} {s.label}
+                  </button>
+                ))}
+              </>
+            ) : (
+              <>
+                <button class="chip ctl" aria-pressed={activeFacetCount() > 0} onClick={openFacetSheet}>
+                  <span class="ctl-k">Filter</span><span class="ctl-v">{activeFacetCount() || "all"}</span>
+                </button>
+                <button class="chip ctl" onClick={() => { groupSheetOpen.value = true; openOverlay(() => { groupSheetOpen.value = false; }); }}>
+                  <span class="ctl-k">Group</span><span class="ctl-v">{GROUPERS[groupBy.value].label}</span>
+                </button>
+                <button class="chip ctl" onClick={() => { sortSheetOpen.value = true; openOverlay(() => { sortSheetOpen.value = false; }); }}>
+                  <span class="ctl-k">Sort</span><span class="ctl-v">{sortDir.value === 1 ? "↓" : "↑"} {SORTERS[sortBy.value].label}</span>
+                </button>
+                <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
+                <QuickChip facet="flags" value="restates vault" label="Restates" flag />
+                <QuickChip facet="flags" value="duplicate incoming" label="Dupes" flag />
+                <QuickChip facet="conflicts" value="has conflicts" label="Conflicts" flag />
+              </>
+            )}
           </div>
 
           {activeFacetCount() > 0 && (
@@ -209,7 +259,7 @@ export function Review() {
       {showDetailStack && (
         <div class="stack-screen">
           <header class="console"><div class="hrow">
-            <button class="icon-btn" aria-label="Back to queue" onClick={() => { detailKey.value = null; }}>‹</button>
+            <button class="icon-btn hit" aria-label="Back to queue" onClick={closeTopOverlay}>‹</button>
             <h1 class="console-title">{detailRow!.targetTitle}</h1>
           </div></header>
           <ClaimDetail key={detailRow!.key} row={detailRow!} />
@@ -217,9 +267,27 @@ export function Review() {
       )}
 
       <FacetSheet shown={shown} />
+      <OptionSheet open={groupSheetOpen.value} label="Group by" current={groupBy.value}
+        options={Object.entries(GROUPERS).map(([id, g]) => ({ id, label: g.label }))}
+        onPick={(id) => { groupBy.value = id as typeof groupBy.value; }} />
+      <OptionSheet open={sortSheetOpen.value} label="Sort by" current={sortBy.value}
+        options={Object.entries(SORTERS).map(([id, sr]) => ({
+          id, label: sr.label,
+          hint: sortBy.value === id ? (sortDir.value === 1 ? "↓ tap to flip" : "↑ tap to flip") : undefined,
+        }))}
+        onPick={(id) => {
+          if (sortBy.value === id) sortDir.value = (sortDir.value === 1 ? -1 : 1);
+          else { sortBy.value = id as typeof sortBy.value; sortDir.value = 1; }
+        }} />
       <ApplyDock />
     </div>
   );
+}
+
+function openFacetSheet() {
+  if (facetSheetOpen.value) { closeTopOverlay(); return; }
+  facetSheetOpen.value = true;
+  openOverlay(() => { facetSheetOpen.value = false; });
 }
 
 function activeFacetCount(): number {
@@ -249,16 +317,25 @@ function QuickChip(props: { facet: string; value: string; label: string; flag?: 
 function FacetSheet(props: { shown: Row[] }) {
   if (!facetSheetOpen.value) return null;
   const counts = facetCounts(rows.value, activeFacets.value);
+  // Actively-selected values must stay listed even at count 0, or they become
+  // un-clearable and the sheet can render blank.
+  for (const [facetId, set] of activeFacets.value) {
+    const m = counts.get(facetId);
+    if (!m) continue;
+    for (const v of set) if (!m.has(v)) m.set(v, 0);
+  }
   const bySource: Record<string, typeof FACETS> = { computed: [], model: [], yours: [] };
   for (const f of FACETS) bySource[f.source].push(f);
+  const anyValues = [...counts.values()].some((m) => m.size > 0);
   return (
-    <div class="peek-scrim" onClick={() => { facetSheetOpen.value = false; }}>
-      <aside class="facet-sheet" role="dialog" aria-label="Facets" onClick={(e) => e.stopPropagation()}>
-        <header class="peek-head">
+    <div class="peek-scrim" onClick={closeTopOverlay}>
+      <aside class="facet-sheet" role="dialog" aria-modal="true" aria-label="Facets" onClick={(e) => e.stopPropagation()}>
+        <header class="peek-head sheet-head">
           <span class="t-label t-label-s">Facets</span>
           <button class="chip" onClick={() => { activeFacets.value = new Map(); }}>Clear</button>
-          <button class="hit peek-x" aria-label="Close" onClick={() => { facetSheetOpen.value = false; }}>×</button>
+          <button class="hit peek-x" aria-label="Close" onClick={closeTopOverlay}>×</button>
         </header>
+        {!anyValues && <p class="t-prose dim">No facet values in this slice.</p>}
         <div class="facet-cols">
           {(["computed", "model", "yours"] as const).map((src) => {
             const defs = bySource[src].filter((f) => (counts.get(f.id)?.size ?? 0) > 0);
@@ -274,7 +351,7 @@ function FacetSheet(props: { shown: Row[] }) {
                       return (
                         <button key={value} class={`facet-row ${on ? "is-on" : ""}`} aria-pressed={on}
                           onClick={() => toggleFacet(f.id, value)}>
-                          <span class="fv t-prose">{value}</span>
+                          <span class="fv t-data">{value}</span>
                           <span class="fc t-data">{n}</span>
                         </button>
                       );
@@ -285,6 +362,33 @@ function FacetSheet(props: { shown: Row[] }) {
             );
           })}
         </div>
+      </aside>
+    </div>
+  );
+}
+
+/** Bottom-sheet chooser for the mobile three-button rail. */
+function OptionSheet(props: {
+  open: boolean; label: string;
+  options: Array<{ id: string; label: string; hint?: string }>;
+  current: string;
+  onPick: (id: string) => void;
+}) {
+  if (!props.open) return null;
+  return (
+    <div class="peek-scrim" onClick={closeTopOverlay}>
+      <aside class="facet-sheet option-sheet" role="dialog" aria-modal="true" aria-label={props.label} onClick={(e) => e.stopPropagation()}>
+        <header class="peek-head sheet-head">
+          <span class="t-label t-label-s">{props.label}</span>
+          <button class="hit peek-x" aria-label="Close" onClick={closeTopOverlay}>×</button>
+        </header>
+        {props.options.map((o) => (
+          <button key={o.id} class={`facet-row ${props.current === o.id ? "is-on" : ""}`}
+            onClick={() => { props.onPick(o.id); closeTopOverlay(); }}>
+            <span class="fv t-data">{o.label}</span>
+            {o.hint && <span class="fc t-data">{o.hint}</span>}
+          </button>
+        ))}
       </aside>
     </div>
   );
@@ -305,14 +409,22 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
         <span class="t-data dim">{g.rows.length}</span>
         {(kept > 0 || dropped > 0) && (
           <span class="t-data">
-            {kept > 0 && <b class="is-keep">{kept}✓</b>}{kept > 0 && dropped > 0 && " "}
-            {dropped > 0 && <b class="is-drop">{dropped}✗</b>}
+            {kept > 0 && <b class="is-keep">✓{kept}</b>}{kept > 0 && dropped > 0 && " "}
+            {dropped > 0 && <b class="is-drop">✗{dropped}</b>}
           </span>
         )}
         {storedSections.length > 0 && (
           <button class="chip" aria-pressed={showStored} onClick={() => setShowStored(!showStored)}>
             stored · {storedSections.length}
           </button>
+        )}
+        {g.rows.length > 1 && (
+          <span class="ghead-acts">
+            <button class="chip gk" aria-label={`Keep all ${g.rows.length} in ${g.label}`}
+              onClick={() => bulkDecide(g.rows, "keep", `keep ${g.label}`)}>✓ all</button>
+            <button class="chip gd" aria-label={`Drop all ${g.rows.length} in ${g.label}`}
+              onClick={() => bulkDecide(g.rows, "drop", `drop ${g.label}`)}>✗ all</button>
+          </span>
         )}
       </div>
       {showStored && (
@@ -327,10 +439,6 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
         </div>
       )}
       {g.rows.map((r) => <ClaimRow key={r.key} row={r} showTarget={props.showTarget} onActivate={props.onActivate} />)}
-      <div class="group-actions">
-        <button class="chip" onClick={() => bulkDecide(g.rows, "keep", `keep ${g.label}`)}>Keep group</button>
-        <button class="chip" onClick={() => bulkDecide(g.rows, "drop", `drop ${g.label}`)}>Drop group</button>
-      </div>
     </div>
   );
 }
@@ -340,7 +448,6 @@ function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: stri
   const d = decisions.value.get(r.key);
   const isFocused = cursor.value === r.key;
   const isOpen = detailKey.value === r.key;
-  const overwrites = r.changes.some((c) => c.before !== undefined && c.before !== "");
   return (
     <div class={`row mem-row ${isOpen ? "is-open" : ""} ${isFocused ? "is-focused" : ""}`} data-row={r.key} data-d={d ?? "undecided"}>
       <div class="row-summary mem-summary">
@@ -358,8 +465,7 @@ function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: stri
             <i class="sep" data-contrast-exempt>·</i>{r.mutation.risk}
             {props.showTarget && <><i class="sep" data-contrast-exempt>·</i><span class="dim">→ {r.targetTitle}</span></>}
             {r.conflicts.length > 0 && <><i class="sep" data-contrast-exempt>·</i><span class="fl">{r.conflicts.length} conflict{r.conflicts.length === 1 ? "" : "s"}</span></>}
-            {overwrites && <><i class="sep" data-contrast-exempt>·</i><span class="fl">overwrites</span></>}
-            {r.restates && <><i class="sep" data-contrast-exempt>·</i><span class="fl">restates {r.restates.score.toFixed(2)}</span></>}
+                {r.restates && <><i class="sep" data-contrast-exempt>·</i><span class="fl">restates {r.restates.score.toFixed(2)}</span></>}
             {r.duplicateOf && <><i class="sep" data-contrast-exempt>·</i><span class="fl">dupe</span></>}
             {rowOverflows(r) && <><i class="sep" data-contrast-exempt>·</i><span class="fl">{OURS.overLimit}</span></>}
             {edited.value.has(r.key) && <><i class="sep" data-contrast-exempt>·</i><span class="is-keep">{t("reviewqueue.editedChange")}</span></>}
@@ -443,7 +549,9 @@ function Rejections() {
 
 function ApplyDock() {
   const c = tally.value;
-  if (!c.keep && !c.drop) return null;
+  // Stays mounted while undo is available so touch users can undo a bulk
+  // reset (the keyboard has `u`; the dock is the only touch path).
+  if (!c.keep && !c.drop && !canUndo.value) return null;
   const pf = preflight.value;
   const warnings = droppedDependencyWarnings.value;
   const applyCount = (pf?.ready ?? 0) + c.drop;

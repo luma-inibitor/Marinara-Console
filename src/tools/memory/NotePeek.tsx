@@ -4,14 +4,21 @@
 // replaces the peek.
 
 import { signal } from "@preact/signals";
+import { useEffect, useRef } from "preact/hooks";
 import { fetchNote, type Note } from "./data";
 import { toast } from "../../shell/toast";
+import { openOverlay, closeTopOverlay } from "./overlays";
 
 export const peeked = signal<Note | null>(null);
 
 export async function peekNote(id: string) {
   try {
-    peeked.value = await fetchNote(id);
+    const note = await fetchNote(id);
+    const wasOpen = peeked.value !== null;
+    peeked.value = note;
+    // A chained peek replaces content inside the same overlay entry; only a
+    // fresh open pushes history.
+    if (!wasOpen) openOverlay(() => { peeked.value = null; });
   } catch (error) {
     toast(`${id}: ${(error as Error).message}`, { kind: "error" });
   }
@@ -27,14 +34,17 @@ export function NoteRef(props: { id: string; label?: string }) {
 
 export function NotePeek() {
   const n = peeked.value;
+  const closeRef = useRef<HTMLButtonElement>(null);
+  // Move focus into the dialog on open (restore is handled by the overlay stack).
+  useEffect(() => { if (n) closeRef.current?.focus(); }, [n === null]);
   if (!n) return null;
   return (
-    <div class="peek-scrim" onClick={() => { peeked.value = null; }}>
-      <aside class="peek" role="dialog" aria-label={n.title ?? n.id} onClick={(e) => e.stopPropagation()}>
-        <header class="peek-head">
+    <div class="peek-scrim" onClick={closeTopOverlay}>
+      <aside class="peek" role="dialog" aria-modal="true" aria-label={n.title ?? n.id} onClick={(e) => e.stopPropagation()}>
+        <header class="peek-head sheet-head">
           <span class={`chip t-data type-${n.type}`}>{n.type.replaceAll("_", " ")}</span>
           <span class="peek-title t-prose">{n.title ?? n.id}</span>
-          <button class="hit peek-x" aria-label="Close" onClick={() => { peeked.value = null; }}>×</button>
+          <button ref={closeRef} class="hit peek-x" aria-label="Close" onClick={closeTopOverlay}>×</button>
         </header>
         <div class="peek-meta t-data">
           {n.id} · {n.status}{n.modes?.length ? ` · ${n.modes.join(" · ")}` : ""}

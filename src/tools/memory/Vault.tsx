@@ -4,6 +4,7 @@
 // destructive default (undoable); permanent delete confirms.
 
 import { useEffect, useMemo, useState } from "preact/hooks";
+import { openOverlay, closeTopOverlay } from "./overlays";
 import { toast } from "../../shell/toast";
 import {
   type Note, type NoteType, fetchNotes, patchNote, deleteNote,
@@ -78,6 +79,11 @@ export function Vault() {
   if (error) return <div class="screen"><div class="empty"><p class="t-label">Could not load</p><p class="t-data">{error}</p></div></div>;
   if (!notes) return <div class="screen"><div class="empty">{t("memoryvault.loadingMemories")}</div></div>;
 
+  const stackOpen = !desktop && Boolean(openId);
+  useEffect(() => {
+    if (stackOpen) openOverlay(() => setOpenId(null));
+  }, [stackOpen]);
+
   const memoriesN = notes.filter((n) => n.type !== "source").length;
   const sourcesN = notes.length - memoriesN;
   const open = openId ? notes.find((n) => n.id === openId) ?? null : null;
@@ -131,7 +137,7 @@ export function Vault() {
       {!desktop && open && (
         <div class="stack-screen">
           <header class="console"><div class="hrow">
-            <button class="icon-btn" aria-label="Back to vault" onClick={() => setOpenId(null)}>‹</button>
+            <button class="icon-btn hit" aria-label="Back to vault" onClick={closeTopOverlay}>‹</button>
             <h1 class="console-title">{open.title ?? open.id}</h1>
           </div></header>
           <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />

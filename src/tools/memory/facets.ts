@@ -36,10 +36,6 @@ function qualityFlags(r: Row): string[] | null {
 export const FACETS: FacetDef[] = [
   { id: "flags", label: "quality flags", source: "computed", get: qualityFlags },
   { id: "conflicts", label: "conflicts", source: "computed", get: (r) => (r.conflicts.length ? "has conflicts" : null) },
-  {
-    id: "diff", label: "overwrites text", source: "computed",
-    get: (r) => (r.changes.some((c) => c.before !== undefined && c.before !== "") ? "overwrites" : null),
-  },
   { id: "disposition", label: "disposition", source: "model", get: (r) => r.disposition },
   { id: "risk", label: "risk", source: "model", get: (r) => r.mutation.risk },
   { id: "kind", label: "change", source: "model", get: (r) => r.mutation.kind },
@@ -107,8 +103,9 @@ export const SORTERS: Record<string, { label: string; cmp: (a: Row, b: Row) => n
 
 export interface Group { id: string; label: string; meta?: string; rows: Row[] }
 
-export function buildGroups(list: Row[], grouperId: string, sorterId: string): Group[] {
-  const sorted = [...list].sort(SORTERS[sorterId]?.cmp ?? SORTERS.risk.cmp);
+export function buildGroups(list: Row[], grouperId: string, sorterId: string, dir: 1 | -1 = 1): Group[] {
+  const base = SORTERS[sorterId]?.cmp ?? SORTERS.risk.cmp;
+  const sorted = [...list].sort((a, b) => dir * base(a, b));
   const grouper = GROUPERS[grouperId] ?? GROUPERS.target;
   const groups = new Map<string, Group>();
   for (const row of sorted) {

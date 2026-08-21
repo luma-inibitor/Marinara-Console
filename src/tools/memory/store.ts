@@ -37,6 +37,7 @@ export const appliedThisSession = new Map<string, "applied" | "skipped">();
 
 export const groupBy = signal<"target" | "source" | "disposition" | "kind" | "none">("target");
 export const sortBy = signal<"risk" | "confidence" | "target">("risk");
+export const sortDir = signal<1 | -1>(1);
 export const activeFacets = signal<Map<string, Set<string>>>(new Map());
 export const cursor = signal<string | null>(null);
 export const detailKey = signal<string | null>(null); // open detail panel/screen
