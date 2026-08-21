@@ -9,6 +9,14 @@ them without asking.
 > arrived. The mobile round below (2:18 PM screenshot) may reconstruct part of
 > it; Eli — if more of the lost batch surfaces, send it and it lands here.
 
+## UX review 2026-08-21
+
+Five-reviewer audit consolidated at
+[design/reviews/2026-08-21-ux-review.md](design/reviews/2026-08-21-ux-review.md):
+58 unique findings in 7 clusters (A decision/apply correctness · B mobile
+fundamentals · C visibility of computed state · D linkage · E copy · F a11y ·
+G wiring). Proposed priorities inline there; owner re-triage pending.
+
 ## Owner feedback queue
 
 ### Mobile round 2 — 2026-08-21 2:18 PM (port build, phone)
