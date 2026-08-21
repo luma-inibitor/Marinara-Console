@@ -25,7 +25,7 @@ export function EntryDrawer(props: {
   onExpand: (field: FullscreenCtx["field"]) => void;
 }) {
   const { entry: e, save } = props;
-  // multi-expand: a Set, siblings never auto-close (survey §11 / Eli-confirmed)
+  // multi-expand: a Set, siblings never auto-close (survey §11 / Luma-confirmed)
   const [openSubs, setOpenSubs] = useState<Set<Sub>>(new Set(["keys"]));
   const toggle = (s: Sub) => setOpenSubs((prev) => {
     const n = new Set(prev); n.has(s) ? n.delete(s) : n.add(s); return n;

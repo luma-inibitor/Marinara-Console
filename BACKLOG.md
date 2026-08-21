@@ -2,12 +2,12 @@
 
 The implementation queue: feedback received, bugs reported, and mined prior-art
 not yet carried into the console. Working document — prune entries when they
-ship, note the commit. Items marked **[Eli]** are owner feedback; do not drop
+ship, note the commit. Items marked **[Luma]** are owner feedback; do not drop
 them without asking.
 
-> **Lost message:** one batch of Eli's feedback (~2026-08-21 afternoon) never
+> **Lost message:** one batch of Luma's feedback (~2026-08-21 afternoon) never
 > arrived. The mobile round below (2:18 PM screenshot) may reconstruct part of
-> it; Eli — if more of the lost batch surfaces, send it and it lands here.
+> it; Luma — if more of the lost batch surfaces, send it and it lands here.
 
 ## UX review 2026-08-21
 
@@ -25,10 +25,10 @@ claims, then deep links/history**. P2 stands as proposed. Big-hitters
 owner decision after explanation.
 
 **Interview outcomes (Q1-Q7):**
-- At-a-glance redesign: **punted** until Eli does a real-world sweep.
+- At-a-glance redesign: **punted** until Luma does a real-world sweep.
 - "Careful" lane = conflicts · low confidence · restates · dupes · overwrites.
   The "diff" chip is renamed **overwrites** — the old label was itself a
-  finding (Eli didn't know what it meant).
+  finding (Luma didn't know what it meant).
 - Vault: search-first + health hotspots; *unhealthy includes archived/resolved
   pile-up* — and the UI must say what to do about it.
 - **NEW: activity/history viewer** — persist import results (kept/discarded
@@ -47,46 +47,46 @@ owner decision after explanation.
 
 ### Mobile round 2 — 2026-08-21 2:18 PM (port build, phone)
 
-- **[Eli] Mode display: segmented pill.** Exactly three chat modes exist
+- **[Luma] Mode display: segmented pill.** Exactly three chat modes exist
   (conversation/DM · roleplay · GM/game). Render mode eligibility as a
   fixed-width three-segment pill with active/inactive color per segment —
   constant width makes rows skimmable regardless of which modes are on.
-- **[Eli] At-a-glance information design.** The three views don't yet answer
+- **[Luma] At-a-glance information design.** The three views don't yet answer
   "lay of the land / what needs review" at a glance. Think through what
-  matters most per view, then interview Eli for his user opinions. (Interview
+  matters most per view, then interview Luma for his user opinions. (Interview
   sent 2026-08-21; answers pending.)
-- **[Eli] Import scope global?** Open question: should the Sources chat-scope
+- **[Luma] Import scope global?** Open question: should the Sources chat-scope
   selector be a tool-wide (or console-wide) scope across all views?
-- **[Eli] Facets + search constant across Review and Vault.** Same facet rail
+- **[Luma] Facets + search constant across Review and Vault.** Same facet rail
   and search bar on both surfaces (Vault has search but different facets;
   Review has facets but no search).
-- **[Eli] BUG: facet sheet doesn't fit one mobile screen** in the port build
+- **[Luma] BUG: facet sheet doesn't fit one mobile screen** in the port build
   (regression vs. the prototype's column layout, or content growth).
-- **[Eli] BUG: tapping a claim row on mobile doesn't open details.** Cause
+- **[Luma] BUG: tapping a claim row on mobile doesn't open details.** Cause
   found: `Review.tsx` `focusRow` gates `detailKey` on `desktop`; mobile tap
   only moves the cursor. Fix: open stacked detail on mobile tap.
-- **[Eli] BUG/copy: Review tab badge says 2 with 17 pending items.** Badge
+- **[Luma] BUG/copy: Review tab badge says 2 with 17 pending items.** Badge
   shows draft count, not claim count — internal packaging leaking into nav.
   Show pending claims (17) to match the Decided meter.
-- **[Eli] Mobile chip rail: three buttons only.** Default mobile rail should
+- **[Luma] Mobile chip rail: three buttons only.** Default mobile rail should
   be [Filter] [Group by] [Sort by] (each opening its chooser), plus a sort
   direction toggle; today's group/sort chips overflow offscreen.
 
-- **[Eli] Categorical type colors everywhere** — landed in the memory tool
+- **[Luma] Categorical type colors everywhere** — landed in the memory tool
   (`.type-*` + DESIGN.md rule). Sweep the rest of the console when other tools
   name memory types.
-- **[Eli] (from workbench notes) Keyword curation, not blind trimming** —
+- **[Luma] (from workbench notes) Keyword curation, not blind trimming** —
   `set_keywords` mutations constantly hit the 30-keyword cap; the old app
   auto-trimmed to 10, which "loses the curated list". Wanted: a smarter default
   the user can see and override — surface the proposed keyword set against the
   cap, let the reviewer pick; possibly LLM-assisted. Nothing in the port
   trims automatically today (the failure is classified and named instead).
-- **[Eli] (from workbench notes) add_link near-dupes have no obvious action** —
+- **[Luma] (from workbench notes) add_link near-dupes have no obvious action** —
   e.g. 4 near-dupe `add_link` claims pointing at timeline events. Note refs are
   clickable now (NotePeek), but the *decision* is still unclear: drop the
   links? also drop the duplicate timeline creates? Design a cluster action that
   resolves link + target together.
-- **[Eli] (from workbench notes) facet ergonomics** — Clear button reachable
+- **[Luma] (from workbench notes) facet ergonomics** — Clear button reachable
   without scrolling on mobile (now in the sheet header — verify on device);
   Esc dismisses the sheet (done).
 
@@ -159,5 +159,5 @@ owner decision after explanation.
   discipline from the prototype when adding copy.
 - Dev loop: local engine + st-notes mock provider with
   `~/code/me-ltm-console/dev/ltm-responder.mjs` (revision mode generates
-  merge/rewrite corpus). Live instance is read-only validation until Eli says
+  merge/rewrite corpus). Live instance is read-only validation until Luma says
   otherwise.

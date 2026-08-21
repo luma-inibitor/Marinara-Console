@@ -1,8 +1,8 @@
 # Marinara Console — Design Framework
 
 LLM-facing. Read this fully before writing or changing any UI in this repo. Rules are
-do-X / avoid-Y / because-Z. When a rule conflicts with something Eli says in session,
-Eli wins; update this file in the same change. The research behind the general rules
+do-X / avoid-Y / because-Z. When a rule conflicts with something Luma says in session,
+Luma wins; update this file in the same change. The research behind the general rules
 is vendored at [`research/dense-ui-survey.md`](research/dense-ui-survey.md) — cite it,
 don't restate it.
 
@@ -45,7 +45,7 @@ columns. Ligatures OFF wherever literal characters matter (keys, code, IDs).
 - `--accent` (blue) is for interactive chrome only — focus, selection, primary
   buttons, links. It must never collide with the status hues.
 - `--flag` (orange) marks computed outliers (over-budget, p90 exceedance) only.
-- **Categorical object-type hues** (Eli-confirmed): long-lived object taxonomies
+- **Categorical object-type hues** (Luma-confirmed): long-lived object taxonomies
   (e.g. memory note types) get one hue each, used consistently on every chip/dot
   that names the type, always paired with the type name in text. They are a third
   axis — never reuse the status hues or `--accent`, and keep them dimmer than both
@@ -65,7 +65,7 @@ Density modes via `data-density` on `<html>`: `comfortable` (default) and `compa
 (row paddings −4px). Motion 120–200ms, transform/opacity only, purposeful
 (orientation, causality, continuity) — respect `prefers-reduced-motion`.
 
-## 2. Owner preferences (confirmed by Eli — do not re-litigate)
+## 2. Owner preferences (confirmed by Luma — do not re-litigate)
 
 - ~11 rows per phone screen collapsed; titles **wrap, never truncate**; one-line
   mono meta with `·` separators; right-aligned numeric gutter per row.
