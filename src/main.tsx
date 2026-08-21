@@ -6,6 +6,7 @@ import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/shell.css";
 import "./styles/lorebooks.css";
+import "./styles/presets.css";
 import { App } from "./shell/App";
 
 const savedDensity = localStorage.getItem("mc-density");

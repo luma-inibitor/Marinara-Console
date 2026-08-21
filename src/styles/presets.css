@@ -1,0 +1,144 @@
+/* Presets tool. Owns its own semantics rather than borrowing the lorebook's
+   status-dot vocabulary: a prompt section's defining attribute is its ORDER,
+   so the rail carries the ordinal and off-ness is expressed by dimming. */
+
+/* ── browser ── */
+.screen.is-narrow { max-width: 760px; }
+
+.preset-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s2) var(--s3);
+  align-items: start;
+}
+.preset-card-main { min-width: 0; }
+.preset-card .card-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s2); }
+.preset-desc {
+  margin: var(--s1) 0 var(--s2);
+  font-family: var(--font-prose);
+  font-size: var(--fs-data-l);
+  color: var(--text-dim);
+  line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.preset-desc.is-empty { font-style: italic; color: var(--text-faint); }
+.preset-card-gutter { text-align: right; }
+.preset-card-gutter .tok { display: block; font-size: 15px; font-weight: 700; line-height: 1.1; }
+.preset-card-gutter .unit { display: block; font-size: 8.5px; color: var(--text-dim); }
+.preset-card .bar { grid-column: 1 / -1; }
+.preset-card .bar > i { background: var(--accent); opacity: 0.55; }
+
+/* ── editor header ── */
+.console-title.is-wrapping {
+  white-space: normal;                 /* titles wrap, never truncate */
+  overflow: visible;
+  text-overflow: clip;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  line-height: 1.25;
+}
+.tagline { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); margin-top: var(--s2); }
+.tagline .meta { display: flex; flex-wrap: wrap; }
+.costnote {
+  margin: var(--s1) 0 0;
+  font-family: var(--font-prose);      /* prose, not the data face */
+  font-size: 11.5px;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+.segrow {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: var(--s2);
+}
+.segrow.is-3 { grid-template-columns: repeat(3, 1fr); }
+
+/* ── rows: ordinal rail, dimmed when off ── */
+.audit .row.in-group { box-shadow: inset 2px 0 0 var(--edge-strong); }
+.audit .row.in-group.is-start { box-shadow: inset 2px 0 0 var(--edge-strong); }
+.rail-cell .ord {
+  font-size: 12px; font-weight: 700; color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.row[data-s="disabled"] .rail-cell .ord { color: var(--text-faint); }
+.off-mark {
+  display: block; width: 14px; height: 1.5px; background: var(--off); margin-top: 3px; border-radius: 1px;
+}
+.row[data-s="disabled"] .nm,
+.row[data-s="disabled"] .metaline,
+.row[data-s="disabled"] .num { opacity: 0.5; }
+
+.tg.is-marker { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); background: var(--accent-wash); }
+.tg.is-off { color: var(--text-faint); }
+.tg.is-default { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); background: var(--warn-wash); }
+.tok-runtime { color: var(--text-dim); font-size: 10.5px; }
+
+/* ── detail ── */
+.field { margin-top: var(--s3); }
+.field > .t-label { display: block; margin-bottom: 6px; }
+
+.toggle {
+  display: flex; align-items: center; gap: var(--s2);
+  min-height: var(--tap); width: 100%;
+  border: var(--hairline); border-radius: var(--r-m);
+  background: var(--surface-1); padding: 0 var(--s3);
+}
+.toggle:disabled { opacity: 0.5; cursor: not-allowed; }
+.toggle-track {
+  width: 34px; height: 20px; border-radius: 10px; background: var(--surface-3);
+  border: var(--hairline); position: relative; flex: 0 0 auto; transition: background var(--t-fast);
+}
+.toggle-thumb {
+  position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--text-dim); transition: transform var(--t-fast), background var(--t-fast);
+}
+.toggle[aria-checked="true"] .toggle-track { background: var(--ok-wash); border-color: var(--ok); }
+.toggle[aria-checked="true"] .toggle-thumb { transform: translateX(14px); background: var(--ok); }
+.toggle-label {
+  font-family: var(--font-label); font-variation-settings: "wdth" 108; font-weight: 600;
+  font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text);
+}
+
+.movebar { grid-template-columns: 1fr auto 1fr; }
+.movebtn {
+  min-height: var(--tap); border-radius: var(--r-m); border: var(--hairline);
+  background: var(--surface-1); color: var(--text);
+  display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px;
+}
+.movebtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.movebtn .t-label { color: inherit; }
+
+.edit-content {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
+  width: 100%; min-height: var(--tap);
+  padding: 0 var(--s3); margin-bottom: var(--s2);
+  border: var(--hairline); border-radius: var(--r-m);
+  background: var(--surface-1); color: var(--text);
+}
+.edit-content .ec-label { color: var(--accent); }
+.edit-content .ec-meta { color: var(--text-dim); }
+.content-preview {
+  margin: 0; padding: var(--s2) var(--s3);
+  background: var(--canvas); border: var(--hairline); border-radius: var(--r-m);
+  color: var(--text-dim); line-height: 1.55; white-space: pre-wrap;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ta.is-fill { min-height: 320px; }
+.prose-note {
+  margin: 0; font-family: var(--font-prose); font-size: var(--fs-prose);
+  color: var(--text-dim); line-height: 1.5;
+}
+.prose-note b { color: var(--text); }
+.hint { font-family: var(--font-prose); font-size: 11.5px; }
+
+.sub-summary .is-on { color: var(--ok); font-weight: 700; }
+.sub-summary .is-off { color: var(--text-faint); font-weight: 700; }
+.sub-summary .is-runtime { color: var(--accent); }
+
+/* save pill lives in the title row — always visible, chrome-colored (§1:
+   emerald is reserved for entity status, not transaction state) */
+.hrow .savepill { flex: 0 0 auto; white-space: nowrap; }
+.savepill.is-saved { color: var(--text-dim); }
+.savepill.is-dirty { color: var(--accent); }
+.savepill.is-err { color: var(--danger); }
+
+@media (max-width: 899px) {
+  .ta.is-fill { min-height: 0; }
+}
