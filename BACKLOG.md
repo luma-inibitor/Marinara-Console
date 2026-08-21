@@ -15,7 +15,33 @@ Five-reviewer audit consolidated at
 [design/reviews/2026-08-21-ux-review.md](design/reviews/2026-08-21-ux-review.md):
 58 unique findings in 7 clusters (A decision/apply correctness · B mobile
 fundamentals · C visibility of computed state · D linkage · E copy · F a11y ·
-G wiring). Proposed priorities inline there; owner re-triage pending.
+G wiring).
+
+**Owner triage (2026-08-21 interview):** P0 (cluster A + mobile tap-detail +
+ledger flush) ships first, as one batch. Then **mobile structure (B)** before
+visibility (C). Linkage order: **Sources→pending drafts, then vault→related
+claims, then deep links/history**. P2 stands as proposed. Big-hitters
+(query language, keyword curation) stay post-P1; conflict three-way pending
+owner decision after explanation.
+
+**Interview outcomes (Q1-Q7):**
+- At-a-glance redesign: **punted** until Eli does a real-world sweep.
+- "Careful" lane = conflicts · low confidence · restates · dupes · overwrites.
+  The "diff" chip is renamed **overwrites** — the old label was itself a
+  finding (Eli didn't know what it meant).
+- Vault: search-first + health hotspots; *unhealthy includes archived/resolved
+  pile-up* — and the UI must say what to do about it.
+- **NEW: activity/history viewer** — persist import results (kept/discarded
+  per entry, expandable) and apply reports; a place to revisit recent write
+  activity. Merges with the workbench's apply-report item.
+- Scope: tool-level selector in the memory header (not console-wide).
+  **Prep task: study how the official LTM package UI does scope selection**
+  (SourcesWorkspace/MemoryVault in Marinara-Agents client source).
+- Mode pill approved: fixed 3 segments DM · RP · GM, active/inactive per
+  segment, constant width.
+- Mobile rail: [Filter] [Group] [Sort] constant-width buttons, then quick
+  chips in the same row; buttons may carry state (filter count, current
+  key + direction) — implementer's choice.
 
 ## Owner feedback queue
 
