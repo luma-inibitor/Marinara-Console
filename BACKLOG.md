@@ -18,7 +18,11 @@ fundamentals · C visibility of computed state · D linkage · E copy · F a11y 
 G wiring).
 
 **Owner triage (2026-08-21 interview):** P0 (cluster A + mobile tap-detail +
-ledger flush) ships first, as one batch. Then **mobile structure (B)** before
+ledger flush) ships first, as one batch. **P0 shipped** (regression-tested:
+mobile tap-detail, visible-only keyboard decisions, chip-focus safety,
+edit-leak, preflight-drop reconciliation, skippedMutationIds, ledger
+flush-on-hide, undo hygiene, 400 on malformed state, badge=claims,
+diff→overwrites). Then **mobile structure (B)** before
 visibility (C). Linkage order: **Sources→pending drafts, then vault→related
 claims, then deep links/history**. P2 stands as proposed. Big-hitters
 (query language, keyword curation) stay post-P1; conflict three-way pending

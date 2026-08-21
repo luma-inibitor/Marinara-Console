@@ -65,8 +65,8 @@ export function MemoryTool({ rest }: { rest: string[] }) {
           <button key={v.id} class="mem-tab t-label" aria-current={view === v.id ? "page" : undefined}
             onClick={() => { if (v.id === "review") activeFacets.value = new Map(); navigate(`memory/${v.id}`); }}>
             {v.label()}
-            {v.id === "review" && (review.value?.counts.drafts ?? s?.pending ?? 0) > 0 && (
-              <b class="mem-badge t-data">{review.value?.counts.drafts ?? s?.pending}</b>
+            {v.id === "review" && (review.value?.counts.mutations ?? s?.pending ?? 0) > 0 && (
+              <b class="mem-badge t-data">{review.value?.counts.mutations ?? s?.pending}</b>
             )}
           </button>
         ))}

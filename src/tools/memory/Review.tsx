@@ -51,7 +51,7 @@ export function Review() {
 
   const focusRow = (key: string) => {
     cursor.value = key;
-    if (desktop) detailKey.value = key;
+    detailKey.value = key; // mobile: opens the stacked detail; desktop: the pane
     requestAnimationFrame(() => {
       (listRef.current?.querySelector(`[data-row="${CSS.escape(key)}"]`) as HTMLElement | null)
         ?.scrollIntoView({ block: "nearest" });
@@ -65,19 +65,33 @@ export function Review() {
     focusRow(visibleKeys[next]);
   };
 
-  const cursorRow = () => rows.value.find((r) => r.key === cursor.value) ?? null;
+  // Only rows in the current filtered view are actionable from the keyboard —
+  // otherwise a/d silently mutate rows the filter has hidden.
+  const cursorRow = () => {
+    const key = cursor.value;
+    if (!key || !visibleKeys.includes(key)) return null;
+    return rows.value.find((r) => r.key === key) ?? null;
+  };
 
   const decideAndAdvance = (value: "keep" | "drop") => {
     const row = cursorRow();
     if (!row) return;
+    // Pick the neighbor before deciding: the decision may filter this row out.
+    const i = visibleKeys.indexOf(row.key);
+    const nextKey = visibleKeys[i + 1] ?? visibleKeys[i - 1] ?? null;
     setDecision(row, value);
-    move(1);
+    if (nextKey) focusRow(nextKey);
+    else cursor.value = null;
   };
 
   const onListKey = (ev: KeyboardEvent) => {
     if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
     const el = ev.target as HTMLElement;
     if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT") return;
+    // A focused button owns Space/Enter (and the letter keys would surprise);
+    // only navigation keys pass through.
+    const onButton = el.tagName === "BUTTON" || Boolean(el.closest("button"));
+    if (onButton && !["j", "k", "ArrowDown", "ArrowUp", "Escape", "u", "?"].includes(ev.key)) return;
     switch (ev.key) {
       case "j": case "ArrowDown": ev.preventDefault(); move(1); break;
       case "k": case "ArrowUp": ev.preventDefault(); move(-1); break;
@@ -188,7 +202,7 @@ export function Review() {
       {showDetailPane && (
         <aside class="audit-detail">
           {detailRow
-            ? <ClaimDetail row={detailRow} />
+            ? <ClaimDetail key={detailRow.key} row={detailRow} />
             : <div class="empty"><p class="t-label t-label-s">No claim open</p><p class="t-prose">j/k to move · a keep · d drop · Enter opens</p></div>}
         </aside>
       )}
@@ -198,7 +212,7 @@ export function Review() {
             <button class="icon-btn" aria-label="Back to queue" onClick={() => { detailKey.value = null; }}>‹</button>
             <h1 class="console-title">{detailRow!.targetTitle}</h1>
           </div></header>
-          <ClaimDetail row={detailRow!} />
+          <ClaimDetail key={detailRow!.key} row={detailRow!} />
         </div>
       )}
 
@@ -344,7 +358,7 @@ function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: stri
             <i class="sep" data-contrast-exempt>·</i>{r.mutation.risk}
             {props.showTarget && <><i class="sep" data-contrast-exempt>·</i><span class="dim">→ {r.targetTitle}</span></>}
             {r.conflicts.length > 0 && <><i class="sep" data-contrast-exempt>·</i><span class="fl">{r.conflicts.length} conflict{r.conflicts.length === 1 ? "" : "s"}</span></>}
-            {overwrites && <><i class="sep" data-contrast-exempt>·</i><span class="fl">diff</span></>}
+            {overwrites && <><i class="sep" data-contrast-exempt>·</i><span class="fl">overwrites</span></>}
             {r.restates && <><i class="sep" data-contrast-exempt>·</i><span class="fl">restates {r.restates.score.toFixed(2)}</span></>}
             {r.duplicateOf && <><i class="sep" data-contrast-exempt>·</i><span class="fl">dupe</span></>}
             {rowOverflows(r) && <><i class="sep" data-contrast-exempt>·</i><span class="fl">{OURS.overLimit}</span></>}

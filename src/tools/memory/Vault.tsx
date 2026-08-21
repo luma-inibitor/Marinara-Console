@@ -205,7 +205,9 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
       toast(`Archived ${n.title ?? n.id}`, {
         actionLabel: "Undo",
         onAction: () => {
-          void patchNote(n.id, { status: previous }).then(() => props.onChanged());
+          patchNote(n.id, { status: previous })
+            .then(() => props.onChanged())
+            .catch((e: Error) => toast(e.message, { kind: "error" }));
         },
       });
     } catch (error) {

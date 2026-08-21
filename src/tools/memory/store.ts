@@ -94,8 +94,14 @@ export const droppedDependencyWarnings = computed(() => {
     if (!droppedCreates.size) continue;
     for (const r of draftRows) {
       if (decisions.value.get(r.key) !== "keep" || r.mutation.kind === "create_note") continue;
-      if (droppedCreates.has(r.targetId) && !notesById.value.has(r.targetId)) {
-        out.push({ kept: r, dropped: droppedCreates.get(r.targetId)! });
+      // A kept claim depends on its target note AND on any note it links to.
+      const needs = new Set<string>([r.targetId]);
+      if (r.mutation.kind === "add_link" && r.mutation.link) needs.add(r.mutation.link.target);
+      for (const id of needs) {
+        if (droppedCreates.has(id) && !notesById.value.has(id)) {
+          out.push({ kept: r, dropped: droppedCreates.get(id)! });
+          break;
+        }
       }
     }
   }
@@ -105,29 +111,50 @@ export const droppedDependencyWarnings = computed(() => {
 // ── persistence ─────────────────────────────────────────────────────
 
 let persistTimer: ReturnType<typeof setTimeout> | undefined;
+let ledgerDirty = false;
 
-export function persist() {
-  saveState.value = "saving";
+async function persistNow(keepalive = false) {
   clearTimeout(persistTimer);
-  persistTimer = setTimeout(async () => {
-    try {
-      const res = await fetch("/console/state/ltm-review", {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          dec: Object.fromEntries(decisions.value),
-          edited: Object.fromEntries(edited.value),
-          savedAt: new Date().toISOString(),
-        }),
-      });
-      saveState.value = res.ok ? "saved" : "failed";
-    } catch {
-      saveState.value = "failed";
-    }
-  }, 700);
+  persistTimer = undefined;
+  try {
+    const res = await fetch("/console/state/ltm-review", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      keepalive,
+      body: JSON.stringify({
+        dec: Object.fromEntries(decisions.value),
+        edited: Object.fromEntries(edited.value),
+        savedAt: new Date().toISOString(),
+      }),
+    });
+    if (res.ok) ledgerDirty = false;
+    saveState.value = res.ok ? "saved" : "failed";
+  } catch {
+    saveState.value = "failed";
+  }
 }
 
+export function persist() {
+  ledgerDirty = true;
+  saveState.value = "saving";
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => void persistNow(), 700);
+}
+
+// A trailing debounce alone loses the last ~700ms of decisions on tab close;
+// flush whenever the page goes hidden (DESIGN §2: "flush on blur").
+function flushLedger() {
+  if (ledgerDirty) void persistNow(true);
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") flushLedger();
+});
+window.addEventListener("pagehide", flushLedger);
+
 async function loadPersisted() {
+  // Never clobber decisions that haven't been persisted yet (remount inside
+  // the debounce window).
+  if (ledgerDirty) return;
   try {
     const s = await (await fetch("/console/state/ltm-review")).json();
     decisions.value = new Map(Object.entries(s.dec ?? {}));
@@ -160,6 +187,7 @@ export function undo() {
 }
 
 export function setDecision(row: Row, value: Decision | null) {
+  if ((decisions.value.get(row.key) ?? null) === value) return; // no-op
   snapshot(value ?? "undecide", [row.key]);
   canUndo.value = true;
   const next = new Map(decisions.value);
@@ -177,6 +205,7 @@ export function cycleDecision(row: Row) {
 }
 
 export function bulkDecide(list: Row[], value: Decision | null, label: string) {
+  list = list.filter((r) => (decisions.value.get(r.key) ?? null) !== value);
   if (!list.length) return;
   snapshot(label, list.map((r) => r.key));
   canUndo.value = true;
@@ -206,6 +235,8 @@ function recomputePressure() {
 }
 
 export async function refresh(first = false) {
+  const focus = sessionStorage.getItem("mc-ltm-focus-source");
+  if (focus) sessionStorage.removeItem("mc-ltm-focus-source");
   if (first) {
     loading.value = true;
     await loadPersisted();
@@ -235,9 +266,7 @@ export async function refresh(first = false) {
     if (pruned) { decisions.value = dec; edited.value = ed; persist(); }
     recomputePressure();
     // Sources → Review handoff: pre-filter to the just-imported source.
-    const focus = sessionStorage.getItem("mc-ltm-focus-source");
     if (focus) {
-      sessionStorage.removeItem("mc-ltm-focus-source");
       const title = sourceTitles.get(focus) ?? focus;
       const next = new Map(activeFacets.value);
       next.set("source", new Set([title]));
@@ -278,7 +307,16 @@ function preflightBody(list: Row[]) {
 
 export function schedulePreflight() {
   clearTimeout(preflightTimer);
-  preflightTimer = setTimeout(runPreflight, 500);
+  preflightTimer = setTimeout(() => void runPreflight(), 500);
+}
+
+/** Cancel the debounce and run a preflight right now (Apply must never use a
+ *  stale snapshot: a keep→drop flip inside the debounce would send a
+ *  just-skipped id to accept). */
+async function preflightNow() {
+  clearTimeout(preflightTimer);
+  preflightTimer = undefined;
+  await runPreflight();
 }
 
 async function runPreflight() {
@@ -336,7 +374,10 @@ function classify(msg: string) {
 
 export async function applyDecided() {
   if (applying.value) return;
+  applying.value = true;
+  await preflightNow();
   const pf = preflight.value;
+  if (pf?.error) { applying.value = false; return; }
   const dropsByDraft = new Map<string, Row[]>();
   for (const row of rows.value) {
     if (decisions.value.get(row.key) !== "drop") continue;
@@ -345,9 +386,8 @@ export async function applyDecided() {
     list.push(row);
   }
   const keeps = keepsByDraft();
-  if (!dropsByDraft.size && !keeps.size) return;
+  if (!dropsByDraft.size && !keeps.size) { applying.value = false; return; }
 
-  applying.value = true;
   let applied = 0, dropped = 0;
   const failures = new Map<string, { title: string; fix: string; msg: string; n: number }>();
   const fail = (msg: string) => {
@@ -382,14 +422,20 @@ export async function applyDecided() {
     const keepRows = keeps.get(draftId) ?? [];
     if (!keepRows.length) continue;
     const draftPf = pf?.perDraft.find((x) => x.draftId === draftId)?.pf;
-    const ids = draftPf?.readyMutationIds ?? keepRows.map((r) => r.mutation.id);
+    // Preflight may auto-include a dependency the user explicitly dropped;
+    // those ids were just deleted by the skip above — never send them.
+    const dropIds = new Set(drops.map((r) => r.mutation.id));
+    const ids = (draftPf?.readyMutationIds ?? keepRows.map((r) => r.mutation.id))
+      .filter((id) => !dropIds.has(id));
     if (!ids.length) continue;
     try {
       const body: { mutationIds: string[]; editedMutations?: Mutation[] } = { mutationIds: ids };
       const editedMuts = keepRows.map((r) => edited.value.get(r.key)).filter(Boolean) as Mutation[];
       if (editedMuts.length) body.editedMutations = editedMuts;
       const res = await acceptDraft(draftId, body);
-      for (const id of res.appliedMutationIds ?? ids) {
+      const serverSkipped = new Set(res.skippedMutationIds ?? []);
+      const appliedIds = res.appliedMutationIds ?? ids.filter((id) => !serverSkipped.has(id));
+      for (const id of appliedIds) {
         const key = `${draftId}:${id}`;
         appliedThisSession.set(key, "applied");
         dec.delete(key);
@@ -408,6 +454,8 @@ export async function applyDecided() {
   edited.value = ed;
   applying.value = false;
   preflight.value = null;
+  undoStack.length = 0; // snapshots reference applied keys; undoing them would lie
+  canUndo.value = false;
   lastFailures.value = [...failures.values()];
   persist();
   const failed = lastFailures.value.reduce((n, f) => n + f.n, 0);

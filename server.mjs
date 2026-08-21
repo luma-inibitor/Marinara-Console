@@ -117,7 +117,13 @@ async function handleState(req, res, name) {
     const chunks = [];
     for await (const c of req) chunks.push(c);
     const body = Buffer.concat(chunks);
-    JSON.parse(body.toString()); // reject malformed state before touching disk
+    try {
+      JSON.parse(body.toString()); // reject malformed state before touching disk
+    } catch {
+      res.writeHead(400, { "content-type": "application/json" });
+      res.end('{"error":"malformed state"}');
+      return;
+    }
     await mkdir(STATE_DIR, { recursive: true });
     await writeFile(`${stateFile(name)}.tmp`, body);
     await rename(`${stateFile(name)}.tmp`, stateFile(name));
