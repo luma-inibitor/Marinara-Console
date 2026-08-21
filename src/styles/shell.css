@@ -125,3 +125,10 @@
 @media (max-width: 720px) {
   .palette { margin-top: max(var(--s3), env(safe-area-inset-top)); }
 }
+
+/* ══ cheat sheet (?) ══ */
+.cheat-head { padding: var(--s3) var(--s4); border-bottom: var(--hairline); color: var(--text); }
+.cheat-body { padding: var(--s2) 0 var(--s3); }
+.cheat-row { display: flex; gap: var(--s4); align-items: baseline; padding: var(--s2) var(--s4); }
+.cheat-keys { flex: 0 0 140px; color: var(--accent); font-size: var(--fs-data-s); }
+.cheat-what { color: var(--text-dim); font-size: var(--fs-prose); }

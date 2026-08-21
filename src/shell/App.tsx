@@ -1,10 +1,11 @@
 import type { ComponentType } from "preact";
-import { useEffect } from "preact/hooks";
 import { route, navigate } from "./router";
 import { LorebooksTool } from "../tools/lorebooks/LorebooksTool";
 import { PlaceholderTool } from "../tools/PlaceholderTool";
+import { PresetsTool } from "../tools/presets/PresetsTool";
 import { Toaster } from "./toast";
-import { Palette, paletteOpen } from "./palette";
+import { Palette } from "./palette";
+import { useHotkeys, CheatSheet } from "./hotkeys";
 
 interface ToolDef {
   id: string;
@@ -15,21 +16,12 @@ interface ToolDef {
 
 const TOOLS: ToolDef[] = [
   { id: "lorebooks", label: "Lorebooks", glyph: "◫", component: LorebooksTool },
-  { id: "presets", label: "Presets", glyph: "⌘", component: PlaceholderTool },
+  { id: "presets", label: "Presets", glyph: "⌘", component: PresetsTool },
   { id: "memory", label: "Memory", glyph: "◉", component: PlaceholderTool },
 ];
 
 export function App() {
-  useEffect(() => {
-    const onKey = (ev: KeyboardEvent) => {
-      if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "k") {
-        ev.preventDefault();
-        paletteOpen.value = !paletteOpen.value;
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  useHotkeys();
 
   const { tool, rest } = route.value;
   const active = TOOLS.find((t) => t.id === tool) ?? TOOLS[0];
@@ -55,6 +47,7 @@ export function App() {
         <Screen rest={rest} />
       </main>
       <Palette />
+      <CheatSheet />
       <Toaster />
     </div>
   );
