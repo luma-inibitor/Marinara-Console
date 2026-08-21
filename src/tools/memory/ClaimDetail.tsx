@@ -1,19 +1,38 @@
-// One claim, fully: decision, editable text (edited mutations flow through
-// preflight and accept as editedMutations), evidence, diffs, conflicts, and
-// the derived-signal context (the stored line it restates, the incoming
-// duplicate it collides with).
+// One claim, structured as three zones so mutation properties never blur into
+// memory properties (owner feedback, 2026-08-21):
+//   1. What this proposal does — per touched section: the memory's ALREADY
+//      STORED text (pre-existing, dim) above the PROPOSED text (editable).
+//   2. Derived context — the stored line it restates, the incoming duplicate.
+//   3. About this proposal — the mutation's own metadata (disposition, risk,
+//      claim, change kind, source, evidence).
+// Edited text flows through preflight and accept as editedMutations.
 
 import { useState } from "preact/hooks";
 import { toast } from "../../shell/toast";
 import { type Row, type Mutation } from "./data";
 import { t, OURS } from "./strings";
-import { decisions, edited, rows, setDecision, setEdited } from "./store";
+import { decisions, edited, rows, notesById, setDecision, setEdited } from "./store";
 import { NoteRef } from "./NotePeek";
+
+/** Human sentence for kind × disposition — the verb line. */
+function verbLine(r: Row, m: Mutation): string {
+  const type = r.targetType.replaceAll("_", " ");
+  switch (m.kind) {
+    case "create_note": return `Creates a new ${type} memory`;
+    case "append_section": return `Adds to the existing ${type} memory`;
+    case "update_section": return `Replaces text on the existing ${type} memory`;
+    case "add_link": return `Adds a link on the existing ${type} memory`;
+    case "set_keywords": return `Replaces the keywords on the existing ${type} memory`;
+    case "set_status": return `Changes the status of the existing ${type} memory`;
+    case "set_subjects": return `Rebinds the subjects of the existing ${type} memory`;
+  }
+}
 
 export function ClaimDetail({ row }: { row: Row }) {
   const r = row;
   const m = (edited.value.get(r.key) ?? r.mutation) as Mutation;
   const d = decisions.value.get(r.key);
+  const target = notesById.value.get(r.targetId);
   const partner = r.duplicateOf ? rows.value.find((x) => x.key === r.duplicateOf!.key) : null;
   const [drafts, setDrafts] = useState<Record<string, string>>({});
 
@@ -41,10 +60,13 @@ export function ClaimDetail({ row }: { row: Row }) {
     }
     setEdited(r.key, changed ? next : null);
     setDrafts({});
-    toast(changed ? t("memoryvault.saved") : "No changes");
+    toast(changed ? "Edit staged — applies with the batch" : "No changes");
   };
 
   const dirty = editableSections.some((s) => (drafts[s.id] ?? s.text) !== s.text);
+
+  // Non-section deltas (links, keywords, status, subjects) are proposed too.
+  const otherChanges = r.changes.filter((c) => c.kind !== "section");
 
   return (
     <div class="claim-detail">
@@ -53,61 +75,59 @@ export function ClaimDetail({ row }: { row: Row }) {
         <button class="dbtn is-drop-btn" aria-pressed={d === "drop"} onClick={() => setDecision(r, d === "drop" ? null : "drop")}>✗ {OURS.drop}</button>
       </div>
 
-      <div class="kvs t-data">
-        <div><span class="k">disposition</span><span class={`disp disp-${r.disposition}`}>{OURS.disposition[r.disposition]}</span></div>
-        <div><span class="k">risk</span>{m.risk}</div>
-        <div><span class="k">change</span>{m.kind}</div>
-        <div><span class="k">claim</span>{m.claimKind}</div>
-        <div><span class="k">{t("reviewqueue.sources")}</span><NoteRef id={r.sourceNoteId} label={r.sourceTitle} /></div>
-        <div><span class="k">target</span><span class={`chip t-data type-${r.targetType}`}>{r.targetType.replaceAll("_", " ")}</span> <NoteRef id={r.targetId} label={r.targetTitle} /></div>
+      {/* ── zone 1: what this proposal does to which memory ── */}
+      <div class="target-line">
+        <span class={`chip t-data type-${r.targetType}`}>{r.targetType.replaceAll("_", " ")}</span>
+        {target
+          ? <NoteRef id={r.targetId} label={r.targetTitle} />
+          : <span class="t-prose">{r.targetTitle}</span>}
+        <span class={`exist-tag t-data ${target ? "" : "is-new-tag"}`}>{target ? "in the vault" : "will be created"}</span>
       </div>
+      <p class="verb-line t-prose">{verbLine(r, m)}<span class="t-data dim"> · {m.summary}</span></p>
 
-      <section class="dsec">
-        <h4 class="t-label t-label-s">summary</h4>
-        <p class="t-prose">{m.summary}</p>
-      </section>
-
-      {editableSections.map((s) => (
-        <section key={s.id} class="dsec">
-          <h4 class="t-label t-label-s">{s.label} <span class="t-data dim">{(drafts[s.id] ?? s.text).length.toLocaleString()} ch</span></h4>
-          <textarea
-            class="t-prose edit-area"
-            rows={Math.min(10, Math.max(3, Math.ceil(s.text.length / 60)))}
-            value={drafts[s.id] ?? s.text}
-            onInput={(e) => setDrafts((prev) => ({ ...prev, [s.id]: e.currentTarget.value }))}
-          />
-        </section>
-      ))}
+      {editableSections.map((s) => {
+        const stored = target?.sections?.[s.label]?.text;
+        const value = drafts[s.id] ?? s.text;
+        return (
+          <section key={s.id} class="dsec">
+            <h4 class="t-label t-label-s dsec-head"><span class="dsec-title">{s.label}</span></h4>
+            {stored && (
+              <div class="stored-zone">
+                <span class="zone-tag t-label t-label-s">already stored · {stored.length.toLocaleString()} ch</span>
+                <div class="t-prose dim zone-text">{stored}</div>
+              </div>
+            )}
+            <div class="proposed-zone">
+              <span class="zone-tag t-label t-label-s is-proposed">
+                {m.kind === "update_section" ? "proposed replacement" : stored ? "proposed addition" : "proposed"} · {value.length.toLocaleString()} ch
+              </span>
+              <textarea
+                class="t-prose edit-area"
+                rows={Math.min(10, Math.max(3, Math.ceil(s.text.length / 60)))}
+                value={value}
+                onInput={(e) => setDrafts((prev) => ({ ...prev, [s.id]: e.currentTarget.value }))}
+              />
+            </div>
+          </section>
+        );
+      })}
       {editableSections.length > 0 && (
         <div class="group-actions">
           <button class="dock-primary t-label" disabled={!dirty} onClick={save}>{t("memoryvault.save")}</button>
           {edited.value.has(r.key) && (
-            <button class="chip" onClick={() => { setEdited(r.key, null); setDrafts({}); }}>{t("memorysettings.discardChanges")}</button>
+            <button class="action-sec t-label" onClick={() => { setEdited(r.key, null); setDrafts({}); }}>{t("memorysettings.discardChanges")}</button>
           )}
         </div>
       )}
 
-      {r.restates && (
+      {otherChanges.length > 0 && (
         <section class="dsec">
-          <h4 class="t-label t-label-s">restates the vault · <span class="t-data">{r.restates.score.toFixed(2)}</span></h4>
-          <div class="diffline"><NoteRef id={r.restates.noteId} /><p class="t-prose dim">{r.restates.line}</p></div>
-        </section>
-      )}
-      {partner && (
-        <section class="dsec">
-          <h4 class="t-label t-label-s">duplicate incoming · <span class="t-data">{r.duplicateOf!.score.toFixed(2)}</span></h4>
-          <div class="diffline"><span class="t-data dim">→ {partner.targetTitle}</span><p class="t-prose dim">{partner.text}</p></div>
-        </section>
-      )}
-
-      {r.changes.length > 0 && (
-        <section class="dsec">
-          <h4 class="t-label t-label-s">changes</h4>
-          {r.changes.map((c, i) => (
-            <div key={i} class="diffline">
-              <span class="t-data dim">{c.kind} · {c.key}</span>
-              {c.before && <p class="t-prose diff-before">{c.before}</p>}
-              <p class="t-prose diff-after">{c.after}</p>
+          <h4 class="t-label t-label-s">also proposed</h4>
+          {otherChanges.map((c, i) => (
+            <div key={i} class="proposed-zone">
+              <span class="zone-tag t-label t-label-s is-proposed">{c.kind}</span>
+              {c.before && <p class="t-prose diff-before zone-text">{c.before}</p>}
+              <p class="t-prose diff-after zone-text">{c.after}</p>
             </div>
           ))}
         </section>
@@ -115,23 +135,54 @@ export function ClaimDetail({ row }: { row: Row }) {
 
       {r.conflicts.length > 0 && (
         <section class="dsec">
-          <h4 class="t-label t-label-s">conflicts</h4>
+          <h4 class="t-label t-label-s">conflicts with the stored memory</h4>
           {r.conflicts.map((c, i) => (
-            <div key={i} class="diffline">
-              <span class="t-data dim">{c.field ?? ""}</span>
-              <p class="t-prose diff-before">{String(c.existing ?? "")}</p>
-              <p class="t-prose diff-after">{String(c.proposed ?? "")}</p>
+            <div key={i} class="stored-zone">
+              <span class="zone-tag t-label t-label-s">{c.field ?? "field"} · stored vs proposed</span>
+              <p class="t-prose diff-before zone-text">{String(c.existing ?? "")}</p>
+              <p class="t-prose diff-after zone-text">{String(c.proposed ?? "")}</p>
             </div>
           ))}
         </section>
       )}
 
-      <section class="dsec">
-        <h4 class="t-label t-label-s">evidence</h4>
-        {m.evidence.map((e, i) => {
-          const src = /^source_note:(.+)$/.exec(e);
-          return <div key={i} class="t-data dim">{src ? <NoteRef id={src[1]} label={e} /> : e}</div>;
-        })}
+      {/* ── zone 2: derived context ── */}
+      {r.restates && (
+        <section class="dsec">
+          <h4 class="t-label t-label-s">restates the vault · <span class="t-data">{r.restates.score.toFixed(2)}</span></h4>
+          <div class="stored-zone">
+            <span class="zone-tag t-label t-label-s"><NoteRef id={r.restates.noteId} label={notesById.value.get(r.restates.noteId)?.title ?? r.restates.noteId} /></span>
+            <p class="t-prose dim zone-text">{r.restates.line}</p>
+          </div>
+        </section>
+      )}
+      {partner && (
+        <section class="dsec">
+          <h4 class="t-label t-label-s">duplicate incoming · <span class="t-data">{r.duplicateOf!.score.toFixed(2)}</span></h4>
+          <div class="stored-zone">
+            <span class="zone-tag t-label t-label-s">→ {partner.targetTitle}</span>
+            <p class="t-prose dim zone-text">{partner.text}</p>
+          </div>
+        </section>
+      )}
+
+      {/* ── zone 3: the proposal's own metadata ── */}
+      <section class="dsec about-card">
+        <h4 class="t-label t-label-s">about this proposal</h4>
+        <div class="kvs t-data">
+          <div><span class="k">disposition</span><span class={`disp disp-${r.disposition}`}>{OURS.disposition[r.disposition]}</span></div>
+          <div><span class="k">risk</span>{m.risk}</div>
+          <div><span class="k">confidence</span>{Math.round(m.confidence * 100)}%</div>
+          <div><span class="k">claim</span>{m.claimKind}</div>
+          <div><span class="k">change</span>{m.kind}</div>
+          <div><span class="k">{t("reviewqueue.sources")}</span><NoteRef id={r.sourceNoteId} label={r.sourceTitle} /></div>
+          <div><span class="k">evidence</span><span>
+            {m.evidence.map((e, i) => {
+              const src = /^source_note:(.+)$/.exec(e);
+              return <span key={i} class="linkline">{src ? <NoteRef id={src[1]} label={e} /> : <span class="dim">{e}</span>}</span>;
+            })}
+          </span></div>
+        </div>
       </section>
     </div>
   );

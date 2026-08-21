@@ -178,6 +178,22 @@
 
 /* ══ detail ══ */
 .claim-detail { padding: var(--panel-pad); }
+.target-line { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; margin-bottom: 4px; }
+.exist-tag { font-size: 10px; color: var(--text-dim); border: var(--hairline);
+  border-radius: 4px; padding: 1px 6px; }
+.exist-tag.is-new-tag { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.verb-line { margin: 0 0 var(--s3); font-size: 13.5px; }
+/* stored vs proposed zones: pre-existing memory text is a dim, edge-marked
+   block; the proposal is accent-marked. The tags name the distinction. */
+.stored-zone { border-left: 2px solid var(--edge-strong); padding: var(--s1) 0 var(--s1) var(--s2);
+  margin: var(--s2) 0; }
+.proposed-zone { border-left: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  padding: var(--s1) 0 var(--s1) var(--s2); margin: var(--s2) 0; }
+.zone-tag { display: block; margin-bottom: 3px; color: var(--text-dim); }
+.zone-tag.is-proposed { color: var(--accent); }
+.zone-text { margin: 0; white-space: pre-line; font-size: 13px; }
+.about-card { background: var(--surface-1); border: var(--hairline); border-radius: var(--r-m);
+  padding: var(--s2) var(--s3) var(--s3); margin-top: var(--s4); }
 .decide { display: flex; gap: var(--s2); margin-bottom: var(--s3); }
 .dbtn { flex: 1; min-height: var(--tap); border: var(--hairline); border-radius: var(--r-m);
   background: var(--surface-1); color: var(--text-dim);
