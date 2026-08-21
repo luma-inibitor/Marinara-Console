@@ -98,8 +98,13 @@
 .snippet { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
   overflow: hidden; font-size: 12.5px; margin-top: 2px; }
 
-/* group heads pin below the sticky console, and carry the bulk actions */
-.mem-rows .grouphead { top: var(--console-h, 0px); }
+/* Group heads pin below the sticky console. The box-shadow strips paint
+   opaque canvas above each sticky layer: Android's sticky repaint lags a few
+   px during fast scroll, and these make the brief gap show background instead
+   of row text. Same reason for the 1px overlap. */
+.memory-tool .console { box-shadow: 0 -10px 0 0 var(--canvas); }
+.mem-rows .grouphead { top: calc(var(--console-h, 0px) - 1px);
+  box-shadow: 0 -10px 0 0 var(--canvas); }
 .ghead-acts { display: inline-flex; gap: var(--s2); margin-left: auto; }
 .ghead-acts .chip { min-height: 28px; padding: 0 8px; font-size: 9px; }
 .ghead-acts .gk { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
