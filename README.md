@@ -23,8 +23,7 @@ Dev loop: `node server.mjs` in one shell (API proxy), `npm run dev` in another
 
 | path | what |
 | --- | --- |
-| `server.mjs` | zero-dep proxy: strips `embedding` vectors from entry payloads (~85% of bytes), serves `dist/` at `/`, legacy app at `/legacy/` |
+| `server.mjs` | zero-dep proxy: strips `embedding` vectors from entry payloads (~85% of bytes), serves `dist/` |
 | `src/` | the console — Vite + Preact + TS, hash routing, tokens-based CSS |
 | `design/` | DESIGN.md, tokens rationale, vendored UI research |
-| `public/` | the original no-build lorebook app ([docs](public/README.md)), alive at `/legacy/` until the console reaches parity |
 | `verify.mjs` | definition-of-done checks (screenshots, contrast, tap targets, console errors) |
