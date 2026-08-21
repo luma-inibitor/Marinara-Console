@@ -182,6 +182,16 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
   const [status, setStatus] = useState(n.status);
   const [busy, setBusy] = useState(false);
 
+  // One tap changes status immediately (optimistic; low-risk + recoverable).
+  const changeStatus = (next: Note["status"]) => {
+    if (next === status) return;
+    const previous = status;
+    setStatus(next);
+    patchNote(n.id, { status: next })
+      .then(() => props.onChanged())
+      .catch((e: Error) => { setStatus(previous); toast(e.message, { kind: "error" }); });
+  };
+
   const save = async () => {
     const patch: Record<string, unknown> = {};
     const sections: Record<string, unknown> = {};
@@ -190,7 +200,6 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
       if (v !== undefined && v !== s.text) sections[key] = { ...s, text: v };
     }
     if (Object.keys(sections).length) patch.sections = { ...n.sections, ...sections };
-    if (status !== n.status) patch.status = status;
     if (!Object.keys(patch).length) { toast("No changes"); return; }
     setBusy(true);
     try {
@@ -247,9 +256,11 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
         <div><span class="k">id</span>{n.id}</div>
         <div><span class="k">type</span><span class={`chip t-data type-${n.type}`}>{n.type.replaceAll("_", " ")}</span></div>
         <div><span class="k">status</span>
-          <select class="t-data status-sel" value={status} onChange={(e) => setStatus(e.currentTarget.value as Note["status"])}>
-            {["active", "resolved", "archived"].map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <span class="segset" role="group" aria-label="Status">
+            {(["active", "resolved", "archived"] as const).map((st) => (
+              <button key={st} class={`seg st-${st} t-data`} aria-pressed={status === st} onClick={() => changeStatus(st)}>{st}</button>
+            ))}
+          </span>
         </div>
         <div><span class="k">modes</span>{(n.modes ?? []).join(", ")}</div>
         <div><span class="k">keywords</span>{(n.keywords ?? []).join(", ") || "—"} <span class="dim">{(n.keywords ?? []).length}/{KEYWORD_CAP}</span></div>
@@ -265,9 +276,10 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
         const pct = Math.min(100, Math.round((value.length / SECTION_CAP) * 100));
         return (
           <section key={key} class="dsec">
-            <h4 class="t-label t-label-s">{key}
-              <span class="t-data dim"> {value.length.toLocaleString()} / {SECTION_CAP.toLocaleString()}</span>
-              <button class="chip dedupe-chip" onClick={() => dedupe(key)}>Dedupe lines</button>
+            <h4 class="t-label t-label-s dsec-head">
+              <span class="dsec-title">{key}</span>
+              <span class="seccount t-data">{value.length.toLocaleString()}<i> / {SECTION_CAP.toLocaleString()}</i></span>
+              <button class="chip" onClick={() => dedupe(key)}>Dedupe lines</button>
             </h4>
             <span class="pbar"><i class={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={`width:${pct}%`} /></span>
             <textarea
@@ -282,10 +294,9 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
 
       <div class="group-actions">
         <button class="dock-primary t-label" disabled={busy} onClick={() => void save()}>{t("memoryvault.save")}</button>
-        <button class="chip" onClick={() => void archive()}>Archive</button>
-        <button class="chip is-danger-chip" onClick={() => void remove()}>{t("sourcesworkspace.deletePermanently")}</button>
+        <button class="action-sec t-label" onClick={() => void archive()}>Archive</button>
+        <button class="action-sec is-danger-act t-label" onClick={() => void remove()}>{t("sourcesworkspace.deletePermanently")}</button>
       </div>
-      <p class="t-prose dim vault-note">Saving triggers a recall index rebuild. Additive sections are capped at {SECTION_CAP.toLocaleString()} characters; once one is full, every further claim aimed at it fails — pruning here is what unblocks the queue.</p>
     </div>
   );
 }

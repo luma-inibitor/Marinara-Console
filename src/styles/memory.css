@@ -202,8 +202,29 @@
 .pbar i { display: block; height: 100%; background: var(--accent); }
 .pbar .is-near, .pbar i.is-near { background: var(--flag); }
 .pbar .is-over, .pbar i.is-over { background: var(--danger); }
-.dedupe-chip { margin-left: auto; }
-.status-sel, .scope-sel { background: var(--surface-1); border: var(--hairline);
+/* status segmented control — one tap per state, current highlighted */
+.segset { display: inline-flex; border: var(--hairline); border-radius: var(--r-m); overflow: hidden; }
+.seg { min-height: 38px; padding: 0 var(--s3); color: var(--text-dim);
+  font-size: var(--fs-data-s); border-right: var(--hairline); }
+.seg:last-child { border-right: none; }
+.seg[aria-pressed="true"] { color: var(--text); background: var(--surface-3); font-weight: 700; }
+.seg.st-active[aria-pressed="true"] { color: var(--ok); background: var(--ok-wash); }
+.seg.st-resolved[aria-pressed="true"] { color: var(--warn); background: var(--warn-wash); }
+.seg.st-archived[aria-pressed="true"] { color: var(--text-dim); background: var(--surface-3); }
+
+/* section head: title carries the hierarchy, the count is a quiet gutter */
+.dsec-head { display: flex; align-items: center; gap: var(--s2); }
+.dsec-title { flex: 0 0 auto; }
+.seccount { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--text); letter-spacing: 0; }
+.seccount i { font-style: normal; font-weight: 400; color: var(--text-dim); font-size: 10px; }
+
+/* editor action row: equal heights, one primary */
+.action-sec { min-height: var(--tap); padding: 0 var(--s3); border: var(--hairline);
+  border-radius: var(--r-m); background: var(--surface-1); color: var(--text-dim);
+  font-weight: 700; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+.action-sec.is-danger-act { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
+
+.scope-sel { background: var(--surface-1); border: var(--hairline);
   border-radius: var(--r-s); color: var(--text); padding: 6px var(--s2); min-height: 34px; }
 .scope-sel { width: 100%; min-height: var(--tap); }
 .scope-label { align-self: center; flex: 0 0 auto; }
