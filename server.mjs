@@ -9,7 +9,7 @@
 // No dependencies, no build step — `node server.mjs` is the whole thing.
 
 import { createServer } from "node:http";
-import { readFile, stat } from "node:fs/promises";
+import { mkdir, readFile, readdir, rename, stat, unlink, writeFile } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -49,11 +49,103 @@ function stripVectors(node) {
   return node;
 }
 
+// ── automatic restore point (long-term-memory) ────────────────────
+// There is no undo in the LTM store, so before the first LTM write of each
+// server run the proxy pulls the package's own backup export and keeps it
+// locally: one per run, taken before the write proceeds, newest 10 retained,
+// atomic write. Preflight/search/previews are reads in POST clothing.
+const BACKUPS = join(HERE, ".backups");
+let ltmBackupDone = false;
+let ltmBackupInFlight = null;
+
+function isLtmWrite(method, pathname) {
+  if (method === "GET" || method === "HEAD") return false;
+  if (!pathname.startsWith("/api/long-term-memory/")) return false;
+  if (/\/(preflight|search|preview|rename-preview|transfer-preview)$/.test(pathname)) return false;
+  return true;
+}
+
+async function ensureLtmRestorePoint() {
+  if (ltmBackupDone) return;
+  ltmBackupInFlight ??= (async () => {
+    const upstream = await fetch(`${TARGET}/api/long-term-memory/backup/export`, {
+      headers: {
+        origin: TARGET,
+        ...(process.env.MARINARA_ADMIN_SECRET ? { "x-admin-secret": process.env.MARINARA_ADMIN_SECRET } : {}),
+      },
+    });
+    if (!upstream.ok) throw new Error(`backup/export -> ${upstream.status}`);
+    const bytes = Buffer.from(await upstream.arrayBuffer());
+    await mkdir(BACKUPS, { recursive: true });
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const ext = /zip/.test(upstream.headers.get("content-type") ?? "") ? "zip" : "json";
+    const dest = join(BACKUPS, `ltm-backup-${stamp}.${ext}`);
+    await writeFile(`${dest}.tmp`, bytes);
+    await rename(`${dest}.tmp`, dest);
+    ltmBackupDone = true;
+    console.log(`ltm restore point: ${dest} (${bytes.length.toLocaleString()} bytes)`);
+    const entries = (await readdir(BACKUPS)).filter((n) => n.startsWith("ltm-backup-")).sort();
+    while (entries.length > 10) await unlink(join(BACKUPS, entries.shift())).catch(() => {});
+  })().finally(() => { ltmBackupInFlight = null; });
+  await ltmBackupInFlight;
+}
+
+// ── console state (decision ledger etc.) ──────────────────────────
+// Small named JSON documents, keyed by engine target so a laptop pointed at
+// two engines keeps two ledgers. Atomic writes.
+const STATE_DIR = join(HERE, ".state");
+const stateFile = (name) => join(STATE_DIR, `${name}-${TARGET.replace(/[^a-z0-9]+/gi, "_")}.json`);
+
+async function handleState(req, res, name) {
+  if (!/^[a-z0-9-]{1,60}$/.test(name)) {
+    res.writeHead(400, { "content-type": "application/json" });
+    res.end('{"error":"bad state name"}');
+    return;
+  }
+  if (req.method === "GET") {
+    try {
+      const data = await readFile(stateFile(name));
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+      res.end(data);
+    } catch {
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+      res.end("{}");
+    }
+    return;
+  }
+  if (req.method === "PUT") {
+    const chunks = [];
+    for await (const c of req) chunks.push(c);
+    const body = Buffer.concat(chunks);
+    JSON.parse(body.toString()); // reject malformed state before touching disk
+    await mkdir(STATE_DIR, { recursive: true });
+    await writeFile(`${stateFile(name)}.tmp`, body);
+    await rename(`${stateFile(name)}.tmp`, stateFile(name));
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end('{"ok":true}');
+    return;
+  }
+  res.writeHead(405).end();
+}
+
 // ── API proxy ─────────────────────────────────────────────────────
 async function proxy(req, res, url) {
+  if (isLtmWrite(req.method, url.pathname)) {
+    try {
+      await ensureLtmRestorePoint();
+    } catch (err) {
+      // Fail open, loudly: blocking every write on a hiccuping export route
+      // would be worse, but the miss must be visible.
+      console.error(`LTM RESTORE POINT FAILED before ${req.method} ${url.pathname}: ${err.message}`);
+      res.setHeader("x-ltm-restore-point", "failed");
+    }
+  }
   const target = TARGET + url.pathname + url.search;
-  const headers = { accept: "application/json" };
+  // The engine's CSRF check requires a trusted Origin; privileged routes off
+  // loopback need the admin secret. The browser never needs to know either.
+  const headers = { accept: "application/json", origin: TARGET };
   if (req.headers["content-type"]) headers["content-type"] = req.headers["content-type"];
+  if (process.env.MARINARA_ADMIN_SECRET) headers["x-admin-secret"] = process.env.MARINARA_ADMIN_SECRET;
 
   let body;
   if (req.method !== "GET" && req.method !== "HEAD") {
@@ -150,6 +242,8 @@ createServer(async (req, res) => {
       res.end(cfg);
       return;
     }
+    const stateMatch = /^\/console\/state\/([a-z0-9-]+)$/.exec(url.pathname);
+    if (stateMatch) return await handleState(req, res, stateMatch[1]);
     if (url.pathname.startsWith("/api/")) return await proxy(req, res, url);
     await serveStatic(res, url.pathname);
   } catch (err) {

@@ -45,6 +45,12 @@ columns. Ligatures OFF wherever literal characters matter (keys, code, IDs).
 - `--accent` (blue) is for interactive chrome only — focus, selection, primary
   buttons, links. It must never collide with the status hues.
 - `--flag` (orange) marks computed outliers (over-budget, p90 exceedance) only.
+- **Categorical object-type hues** (Eli-confirmed): long-lived object taxonomies
+  (e.g. memory note types) get one hue each, used consistently on every chip/dot
+  that names the type, always paired with the type name in text. They are a third
+  axis — never reuse the status hues or `--accent`, and keep them dimmer than both
+  (they are identity, not state). Defined next to the tool that owns the taxonomy
+  (`memory.css` `.type-*`).
 - Surface ladder `--canvas → --surface-1..3` for depth; hairline `--edge` between
   regions. One subtle separator, never full grids of lines.
 - **Contrast floors are enforced by `verify.mjs`**: body/data text ≥4.5:1, large text
@@ -147,6 +153,15 @@ exists, use it; if it needs a new one, add it here in the same change.
 - **Fullscreen text editor** — near-fullscreen textarea, live char/token counts with
   delta, wrap toggle, markdown symbol row.
 - **Tag/distribution panel** — group stats with bars, per-group Show/Select.
+- **Decision rail** — tri-state per-row judgment (undecided / keep / drop) on the
+  status rail, cycled by tap or set by single keys with auto-advance. Judgment is
+  a *persisted local ledger* (server-side, keyed by engine target), separate from
+  transmission: nothing is sent until an explicit Apply over everything decided,
+  so a review resumes across days and devices. Undo stack over the ledger.
+- **Facet sheet** — multi-select facets grouped by provenance (computed signals /
+  from the model / yours), so a heuristic and a schema field never carry the same
+  visual authority. Counts exclude the facet's own filter ("what would I get if I
+  toggled this"). 3-5 quick chips stay inline; the sheet holds the long tail.
 
 ## 6. Layout recipes (with mobile collapse)
 

@@ -104,6 +104,9 @@ const SCREENS = [
   { name: "picker", path: "/#/lorebooks", waitFor: ".card" },
   { name: "audit", path: `/#/lorebooks/${bookId}`, waitFor: ".row" },
   { name: "presets", path: "/#/presets", waitFor: ".empty" },
+  { name: "memory-review", path: "/#/memory/review", waitFor: ".mem-rows" },
+  { name: "memory-vault", path: "/#/memory/vault", waitFor: ".mem-rows" },
+  { name: "memory-sources", path: "/#/memory/sources", waitFor: ".mem-rows" },
 ];
 
 let failures = 0, warnings = 0;

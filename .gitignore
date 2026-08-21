@@ -3,3 +3,5 @@ entries.json
 mockups/data.js
 node_modules/
 shots/
+.backups/
+.state/
