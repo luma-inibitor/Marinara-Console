@@ -305,12 +305,12 @@
    when color fails. The create card's green inset edge is the same
    new-target channel as the list's group headers. Editing is a mode: accent
    border on the zone, save/discard replace keep/drop in the decide bar. */
-.hl { display: flex; align-items: flex-start; gap: var(--s2); font-size: 14.5px;
-  line-height: 1.4; margin-bottom: var(--s3); }
-.hl-op { color: var(--text-dim); display: inline-flex; margin-top: 2px; }
-.hl-s { min-width: 0; }
+.hl { font-size: 14.5px; line-height: 1.5; margin-bottom: var(--s3); }
 .hl .skey { font-size: 13px; }
-.nref { display: inline-flex; align-items: center; gap: 4px; }
+.nref { display: inline-flex; align-items: center; gap: 4px; vertical-align: text-bottom; }
+.nref .ti svg { display: block; }
+.z-opi { display: inline-flex; color: var(--text-dim); }
+.z-opi svg { display: block; }
 .nref .notelink, .nref-plain { font-family: var(--font-label); font-weight: 600; font-size: 13px; }
 .zone { border: var(--hairline); border-radius: var(--r-m); padding: var(--s2) var(--s3);
   margin-bottom: var(--s3); }
@@ -474,10 +474,11 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); }
 .mem-row .term:hover::after, .mem-row .term.tip-open::after { left: auto; }
 
-/* enum values are vocabulary (mono, dim); section keys are addresses (§ + accent) —
-   the two must never look alike (owner feedback on A2). */
+/* enum values are vocabulary (mono, dim); section keys are addresses (§ + text
+   tone, brighter than enums) — never alike (owner feedback on A2), and never
+   accent: accent means interactive, and a §key is not a link (owner, 2026-08-22). */
 .enum { font-family: var(--font-data); font-size: 11.5px; color: var(--text-dim); }
-.skey { font-family: var(--font-data); font-size: 11.5px; color: var(--accent); }
+.skey { font-family: var(--font-data); font-size: 11.5px; color: var(--text); }
 
 .sig { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; font-size: 13px; }
 .sig svg { flex: 0 0 auto; margin-top: 2px; }

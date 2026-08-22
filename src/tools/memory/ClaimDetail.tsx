@@ -15,12 +15,12 @@
 
 import { type ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
-import { IconChevronRight, IconFlag, IconPencil, IconWriting, IconArrowRight } from "@tabler/icons-preact";
+import { IconChevronRight, IconEye, IconFlag, IconPencil, IconWriting, IconArrowRight } from "@tabler/icons-preact";
 import { toast } from "../../shell/toast";
 import { type Mutation, type Row, KEYWORD_CAP, SECTION_CAP } from "./data";
 import { t, OURS } from "./strings";
 import { decisions, edited, rows, notesById, pressure, setDecision, setEdited } from "./store";
-import { NoteRef } from "./NotePeek";
+import { NoteRef, peekNote } from "./NotePeek";
 import { OpIcon, TypeIcon, DecisionIcon } from "./icons";
 import { Term, GLOSSARY, OP_TIP, TYPE_TIP } from "./glossary";
 import { flagsOf } from "./flags";
@@ -124,6 +124,11 @@ export function ClaimDetail({ row }: { row: Row }) {
   };
   const discard = () => { setDrafts({}); setEditing(false); };
 
+  const openBtn = target && (m.kind === "append_section" || m.kind === "update_section") && !editing && (
+    <button class="zbtn hit" onClick={() => void peekNote(r.targetId)}>
+      <IconEye size={12} stroke={1.75} aria-hidden /> {t("reviewqueue.openMemory").toLowerCase()}
+    </button>
+  );
   const editBtn = editableSections.length > 0 && !editing && (
     <button class="zbtn hit" onClick={() => setEditing(true)}>
       <IconPencil size={12} stroke={1.75} aria-hidden /> {t("longtermmemorydetail.reviewEdit").toLowerCase()}
@@ -145,7 +150,7 @@ export function ClaimDetail({ row }: { row: Row }) {
     <div class="claim-detail">
       <Headline r={r} m={m} target={Boolean(target)} />
       <Preview r={r} m={m} editing={editing} drafts={drafts} setDrafts={setDrafts}
-        editableSections={editableSections} controls={<>{editBtn}{stagedMark}</>} />
+        editableSections={editableSections} controls={<>{openBtn}{editBtn}{stagedMark}</>} />
       <Evidence r={r} m={m} />
       <div class="decbar">
         {editing ? (
@@ -174,7 +179,6 @@ export function ClaimDetail({ row }: { row: Row }) {
 // ── zone 1: headline ────────────────────────────────────────────────
 
 function Headline({ r, m, target }: { r: Row; m: Mutation; target: boolean }) {
-  const opIcon = <Term tip={OP_TIP[m.kind]}><span class="hl-op"><OpIcon kind={m.kind} size={16} /></span></Term>;
   const ref = <Ref id={target ? r.targetId : undefined} title={r.targetTitle} type={r.targetType} />;
   const body = (() => {
     switch (m.kind) {
@@ -194,7 +198,7 @@ function Headline({ r, m, target }: { r: Row; m: Mutation; target: boolean }) {
         return <>changes the subjects of {ref}</>;
     }
   })();
-  return <div class="hl t-prose">{opIcon}<span class="hl-s">{body}</span></div>;
+  return <div class="hl t-prose">{body}</div>;
 }
 
 /** Resolve a link target against the vault, then against this batch. The
@@ -220,6 +224,9 @@ function Preview(props: {
 }) {
   const { r, m, editing } = props;
   const target = notesById.value.get(r.targetId);
+  // The op icon lives on the preview zone (not the headline — a sentence
+  // starting with an icon read wrong), keeping its education tooltip in the pane.
+  const opTag = <Term tip={OP_TIP[m.kind]}><span class="z-opi"><OpIcon kind={m.kind} size={13} /></span></Term>;
 
   const area = (id: string, text: string) => (
     <textarea class="edit-area t-prose" rows={Math.min(10, Math.max(3, Math.ceil(text.length / 60)))}
@@ -236,8 +243,8 @@ function Preview(props: {
     const tail = storedLines.slice(Math.max(0, storedLines.length - STORED_CONTEXT));
     const addCh = (m.text ?? "").length;
     return (
-      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span class="z-lab"><Skey k={key} /> · {editing ? "editing proposed content" : OURS.zonePreview}</span>{props.controls}</>}
-        foot={<><span class="dim">{stored.length.toLocaleString()} → {(stored.length + addCh).toLocaleString()} ch</span>{capNote(r.targetId, key)}</>}>
+      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span class="z-lab">{opTag}<Skey k={key} /> · {editing ? "editing proposed content" : OURS.zonePreview}</span>{props.controls}</>}
+        foot={<><span class="dim">+{addCh.toLocaleString()} · {(stored.length + addCh).toLocaleString()} ch</span>{capNote(r.targetId, key)}</>}>
         {head.length > 0 && (
           <Fold label={`${head.length} earlier line${head.length === 1 ? "" : "s"} · ${head.join(" ").length.toLocaleString()} ch`}>
             {head.map((l, i) => <Line key={i}>{l}</Line>)}
@@ -255,8 +262,8 @@ function Preview(props: {
     const before = change?.before ?? target?.sections?.[key]?.text ?? "";
     const after = change?.after ?? m.section?.text ?? m.text ?? "";
     return (
-      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span class="z-lab"><Skey k={key} /> · {editing ? "editing proposed content" : OURS.zoneDiff}</span>{props.controls}</>}
-        foot={<><span class="dim">{before.length.toLocaleString()} → {after.length.toLocaleString()} ch</span>{capNote(r.targetId, key)}</>}>
+      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span class="z-lab">{opTag}<Skey k={key} /> · {editing ? "editing proposed content" : OURS.zoneDiff}</span>{props.controls}</>}
+        foot={<><span class="dim">{after.length >= before.length ? "+" : "−"}{Math.abs(after.length - before.length).toLocaleString()} · {after.length.toLocaleString()} ch</span>{capNote(r.targetId, key)}</>}>
         {editing
           ? <>{splitLines(before).map((l, i) => <Line key={i} mode="del">{l}</Line>)}{area("__text", after)}</>
           : <DiffLines before={before} after={after} />}
@@ -270,8 +277,8 @@ function Preview(props: {
     const kws = m.note?.keywords ?? [];
     return (
       <Zone cls={`nc ${editing ? "is-editing" : ""}`}
-        eyebrow={<><span class="z-lab">{OURS.zoneNewMemory} · {editing ? "editing proposed content" : OURS.zonePreview}</span>{props.controls}</>}
-        foot={<span class="dim">{totalCh.toLocaleString()} ch · {OURS.zoneNewMemory}</span>}>
+        eyebrow={<><span class="z-lab">{opTag}{OURS.zoneNewMemory} · {editing ? "editing proposed content" : OURS.zonePreview}</span>{props.controls}</>}
+        foot={<span class="dim">+{totalCh.toLocaleString()} ch · {OURS.zoneNewMemory}</span>}>
         {secs.map(([key, s]) => {
           const lines = splitLines(s.text);
           const headLines = lines.slice(0, 3);
@@ -302,7 +309,7 @@ function Preview(props: {
   if (m.kind === "add_link") {
     const rel = (m.link?.relation ?? "").replaceAll("_", " ");
     return (
-      <Zone eyebrow={<span class="z-lab">{OURS.zonePreview}</span>}>
+      <Zone eyebrow={<span class="z-lab">{opTag}{OURS.zonePreview}</span>}>
         <div class="linkrow">
           <Ref id={notesById.value.has(r.targetId) ? r.targetId : undefined} title={r.targetTitle} type={r.targetType} />
           <span class="rel t-data">— {rel} →</span>
@@ -320,7 +327,7 @@ function Preview(props: {
     const added = next.filter((k) => !old.includes(k));
     const removed = old.filter((k) => !next.includes(k));
     return (
-      <Zone eyebrow={<span class="z-lab">keywords · {OURS.zonePreview}</span>}
+      <Zone eyebrow={<span class="z-lab">{opTag}keywords · {OURS.zonePreview}</span>}
         foot={<span class={next.length >= KEYWORD_CAP ? "fl" : "dim"}>{next.length} of {KEYWORD_CAP} keywords</span>}>
         <div class="kwrap">
           {kept.map((k) => <span key={k} class="kwc t-data">{k}</span>)}
@@ -336,7 +343,7 @@ function Preview(props: {
     const from = target?.status ?? "?";
     const to = String(m.status ?? "");
     return (
-      <Zone eyebrow={<span class="z-lab">{OURS.zonePreview}</span>}>
+      <Zone eyebrow={<span class="z-lab">{opTag}{OURS.zonePreview}</span>}>
         <div class="linkrow">
           <span class="stt t-data">{from}</span>
           <IconArrowRight class="dim-i" size={13} stroke={1.75} aria-hidden />
@@ -349,7 +356,7 @@ function Preview(props: {
 
   // set_subjects and anything the ops above did not claim: honest before/after.
   return (
-    <Zone eyebrow={<span class="z-lab">{OURS.zonePreview}</span>}>
+    <Zone eyebrow={<span class="z-lab">{opTag}{OURS.zonePreview}</span>}>
       {r.changes.map((c, i) => (
         <div key={i}>
           {c.before && <Line mode="del">{c.before}</Line>}
@@ -455,7 +462,7 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
       )}
 
       <div class="readline t-data">
-        {OURS.zoneExtraction} ·{" "}
+        {OURS.zoneExtraction}:{" "}
         <Term tip={GLOSSARY[m.claimKind] ?? m.claimKind}>{m.claimKind}</Term> ·{" "}
         <Term tip={GLOSSARY[r.disposition] ?? r.disposition}>{OURS.disposition[r.disposition]}</Term> ·{" "}
         <Term tip={GLOSSARY[`${m.risk} risk`] ?? m.risk}>{m.risk} risk</Term>
