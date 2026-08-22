@@ -59,6 +59,20 @@ owner decision after explanation.
   default view hides them, quick rail brings them back). (7) Title + state
   only, no snippet body. Specimens: public/mockups/sources-v1.html (test
   corpus, committable).
+  **Adversarially reviewed 2026-08-22** (6 dimension reviewers + 8 verifiers
+  against the guideline docs). 2 findings survived refutation, 6 were
+  refuted, 13 high-severity findings were triaged by hand. Applied: state
+  names and action verbs replaced with catalog strings (New / Already
+  imported / Update available / Context changed / Extraction incomplete /
+  Source missing; "Import and extract", "Re-extract", "Select all {n}",
+  "Retry original selection"); rail made a real partition (117 + 96 = 213)
+  with blocked drafts as a separately-labelled unit; the running-import
+  state added (progress + Stop with stated consequences, using
+  savingAndExtracting); state word rendered beside every glyph so state is
+  not colour-only; Context changed moved off the warn hue; the edit mode
+  drawn with an autosave-draft / explicit-spend save model, dirty marker and
+  resumable counter; curate path given a 390px projection with 44px targets;
+  3B/3C reordered to match the real sequence.
 
 - **DIAGNOSED (2026-08-22): the live 44x `source_stale` mystery is context
   drift, not stale text.** Compared every blocked draft's
@@ -68,7 +82,16 @@ owner decision after explanation.
   scope); 1 has a missing source note. Re-extracting all 45 would spend 45
   model calls regenerating byte-identical claims. Open engineering question:
   does the engine expose a cheap re-bless of an unchanged fingerprint
-  (needed for the "revalidate" action Luma asked for)?
+  (needed for the "revalidate" action Luma asked for)? **ANSWERED 2026-08-22:
+  no.** Tested against the local engine: the staleness check is enforced at
+  preflight (`ltm_draft_source_stale` blocks every mutation), there is no
+  PATCH/refresh/revalidate route for a draft, and the failure reproduces
+  exactly by widening one source note's `modes` (restoring them un-blocks it
+  instantly). The catalog's `Refresh` is a different action - it updates
+  imported source text and metadata without a model call, and does not clear
+  the block. **Engine request:** a route that re-blesses a draft whose
+  `sourceHash` is unchanged. Highest-value change to this flow; until then
+  re-extraction (1 model call per source) is the only unblock.
 
 - **BUG (live, 2026-08-22): import preview reports everything as `new`.**
   All 213 candidates come back `freshness: new` with `importedCount: 0`
