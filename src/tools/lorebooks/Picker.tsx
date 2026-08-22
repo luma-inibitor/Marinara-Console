@@ -1,6 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { navigate } from "../../shell/router";
 import { fetchBooks, fetchEntries, entryTokens, type Lorebook } from "./data";
+import { Loading, ErrorState, EmptyState } from "../../ui/states";
 
 // A book's stats are fetched per-book and can fail independently of the list.
 // A failed fetch must NOT render as zeros: "0 / 1,000 tokens" is indistinguishable
@@ -13,7 +14,7 @@ type BookStats =
 export function Picker() {
   const [books, setBooks] = useState<Lorebook[] | null>(null);
   const [stats, setStats] = useState<Record<string, BookStats>>({});
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
 
   const loadStats = (id: string) => {
     setStats((s) => { const n = { ...s }; delete n[id]; return n; });   // back to loading
@@ -33,19 +34,13 @@ export function Picker() {
   useEffect(() => {
     fetchBooks()
       .then((list) => { setBooks(list); for (const b of list) loadStats(b.id); })
-      .catch((e: Error) => setError(e.message));
+      .catch((e: unknown) => setError(e));
   }, []);
 
-  if (error) {
-    return (
-      <div class="screen"><div class="empty">
-        <p class="t-label">Cannot reach engine</p>
-        <p>{error}</p>
-        <button class="dbtn" onClick={() => { setError(null); setBooks(null); loadAll(setBooks, setError, loadStats); }}>Retry</button>
-      </div></div>
-    );
-  }
-  if (!books) return <div class="screen"><div class="empty">Loading lorebooks…</div></div>;
+  const retry = () => { setError(null); setBooks(null); loadAll(setBooks, setError, loadStats); };
+
+  if (error) return <div class="screen"><ErrorState error={error} onRetry={retry} /></div>;
+  if (!books) return <div class="screen"><Loading what="lorebooks" onRetry={retry} /></div>;
 
   return (
     <div class="screen">
@@ -53,6 +48,7 @@ export function Picker() {
         <h1 class="screen-title">Lorebooks</h1>
         <span class="meta"><span>{books.length} {books.length === 1 ? "book" : "books"}</span></span>
       </div>
+      {books.length === 0 && <EmptyState kind="first-run" what="lorebooks" />}
       {books.map((b) => {
         const s = stats[b.id];
         const ok = s?.state === "ok" ? s : null;
@@ -102,10 +98,10 @@ export function Picker() {
 
 function loadAll(
   setBooks: (b: Lorebook[] | null) => void,
-  setError: (e: string | null) => void,
+  setError: (e: unknown) => void,
   loadStats: (id: string) => void,
 ) {
   fetchBooks()
     .then((list) => { setBooks(list); for (const b of list) loadStats(b.id); })
-    .catch((e: Error) => setError(e.message));
+    .catch((e: unknown) => setError(e));
 }

@@ -14,6 +14,7 @@ import {
 import { EntryDrawer, type FullscreenCtx } from "./entries";
 import { useDraft } from "../../shell/draft";
 import { FullscreenText } from "../../ui/FullscreenText";
+import { Loading, ErrorState, NotFound, EmptyState } from "../../ui/states";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
 type Mode = "find" | "test";
@@ -37,7 +38,9 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
   const desktop = useIsDesktop();
   const [book, setBook] = useState<Lorebook | null>(null);
   const [entries, setEntries] = useState<Entry[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
+  const [missing, setMissing] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const [mode, setMode] = useState<Mode>("find");
   const [query, setQuery] = useState("");
@@ -67,9 +70,19 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
   }, [entries, initialEntryId]);
 
   useEffect(() => {
-    fetchBooks().then((bs) => setBook(bs.find((b) => b.id === bookId) ?? null)).catch((e: Error) => setError(e.message));
-    fetchEntries(bookId).then(setEntries).catch((e: Error) => setError(e.message));
-  }, [bookId]);
+    let alive = true;
+    setBook(null); setEntries(null); setError(null); setMissing(false);
+    (async () => {
+      try {
+        const [books, es] = await Promise.all([fetchBooks(), fetchEntries(bookId)]);
+        if (!alive) return;
+        const b = books.find((x) => x.id === bookId);
+        if (!b) { setMissing(true); return; }   // the entries endpoint 200s with [] for an unknown id
+        setBook(b); setEntries(es);
+      } catch (e) { if (alive) setError(e); }
+    })();
+    return () => { alive = false; };
+  }, [bookId, reloadKey]);
 
   // ── derived ──
   const p90 = useMemo(() => percentile((entries ?? []).map(entryTokens), 0.9), [entries]);
@@ -241,8 +254,11 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     }
   }, [visible, focusId, desktop, showTags]);
 
-  if (error) return <div class="screen"><div class="empty"><p class="t-label">Could not load</p><p class="t-data">{error}</p></div></div>;
-  if (!entries || !book) return <div class="screen"><div class="empty">Loading lorebook entries…</div></div>;
+  if (missing) return <div class="screen"><NotFound what="Lorebook" id={bookId} /></div>;
+  if (error) return <div class="screen"><ErrorState error={error} onRetry={() => setReloadKey((k) => k + 1)} /></div>;
+  if (!entries || !book) {
+    return <div class="screen"><Loading what="lorebook entries" onRetry={() => setReloadKey((k) => k + 1)} /></div>;
+  }
 
   const flaggedN = entries.filter(isFlagged).length;
   const focused = entries.find((e) => e.id === focusId) ?? null;
@@ -353,7 +369,19 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
 
         <main class="rows">
           {visible.length === 0 && (
-            <p class="empty">{mode === "test" ? "No entries would activate on this text." : "No entries match your search"}</p>
+            mode === "test"
+              ? <div class="empty">
+                  <p class="t-label">Nothing would activate</p>
+                  <p>No entry’s keys match this text, so none would be injected.</p>
+                </div>
+              : entries.length === 0
+                ? <EmptyState kind="first-run" what="entries" action={{ label: "＋ Add entry", run: addEntry }} />
+                : <EmptyState kind="filtered" what="entries"
+                    filters={[
+                      ...(query.trim() ? [{ label: `search: ${query.trim()}`, clear: () => setQuery("") }] : []),
+                      ...(flaggedOnly ? [{ label: "flagged only", clear: () => setFlaggedOnly(false) }] : []),
+                    ]}
+                    onClearAll={() => { setQuery(""); setFlaggedOnly(false); }} />
           )}
           {grouped
             ? grouped.map(([tag, items]) => (
@@ -386,7 +414,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
               onDelete={() => removeWithUndo(focused)}
               onExpand={(field) => setFull({ id: focused.id, field })} />
           ) : (
-            <div class="empty">Select an entry — <span class="t-data">j/k</span> to move, <span class="t-data">Enter</span> to edit.</div>
+            <div class="empty"><p>Select an entry to edit it.</p><p class="t-data is-dim">j / k moves between entries.</p></div>
           )}
         </aside>
       )}

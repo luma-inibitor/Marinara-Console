@@ -5,6 +5,8 @@ import { PlaceholderTool } from "../tools/PlaceholderTool";
 import { PresetsTool } from "../tools/presets/PresetsTool";
 import { Toaster } from "./toast";
 import { Palette } from "./palette";
+import { ConnectionBanner, noteResult, startReconnect, reach } from "./connection";
+import { setResultHook } from "./api";
 import { useHotkeys, CheatSheet } from "./hotkeys";
 
 interface ToolDef {
@@ -19,6 +21,11 @@ const TOOLS: ToolDef[] = [
   { id: "presets", label: "Presets", glyph: "⌘", component: PresetsTool },
   { id: "memory", label: "Memory", glyph: "◉", component: PlaceholderTool },
 ];
+
+setResultHook((err) => {
+  noteResult(err);
+  if (reach.value !== "ok") startReconnect();
+});
 
 export function App() {
   useHotkeys();
@@ -46,6 +53,7 @@ export function App() {
       <main class="stage">
         <Screen rest={rest} />
       </main>
+      <ConnectionBanner />
       <Palette />
       <CheatSheet />
       <Toaster />
