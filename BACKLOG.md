@@ -73,6 +73,15 @@ owner decision after explanation.
   drawn with an autosave-draft / explicit-spend save model, dirty marker and
   resumable counter; curate path given a 390px projection with 44px targets;
   3B/3C reordered to match the real sequence.
+  **Owner round 2 (2026-08-22):** curate path rebuilt as an in-place row
+  expander instead of a separate paged screen - measured on the live
+  instance, a chat summary is ~1,772 ch (median), roughly 440 tokens, 779 at
+  the worst, so it inlines comfortably; the phone therefore needs no pushed
+  screen, back entry or scroll restoration. Price moved onto the buttons as
+  a sparkle+count (Import and extract always extracts, so model calls always
+  equal the selection - a separate cost chip only repeated the button).
+  Result card rebuilt on the list's row grammar. Edited mark moved onto the
+  row so the list says which summaries you have touched.
 
 - **DIAGNOSED (2026-08-22): the live 44x `source_stale` mystery is context
   drift, not stale text.** Compared every blocked draft's
