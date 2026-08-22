@@ -51,11 +51,20 @@ owner decision after explanation.
 
 ### Tabled by Luma (2026-08-21 evening brainstorm)
 
-- **[Luma] Op icon mapping (2026-08-21, still settling).** `script-plus`
-  create · `code-variable-plus` append · update comparing `circle-plus-minus`
-  vs `file-pencil` · `link-plus` link · `tags` keywords · `activity` status ·
-  `users` subjects. Note types: `movie` for scene, masks-theater stays
-  RP-mode only. Use `@tabler/icons-preact`.
+- **[Luma] Op icon mapping — DECIDED T5 (2026-08-21 evening).**
+  `script-plus` create · `file-plus` append · `file-pencil` update ·
+  `link-plus` link · `tags` keywords · `activity` status · `users` subjects.
+  Semantics: script = whole note, file = one section; shared + = the two
+  additive ops; pencil = the one op that replaces. Note types: `movie` for
+  scene, masks-theater stays RP-mode only. Use `@tabler/icons-preact`.
+- **[Luma] Review redesign specimens APPROVED (2026-08-21 evening) — "let's
+  rock".** Implementation queue: row v2 (status-icon cycling, op-icon slot,
+  quiet severity-tinted flags chip, contribution chars, green-dot new
+  marker) · group header v4 (aggregates, bar tally, icon bulk, 390px
+  priority collapse) · detail card v4 (proposal / computed signals / stored
+  zones, enum chips with field-prefixed tooltips) · §section typography ·
+  education tooltips everywhere icons/enums render. Kebab contents still
+  open (candidates: open note, clear group decisions, deep link).
 - **[Luma] List view column controls.** Power users get resize / reorder /
   add / remove columns in the review list. Ship with the default column set
   first; the controls come later.
