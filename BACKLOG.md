@@ -66,6 +66,15 @@ owner decision after explanation.
   stacked header shows queue position. Open leans Luma can still veto:
   4B extraction line (vs 4A fold), folding thresholds (3 preview lines /
   2 stored context lines).
+  **Feedback round 1 (2026-08-22) applied:** char footers show signed net +
+  total after (+86 - 272 ch); headline is a plain sentence, op icon moved
+  to the preview zone label; paragraph keys in text tone (accent is links-only
+  now); extraction colon; open-memory button on append/update previews as
+  the pop-back-and-forth answer (peek overlay) - Luma to judge comfort on
+  device.
+  **Pending Luma:** S7 inline-object mockups (link target inlined - resolved
+  thread inlined); live sizes say affordable (threads median 242 ch,
+  timeline events median 479, p90 771, fold at 3 lines).
 
 
 ### Tabled by Luma (2026-08-21 evening brainstorm)
