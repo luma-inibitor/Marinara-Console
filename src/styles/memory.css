@@ -158,17 +158,20 @@
 .snippet { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
   overflow: hidden; font-size: 12.5px; margin-top: 2px; }
 
-/* The console's seam guard: opaque canvas above the sticky layer
-   (Android sticky repaint lags a few px during fast scroll). */
-.memory-tool .console { box-shadow: 0 -10px 0 0 var(--canvas); }
+/* Seam guards: opaque canvas above each sticky layer, covering the few-px
+   gap Android's sticky repaint lag opens during fast scroll. 3px, not more:
+   the strip paints over whatever sits above it in normal flow, and a fat
+   strip visibly chops the bottom of an adjacent header or washed row
+   (owner-caught with collapsed groups stacking header-on-header). */
+.memory-tool .console { box-shadow: 0 -3px 0 0 var(--canvas); }
 
 /* ── group headers: the same grid, a different rendering ── */
 .mem-ghead { display: grid; grid-template-columns: 40px 24px minmax(0, 1fr);
   align-items: start; /* rail + kind pin to the first line when the body wraps */
   position: sticky; top: calc(var(--console-h, 0px) - 1px); z-index: 5;
   background: var(--surface-2); border-top: var(--hairline); border-bottom: var(--hairline);
-  box-shadow: 0 -10px 0 0 var(--canvas); /* seam guard */ }
-.mem-ghead.is-new { box-shadow: inset 3px 0 0 var(--ok), 0 -10px 0 0 var(--canvas); }
+  box-shadow: 0 -3px 0 0 var(--canvas); /* seam guard */ }
+.mem-ghead.is-new { box-shadow: inset 3px 0 0 var(--ok), 0 -3px 0 0 var(--canvas); }
 .mem-ghead > .ti { grid-column: 2; justify-self: center; align-self: start;
   margin-top: 12.5px; /* centers the 15px icon in the 40px first line */ }
 .gexp { grid-column: 1; min-height: 40px; align-self: start; padding: 0;
