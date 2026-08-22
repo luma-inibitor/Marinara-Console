@@ -425,7 +425,7 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   const dropped = g.rows.filter((r) => decisions.value.get(r.key) === "drop").length;
   const undecidedRows = g.rows.filter((r) => !decisions.value.get(r.key));
   const isNew = isTarget && !notesById.value.get(g.id) && g.rows.some((r) => r.mutation.kind === "create_note");
-  const sections = isTarget ? new Set(g.rows.flatMap((r) => r.parts.map((p) => p.key))).size : 0;
+  // Section counts dropped from the header (Luma 2026-08-21: titles get the room).
   const chars = isTarget ? g.rows.reduce((n, r) => n + contributionChars(r), 0) : 0;
   return (
     <div>
@@ -435,10 +435,7 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
           {isNew && <span class="ndot" aria-label="will be created" />}
           <span class="gn t-prose">{g.label}</span>
         </span>
-        <span class="ghead-agg t-data" data-contrast-exempt>
-          {sections > 0 && <>{sections} section{sections === 1 ? "" : "s"}</>}
-          {chars > 0 && <>{sections > 0 && " · "}+{chars.toLocaleString()}</>}
-        </span>
+        {chars > 0 && <span class="ghead-agg t-data">+{chars.toLocaleString()}</span>}
         <GroupPressure groupId={g.id} isTarget={isTarget} />
         <span class="tbar-w" aria-label={`${kept + dropped} of ${g.rows.length} decided`}>
           <span class="tbar">
