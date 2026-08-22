@@ -51,6 +51,17 @@ owner decision after explanation.
 
 ### Tabled by Luma (2026-08-21 evening brainstorm)
 
+- **[Luma] A1k change-kind icon mapping — revisit.** Luma likes the icon
+  column but wants a different icon mapping. Remind before implementation.
+- **[Luma] Icon education pattern — approved direction.** Every type/op icon
+  is clickable/hoverable with a tooltip naming the concept, everywhere it
+  appears (tap-to-reveal on touch; tooltips are never hover-only). Feeds the
+  glossary-surface item above.
+- **[Luma] Scene note type uses the `movie` icon** (masks-theater stays RP
+  mode only).
+- **[Luma] Char counts surfaced per mutation** — long entries need manual
+  review (both risky and impactful); show contribution size, flag `long`.
+
 - **[Luma] Terminology/glossary surface in-app** — closely related fields have
   subtle, important distinctions (claim kind static/change vs disposition vs
   risk vs confidence; restates vs duplicate). Some part of the app must help
