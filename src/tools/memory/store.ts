@@ -42,6 +42,15 @@ export const activeFacets = signal<Map<string, Set<string>>>(new Map());
 export const cursor = signal<string | null>(null);
 export const detailKey = signal<string | null>(null); // open detail panel/screen
 export const facetSheetOpen = signal(false);
+/** Import scope: one value read by every memory screen (owner triage —
+ *  tool-level, not console-wide). Scope is not only a filter: the engine
+ *  records it into a draft's extraction context, so changing it after an
+ *  extraction is what makes drafts go stale. */
+export const scopeChatId = signal<string>(localStorage.getItem("mc-ltm-chat") ?? "");
+export function setScope(id: string) {
+  scopeChatId.value = id;
+  localStorage.setItem("mc-ltm-chat", id);
+}
 export const saveState = signal<"saved" | "saving" | "failed">("saved");
 export const applying = signal(false);
 export const preflight = signal<{ ready: number; blockedN: number; auto: number; perDraft: Array<{ draftId: string; pf: PreflightResponse }>; error?: string } | null>(null);
