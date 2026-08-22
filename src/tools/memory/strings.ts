@@ -49,4 +49,14 @@ export const OURS = {
   queueEmpty: "Nothing is waiting on review.",
   // Disposition names: schema values the product computes but never labels.
   disposition: { new: "new", merge: "merge", rewrite: "rewrite" } as Record<string, string>,
+  // Detail-pane zone labels (v5). Anchored to catalog vocabulary: "preview"
+  // and "evidence" from reviewqueue.evidenceAndPreview / previewUnavailable;
+  // "existing"/"proposed" from reviewqueue.existingValue / proposedValue;
+  // "new memory" from reviewqueue.newMemory; "extraction" from the
+  // extractiondetails namespace. Lowercase because eyebrows uppercase in CSS.
+  zonePreview: "preview",
+  zoneDiff: "existing → proposed",
+  zoneEvidence: "evidence",
+  zoneNewMemory: "new memory",
+  zoneExtraction: "extraction",
 };

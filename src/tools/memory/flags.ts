@@ -10,7 +10,7 @@
 
 import { type Note, type Row, SECTION_CAP } from "./data";
 import { notesById, pressure, rowOverflows } from "./store";
-import { OURS } from "./strings";
+import { t, OURS } from "./strings";
 
 export const LOW_CONFIDENCE = 0.93;
 export const LONG_CHARS = 800;
@@ -45,7 +45,7 @@ export function flagsOf(r: Row): RowFlag[] {
   if (r.conflicts.length) {
     f.push({
       label: "has conflicts", severity: "danger",
-      sentence: `${r.conflicts.length} field conflict${r.conflicts.length === 1 ? "" : "s"} with the stored note`,
+      sentence: `${r.conflicts.length} field conflict${r.conflicts.length === 1 ? "" : "s"} with the stored memory`,
     });
   }
   if (rowOverflows(r)) {
@@ -54,7 +54,7 @@ export function flagsOf(r: Row): RowFlag[] {
     f.push({ label: OURS.nearLimit, severity: "warn", sentence: overCapSentence(r, false) });
   }
   if (r.disposition === "rewrite") {
-    f.push({ label: "rewrite", severity: "warn", sentence: "replaces stored section text instead of adding to it" });
+    f.push({ label: "rewrite", severity: "warn", sentence: t("reviewqueue.acceptReplacesSavedMemory") });
   }
   if (r.mutation.risk === "high") {
     f.push({ label: "high risk", severity: "danger", sentence: "the extractor rates this claim high risk" });
@@ -83,17 +83,17 @@ export function flagsOf(r: Row): RowFlag[] {
   if (chars >= LONG_CHARS) {
     f.push({
       label: "long", severity: "warn",
-      sentence: `long entry: +${chars.toLocaleString()} chars in one claim — worth a manual read`,
+      sentence: `long entry: +${chars.toLocaleString()} chars in one claim`,
     });
   }
   if (r.targetType === "timeline_event" && !DATE_RE.test(r.text)) {
     f.push({ label: "undated event", severity: "warn", sentence: "a timeline event with no [YYYY-MM-DD] date in its text" });
   }
   if (r.mutation.kind === "create_note" && !(r.mutation.note?.keywords ?? []).length) {
-    f.push({ label: "no keywords", severity: "warn", sentence: "a new note with no keywords — recall will not find it" });
+    f.push({ label: "no keywords", severity: "warn", sentence: "a new memory with no keywords — keyword matching cannot find it" });
   }
   if (((notesById.value.get(r.targetId) as Note | undefined)?.keywords ?? []).length >= 25) {
-    f.push({ label: "target near keyword cap", severity: "warn", sentence: "the target note is near its 30-keyword cap" });
+    f.push({ label: "target near keyword cap", severity: "warn", sentence: "the target memory is near its 30-keyword cap" });
   }
   return f;
 }

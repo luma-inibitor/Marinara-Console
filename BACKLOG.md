@@ -49,7 +49,7 @@ owner decision after explanation.
 
 ## Owner feedback queue
 
-- **[Luma] Detail surfaces pass — IN REVIEW (2026-08-22).** Luma: both detail
+- **[Luma] Detail surfaces pass — SHIPPED (2026-08-22, "go fix all yes").** Luma: both detail
   surfaces are rough; the claim pane is the worse one ("assaulted by
   information i have no idea what to do with and how it would impact my
   memory vault"). Direction agreed: reorganize the pane around the decision
@@ -59,7 +59,13 @@ owner decision after explanation.
   diff-style context folding. Specimens: public/mockups/detail-v5.html
   (seeded test corpus only — committable). NotePeek de-uglification rides in
   the same wave (resolved titles, type icons, §section typography, mode
-  pill's first home). Awaiting specimen review.
+  pill's first home). Shipped: ClaimDetail v5 (headline / op-specific
+  preview with diff + context folds / evidence zone with live source snippet /
+  bottom decide bar, edit as a mode), NotePeek v2 (mode pill, resolved links,
+  §keys, id demoted), note→memory copy sweep, flags.ts editorial trims,
+  stacked header shows queue position. Open leans Luma can still veto:
+  4B extraction line (vs 4A fold), folding thresholds (3 preview lines /
+  2 stored context lines).
 
 
 ### Tabled by Luma (2026-08-21 evening brainstorm)

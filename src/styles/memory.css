@@ -286,29 +286,117 @@
 
 /* ══ detail ══ */
 .claim-detail { padding: var(--panel-pad); }
-.target-line { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; margin-bottom: 4px; }
-.exist-tag { font-size: 10px; color: var(--text-dim); border: var(--hairline);
-  border-radius: 4px; padding: 1px 6px; }
-.exist-tag.is-new-tag { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
-.verb-line { margin: 0 0 var(--s3); font-size: 13.5px; }
-/* stored vs proposed zones: pre-existing memory text is a dim, edge-marked
-   block; the proposal is accent-marked. The tags name the distinction. */
-.stored-zone { border-left: 2px solid var(--edge-strong); padding: var(--s1) 0 var(--s1) var(--s2);
-  margin: var(--s2) 0; }
-.proposed-zone { border-left: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
-  padding: var(--s1) 0 var(--s1) var(--s2); margin: var(--s2) 0; }
-.zone-tag { display: block; margin-bottom: 3px; color: var(--text-dim); }
-.zone-tag.is-proposed { color: var(--accent); }
-.zone-text { margin: 0; white-space: pre-line; font-size: 13px; }
-.about-card { background: var(--surface-1); border: var(--hairline); border-radius: var(--r-m);
-  padding: var(--s2) var(--s3) var(--s3); margin-top: var(--s4); }
-.decide { display: flex; gap: var(--s2); margin-bottom: var(--s3); }
-.dbtn { flex: 1; min-height: var(--tap); border: var(--hairline); border-radius: var(--r-m);
-  background: var(--surface-1); color: var(--text-dim);
-  font-family: var(--font-label); font-weight: 700; font-size: 11px;
-  letter-spacing: 0.07em; text-transform: uppercase; }
-.dbtn.is-keep-btn[aria-pressed="true"] { background: var(--ok); color: #06120c; border-color: var(--ok); }
-.dbtn.is-drop-btn[aria-pressed="true"] { background: var(--danger); color: #1a0606; border-color: var(--danger); }
+/* ══ note peek v2 + mode pill ══
+   The peek speaks the list's vocabulary. The mode pill always renders all
+   three segments (DM · RP · GM) at constant width; active segments lit. */
+.peek-meta { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
+.modepill { display: inline-flex; border: var(--hairline); border-radius: var(--r-s); overflow: hidden; }
+.mseg { padding: 2px 8px; color: var(--text-faint); border-right: var(--hairline); }
+.mseg:last-child { border-right: none; }
+.mseg.is-on { color: var(--text); background: var(--accent-wash); }
+.peek-id { color: var(--text-faint); font-size: 10.5px; margin-top: var(--s3);
+  padding-top: var(--s2); border-top: var(--hairline); overflow-wrap: anywhere; }
+
+/* ══ detail pane v5 — organized around the decision (2026-08-22) ══
+   Zones top-to-bottom answer the reviewer's questions in order: headline
+   (what is this) · preview (what the vault looks like after keep) · evidence
+   (why trust it) · decide bar (act). Preview lines speak diff: + tint = lands
+   in the vault, − tint = dies on apply; the gutter glyph carries the meaning
+   when color fails. The create card's green inset edge is the same
+   new-target channel as the list's group headers. Editing is a mode: accent
+   border on the zone, save/discard replace keep/drop in the decide bar. */
+.hl { display: flex; align-items: flex-start; gap: var(--s2); font-size: 14.5px;
+  line-height: 1.4; margin-bottom: var(--s3); }
+.hl-op { color: var(--text-dim); display: inline-flex; margin-top: 2px; }
+.hl-s { min-width: 0; }
+.hl .skey { font-size: 13px; }
+.nref { display: inline-flex; align-items: center; gap: 4px; }
+.nref .notelink, .nref-plain { font-family: var(--font-label); font-weight: 600; font-size: 13px; }
+.zone { border: var(--hairline); border-radius: var(--r-m); padding: var(--s2) var(--s3);
+  margin-bottom: var(--s3); }
+.zone.is-editing { border-color: var(--accent); }
+.z-eye { display: flex; align-items: center; gap: var(--s2); color: var(--text-dim); margin-bottom: 6px; }
+.z-eye .z-lab { flex: 1 1 auto; min-width: 0; display: inline-flex; align-items: center; gap: 5px; }
+.z-eye .skey { text-transform: none; letter-spacing: 0; }
+.z-foot { border-top: var(--hairline); margin-top: 7px; padding-top: 5px;
+  display: flex; gap: var(--s3); font-variant-numeric: tabular-nums; }
+.zbtn { display: inline-flex; align-items: center; gap: 4px; background: none;
+  border: var(--hairline); border-radius: var(--r-s); color: var(--text-dim);
+  font-family: var(--font-data); font-size: 10.5px; padding: 2px 7px; }
+.zbtn:hover { color: var(--text); border-color: var(--edge-strong); }
+.zbtn-group { display: inline-flex; align-items: center; gap: var(--s2); }
+/* preview lines: the diff vocabulary */
+.ln { display: flex; gap: 8px; padding: 2.5px 6px 2.5px 2px; border-radius: 3px;
+  font-size: 13px; line-height: 1.45; }
+.lg { flex: 0 0 12px; text-align: center; font-family: var(--font-data);
+  font-size: 11.5px; color: var(--text-faint); }
+.lt { min-width: 0; overflow-wrap: anywhere; }
+.ln-ctx .lt { color: var(--text-dim); }
+.ln-add { background: var(--ok-wash); box-shadow: inset 2px 0 0 var(--ok); }
+.ln-add .lg { color: var(--ok); }
+.ln-del { background: var(--danger-wash); box-shadow: inset 2px 0 0 var(--danger); }
+.ln-del .lg { color: var(--danger); }
+.ln-del .lt { color: var(--text-dim); }
+mark.wa { background: color-mix(in srgb, var(--ok) 28%, transparent); color: var(--text);
+  border-radius: 2px; padding: 0 1px; }
+mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color: var(--text-dim);
+  border-radius: 2px; padding: 0 1px; }
+/* folds: stored context and unchanged diff runs collapse; the label names
+   what it hides so a gap never reads as missing content */
+.fold summary { display: flex; align-items: center; gap: 6px; list-style: none; cursor: pointer;
+  padding: 3px 6px; margin: 1px 0; color: var(--text-dim);
+  border: 1px dashed var(--edge-strong); border-radius: var(--r-s); }
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary:hover { color: var(--text); }
+.fold .fold-c { transition: transform 0.12s; flex: 0 0 auto; }
+.fold[open] .fold-c { transform: rotate(90deg); }
+.fold[open] summary { border-style: solid; margin-bottom: 3px; }
+/* create card: green inset = new-target channel */
+.nc { box-shadow: inset 3px 0 0 var(--ok); }
+.nc-sec { margin-bottom: var(--s2); }
+.nc-sec:last-of-type { margin-bottom: 0; }
+.linkrow { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s2); padding: 2px 0; }
+.rel { color: var(--text-dim); }
+.chip-batch { font-size: 10px; color: var(--ok); border-radius: var(--r-s); padding: 0 5px;
+  border: 1px solid color-mix(in srgb, var(--ok) 45%, transparent); }
+.edu { margin: 6px 0 0; font-size: 12px; }
+.kwrap { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 0; }
+.kwc { border: var(--hairline); border-radius: var(--r-s); padding: 2px 7px; }
+.kw-add { color: var(--ok); background: var(--ok-wash);
+  border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+.kw-del { color: var(--danger); background: var(--danger-wash);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+.stt { border: var(--hairline); border-radius: var(--r-s); padding: 2px 8px; color: var(--text-dim); }
+.stt.st-active { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+.stt.st-resolved { color: var(--flag); border-color: color-mix(in srgb, var(--flag) 45%, transparent); }
+.dim-i { color: var(--text-faint); }
+/* evidence zone */
+.z-ev { background: var(--surface-2); }
+.audit-detail .z-ev { background: var(--canvas); }
+.evq-q { font-size: 13px; font-style: italic; border-left: 2px solid var(--edge-strong);
+  padding: 2px 0 2px 10px; margin-bottom: 4px; }
+.evq-a { color: var(--text-dim); display: flex; align-items: center; gap: 5px;
+  flex-wrap: wrap; margin-bottom: 6px; }
+.ev-rel { margin-top: var(--s2); padding-top: var(--s2); border-top: var(--hairline); }
+.ev-rel .z-eye { margin-bottom: 2px; }
+.ev-line { margin: 0; font-size: 12.5px; }
+.readline { border-top: var(--hairline); margin-top: var(--s2); padding-top: 6px;
+  color: var(--text-dim); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+/* decide bar: bottom, sticky, the list's circle vocabulary */
+.decbar { display: flex; align-items: center; gap: var(--s2); border-top: var(--hairline);
+  padding: var(--s2) 0; position: sticky; bottom: 0; background: var(--surface-1); }
+.dbtn2 { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: var(--tap); padding: 0 var(--s4); border: var(--hairline); border-radius: var(--r-m);
+  background: none; color: var(--text); font-family: var(--font-label);
+  font-weight: 700; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+.dbtn2[data-on="true"][data-dk="keep"] { color: var(--ok); border-color: var(--ok); background: var(--ok-wash); }
+.dbtn2[data-on="true"][data-dk="drop"] { color: var(--danger); border-color: var(--danger); background: var(--danger-wash); }
+.dbtn2.save-on { color: var(--accent); border-color: var(--accent); background: var(--accent-wash); }
+.decbar-note { margin-left: auto; }
+.stack-screen .decbar { background: var(--surface-2); border-top: 1px solid var(--edge-strong);
+  padding: var(--s2) var(--panel-pad); margin: 0 calc(-1 * var(--panel-pad)); }
+.stack-screen .dbtn2 { flex: 1 1 0; min-height: 44px; }
+
 
 .kvs > div { display: flex; gap: var(--s2); align-items: baseline; padding: 5px 0;
   border-bottom: var(--hairline); font-size: var(--fs-data); overflow-wrap: anywhere; }
@@ -320,10 +408,6 @@
   border-radius: var(--r-s); color: var(--text); padding: var(--s2);
   font-size: 13.5px; line-height: 1.4; resize: vertical; }
 .edit-area:focus { outline: none; border-color: var(--accent); }
-.diffline { border-left: 2px solid var(--edge-strong); padding-left: var(--s2); margin: var(--s2) 0; }
-.diffline p { margin: 2px 0; }
-.diff-before { color: var(--danger); text-decoration: line-through; opacity: 0.75; }
-.diff-after { color: var(--ok); }
 .notelink { background: none; border: none; padding: 0; color: var(--accent);
   cursor: pointer; font-size: 12px; overflow-wrap: anywhere; text-align: left; }
 .notelink:hover { text-decoration: underline; }
@@ -395,23 +479,10 @@
 .enum { font-family: var(--font-data); font-size: 11.5px; color: var(--text-dim); }
 .skey { font-family: var(--font-data); font-size: 11.5px; color: var(--accent); }
 
-/* ══ detail card v4 zones ══ */
-.dz-line { display: flex; align-items: center; gap: var(--s2); min-width: 0; flex-wrap: wrap; }
-.dz-sp { flex: 1; }
-.dz-title { font-weight: 600; }
-.op-line { margin: 2px 0 var(--s3); }
-.dz-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--s3);
-  padding-top: var(--s2); border-top: var(--hairline); }
-.dz-sig { background: var(--surface-1); border: var(--hairline); border-radius: var(--r-m);
-  padding: var(--s2) var(--s3); }
 .sig { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; font-size: 13px; }
 .sig svg { flex: 0 0 auto; margin-top: 2px; }
 .sig[data-sev="warn"] { color: var(--warn); }
 .sig[data-sev="danger"] { color: var(--danger); }
 .edit-mark { color: var(--ok); }
 
-/* zone tags: label left, counts in a quiet right gutter (checklist T1) */
-.zone-tag { display: flex; align-items: baseline; gap: var(--s2); }
-.zone-ch { margin-left: auto; font-size: 10.5px; letter-spacing: 0;
-  text-transform: none; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 

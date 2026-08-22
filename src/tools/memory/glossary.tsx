@@ -17,8 +17,8 @@ export const GLOSSARY: Record<string, string> = {
   static: "claim kind · an enduring fact or defined state — true about someone or the world, not established by a narrated event",
   change: "claim kind · an outcome caused by a specific event — traces back to a timeline event",
   // disposition — how the proposal lands in the vault
-  new: "disposition · creates a note that does not exist yet",
-  merge: "disposition · folds new material into a note that already exists",
+  new: "disposition · creates a memory that does not exist yet",
+  merge: "disposition · folds new material into a memory that already exists",
   rewrite: "disposition · replaces the stored section text instead of adding to it",
   // risk — the extractor's own blast-radius estimate
   "low risk": "risk · the blast radius if this claim is wrong — low: additive and easy to undo",
@@ -27,24 +27,24 @@ export const GLOSSARY: Record<string, string> = {
 };
 
 export const OP_TIP: Record<Mutation["kind"], string> = {
-  create_note: "operation · create — makes a new note (a script is the whole note; a file is one section)",
+  create_note: "operation · create — makes a new memory (a script is the whole memory; a file is one section)",
   append_section: "operation · append — adds lines to the end of one section",
   update_section: "operation · update — replaces one section's stored text",
-  add_link: "operation · link — connects this note to another note",
-  set_keywords: "operation · keywords — replaces the note's keyword list",
-  set_status: "operation · status — changes the note's lifecycle status",
-  set_subjects: "operation · subjects — changes who the note is about",
+  add_link: "operation · link — connects this memory to another memory",
+  set_keywords: "operation · keywords — replaces the memory's keyword list",
+  set_status: "operation · status — changes the memory's lifecycle status",
+  set_subjects: "operation · subjects — changes who the memory is about",
 };
 
 export const TYPE_TIP: Record<string, string> = {
-  character: "note type · character — one person",
-  relationship: "note type · relationship — the state between two people",
-  timeline_event: "note type · timeline event — something that happened, anchored in time",
-  thread: "note type · thread — an open question the story should resolve",
-  world: "note type · world — setting, places, rules",
-  tone: "note type · tone — how scenes should feel",
-  source: "note type · source — an imported record that claims were extracted from",
-  scene: "note type · scene — one scene's record",
+  character: "memory type · character — one person",
+  relationship: "memory type · relationship — the state between two people",
+  timeline_event: "memory type · timeline event — something that happened, anchored in time",
+  thread: "memory type · thread — an open question the story should resolve",
+  world: "memory type · world — setting, places, rules",
+  tone: "memory type · tone — how scenes should feel",
+  source: "memory type · source — an imported record that claims were extracted from",
+  scene: "memory type · scene — one scene's record",
 };
 
 /** Dotted-underline term (or icon wrapper) that reveals its definition on

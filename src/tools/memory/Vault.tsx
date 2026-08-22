@@ -138,7 +138,7 @@ export function Vault() {
         <aside class="audit-detail">
           {open
             ? <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />
-            : <div class="empty"><p class="t-label t-label-s">No note open</p><p class="t-prose">Select a memory to edit it.</p></div>}
+            : <div class="empty"><p class="t-label t-label-s">No memory open</p><p class="t-prose">Select a memory to edit it.</p></div>}
         </aside>
       )}
       {!desktop && open && (

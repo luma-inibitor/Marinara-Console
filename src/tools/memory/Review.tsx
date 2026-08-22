@@ -293,7 +293,13 @@ export function Review() {
         <div class="stack-screen">
           <header class="console"><div class="hrow">
             <button class="icon-btn hit" aria-label="Back to queue" onClick={closeTopOverlay}>‹</button>
-            <h1 class="console-title">{detailRow!.targetTitle}</h1>
+            {/* Queue position, not the target title — the headline right below
+                already names the target, and position is what j/k triage wants. */}
+            <h1 class="console-title">
+              {visibleKeys.includes(detailRow!.key)
+                ? `claim ${visibleKeys.indexOf(detailRow!.key) + 1} of ${visibleKeys.length}`
+                : detailRow!.targetTitle}
+            </h1>
           </div></header>
           <ClaimDetail key={detailRow!.key} row={detailRow!} />
         </div>
@@ -490,7 +496,7 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   );
 }
 
-/** The kebab: rare object actions only — open the note, clear this group's
+/** The kebab: rare object actions only — open the memory, clear this group's
  *  decisions. (Contents still under discussion; if it ends up with one item
  *  it dies and that item goes inline.) */
 function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: boolean }) {
@@ -507,7 +513,7 @@ function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: 
           <span class="gmenu-scrim" onClick={() => setOpen(false)} />
           <div class="gmenu-pop" role="menu">
             {!props.isNew && (
-              <button role="menuitem" onClick={() => { setOpen(false); peekNote(g.id); }}>Open note</button>
+              <button role="menuitem" onClick={() => { setOpen(false); peekNote(g.id); }}>{t("reviewqueue.openMemory")}</button>
             )}
             {(props.kept > 0 || props.dropped > 0) && (
               <button role="menuitem" onClick={() => { setOpen(false); bulkDecide(g.rows, null, `reset ${g.label}`); }}>
