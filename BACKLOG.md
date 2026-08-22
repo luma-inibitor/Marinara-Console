@@ -49,6 +49,18 @@ owner decision after explanation.
 
 ## Owner feedback queue
 
+### Tabled by Luma (2026-08-21 evening brainstorm)
+
+- **[Luma] Terminology/glossary surface in-app** — closely related fields have
+  subtle, important distinctions (claim kind static/change vs disposition vs
+  risk vs confidence; restates vs duplicate). Some part of the app must help
+  surface what these terms mean. Tabled during the group-header brainstorm;
+  design open (glossary panel? info popovers? first-use hints?).
+- **[Luma] Sources freshness icons** — icon treatment for
+  new/imported/update-available/context-changed/extraction-incomplete;
+  revisit when focus returns to the Sources view.
+
+
 ### Mobile round 2 — 2026-08-21 2:18 PM (port build, phone)
 
 - **[Luma] Mode display: segmented pill.** Exactly three chat modes exist
@@ -158,6 +170,8 @@ owner decision after explanation.
 
 ## Process notes
 
+- **Standing rule [Luma]:** whenever Luma says "punt" or "revisit" about
+  anything, it goes in this backlog immediately.
 - Copy policy: product strings from the vendored catalog (`ltm-en.json`,
   1.2.9); coined words only via `OURS` in `strings.ts` — keep GLOSSARY
   discipline from the prototype when adding copy.
