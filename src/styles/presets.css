@@ -162,3 +162,84 @@
 }
 .empty { text-align: center; padding: var(--s5) var(--s3); }
 .empty .t-label { color: var(--text); margin-bottom: var(--s2); }
+
+/* ── explicit save (2026-08-21) ─────────────────────────────────────
+   The commit bar is the only thing in either tool that writes. It sticks to the
+   bottom of the editing surface so the state and the action are never scrolled
+   away — the old autosave pill could leave the viewport entirely. */
+.savebar {
+  position: sticky; bottom: 0; z-index: 12;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
+  margin-top: var(--s3); padding: var(--s2) var(--s3);
+  background: color-mix(in srgb, var(--surface-1) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border: var(--hairline); border-radius: var(--r-m);
+}
+.savebar.is-dirty { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.savebar-state { color: var(--text-dim); }
+.savebar-state .is-err { color: var(--danger); }
+.savebar-acts { display: flex; gap: var(--s2); flex: 0 0 auto; }
+.savebar .dbtn { min-height: var(--tap); padding: 0 var(--s3); }
+.savebar .dbtn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.savebar.has-conflict {
+  display: block;
+  border-color: color-mix(in srgb, var(--warn) 55%, transparent);
+  background: var(--warn-wash);
+}
+.savebar.has-conflict .t-label { color: var(--warn); }
+.savebar.has-conflict .savebar-acts { margin-top: var(--s2); justify-content: flex-end; }
+
+/* field-level validation — the engine supplies these messages; we render them
+   at the field rather than as a toast that scrolls past */
+.field-err { color: var(--danger); margin: 6px 0 0; }
+[aria-invalid="true"] { border-color: var(--danger) !important; }
+.err-dot { color: var(--danger); margin-left: 5px; font-size: 9px; vertical-align: middle; }
+.sub.has-error > .sub-head { box-shadow: inset 2px 0 0 var(--danger); }
+
+/* per-field dirty marking, so a 40-field panel shows what a save would write */
+.ta.is-dirty, .tin.is-dirty { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+
+/* inline key entry, replacing window.prompt() */
+.kadd-in {
+  min-height: var(--tap-2); min-width: 92px; flex: 0 0 auto;
+  background: var(--canvas); border: 1px dashed var(--edge-strong);
+  border-radius: var(--r-s); color: var(--text); padding: 0 var(--s2);
+  font-family: var(--font-data); font-size: var(--fs-data);
+}
+.kadd-in:focus { border-style: solid; border-color: var(--accent); outline: none; }
+
+/* order is typed directly on desktop, not only stepped */
+.ordin {
+  width: 100%; background: transparent; border: 0; color: var(--text);
+  font-family: var(--font-data); font-size: 15px; font-weight: 700;
+  text-align: center; -moz-appearance: textfield;
+}
+.ordin::-webkit-outer-spin-button, .ordin::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.ordin:focus { outline: 1px solid var(--accent); border-radius: var(--r-s); }
+
+/* picker: a stat that failed to load, and its retry */
+.is-flag { color: var(--flag); }
+.linkish { color: var(--accent); cursor: pointer; text-decoration: underline; }
+
+/* fullscreen editor: unsaved marker + discard confirmation */
+.is-dirty-dot { color: var(--accent); }
+.dbtn.is-danger { background: var(--danger-wash); border-color: var(--danger); color: var(--danger); }
+.fs-confirm {
+  position: absolute; inset: 0; z-index: 5; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--canvas) 78%, transparent); padding: var(--s4);
+}
+.fs-confirm-box {
+  max-width: 420px; background: var(--surface-1); border: var(--hairline);
+  border-radius: var(--r-l); padding: var(--s4);
+}
+.fs-confirm-box .t-label { color: var(--text); }
+.fs-confirm-acts { display: flex; gap: var(--s2); justify-content: flex-end; margin-top: var(--s3); }
+.fs-confirm-acts .dbtn { min-height: var(--tap); padding: 0 var(--s3); }
+.fseditor { position: fixed; }
+
+@media (max-width: 899px) {
+  .savebar { flex-wrap: wrap; }
+  .savebar-acts { width: 100%; }
+  .savebar-acts .dbtn { flex: 1; }
+}
