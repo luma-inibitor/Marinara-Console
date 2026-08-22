@@ -153,8 +153,16 @@
    empty (headers make no decision), the type icon sits in the kind-icon
    column over the op icons, and the title starts at the claim-text x.
    One grid, two renderings — no near-miss stagger. */
-.ghead4 { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap;
-  padding-left: 40px; }
+.ghead4 { display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+  padding-left: 0; /* the chevron rail supplies the left inset */ }
+.ghead4 > * + * { margin-left: var(--s2); }
+/* the rail cell: collapse chevron, same 40px column the rows' decision
+   icons occupy (owner: "we can use that space for an expander chevron") */
+.gexp { width: 40px; flex: 0 0 auto; margin-left: 0; align-self: stretch;
+  display: flex; align-items: center; justify-content: center;
+  border: none; background: none; cursor: pointer; color: var(--text-dim); padding: 0; }
+.gexp:hover { color: var(--text); }
+.ghead4 .ghead-id { margin-left: 0; }
 .ghead4 .ghead-id { flex: 1 1 auto; }
 .ghead-id { display: inline-flex; align-items: center; gap: 0; min-width: 0; }
 .ghead-id .ti { width: 24px; flex: 0 0 auto; display: inline-flex; justify-content: center; }

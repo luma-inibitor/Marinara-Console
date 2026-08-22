@@ -21,7 +21,7 @@ import { SECTION_CAP as CAP } from "./data";
 import { refreshLtmStatus } from "./MemoryTool";
 import { openOverlay, closeTopOverlay } from "./overlays";
 import { signal } from "@preact/signals";
-import { IconFlag, IconCircleCheck, IconCircleX, IconDotsVertical, IconWriting } from "@tabler/icons-preact";
+import { IconFlag, IconCircleCheck, IconCircleX, IconDotsVertical, IconWriting, IconChevronDown, IconChevronRight } from "@tabler/icons-preact";
 import { DecisionIcon, OpIcon, TypeIcon } from "./icons";
 import { Term, OP_TIP } from "./glossary";
 import { flagsOf, worstSeverity, contributionChars } from "./flags";
@@ -34,6 +34,15 @@ const RESTORE_POINT_THRESHOLD = 20;
 // Mobile choosers for group/sort (three-button rail).
 const groupSheetOpen = signal(false);
 const sortSheetOpen = signal(false);
+
+// Collapsed groups (view state, per grouping key — resets with the session).
+const collapsedGroups = signal<Set<string>>(new Set());
+
+function toggleGroupCollapsed(id: string) {
+  const next = new Set(collapsedGroups.value);
+  next.has(id) ? next.delete(id) : next.add(id);
+  collapsedGroups.value = next;
+}
 
 function useIsDesktop(): boolean {
   const [is, setIs] = useState(() => window.matchMedia("(min-width: 900px)").matches);
@@ -71,7 +80,12 @@ export function Review() {
     () => buildGroups(shown, groupBy.value, sortBy.value, sortDir.value),
     [shown, groupBy.value, sortBy.value, sortDir.value],
   );
-  const visibleKeys = useMemo(() => groups.flatMap((g) => g.rows.map((r) => r.key)), [groups]);
+  // Collapsed groups' rows leave the keyboard order too, or j/k would focus
+  // rows the collapse has hidden.
+  const visibleKeys = useMemo(
+    () => groups.flatMap((g) => (collapsedGroups.value.has(g.id) ? [] : g.rows.map((r) => r.key))),
+    [groups, collapsedGroups.value],
+  );
 
   const focusRow = (key: string) => {
     cursor.value = key;
@@ -425,14 +439,22 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   const dropped = g.rows.filter((r) => decisions.value.get(r.key) === "drop").length;
   const undecidedRows = g.rows.filter((r) => !decisions.value.get(r.key));
   const isNew = isTarget && !notesById.value.get(g.id) && g.rows.some((r) => r.mutation.kind === "create_note");
+  const collapsed = collapsedGroups.value.has(g.id);
   // Section counts dropped from the header (Luma 2026-08-21: titles get the room).
   const chars = isTarget ? g.rows.reduce((n, r) => n + contributionChars(r), 0) : 0;
   return (
     <div>
       {/* New-target marker: option 2a, green edge on the header (owner call
           2026-08-21, accepting the color-only tradeoff). Edge, not inline —
-          nothing conditional sits in the title line, so nothing shifts. */}
+          nothing conditional sits in the title line, so nothing shifts.
+          The 40px decision rail holds the collapse chevron (owner idea:
+          the control column gets a control). */}
       <div class={`grouphead ghead4 ${isTarget ? "is-object" : ""} ${isNew ? "is-new" : ""}`}>
+        <button class="gexp hit" aria-expanded={!collapsed}
+          aria-label={`${collapsed ? "Expand" : "Collapse"} ${g.label} (${g.rows.length})`}
+          onClick={() => toggleGroupCollapsed(g.id)}>
+          {collapsed ? <IconChevronRight size={16} stroke={1.75} aria-hidden /> : <IconChevronDown size={16} stroke={1.75} aria-hidden />}
+        </button>
         <span class="ghead-id">
           {isTarget && g.meta && <TypeIcon type={g.meta} />}
           <span class="gn t-prose">{g.label}</span>
@@ -466,7 +488,7 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
           {isTarget && <GroupMenu group={g} kept={kept} dropped={dropped} isNew={isNew} />}
         </span>
       </div>
-      {g.rows.map((r) => <ClaimRow key={r.key} row={r} showTarget={props.showTarget} onActivate={props.onActivate} />)}
+      {!collapsed && g.rows.map((r) => <ClaimRow key={r.key} row={r} showTarget={props.showTarget} onActivate={props.onActivate} />)}
     </div>
   );
 }
