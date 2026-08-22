@@ -51,10 +51,14 @@ owner decision after explanation.
 
 ### Tabled by Luma (2026-08-21 evening brainstorm)
 
-- **[Luma] Op icon mapping — DECIDED (2026-08-21).** `file-plus` create ·
-  `text-plus` append · `writing` update · `link-plus` link · `tags` keywords ·
-  `activity` status · `users` subjects. Note types: `movie` for scene,
-  masks-theater stays RP-mode only. Use `@tabler/icons-preact`.
+- **[Luma] Op icon mapping (2026-08-21, still settling).** `script-plus`
+  create · `code-variable-plus` append · update comparing `circle-plus-minus`
+  vs `file-pencil` · `link-plus` link · `tags` keywords · `activity` status ·
+  `users` subjects. Note types: `movie` for scene, masks-theater stays
+  RP-mode only. Use `@tabler/icons-preact`.
+- **[Luma] List view column controls.** Power users get resize / reorder /
+  add / remove columns in the review list. Ship with the default column set
+  first; the controls come later.
 - **[Luma] Icon education pattern — approved direction.** Every type/op icon
   is clickable/hoverable with a tooltip naming the concept, everywhere it
   appears (tap-to-reveal on touch; tooltips are never hover-only). Feeds the
