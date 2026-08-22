@@ -94,6 +94,11 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
       1280. Reading your own source does not count — every occlusion, wrap and
       clipping defect in this repo was invisible in the markup and obvious in a
       screenshot.
+- [ ] **Are the two layers separable at a glance?** The specimen is the object;
+      labels, captions and verdicts are commentary about it. Commentary sits
+      outside the specimen's box and never changes its spacing.
+      *(Frame titles were rendered inside the wireframe boxes, so they read as
+      part of the interface being wireframed — and duplicated the label above.)*
 - [ ] **Re-read your captions against the render.** Do they describe what is
       actually drawn, or what you meant to draw?
       *(A caption promised the rail hid imported sources while the mockup showed

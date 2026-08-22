@@ -28,8 +28,16 @@
 
   /* ── the meta layer: what the book says ABOUT a specimen ──────── */
   .mk-spec { margin: 0 0 26px; }
-  .mk-label { font-family: var(--font-data); font-size: 11px; letter-spacing: .05em;
-    color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; }
+  /* The meta label sits OUTSIDE the specimen box, on the page background, so
+     the two layers separate at a glance. A label inside the frame reads as
+     part of the thing being shown — the specimen-design rule this kit exists
+     to stop breaking: meta content never participates in the specimen's own
+     layout. The leading rule is the boundary. */
+  .mk-label { font-family: var(--font-data); font-size: 10.5px; letter-spacing: .09em;
+    color: var(--text-faint); text-transform: uppercase; margin: 0 0 5px;
+    display: flex; align-items: center; gap: 8px; }
+  .mk-label::before { content: ""; width: 14px; height: 1px; background: var(--edge-strong); flex: none; }
+  .mk-label b { color: var(--text-dim); font-weight: 400; }
   .mk-stage { position: relative; }
   .mk-body { border: 1px solid var(--edge-strong); border-radius: var(--r-m);
     background: var(--canvas); padding: 14px; }
@@ -59,7 +67,7 @@
   /* ── wireframe primitives: greyscale, no product colour ───────── */
   .wf { --wf-line: #4a4a4a; --wf-ink: #e6e6e6; --wf-dim: #9a9a9a; --wf-faint: #6a6a6a;
     --wf-fill: #1c1c1c; }
-  .wf-frame { border: 1px solid var(--wf-line); border-radius: 3px; padding: 10px;
+  .wf-frame { border: 1px solid var(--wf-line); border-radius: 3px; padding: 12px;
     background: var(--wf-fill); margin-bottom: 8px; overflow-x: auto; }
   .wf-title { font-family: var(--font-data); font-size: 10px; color: var(--wf-faint);
     letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; }

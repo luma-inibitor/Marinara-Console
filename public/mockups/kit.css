@@ -61,11 +61,15 @@
 @layer theme, base, components, utilities;
 @layer theme {
   :root, :host {
+    --color-surface-2: var(--surface-2);
+    --color-dim: var(--text-dim);
     --font-label: var(--font-label);
     --font-data: var(--font-data);
     --font-prose: var(--font-prose);
+    --spacing-3: var(--s3);
     --spacing-4: var(--s4);
     --spacing-6: var(--s6);
+    --radius-m: var(--r-m);
   }
 }
 @layer utilities {
@@ -125,9 +129,6 @@
   .w-4 {
     width: var(--spacing-4);
   }
-  .grow {
-    flex-grow: 1;
-  }
   .resize {
     resize: both;
   }
@@ -135,6 +136,21 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  .rounded-m {
+    border-radius: var(--radius-m);
+  }
+  .bg-surface-2 {
+    background-color: var(--color-surface-2);
+  }
+  .p-3 {
+    padding: var(--spacing-3);
+  }
+  .font-data {
+    font-family: var(--font-data);
+  }
+  .text-dim {
+    color: var(--color-dim);
   }
   .uppercase {
     text-transform: uppercase;
@@ -222,11 +238,25 @@
   }
   .mk-label {
     font-family: var(--font-data);
-    font-size: 11px;
-    letter-spacing: .05em;
-    color: var(--text-dim);
+    font-size: 10.5px;
+    letter-spacing: .09em;
+    color: var(--text-faint);
     text-transform: uppercase;
-    margin-bottom: 6px;
+    margin: 0 0 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mk-label::before {
+    content: "";
+    width: 14px;
+    height: 1px;
+    background: var(--edge-strong);
+    flex: none;
+  }
+  .mk-label b {
+    color: var(--text-dim);
+    font-weight: 400;
   }
   .mk-stage {
     position: relative;
@@ -341,7 +371,7 @@
   .wf-frame {
     border: 1px solid var(--wf-line);
     border-radius: 3px;
-    padding: 10px;
+    padding: 12px;
     background: var(--wf-fill);
     margin-bottom: 8px;
     overflow-x: auto;

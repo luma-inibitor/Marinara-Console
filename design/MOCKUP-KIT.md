@@ -50,5 +50,11 @@ Tailwind utilities are available too (`bg-surface-2`, `text-dim`, `font-data`,
 - **Wireframes stay greyscale.** Colour is a decision; a wireframe is about
   where things sit. If a wireframe needs colour to make its point, it is a
   specimen, not a wireframe.
+- **The label goes outside the box.** `mk-label` sits on the page background,
+  above `wf-frame` / `mk-body`, never inside it. A label inside the specimen
+  reads as part of the thing being shown, and it changes the specimen's
+  spacing — which makes the specimen a lie about the layout it claims to
+  depict. One label per specimen, too: a name above the frame and a title
+  inside it is the same fact twice.
 - **Real values only.** Books use the seeded test corpus or synthesized data in
   its flavour, never live-instance content (see the publish-scrub rule).
