@@ -82,9 +82,11 @@
 .mem-rows { padding-bottom: 132px; }
 .mem-summary { grid-template-columns: 40px minmax(0, 1fr); align-items: center; }
 .mem-summary.has-kslot { grid-template-columns: 40px 24px minmax(0, 1fr); }
-/* the decision/select rail button needs a real box — its icon is only 17px */
-.mem-row .tri { min-width: 40px; min-height: 40px; }
-.mem-row .tri { border: none; background: none; cursor: pointer;
+/* the decision/select rail button needs a real box — its icon is only 17px.
+   padding:0 clears .rail-cell's first-line offset (a lorebook multi-line
+   pattern); this row is single-line and centers its rail. */
+.mem-row .tri { min-width: 40px; min-height: 40px; padding: 0; border: none;
+  background: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center; }
 .dec { display: inline-flex; }
 .dec-keep { color: var(--ok); }
