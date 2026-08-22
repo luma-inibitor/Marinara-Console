@@ -82,6 +82,13 @@ owner decision after explanation.
   equal the selection - a separate cost chip only repeated the button).
   Result card rebuilt on the list's row grammar. Edited mark moved onto the
   row so the list says which summaries you have touched.
+  **Owner round 3 (2026-08-22):** the import result card was rebuilt around
+  the decision rather than the data. It now leads with the outcome as a
+  sentence, gives the failed source its own block (its name was being
+  truncated to "Nam..." - the one name in the card that must survive), folds
+  the per-source ledger away as audit material, and carries one help line
+  under one information icon. Import buttons show the price once (sparkle +
+  count), not twice.
 
 - **DIAGNOSED (2026-08-22): the live 44x `source_stale` mystery is context
   drift, not stale text.** Compared every blocked draft's
