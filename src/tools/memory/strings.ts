@@ -54,6 +54,15 @@ export const OURS = {
   // "existing"/"proposed" from reviewqueue.existingValue / proposedValue;
   // "new memory" from reviewqueue.newMemory; "extraction" from the
   // extractiondetails namespace. Lowercase because eyebrows uppercase in CSS.
+  // Sources screen. The catalog covers the states (New / Already imported /
+  // Update available / Context changed / Extraction incomplete) and the verbs
+  // (Import and extract / Re-extract / Select all / Refresh). These four are
+  // genuinely new concepts the product has no word for, so they are declared
+  // here instead of being coined at the call site.
+  sourcesPending: "Pending", // sources not yet imported; the catalog counts them but never labels the set
+  sourcesBlocked: "Blocked", // drafts held before review; the catalog says "blocked" only inside sentences
+  sourcesReviewEach: "Review each", // the per-kind affordance for sources that must be curated, not bulk-imported
+  extractionText: "Extraction text", // the editable text extraction reads; the override is new to this console
   zonePreview: "preview",
   zoneDiff: "existing → proposed",
   zoneEvidence: "evidence",

@@ -169,6 +169,11 @@ exists, use it; if it needs a new one, add it here in the same change.
   borrow another family's silhouette (that rule killed `flag-2` for status and
   a bare pencil for the edited mark). Type icons carry the categorical hue.
   Owner-decided mapping lives in BACKLOG.md; don't re-litigate per screen.
+- **Copy provenance** — every user-visible string traces to the vendored
+  catalog (`ltm-en.json`) or to a registered coinage in `OURS`, each with a
+  comment saying why the product has no word for it. `design/copycheck.mjs`
+  checks this mechanically against a rendered surface. Coining silently has
+  been the single most repeated defect in this tool.
 - **Detail pane zones (v5)** (`ClaimDetail.tsx`) — a claim's pane answers the
   reviewer's questions in reading order: headline sentence (what this does, to
   which memory) · preview (op-specific consequence: after-state for append,

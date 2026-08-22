@@ -1,5 +1,9 @@
 # CLAUDE.md — Marinara Console
 
+- **Run `design/CHECKLIST.md` before showing Luma any UI, mockup, or specimen
+  book.** It is built from defects that actually shipped here; the copy phase
+  is mechanical (`node design/copycheck.mjs <file>`) and must pass or every
+  untraced string must be justified.
 - **Read `design/DESIGN.md` before writing or changing any UI.** It is the
   authoritative framework: tokens, patterns, owner preferences, decision rules.
   If a session decision contradicts it, update DESIGN.md in the same change.
