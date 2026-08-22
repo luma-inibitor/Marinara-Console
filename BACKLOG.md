@@ -49,6 +49,19 @@ owner decision after explanation.
 
 ## Owner feedback queue
 
+- **[Luma] Detail surfaces pass — IN REVIEW (2026-08-22).** Luma: both detail
+  surfaces are rough; the claim pane is the worse one ("assaulted by
+  information i have no idea what to do with and how it would impact my
+  memory vault"). Direction agreed: reorganize the pane around the decision
+  (headline sentence / op-specific consequence rendering / trust zone /
+  decide bar at bottom), merged after-state + diff confirmed, dedicated edit
+  affordance replaces the always-on textarea. Long entries handled by
+  diff-style context folding. Specimens: public/mockups/detail-v5.html
+  (seeded test corpus only — committable). NotePeek de-uglification rides in
+  the same wave (resolved titles, type icons, §section typography, mode
+  pill's first home). Awaiting specimen review.
+
+
 ### Tabled by Luma (2026-08-21 evening brainstorm)
 
 - **[Luma] Op icon mapping — DECIDED T5 (2026-08-21 evening).**
