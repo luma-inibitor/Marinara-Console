@@ -51,8 +51,10 @@ owner decision after explanation.
 
 ### Tabled by Luma (2026-08-21 evening brainstorm)
 
-- **[Luma] A1k change-kind icon mapping — revisit.** Luma likes the icon
-  column but wants a different icon mapping. Remind before implementation.
+- **[Luma] Op icon mapping — DECIDED (2026-08-21).** `file-plus` create ·
+  `text-plus` append · `writing` update · `link-plus` link · `tags` keywords ·
+  `activity` status · `users` subjects. Note types: `movie` for scene,
+  masks-theater stays RP-mode only. Use `@tabler/icons-preact`.
 - **[Luma] Icon education pattern — approved direction.** Every type/op icon
   is clickable/hoverable with a tooltip naming the concept, everywhere it
   appears (tap-to-reveal on touch; tooltips are never hover-only). Feeds the
