@@ -49,6 +49,25 @@ owner decision after explanation.
 
 ## Owner feedback queue
 
+- **Sources screen SHIPPED (2026-08-22, 5307601 + follow-ups).** Built from
+  the approved specimens; verify green at 390/768/1280; exercised read-only
+  against the live instance (213 sources, 45 blocked drafts, no console
+  errors). Still to do on this screen, deferred by the owner:
+  - **Refresh vs Re-extract** for `Update available`. The catalog ships a
+    Refresh family that updates imported source text and metadata without a
+    model call and does not create a draft; the honest flow is probably
+    Refresh then Re-extract. Undrawn and unimplemented.
+  - **Deleting an imported source.** Catalog already has the copy, including
+    the with-or-without-extracted-memories choice. Destructive, so it needs
+    the blast-radius treatment.
+  - **Live load is ~13s** for the Sources screen against the phone: it fetches
+    all three previews, 500 notes and the full review payload before first
+    paint. Wants progressive rendering per kind, or a lighter derived-memory
+    query.
+  - **Import scope is read but not yet written by Review or Vault** - the
+    signal is tool-level in store.ts, only Sources uses it so far.
+
+
 - **[Luma] Source import UI — IN REVIEW (2026-08-22).** Luma is blocked on
   using the tool for real ("i can't really use it yet... we first have to
   implement a decent source import ui"). Interview answers: (1) browse-to-

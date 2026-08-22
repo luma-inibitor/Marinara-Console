@@ -24,6 +24,11 @@ export interface SourceRow {
   kind: SourceKind;
   sourceId: string;
   title: string;
+  /** What this row is listed under. A lorebook's entries group by the book,
+   *  which is what the live corpus demanded: 90 of 100 parts shared one book
+   *  name, so every row spent its width repeating it and truncated away the
+   *  entry that told them apart. */
+  group: string;
   importMode: string;
   state: SourceState;
   /** The source note this became, when it has been imported. */
@@ -87,7 +92,8 @@ export function buildSources(
       out.push({
         kind,
         sourceId: s.sourceId,
-        title: cleanTitle(s.title, kind),
+        title: entryTitle(s.title, kind),
+        group: groupOf(s.title, kind),
         importMode: s.importMode,
         state: resolveState(s.freshness, blocked),
         noteId,
@@ -101,11 +107,24 @@ export function buildSources(
   return out;
 }
 
-/** The group header and the kind icon already say what this is, so the
- *  engine's "Lorebook - " / "Character - " title prefix is repetition. */
-function cleanTitle(title: string, kind: SourceKind): string {
+/** The engine titles a lorebook part "Lorebook - <book>: <entry>". The kind
+ *  icon and the group header carry the first two parts, so the row shows the
+ *  entry alone. */
+function stripKind(title: string, kind: SourceKind): string {
   const prefix = kind === "lorebooks" ? "Lorebook - " : kind === "characters" ? "Character - " : "";
   return prefix && title.startsWith(prefix) ? title.slice(prefix.length) : title;
+}
+function groupOf(title: string, kind: SourceKind): string {
+  if (kind !== "lorebooks") return "";
+  const t = stripKind(title, kind);
+  const i = t.indexOf(":");
+  return i > 0 ? t.slice(0, i).trim() : t;
+}
+function entryTitle(title: string, kind: SourceKind): string {
+  const t = stripKind(title, kind);
+  if (kind !== "lorebooks") return t;
+  const i = t.indexOf(":");
+  return i > 0 ? t.slice(i + 1).trim() : t;
 }
 
 function resolveState(freshness: string, blocked: string[]): SourceState {

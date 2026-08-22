@@ -210,18 +210,25 @@ export function Sources() {
         {loading && <p class="empty">{t("sourcesworkspace.loadingSourcePreview")}</p>}
         {!loading && shown.length === 0 && <EmptyState q={q} rows={rows} view={railView.value} chats={chats} />}
 
-        {!loading && KINDS.map(({ id, label, icon: KI, bulk }) => {
-          const group = shown.filter((r) => r.kind === id);
+        {!loading && KINDS.flatMap(({ id, label, icon: KI, bulk }) => {
+          const inKind = shown.filter((r) => r.kind === id);
           const err = errors.get(id);
-          if (err) return <div key={id} class="mem-card is-danger"><b class="t-prose">{label()}</b><p class="t-data dim">{err}</p></div>;
-          if (!group.length) return null;
+          if (err) return [<div key={id} class="mem-card is-danger"><b class="t-prose">{label()}</b><p class="t-data dim">{err}</p></div>];
+          if (!inKind.length) return [];
+          // Lorebook entries list under their book; everything else under its kind.
+          const names = id === "lorebooks"
+            ? [...new Set(inKind.map((r) => r.group))]
+            : [""];
+          return names.map((gname) => {
+          const group = gname ? inKind.filter((r) => r.group === gname) : inKind;
+          const heading = gname || label();
           const eligible = group.filter(isSelectable);
           const allPicked = eligible.length > 0 && eligible.every((r) => selected.has(r.sourceId));
           return (
-            <div key={id}>
+            <div key={id + gname}>
               <div class="sghead">
                 <span class="ki"><KI size={15} stroke={1.75} aria-hidden /></span>
-                <span class="gname t-prose">{label()}</span>
+                <span class="gname t-prose">{heading}</span>
                 <span class="gn t-data">{group.length}</span>
                 <span class="gsp" />
                 {bulk && eligible.length > 0 && (
@@ -244,6 +251,7 @@ export function Sources() {
               ))}
             </div>
           );
+          });
         })}
 
         {!loading && shown.length > 0 && (
