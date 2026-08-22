@@ -15,7 +15,7 @@
 
 import { type ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
-import { IconChevronRight, IconEye, IconFlag, IconPencil, IconWriting, IconArrowRight } from "@tabler/icons-preact";
+import { IconChevronRight, IconEye, IconFlag, IconInfoCircle, IconPencil, IconWriting, IconArrowRight } from "@tabler/icons-preact";
 import { toast } from "../../shell/toast";
 import { type Mutation, type Row, KEYWORD_CAP, SECTION_CAP } from "./data";
 import { t, OURS } from "./strings";
@@ -67,6 +67,43 @@ function Zone(props: { eyebrow: ComponentChildren; foot?: ComponentChildren; cls
       <div class="z-eye t-label t-label-s">{props.eyebrow}</div>
       {props.children}
       {props.foot && <div class="z-foot t-data">{props.foot}</div>}
+    </div>
+  );
+}
+
+/** Help text: the info glyph marks it as education, not content. */
+function Edu({ children }: { children: ComponentChildren }) {
+  return (
+    <p class="edu t-prose dim">
+      <IconInfoCircle size={12} stroke={1.75} aria-hidden />
+      <span>{children}</span>
+    </p>
+  );
+}
+
+/** The object under review, inlined (owner-approved S7): an inset card of the
+ *  memory's content — dimmer, no diff gutters, folded past three lines. It is
+ *  context, not part of the change. Resolves vault memories first, then
+ *  batch-pending creates. */
+function InlineMemory({ id }: { id: string }) {
+  const note = notesById.value.get(id);
+  const secs = note
+    ? Object.values(note.sections ?? {}).map((s) => s.text ?? "")
+    : Object.values(
+        rows.value.find((x) => x.targetId === id && x.mutation.kind === "create_note")?.mutation.note?.sections ?? {},
+      ).map((s) => s.text ?? "");
+  const lines = secs.flatMap(splitLines);
+  if (!lines.length) return null;
+  const head = lines.slice(0, 3);
+  const rest = lines.slice(3);
+  return (
+    <div class="inline-card">
+      {head.map((l, i) => <div key={i} class="lt-i t-prose">{l}</div>)}
+      {rest.length > 0 && (
+        <Fold label={`${rest.length} more line${rest.length === 1 ? "" : "s"} · ${rest.join(" ").length.toLocaleString()} ch`}>
+          {rest.map((l, i) => <div key={i} class="lt-i t-prose">{l}</div>)}
+        </Fold>
+      )}
     </div>
   );
 }
@@ -315,7 +352,8 @@ function Preview(props: {
           <span class="rel t-data">— {rel} →</span>
           <LinkTarget target={m.link?.target ?? ""} chip />
         </div>
-        <p class="edu t-prose dim">{t("longtermmemorydetail.underTheHoodRelatedMemories")}</p>
+        <InlineMemory id={m.link?.target ?? ""} />
+        <Edu>{t("longtermmemorydetail.underTheHoodRelatedMemories")}</Edu>
       </Zone>
     );
   }
@@ -334,7 +372,7 @@ function Preview(props: {
           {added.map((k) => <span key={k} class="kwc kw-add t-data">+ {k}</span>)}
           {removed.map((k) => <span key={k} class="kwc kw-del t-data">− {k}</span>)}
         </div>
-        <p class="edu t-prose dim">{t("longtermmemorydetail.underTheHoodKeywords")}</p>
+        <Edu>{t("longtermmemorydetail.underTheHoodKeywords")}</Edu>
       </Zone>
     );
   }
@@ -349,7 +387,8 @@ function Preview(props: {
           <IconArrowRight class="dim-i" size={13} stroke={1.75} aria-hidden />
           <span class={`stt t-data st-${to}`}>{to}</span>
         </div>
-        <p class="edu t-prose dim">{t("memoryvault.statusHelp")}</p>
+        <InlineMemory id={r.targetId} />
+        <Edu>{t("memoryvault.statusHelp")}</Edu>
       </Zone>
     );
   }

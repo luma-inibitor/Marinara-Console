@@ -72,9 +72,11 @@ owner decision after explanation.
   now); extraction colon; open-memory button on append/update previews as
   the pop-back-and-forth answer (peek overlay) - Luma to judge comfort on
   device.
-  **Pending Luma:** S7 inline-object mockups (link target inlined - resolved
-  thread inlined); live sizes say affordable (threads median 242 ch,
-  timeline events median 479, p90 771, fold at 3 lines).
+  **S7 inline-object cards — APPROVED ("s7 lgtm") and shipped:** link and
+  status previews inline the object under review (vault memories first, then
+  batch-pending creates; fold past 3 lines; live sizes: threads median 242
+  ch, timeline events median 479, p90 771). Help text carries a small
+  info-circle glyph to mark it as education.
 
 
 ### Tabled by Luma (2026-08-21 evening brainstorm)

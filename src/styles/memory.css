@@ -361,7 +361,13 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .rel { color: var(--text-dim); }
 .chip-batch { font-size: 10px; color: var(--ok); border-radius: var(--r-s); padding: 0 5px;
   border: 1px solid color-mix(in srgb, var(--ok) 45%, transparent); }
-.edu { margin: 6px 0 0; font-size: 12px; }
+.edu { margin: 6px 0 0; font-size: 12px; display: flex; align-items: flex-start; gap: 5px; }
+.edu svg { flex: 0 0 auto; margin-top: 2px; }
+/* the object under review, inlined (S7): context, not change — no gutters */
+.inline-card { border: var(--hairline); border-radius: var(--r-s); background: var(--surface-1);
+  padding: 6px 9px; margin-top: 7px; }
+.audit-detail .inline-card { background: var(--surface-2); }
+.lt-i { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; margin: 2px 0; }
 .kwrap { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 0; }
 .kwc { border: var(--hairline); border-radius: var(--r-s); padding: 2px 7px; }
 .kw-add { color: var(--ok); background: var(--ok-wash);
