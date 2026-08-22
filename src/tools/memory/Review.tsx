@@ -429,38 +429,42 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   const chars = isTarget ? g.rows.reduce((n, r) => n + contributionChars(r), 0) : 0;
   return (
     <div>
-      <div class={`grouphead ghead4 ${isTarget ? "is-object" : ""}`}>
-        {/* dot trails the title: a conditional marker must not shift where
-            titles start across sibling headers (checklist L1) */}
+      {/* New-target marker: option 2a, green edge on the header (owner call
+          2026-08-21, accepting the color-only tradeoff). Edge, not inline —
+          nothing conditional sits in the title line, so nothing shifts. */}
+      <div class={`grouphead ghead4 ${isTarget ? "is-object" : ""} ${isNew ? "is-new" : ""}`}>
         <span class="ghead-id">
           {isTarget && g.meta && <TypeIcon type={g.meta} />}
           <span class="gn t-prose">{g.label}</span>
-          {isNew && <span class="ndot" title="will be created" aria-label="will be created" />}
         </span>
         {chars > 0 && <span class="ghead-agg t-data">+{chars.toLocaleString()}</span>}
-        <GroupPressure groupId={g.id} isTarget={isTarget} />
-        <span class="tbar-w" aria-label={`${kept + dropped} of ${g.rows.length} decided`}>
-          <span class="tbar">
-            <i class="tk" style={`width:${(kept / g.rows.length) * 100}%`} />
-            <i class="td" style={`width:${(dropped / g.rows.length) * 100}%`} />
+        {/* atomic control cluster: right-anchored, wraps to its own line as a
+            unit only when the title needs the room */}
+        <span class="ghead-ctl">
+          <GroupPressure groupId={g.id} isTarget={isTarget} />
+          <span class="tbar-w" aria-label={`${kept + dropped} of ${g.rows.length} decided`}>
+            <span class="tbar">
+              <i class="tk" style={`width:${(kept / g.rows.length) * 100}%`} />
+              <i class="td" style={`width:${(dropped / g.rows.length) * 100}%`} />
+            </span>
+            <span class="tbar-n t-data">{kept + dropped}/{g.rows.length}</span>
           </span>
-          <span class="tbar-n t-data">{kept + dropped}/{g.rows.length}</span>
+          {undecidedRows.length > 0 && (
+            <span class="ghead-acts">
+              <button class="gib gk" title={`Keep ${undecidedRows.length} undecided`}
+                aria-label={`Keep all ${undecidedRows.length} undecided in ${g.label}`}
+                onClick={() => bulkDecide(undecidedRows, "keep", `keep ${g.label}`)}>
+                <IconCircleCheck size={15} stroke={1.75} aria-hidden />
+              </button>
+              <button class="gib gd" title={`Drop ${undecidedRows.length} undecided`}
+                aria-label={`Drop all ${undecidedRows.length} undecided in ${g.label}`}
+                onClick={() => bulkDecide(undecidedRows, "drop", `drop ${g.label}`)}>
+                <IconCircleX size={15} stroke={1.75} aria-hidden />
+              </button>
+            </span>
+          )}
+          {isTarget && <GroupMenu group={g} kept={kept} dropped={dropped} isNew={isNew} />}
         </span>
-        {undecidedRows.length > 0 && (
-          <span class="ghead-acts">
-            <button class="gib gk" title={`Keep ${undecidedRows.length} undecided`}
-              aria-label={`Keep all ${undecidedRows.length} undecided in ${g.label}`}
-              onClick={() => bulkDecide(undecidedRows, "keep", `keep ${g.label}`)}>
-              <IconCircleCheck size={15} stroke={1.75} aria-hidden />
-            </button>
-            <button class="gib gd" title={`Drop ${undecidedRows.length} undecided`}
-              aria-label={`Drop all ${undecidedRows.length} undecided in ${g.label}`}
-              onClick={() => bulkDecide(undecidedRows, "drop", `drop ${g.label}`)}>
-              <IconCircleX size={15} stroke={1.75} aria-hidden />
-            </button>
-          </span>
-        )}
-        {isTarget && <GroupMenu group={g} kept={kept} dropped={dropped} isNew={isNew} />}
       </div>
       {g.rows.map((r) => <ClaimRow key={r.key} row={r} showTarget={props.showTarget} onActivate={props.onActivate} />)}
     </div>

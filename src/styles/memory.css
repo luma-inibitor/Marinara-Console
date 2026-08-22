@@ -139,16 +139,24 @@
 .memory-tool .console { box-shadow: 0 -10px 0 0 var(--canvas); }
 .mem-rows .grouphead { top: calc(var(--console-h, 0px) - 1px);
   box-shadow: 0 -10px 0 0 var(--canvas); }
+/* new-target header: 2a green edge (both shadows — the -10px strip is the
+   Android sticky-seam guard and must survive) */
+.mem-rows .grouphead.is-new { box-shadow: inset 3px 0 0 var(--ok), 0 -10px 0 0 var(--canvas); }
 /* Group header v4 (2026-08-21): one line — identity · aggregates · cap flag ·
    bar tally · icon bulk · kebab. Fixed-width slots on everything that
    survives narrow width, so a conditional flag appearing never shifts its
    neighbors. At <900px the identity takes its own line (titles wrap, never
    truncate) and the variable-length aggregates drop. */
-.ghead4 { display: flex; align-items: center; gap: var(--s2); }
+.ghead4 { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
 .ghead4 .ghead-id { flex: 1 1 auto; }
 .ghead-id { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
 .ghead-id .gn { overflow-wrap: anywhere; }
-.ghead-agg { margin-left: auto; color: var(--text-dim); font-size: 11px; white-space: nowrap; }
+.ghead-ctl { display: inline-flex; align-items: center; gap: var(--s2);
+  margin-left: auto; flex: 0 0 auto; }
+.ghead-agg { color: var(--text-dim); font-size: 11px; white-space: nowrap; }
+/* icon svgs render as blocks: the inline baseline gap sat them ~3px high
+   against adjacent text (visible at zoom — owner-reported misalignment) */
+.ti > svg, .kslot svg, .dec > svg, .gib > svg, .fq > svg { display: block; }
 .gcap { flex: 0 0 auto; }
 .tbar-w { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; }
 .tbar { width: 48px; height: 5px; border-radius: 3px; background: var(--surface-3);
@@ -175,12 +183,11 @@
   border-radius: var(--r-s); color: var(--text); font-size: 13px; }
 .gmenu-pop button:hover { background: var(--surface-3); }
 @media (max-width: 899px) {
-  .ghead4 { flex-wrap: wrap; }
-  /* must out-specify the desktop `.ghead4 .ghead-id` rule */
-  .ghead4 .ghead-id { flex: 1 1 100%; }
   .ghead-agg { display: none; }
   .gcap .gcap-pct { display: none; }
-  .ghead4 .tbar-w { margin-right: auto; }
+  /* one line when it fits; a long title keeps at least this much room and
+     pushes the control cluster (whole) onto its own right-aligned line */
+  .ghead4 .ghead-id { min-width: 16ch; }
 }
 .group-actions { display: flex; gap: var(--s2); padding: var(--s2) var(--s3); align-items: center; }
 

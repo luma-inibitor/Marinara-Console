@@ -74,8 +74,11 @@ owner decision after explanation.
 - **[Luma] Chars ⇄ estimated tokens toggle** on the contribution display —
   "nice to not have to divide by 4". Stopgap: moot once column controls
   exist (an est-tokens column covers it); until then, a display toggle.
-- **[Luma] New-target marker: green dot (2b) — chosen** 2026-08-21, "let's
-  see how much I hate it". Dashed-ring 2d rejected (inflates icon footprint).
+- **[Luma] New-target marker: green edge bar (2a) — chosen** 2026-08-21
+  late, superseding the dot (2b): the dot either shifted titles or floated;
+  Luma killed it and took 2a's edge, explicitly accepting the color-only
+  accessibility tradeoff. Applies to note group headers; rows in flat
+  contexts keep the small dot beside the target ref for now.
 - **[Luma] Enum tooltips prefix their owning field** ("claim kind · static —
   ..."), so the value is anchored to the field it belongs to.
 - **[Luma] Icon education pattern — approved direction.** Every type/op icon
