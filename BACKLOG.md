@@ -89,6 +89,16 @@ owner decision after explanation.
   the per-source ledger away as audit material, and carries one help line
   under one information icon. Import buttons show the price once (sparkle +
   count), not twice.
+  **Owner round 4 (2026-08-22):** phone specimens dropped at owner request;
+  added S1B import scope (tool-level control, and the specimen states that
+  scope is recorded into the extraction context - the cause of the 44 blocked
+  drafts), S7 what a source produced (first item in the linkage order: an
+  imported source expands to its derived memories and its pending claims,
+  linking into vault and review queue), and S8 empty states (zero-result with
+  the binding constraint named, nothing-in-scope, and the terminal
+  everything-imported state). Still unmocked and agreed as a later pass:
+  Refresh vs Re-extract for "Update available", and deleting an imported
+  source (the catalog already has the delete-with-or-without-memories copy).
 
 - **DIAGNOSED (2026-08-22): the live 44x `source_stale` mystery is context
   drift, not stale text.** Compared every blocked draft's
