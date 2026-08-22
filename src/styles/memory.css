@@ -158,7 +158,7 @@
 .ghead4 > * + * { margin-left: var(--s2); }
 /* the rail cell: collapse chevron, same 40px column the rows' decision
    icons occupy (owner: "we can use that space for an expander chevron") */
-.gexp { width: 40px; flex: 0 0 auto; margin-left: 0; align-self: stretch;
+.gexp { width: 40px; min-height: 40px; flex: 0 0 auto; margin-left: 0; align-self: stretch;
   display: flex; align-items: center; justify-content: center;
   border: none; background: none; cursor: pointer; color: var(--text-dim); padding: 0; }
 .gexp:hover { color: var(--text); }
