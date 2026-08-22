@@ -444,24 +444,20 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   const chars = isTarget ? g.rows.reduce((n, r) => n + contributionChars(r), 0) : 0;
   return (
     <div>
-      {/* New-target marker: option 2a, green edge on the header (owner call
-          2026-08-21, accepting the color-only tradeoff). Edge, not inline —
-          nothing conditional sits in the title line, so nothing shifts.
-          The 40px decision rail holds the collapse chevron (owner idea:
-          the control column gets a control). */}
-      <div class={`grouphead ghead4 ${isTarget ? "is-object" : ""} ${isNew ? "is-new" : ""}`}>
+      {/* Same grid as the rows: chevron in the rail (the control column gets
+          a control), type icon in the kind column, words in the body. The
+          new-target marker is the 2a green edge (owner call, color-only
+          tradeoff accepted) — an edge, so nothing in the title line shifts. */}
+      <div class={`mem-ghead ${isNew ? "is-new" : ""}`}>
         <button class="gexp hit" aria-expanded={!collapsed}
           aria-label={`${collapsed ? "Expand" : "Collapse"} ${g.label} (${g.rows.length})`}
           onClick={() => toggleGroupCollapsed(g.id)}>
           {collapsed ? <IconChevronRight size={16} stroke={1.75} aria-hidden /> : <IconChevronDown size={16} stroke={1.75} aria-hidden />}
         </button>
-        <span class="ghead-id">
-          {isTarget && g.meta && <TypeIcon type={g.meta} />}
-          <span class="gn t-prose">{g.label}</span>
-        </span>
+        {isTarget && g.meta && <TypeIcon type={g.meta} />}
+        <div class="ghead-body">
+        <span class="gn t-prose">{g.label}</span>
         {chars > 0 && <span class="ghead-agg t-data">+{chars.toLocaleString()}</span>}
-        {/* atomic control cluster: right-anchored, wraps to its own line as a
-            unit only when the title needs the room */}
         <span class="ghead-ctl">
           <GroupPressure groupId={g.id} isTarget={isTarget} />
           <span class="tbar-w" aria-label={`${kept + dropped} of ${g.rows.length} decided`}>
@@ -487,6 +483,7 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
           )}
           {isTarget && <GroupMenu group={g} kept={kept} dropped={dropped} isNew={isNew} />}
         </span>
+        </div>
       </div>
       {!collapsed && g.rows.map((r) => <ClaimRow key={r.key} row={r} showTarget={props.showTarget} onActivate={props.onActivate} />)}
     </div>
@@ -541,10 +538,10 @@ function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: stri
   const chars = contributionChars(r);
   const isNew = r.mutation.kind === "create_note";
   return (
-    <div class={`row mem-row ${isOpen ? "is-open" : ""} ${isFocused ? "is-focused" : ""}`} data-row={r.key} data-d={d ?? "undecided"}>
-      <div class="row-summary mem-summary has-kslot">
+    <div class={`mem-row ${isOpen ? "is-open" : ""} ${isFocused ? "is-focused" : ""}`} data-row={r.key} data-d={d ?? "undecided"}>
+      <div class="mem-summary">
         <button
-          class="rail-cell tri hit"
+          class="mem-dec hit"
           aria-label={`Decision: ${d ?? OURS.undecided}. Tap to cycle.`}
           onClick={(e) => { e.stopPropagation(); cycleDecision(r); }}
         >
@@ -553,7 +550,7 @@ function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: stri
         <span class="kslot">
           <Term tip={OP_TIP[r.mutation.kind]}><OpIcon kind={r.mutation.kind} /></Term>
         </span>
-        <button class="mid mem-mid" onClick={() => props.onActivate(r.key)}>
+        <button class="mem-mid" onClick={() => props.onActivate(r.key)}>
           {props.showTarget && (
             <span class="a1-tgt t-data">
               <TypeIcon type={r.targetType} size={13} />
@@ -675,7 +672,7 @@ function Rejections() {
   }
   return (
     <div class="mem-rejections">
-      <div class="grouphead"><span class="gn t-prose">{t("reviewqueue.suggestionsThatWerentSaved")}</span>
+      <div class="mem-ghead is-plain"><span class="gn t-prose">{t("reviewqueue.suggestionsThatWerentSaved")}</span>
         <span class="t-data dim">{rejections.value.length}</span></div>
       {[...byReason.entries()].map(([reason, items]) => (
         <details key={reason} class="mem-card">

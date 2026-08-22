@@ -123,7 +123,7 @@ export function Sources() {
           if (!preview) {
             return (
               <div key={source}>
-                <div class="grouphead"><span class="gn t-prose">{label()}</span>
+                <div class="mem-ghead is-plain"><span class="gn t-prose">{label()}</span>
                   <span class="t-data dim">scanning…</span></div>
               </div>
             );
@@ -134,20 +134,20 @@ export function Sources() {
           const sel = selected.get(source) ?? new Set<string>();
           return (
             <div key={source}>
-              <div class="grouphead">
+              <div class="mem-ghead is-plain">
                 <span class="gn t-prose">{label()}</span>
                 <span class="t-data dim">{preview.scanned} scanned · {preview.draftable} {t("sourcesworkspace.readyToImport").toLowerCase()}</span>
               </div>
               {preview.samples.length === 0 && <p class="t-prose dim empty-why">{emptyWhy()}</p>}
               {preview.samples.map((s) => (
-                <div key={s.sourceId} class="row mem-row" data-d={sel.has(s.sourceId) ? "keep" : "undecided"}>
-                  <div class="row-summary mem-summary">
-                    <button class="rail-cell tri hit" aria-label={`Select ${s.title}`} onClick={() => toggle(source, s.sourceId)}>
+                <div key={s.sourceId} class="mem-row" data-d={sel.has(s.sourceId) ? "keep" : "undecided"}>
+                  <div class="mem-summary">
+                    <button class="mem-dec hit" aria-label={`Select ${s.title}`} onClick={() => toggle(source, s.sourceId)}>
                       <DecisionIcon d={sel.has(s.sourceId) ? "keep" : null} />
                     </button>
-                    <button class="mid mem-mid" onClick={() => toggle(source, s.sourceId)}>
-                      <span class="nm">{s.title}</span>
-                      <span class="metaline t-data">
+                    <button class="mem-mid span-kind stacked" onClick={() => toggle(source, s.sourceId)}>
+                      <span class="src-title">{s.title}</span>
+                      <span class="src-meta">
                         <span class={s.freshness === "new" ? "is-keep" : s.freshness === "current" ? "dim" : "fl"}>{freshnessLabel(s.freshness)}</span>
                         <i class="sep" data-contrast-exempt>·</i>{t("sourcesworkspace.importsAsMode", { mode: s.importMode })}
                       </span>

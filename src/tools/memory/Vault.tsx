@@ -159,7 +159,7 @@ function NoteRow(props: { note: Note; isOpen: boolean; onOpen: () => void }) {
   const p = pressureOf(n);
   const chars = Object.values(n.sections ?? {}).reduce((sum, s) => sum + (s.text?.length ?? 0), 0);
   return (
-    <div class={`row mem-row ${props.isOpen ? "is-open" : ""}`}>
+    <div class={`row ${props.isOpen ? "is-open" : ""}`}>
       <button class="row-summary vault-summary" onClick={props.onOpen}>
         <span class="rail-cell"><span class={`tdot type-${n.type}`} aria-hidden="true" /></span>
         <span class="mid">

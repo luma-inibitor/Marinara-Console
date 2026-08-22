@@ -74,33 +74,55 @@
 /* chip rail: mandated secondary spacing + an edge fade so overflow is discoverable */
 .chiprail { gap: var(--s2); mask-image: linear-gradient(90deg, #000 94%, transparent); }
 
-/* ══ claim rows ══ */
-/* Row v2 (2026-08-21): [decision icon][op-icon slot][one-line claim … trail].
-   The fixed slots keep every row's claim text starting at the same x
-   (checklist L1); the enums have no columns — exceptions surface in the
-   flags chip, the rest lives in the detail card. */
+/* ═══ MEMORY LIST SYSTEM ═════════════════════════════════════════════
+   Owns every layout rule for the review and sources lists. No lorebook
+   classes — this shares nothing with the audit-row pattern. (The vault
+   list IS a lorebook audit row and deliberately keeps that pattern.)
+
+   One grid, consumed by rows AND group headers — alignment holds by
+   construction, not by matched numbers:
+     col 1  rail  40px  the per-item control (decision / select / collapse)
+     col 2  kind  24px  what-is-it icon (op icons in rows, type in headers)
+     col 3  body  1fr   words, then trailing data
+
+   Channel map — one meaning per visual channel:
+     left edge bar     new-target marker (headers) · keyboard cursor (rows,
+                       accent — the interactive hue)
+     background wash   row decision state (keep / drop)
+     top shadow strip  sticky seam guard (Android repaint lag)
+     circle icons      decision states only
+     flag glyph        exception flags only
+     file/script icons content ops · categorical-hue icons: note types */
+
 .mem-rows { padding-bottom: 132px; }
-.mem-summary { grid-template-columns: 40px minmax(0, 1fr); align-items: center; }
-.mem-summary.has-kslot { grid-template-columns: 40px 24px minmax(0, 1fr); }
-/* the decision/select rail button needs a real box — its icon is only 17px.
-   padding:0 clears .rail-cell's first-line offset (a lorebook multi-line
-   pattern); this row is single-line and centers its rail. */
-.mem-row .tri { min-width: 40px; min-height: 40px; padding: 0; border: none;
+
+/* ── rows ── */
+.mem-row { border-bottom: var(--hairline); }
+.mem-row[data-d="keep"] { background: var(--ok-wash); }
+.mem-row[data-d="drop"] { background: var(--danger-wash); }
+.mem-row.is-open .mem-summary, .mem-summary:hover { background: var(--surface-1); }
+.mem-row.is-focused { box-shadow: inset 2px 0 0 var(--accent); }
+.mem-summary { display: grid; grid-template-columns: 40px 24px minmax(0, 1fr);
+  align-items: center; }
+.mem-dec { grid-column: 1; min-height: 40px; padding: 0; border: none;
   background: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center; }
+.kslot { grid-column: 2; justify-self: center; display: inline-flex;
+  color: var(--text-dim); }
+.mem-mid { grid-column: 3; display: flex; align-items: center; gap: 8px;
+  min-width: 0; text-align: left;
+  padding: var(--row-pad-y) var(--row-pad-x) var(--row-pad-y) 0; }
+.mem-mid.span-kind { grid-column: 2 / -1; }
+.mem-mid.stacked { flex-direction: column; align-items: flex-start; gap: 2px; }
+.src-title { display: block; font-weight: 600; font-size: var(--fs-prose); }
+.src-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  font-family: var(--font-data); font-size: var(--fs-data-s); color: var(--text-dim); }
 .dec { display: inline-flex; }
 .dec-keep { color: var(--ok); }
 .dec-drop { color: var(--danger); }
 .dec-undecided { color: var(--text-faint); }
-.kslot { flex: 0 0 auto; width: 24px; display: inline-flex; justify-content: center;
-  color: var(--text-dim); }
 [data-d="drop"] .claim-text { opacity: 0.5; text-decoration: line-through;
   text-decoration-color: color-mix(in srgb, var(--danger) 55%, transparent); }
-[data-d="keep"] .mem-summary { box-shadow: inset 3px 0 0 var(--ok); }
-[data-d="drop"] .mem-summary { box-shadow: inset 3px 0 0 var(--danger); }
-
-.mem-mid { display: flex; align-items: center; gap: 8px; min-width: 0; text-align: left;
-  padding: var(--row-pad-y) var(--row-pad-x) var(--row-pad-y) 0; }
 .claim-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden;
   text-overflow: ellipsis; font-size: var(--fs-prose); line-height: 1.35; }
 .a1-tgt { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
@@ -111,7 +133,7 @@
   font-family: var(--font-data); font-size: 11px; color: var(--text-dim); }
 .fq[data-sev="warn"] { color: var(--warn); }
 .fq[data-sev="danger"] { color: var(--danger); }
-/* information-bearing numbers use the dim tone, never faint (token quarantine) */
+/* information-bearing numbers use the dim tone, never faint */
 .chs { font-family: var(--font-data); font-size: 11px; color: var(--text-dim);
   min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
 .ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); flex: 0 0 auto; }
@@ -119,6 +141,8 @@
 .disp-new { color: var(--accent); }
 .disp-merge { color: var(--ok); }
 .disp-rewrite { color: var(--warn); }
+/* icon svgs are blocks: the inline baseline gap sits them ~3px high */
+.ti > svg, .kslot svg, .dec > svg, .gib > svg, .fq > svg, .gexp > svg { display: block; }
 
 /* ══ cards (obligations, failures, rejections, import results) ══ */
 .mem-card { margin: var(--s2) var(--s3); padding: var(--panel-pad);
@@ -134,46 +158,39 @@
 .snippet { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
   overflow: hidden; font-size: 12.5px; margin-top: 2px; }
 
-/* Group heads pin below the sticky console. The box-shadow strips paint
-   opaque canvas above each sticky layer: Android's sticky repaint lags a few
-   px during fast scroll, and these make the brief gap show background instead
-   of row text. Same reason for the 1px overlap. */
+/* The console's seam guard: opaque canvas above the sticky layer
+   (Android sticky repaint lags a few px during fast scroll). */
 .memory-tool .console { box-shadow: 0 -10px 0 0 var(--canvas); }
-.mem-rows .grouphead { top: calc(var(--console-h, 0px) - 1px);
-  box-shadow: 0 -10px 0 0 var(--canvas); }
-/* new-target header: 2a green edge (both shadows — the -10px strip is the
-   Android sticky-seam guard and must survive) */
-.mem-rows .grouphead.is-new { box-shadow: inset 3px 0 0 var(--ok), 0 -10px 0 0 var(--canvas); }
-/* Group header v4 (2026-08-21): one line — identity · aggregates · cap flag ·
-   bar tally · icon bulk · kebab. Fixed-width slots on everything that
-   survives narrow width, so a conditional flag appearing never shifts its
-   neighbors. At <900px the identity takes its own line (titles wrap, never
-   truncate) and the variable-length aggregates drop. */
-/* The header shares the rows' column grid: the 40px decision rail stays
-   empty (headers make no decision), the type icon sits in the kind-icon
-   column over the op icons, and the title starts at the claim-text x.
-   One grid, two renderings — no near-miss stagger. */
-.ghead4 { display: flex; align-items: center; gap: 0; flex-wrap: wrap;
-  padding-left: 0; /* the chevron rail supplies the left inset */ }
-.ghead4 > * + * { margin-left: var(--s2); }
-/* the rail cell: collapse chevron, same 40px column the rows' decision
-   icons occupy (owner: "we can use that space for an expander chevron") */
-.gexp { width: 40px; min-height: 40px; flex: 0 0 auto; margin-left: 0; align-self: stretch;
+
+/* ── group headers: the same grid, a different rendering ── */
+.mem-ghead { display: grid; grid-template-columns: 40px 24px minmax(0, 1fr);
+  align-items: start; /* rail + kind pin to the first line when the body wraps */
+  position: sticky; top: calc(var(--console-h, 0px) - 1px); z-index: 5;
+  background: var(--surface-2); border-top: var(--hairline); border-bottom: var(--hairline);
+  box-shadow: 0 -10px 0 0 var(--canvas); /* seam guard */ }
+.mem-ghead.is-new { box-shadow: inset 3px 0 0 var(--ok), 0 -10px 0 0 var(--canvas); }
+.mem-ghead > .ti { grid-column: 2; justify-self: center; align-self: start;
+  margin-top: 12.5px; /* centers the 15px icon in the 40px first line */ }
+.gexp { grid-column: 1; min-height: 40px; align-self: start; padding: 0;
   display: flex; align-items: center; justify-content: center;
-  border: none; background: none; cursor: pointer; color: var(--text-dim); padding: 0; }
+  border: none; background: none; cursor: pointer; color: var(--text-dim); }
 .gexp:hover { color: var(--text); }
-.ghead4 .ghead-id { margin-left: 0; }
-.ghead4 .ghead-id { flex: 1 1 auto; }
-.ghead-id { display: inline-flex; align-items: center; gap: 0; min-width: 0; }
-.ghead-id .ti { width: 24px; flex: 0 0 auto; display: inline-flex; justify-content: center; }
-.ghead-id .gn { overflow-wrap: anywhere; }
+.ghead-body { grid-column: 3; min-width: 0; min-height: 40px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--s2);
+  padding: 5px var(--s3) 5px 0; }
+.ghead-body .gn { flex: 1 1 auto; min-width: 16ch; color: var(--text);
+  overflow-wrap: anywhere; }
+.ghead-agg { color: var(--text-dim); font-size: 11px; white-space: nowrap; }
+/* the control cluster is atomic and right-anchored: one line when the
+   width allows; a long title pushes the whole cluster to its own line */
 .ghead-ctl { display: inline-flex; align-items: center; gap: var(--s2);
   margin-left: auto; flex: 0 0 auto; }
-.ghead-agg { color: var(--text-dim); font-size: 11px; white-space: nowrap; }
-/* icon svgs render as blocks: the inline baseline gap sat them ~3px high
-   against adjacent text (visible at zoom — owner-reported misalignment) */
-.ti > svg, .kslot svg, .dec > svg, .gib > svg, .fq > svg { display: block; }
+/* label-only headers (sources sections, rejections) skip the grid */
+.mem-ghead.is-plain { display: flex; gap: var(--s2); padding: 5px var(--s3); }
+.mem-ghead.is-plain .gn { flex: 1; color: var(--text); }
 .gcap { flex: 0 0 auto; }
+.gcap[data-sev="warn"] { color: var(--warn); }
+.gcap[data-sev="danger"] { color: var(--danger); }
 .tbar-w { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; }
 .tbar { width: 48px; height: 5px; border-radius: 3px; background: var(--surface-3);
   overflow: hidden; display: inline-flex; }
@@ -201,9 +218,6 @@
 @media (max-width: 899px) {
   .ghead-agg { display: none; }
   .gcap .gcap-pct { display: none; }
-  /* one line when it fits; a long title keeps at least this much room and
-     pushes the control cluster (whole) onto its own right-aligned line */
-  .ghead4 .ghead-id { min-width: 16ch; }
 }
 .group-actions { display: flex; gap: var(--s2); padding: var(--s2) var(--s3); align-items: center; }
 
@@ -398,6 +412,3 @@
 .zone-ch { margin-left: auto; font-size: 10.5px; letter-spacing: 0;
   text-transform: none; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 
-/* the trailing new-dot hugs the title (lorebooks' .gn flex:1 would push it
-   to the line edge and detach it from the identity it marks) */
-.ghead4 .gn { flex: 0 1 auto; }
