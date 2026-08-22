@@ -75,25 +75,44 @@
 .chiprail { gap: var(--s2); mask-image: linear-gradient(90deg, #000 94%, transparent); }
 
 /* ══ claim rows ══ */
+/* Row v2 (2026-08-21): [decision icon][op-icon slot][one-line claim … trail].
+   The fixed slots keep every row's claim text starting at the same x
+   (checklist L1); the enums have no columns — exceptions surface in the
+   flags chip, the rest lives in the detail card. */
 .mem-rows { padding-bottom: 132px; }
-.mem-summary { grid-template-columns: 40px minmax(0, 1fr) 52px; }
-.mem-row .tri { border: none; background: none; cursor: pointer; padding-top: 2px; }
-.tri-dot { width: 22px; height: 22px; border-radius: 50%; flex: 0 0 auto;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; color: var(--canvas);
-  background: var(--dc, var(--off)); }
-[data-d="undecided"] .tri-dot { background: transparent; box-shadow: inset 0 0 0 1.5px var(--off); }
+.mem-summary { grid-template-columns: 40px minmax(0, 1fr); align-items: center; }
+.mem-summary.has-kslot { grid-template-columns: 40px 24px minmax(0, 1fr); }
+/* the decision/select rail button needs a real box — its icon is only 17px */
+.mem-row .tri { min-width: 40px; min-height: 40px; }
+.mem-row .tri { border: none; background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; }
+.dec { display: inline-flex; }
+.dec-keep { color: var(--ok); }
+.dec-drop { color: var(--danger); }
+.dec-undecided { color: var(--text-faint); }
+.kslot { flex: 0 0 auto; width: 22px; display: inline-flex; justify-content: center;
+  color: var(--text-dim); }
 [data-d="drop"] .claim-text { opacity: 0.5; text-decoration: line-through;
   text-decoration-color: color-mix(in srgb, var(--danger) 55%, transparent); }
 [data-d="keep"] .mem-summary { box-shadow: inset 3px 0 0 var(--ok); }
 [data-d="drop"] .mem-summary { box-shadow: inset 3px 0 0 var(--danger); }
 
-.mem-mid { display: block; min-width: 0; text-align: left;
+.mem-mid { display: flex; align-items: center; gap: 8px; min-width: 0; text-align: left;
   padding: var(--row-pad-y) var(--row-pad-x) var(--row-pad-y) 0; }
-.claim-text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4;
-  overflow: hidden; font-size: var(--fs-prose); line-height: 1.35; overflow-wrap: anywhere;
-  white-space: pre-line; }
-.mem-row .metaline { flex-wrap: wrap; overflow: visible; mask-image: none; row-gap: 2px; }
+.claim-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; font-size: var(--fs-prose); line-height: 1.35; }
+.a1-tgt { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
+  max-width: 34%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--text); font-size: 11.5px; }
+.row-trail { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; }
+.fq { display: inline-flex; align-items: center; gap: 3px;
+  font-family: var(--font-data); font-size: 11px; color: var(--text-dim); }
+.fq[data-sev="warn"] { color: var(--warn); }
+.fq[data-sev="danger"] { color: var(--danger); }
+/* information-bearing numbers use the dim tone, never faint (token quarantine) */
+.chs { font-family: var(--font-data); font-size: 11px; color: var(--text-dim);
+  min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+.ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); flex: 0 0 auto; }
 .disp { font-weight: 700; }
 .disp-new { color: var(--accent); }
 .disp-merge { color: var(--ok); }
@@ -120,15 +139,48 @@
 .memory-tool .console { box-shadow: 0 -10px 0 0 var(--canvas); }
 .mem-rows .grouphead { top: calc(var(--console-h, 0px) - 1px);
   box-shadow: 0 -10px 0 0 var(--canvas); }
-.ghead-acts { display: inline-flex; gap: var(--s2); margin-left: auto; }
-.ghead-acts .chip { min-height: 28px; padding: 0 8px; font-size: 9px; }
-.ghead-acts .gk { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
-.ghead-acts .gd { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
-
-/* stored-sections block under a target group head */
-.stored-block { padding: var(--s2) var(--s3); background: var(--surface-1); border-bottom: var(--hairline); }
-.stored-section { margin-bottom: var(--s2); }
-.stored-section .t-prose { white-space: pre-line; font-size: 12.5px; }
+/* Group header v4 (2026-08-21): one line — identity · aggregates · cap flag ·
+   bar tally · icon bulk · kebab. Fixed-width slots on everything that
+   survives narrow width, so a conditional flag appearing never shifts its
+   neighbors. At <900px the identity takes its own line (titles wrap, never
+   truncate) and the variable-length aggregates drop. */
+.ghead4 { display: flex; align-items: center; gap: var(--s2); }
+.ghead4 .ghead-id { flex: 1 1 auto; }
+.ghead-id { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+.ghead-id .gn { overflow-wrap: anywhere; }
+.ghead-agg { margin-left: auto; color: var(--text-dim); font-size: 11px; white-space: nowrap; }
+.gcap { flex: 0 0 auto; }
+.tbar-w { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.tbar { width: 48px; height: 5px; border-radius: 3px; background: var(--surface-3);
+  overflow: hidden; display: inline-flex; }
+.tbar i { display: block; height: 100%; }
+.tbar .tk { background: var(--ok); }
+.tbar .td { background: var(--danger); }
+.tbar-n { font-size: 11px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.ghead-acts { display: inline-flex; gap: var(--s2); }
+.gib { width: 34px; min-height: 28px; display: inline-flex; align-items: center;
+  justify-content: center; background: none; border: var(--hairline);
+  border-radius: var(--r-s); color: var(--text-dim); cursor: pointer; }
+.gib:hover { color: var(--text); background: var(--surface-2); }
+/* quiet boxes, colored glyphs — the header must not out-shout its rows */
+.gib.gk { color: var(--ok); }
+.gib.gd { color: var(--danger); }
+.gmenu-wrap { position: relative; display: inline-flex; }
+.gmenu-scrim { position: fixed; inset: 0; z-index: 44; }
+.gmenu-pop { position: absolute; top: calc(100% + 4px); right: 0; z-index: 45;
+  min-width: 180px; background: var(--surface-2); border: 1px solid var(--edge-strong);
+  border-radius: var(--r-m); padding: 4px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  display: flex; flex-direction: column; }
+.gmenu-pop button { text-align: left; padding: 8px 10px; min-height: 38px;
+  border-radius: var(--r-s); color: var(--text); font-size: 13px; }
+.gmenu-pop button:hover { background: var(--surface-3); }
+@media (max-width: 899px) {
+  .ghead4 { flex-wrap: wrap; }
+  .ghead-id { flex: 1 1 100%; }
+  .ghead-agg { display: none; }
+  .gcap .gcap-pct { display: none; }
+  .tbar-w { margin-right: auto; }
+}
 .group-actions { display: flex; gap: var(--s2); padding: var(--s2) var(--s3); align-items: center; }
 
 /* ══ facet sheet ══ */
@@ -276,3 +328,43 @@
 .scope-hint { margin: var(--s2) 0; }
 .vault-note { margin-top: var(--s3); font-size: 12.5px; }
 .dim { color: var(--text-dim); }
+
+/* ══ education pattern (2026-08-21) ══
+   Every enum value and type/op icon can answer "what does this word mean" in
+   place: hover/focus on desktop, tap on touch. Definitions lead with the
+   owning field ("claim kind · static — …"). The decision toggle carries no
+   tooltip — help cursors don't belong on interactive controls. */
+.term { position: relative; display: inline-flex; align-items: center;
+  cursor: help; font-family: var(--font-data); font-size: 11.5px; color: var(--text-dim); }
+.term-chip { border: var(--hairline); border-radius: var(--r-s); padding: 2px 8px;
+  border-bottom-style: dotted; border-bottom-color: var(--text-faint); }
+.term:not(.term-chip) { border-bottom: 1px dotted transparent; }
+.term:not(.term-chip):not(:has(svg)) { border-bottom-color: var(--text-faint); }
+.term:hover::after, .term:focus-visible::after, .term.tip-open::after {
+  content: attr(data-tip); position: absolute; left: 0; top: calc(100% + 6px);
+  z-index: 70; width: max-content; max-width: 260px;
+  background: var(--surface-3); color: var(--text); border: 1px solid var(--edge-strong);
+  border-radius: var(--r-s); padding: 6px 9px; font-size: 11.5px; line-height: 1.45;
+  font-family: var(--font-prose); white-space: normal;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); }
+.mem-row .term:hover::after, .mem-row .term.tip-open::after { left: auto; }
+
+/* enum values are vocabulary (mono, dim); section keys are addresses (§ + accent) —
+   the two must never look alike (owner feedback on A2). */
+.enum { font-family: var(--font-data); font-size: 11.5px; color: var(--text-dim); }
+.skey { font-family: var(--font-data); font-size: 11.5px; color: var(--accent); }
+
+/* ══ detail card v4 zones ══ */
+.dz-line { display: flex; align-items: center; gap: var(--s2); min-width: 0; flex-wrap: wrap; }
+.dz-sp { flex: 1; }
+.dz-title { font-weight: 600; }
+.op-line { margin: 2px 0 var(--s3); }
+.dz-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--s3);
+  padding-top: var(--s2); border-top: var(--hairline); }
+.dz-sig { background: var(--surface-1); border: var(--hairline); border-radius: var(--r-m);
+  padding: var(--s2) var(--s3); }
+.sig { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; font-size: 13px; }
+.sig svg { flex: 0 0 auto; margin-top: 2px; }
+.sig[data-sev="warn"] { color: var(--warn); }
+.sig[data-sev="danger"] { color: var(--danger); }
+.edit-mark { color: var(--ok); }

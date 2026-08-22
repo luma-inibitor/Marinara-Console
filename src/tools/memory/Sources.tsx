@@ -10,6 +10,7 @@ import { toast } from "../../shell/toast";
 import { type ImportPreview, type ImportResult, importPreview, importSourceNotes } from "./data";
 import { t } from "./strings";
 import { focusSource, refreshLtmStatus } from "./MemoryTool";
+import { DecisionIcon } from "./icons";
 
 const KINDS = [
   { source: "characters", label: () => t("sourcesworkspace.characters"), emptyWhy: () => t("memoryvault.noMatchingCharacters") },
@@ -142,7 +143,7 @@ export function Sources() {
                 <div key={s.sourceId} class="row mem-row" data-d={sel.has(s.sourceId) ? "keep" : "undecided"}>
                   <div class="row-summary mem-summary">
                     <button class="rail-cell tri hit" aria-label={`Select ${s.title}`} onClick={() => toggle(source, s.sourceId)}>
-                      <span class="tri-dot" aria-hidden="true">{sel.has(s.sourceId) ? "✓" : ""}</span>
+                      <DecisionIcon d={sel.has(s.sourceId) ? "keep" : null} />
                     </button>
                     <button class="mid mem-mid" onClick={() => toggle(source, s.sourceId)}>
                       <span class="nm">{s.title}</span>

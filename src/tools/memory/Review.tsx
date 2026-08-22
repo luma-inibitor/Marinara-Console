@@ -7,23 +7,27 @@
 
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { toast } from "../../shell/toast";
-import { type Row, backupExportUrl, extractNote, SECTION_CAP } from "./data";
+import { type Row, backupExportUrl, extractNote } from "./data";
 import { t, OURS } from "./strings";
 import {
   rows, blocked, rejections, loading, loadError, review,
   decisions, edited, cursor, detailKey, facetSheetOpen, saveState,
   activeFacets, groupBy, sortBy, sortDir, tally, preflight, preflightPending,
   preflightRowState, applying, applyProgress, lastFailures,
-  droppedDependencyWarnings, canUndo, notesById, rowOverflows, pressure,
+  droppedDependencyWarnings, canUndo, notesById, pressure,
   refresh, retryPersist, setDecision, cycleDecision, bulkDecide, undo, applyDecided,
 } from "./store";
 import { SECTION_CAP as CAP } from "./data";
 import { refreshLtmStatus } from "./MemoryTool";
 import { openOverlay, closeTopOverlay } from "./overlays";
 import { signal } from "@preact/signals";
+import { IconFlag, IconCircleCheck, IconCircleX, IconDotsVertical, IconWriting } from "@tabler/icons-preact";
+import { DecisionIcon, OpIcon, TypeIcon } from "./icons";
+import { Term, OP_TIP } from "./glossary";
+import { flagsOf, worstSeverity, contributionChars } from "./flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
 import { ClaimDetail } from "./ClaimDetail";
-import { NoteRef } from "./NotePeek";
+import { NoteRef, peekNote } from "./NotePeek";
 
 const RESTORE_POINT_THRESHOLD = 20;
 
@@ -201,7 +205,7 @@ export function Review() {
                 <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
                 <QuickChip facet="flags" value="restates vault" label="Restates" flag />
                 <QuickChip facet="flags" value="duplicate incoming" label="Dupes" flag />
-                <QuickChip facet="conflicts" value="has conflicts" label="Conflicts" flag />
+                <QuickChip facet="flags" value="has conflicts" label="Conflicts" flag />
                 <span class="rail-gap" />
                 {Object.entries(GROUPERS).map(([id, g]) => (
                   <button key={id} class="chip" aria-pressed={groupBy.value === id}
@@ -234,7 +238,7 @@ export function Review() {
                 <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
                 <QuickChip facet="flags" value="restates vault" label="Restates" flag />
                 <QuickChip facet="flags" value="duplicate incoming" label="Dupes" flag />
-                <QuickChip facet="conflicts" value="has conflicts" label="Conflicts" flag />
+                <QuickChip facet="flags" value="has conflicts" label="Conflicts" flag />
               </>
             )}
           </div>
@@ -407,56 +411,98 @@ function OptionSheet(props: {
   );
 }
 
+// Group header v4 (owner-approved 2026-08-21): one line — identity · honest
+// aggregates (sections touched, chars added) · cap flag only when real · bar
+// tally · keep-all/drop-all as icon buttons (undecided rows only) · kebab for
+// the rare object actions. Object affordances (type icon, dot, aggregates,
+// pressure, open-note) exist only when the group key IS an object; enum lanes
+// get label + count + tally + bulk and nothing else. At narrow width the
+// header wraps to two lines and the aggregates drop (priority order, CSS).
 function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key: string) => void }) {
   const g = props.group;
+  const isTarget = groupBy.value === "target";
   const kept = g.rows.filter((r) => decisions.value.get(r.key) === "keep").length;
   const dropped = g.rows.filter((r) => decisions.value.get(r.key) === "drop").length;
-  const stored = groupBy.value === "target" ? notesById.value.get(g.id) : undefined;
-  const storedSections = stored && stored.type !== "source" ? Object.entries(stored.sections ?? {}) : [];
-  const [showStored, setShowStored] = useState(false);
+  const undecidedRows = g.rows.filter((r) => !decisions.value.get(r.key));
+  const isNew = isTarget && !notesById.value.get(g.id) && g.rows.some((r) => r.mutation.kind === "create_note");
+  const sections = isTarget ? new Set(g.rows.flatMap((r) => r.parts.map((p) => p.key))).size : 0;
+  const chars = isTarget ? g.rows.reduce((n, r) => n + contributionChars(r), 0) : 0;
   return (
     <div>
-      <div class="grouphead">
-        <span class="gn t-prose">{g.label}</span>
-        {g.meta && <span class={`chip t-data type-${g.meta}`}>{g.meta.replaceAll("_", " ")}</span>}
-        <span class="t-data dim">{g.rows.length}</span>
-        {(kept > 0 || dropped > 0) && (
-          <span class="t-data">
-            {kept > 0 && <b class="is-keep">✓{kept}</b>}{kept > 0 && dropped > 0 && " "}
-            {dropped > 0 && <b class="is-drop">✗{dropped}</b>}
+      <div class={`grouphead ghead4 ${isTarget ? "is-object" : ""}`}>
+        <span class="ghead-id">
+          {isTarget && g.meta && <TypeIcon type={g.meta} />}
+          {isNew && <span class="ndot" aria-label="will be created" />}
+          <span class="gn t-prose">{g.label}</span>
+        </span>
+        <span class="ghead-agg t-data" data-contrast-exempt>
+          {sections > 0 && <>{sections} section{sections === 1 ? "" : "s"}</>}
+          {chars > 0 && <>{sections > 0 && " · "}+{chars.toLocaleString()}</>}
+        </span>
+        <GroupPressure groupId={g.id} isTarget={isTarget} />
+        <span class="tbar-w" aria-label={`${kept + dropped} of ${g.rows.length} decided`}>
+          <span class="tbar">
+            <i class="tk" style={`width:${(kept / g.rows.length) * 100}%`} />
+            <i class="td" style={`width:${(dropped / g.rows.length) * 100}%`} />
           </span>
-        )}
-        {storedSections.length > 0 && (
-          <button class="chip" aria-pressed={showStored} onClick={() => setShowStored(!showStored)}>
-            stored · {storedSections.length}
-          </button>
-        )}
-        <GroupPressure groupId={g.id} isTarget={groupBy.value === "target"} />
-        {g.rows.length > 1 && (
+          <span class="tbar-n t-data">{kept + dropped}/{g.rows.length}</span>
+        </span>
+        {undecidedRows.length > 0 && (
           <span class="ghead-acts">
-            <button class="chip gk" aria-label={`Keep all ${g.rows.length} in ${g.label}`}
-              onClick={() => bulkDecide(g.rows, "keep", `keep ${g.label}`)}>✓ all</button>
-            <button class="chip gd" aria-label={`Drop all ${g.rows.length} in ${g.label}`}
-              onClick={() => bulkDecide(g.rows, "drop", `drop ${g.label}`)}>✗ all</button>
+            <button class="gib gk" title={`Keep ${undecidedRows.length} undecided`}
+              aria-label={`Keep all ${undecidedRows.length} undecided in ${g.label}`}
+              onClick={() => bulkDecide(undecidedRows, "keep", `keep ${g.label}`)}>
+              <IconCircleCheck size={15} stroke={1.75} aria-hidden />
+            </button>
+            <button class="gib gd" title={`Drop ${undecidedRows.length} undecided`}
+              aria-label={`Drop all ${undecidedRows.length} undecided in ${g.label}`}
+              onClick={() => bulkDecide(undecidedRows, "drop", `drop ${g.label}`)}>
+              <IconCircleX size={15} stroke={1.75} aria-hidden />
+            </button>
           </span>
         )}
+        {isTarget && <GroupMenu group={g} kept={kept} dropped={dropped} isNew={isNew} />}
       </div>
-      {showStored && (
-        <div class="stored-block">
-          {storedSections.map(([key, s]) => (
-            <div key={key} class="stored-section">
-              <span class="t-label t-label-s">{key}</span>
-              <div class="t-prose dim">{s.text}</div>
-            </div>
-          ))}
-          <NoteRef id={g.id} label="open note" />
-        </div>
-      )}
       {g.rows.map((r) => <ClaimRow key={r.key} row={r} showTarget={props.showTarget} onActivate={props.onActivate} />)}
     </div>
   );
 }
 
+/** The kebab: rare object actions only — open the note, clear this group's
+ *  decisions. (Contents still under discussion; if it ends up with one item
+ *  it dies and that item goes inline.) */
+function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: boolean }) {
+  const [open, setOpen] = useState(false);
+  const g = props.group;
+  return (
+    <span class="gmenu-wrap">
+      <button class="gib gmenu" aria-label={`Actions for ${g.label}`} aria-expanded={open}
+        onClick={() => setOpen(!open)}>
+        <IconDotsVertical size={16} stroke={1.75} aria-hidden />
+      </button>
+      {open && (
+        <>
+          <span class="gmenu-scrim" onClick={() => setOpen(false)} />
+          <div class="gmenu-pop" role="menu">
+            {!props.isNew && (
+              <button role="menuitem" onClick={() => { setOpen(false); peekNote(g.id); }}>Open note</button>
+            )}
+            {(props.kept > 0 || props.dropped > 0) && (
+              <button role="menuitem" onClick={() => { setOpen(false); bulkDecide(g.rows, null, `reset ${g.label}`); }}>
+                Clear decisions ({props.kept + props.dropped})
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </span>
+  );
+}
+
+// Row v2 (owner-approved 2026-08-21): status icon that cycles on tap · fixed
+// op-icon slot · one-line claim · quiet flags chip (worst severity tints it) ·
+// contribution chars. No secondary line, no per-row confidence — the enums
+// live in the detail card, their exceptions live in the flags.
 function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: string) => void }) {
   const r = props.row;
   const d = decisions.value.get(r.key);
@@ -465,40 +511,56 @@ function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: stri
   const blockedMsg = d === "keep" ? pfState.blockedRows.get(r.key) : undefined;
   const isFocused = cursor.value === r.key;
   const isOpen = detailKey.value === r.key;
+  const flags = flagsOf(r);
+  const sev = worstSeverity(flags);
+  const chars = contributionChars(r);
+  const isNew = r.mutation.kind === "create_note";
   return (
     <div class={`row mem-row ${isOpen ? "is-open" : ""} ${isFocused ? "is-focused" : ""}`} data-row={r.key} data-d={d ?? "undecided"}>
-      <div class="row-summary mem-summary">
+      <div class="row-summary mem-summary has-kslot">
         <button
           class="rail-cell tri hit"
           aria-label={`Decision: ${d ?? OURS.undecided}. Tap to cycle.`}
           onClick={(e) => { e.stopPropagation(); cycleDecision(r); }}
         >
-          <span class="tri-dot" aria-hidden="true">{d === "keep" ? "✓" : d === "drop" ? "✗" : ""}</span>
+          <DecisionIcon d={d} />
         </button>
+        <span class="kslot">
+          <Term tip={OP_TIP[r.mutation.kind]}><OpIcon kind={r.mutation.kind} /></Term>
+        </span>
         <button class="mid mem-mid" onClick={() => props.onActivate(r.key)}>
+          {props.showTarget && (
+            <span class="a1-tgt t-data">
+              <TypeIcon type={r.targetType} size={13} />
+              {isNew && <span class="ndot" aria-label="will be created" />}
+              {r.targetTitle}
+            </span>
+          )}
           <span class="claim-text t-prose">{r.text}</span>
-          <span class="metaline t-data">
-            <span class={`disp disp-${r.disposition}`}>{OURS.disposition[r.disposition]}</span>
-            <i class="sep" data-contrast-exempt>·</i>{r.mutation.risk}
-            {props.showTarget && <><i class="sep" data-contrast-exempt>·</i><span class="dim">→ {r.targetTitle}</span></>}
-            {r.conflicts.length > 0 && <><i class="sep" data-contrast-exempt>·</i><span class="fl">{r.conflicts.length} conflict{r.conflicts.length === 1 ? "" : "s"}</span></>}
-                {r.restates && <><i class="sep" data-contrast-exempt>·</i><span class="fl">restates {r.restates.score.toFixed(2)}</span></>}
-            {r.duplicateOf && <><i class="sep" data-contrast-exempt>·</i><span class="fl">dupe</span></>}
-            {rowOverflows(r) && <><i class="sep" data-contrast-exempt>·</i><span class="fl">{OURS.overLimit}</span></>}
-            {edited.value.has(r.key) && <><i class="sep" data-contrast-exempt>·</i><span class="is-keep">{t("reviewqueue.editedChange")}</span></>}
-        {isAuto && <><i class="sep" data-contrast-exempt>·</i><span class="dep-tag">sent as dependency</span></>}
-        {blockedMsg && <><i class="sep" data-contrast-exempt>·</i><span class="is-drop" title={blockedMsg}>blocked</span></>}
+          <span class="row-trail t-data">
+            {edited.value.has(r.key) && (
+              <Term tip="edited · you replaced this claim's proposed text — your version applies with the batch">
+                <IconWriting size={14} stroke={1.75} class="edit-mark" aria-label={t("reviewqueue.editedChange")} />
+              </Term>
+            )}
+            {isAuto && <span class="dep-tag">dependency</span>}
+            {blockedMsg && <span class="is-drop" title={blockedMsg}>blocked</span>}
+            {flags.length > 0 && (
+              <span class="fq" data-sev={sev} title={flags.map((f) => f.label).join(" · ")}>
+                <IconFlag size={13} stroke={1.75} aria-hidden />{flags.length}
+              </span>
+            )}
+            <span class="chs">{chars > 0 ? `+${chars.toLocaleString()}` : ""}</span>
           </span>
         </button>
-        <span class="num">
-          <span class={`tok ${r.mutation.risk === "high" ? "is-hot" : ""}`}>{Math.round(r.mutation.confidence * 100)}</span>
-          <span class="unit">% conf</span>
-        </span>
       </div>
     </div>
   );
 }
 
+// Compact cap signal: flag glyph + percentage, tinted by severity; the full
+// numbers live in the title and in the detail's computed-signals zone. At
+// narrow width the percentage drops and the glyph alone carries it (CSS).
 function GroupPressure(props: { groupId: string; isTarget: boolean }) {
   if (!props.isTarget) return null;
   let worst: { key: string; current: number; projected: number } | null = null;
@@ -508,10 +570,11 @@ function GroupPressure(props: { groupId: string; isTarget: boolean }) {
   }
   if (!worst || worst.projected < CAP * 0.8) return null;
   const over = worst.projected > CAP;
-  const fmt = (n: number) => `${(n / 1000).toFixed(1)}k`;
+  const pct = Math.round((worst.projected / CAP) * 100);
   return (
-    <span class={`t-data ${over ? "is-drop" : "fl"}`} title={`${worst.key}: stored ${worst.current.toLocaleString()} ch, ${worst.projected.toLocaleString()} after this batch, cap ${CAP.toLocaleString()}`}>
-      {worst.key} {fmt(worst.current)}→{fmt(worst.projected)} / {fmt(CAP)}
+    <span class="fq gcap" data-sev={over ? "danger" : "warn"}
+      title={`§${worst.key}: stored ${worst.current.toLocaleString()} ch, ${worst.projected.toLocaleString()} after this batch, cap ${CAP.toLocaleString()}`}>
+      <IconFlag size={12} stroke={1.75} aria-hidden /><span class="gcap-pct">cap {pct}%</span>
     </span>
   );
 }

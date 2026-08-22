@@ -162,6 +162,19 @@ exists, use it; if it needs a new one, add it here in the same change.
   from the model / yours), so a heuristic and a schema field never carry the same
   visual authority. Counts exclude the facet's own filter ("what would I get if I
   toggled this"). 3-5 quick chips stay inline; the sheet holds the long tail.
+- **Icon vocabulary** (`@tabler/icons-preact`; memory tool: `icons.tsx`) — icons
+  are reserved silhouette families: circles = decision states, the flag =
+  exception flags, files/scripts = content ops (script = whole note, file = one
+  section; shared + marks additive ops, pencil marks replacement). No icon may
+  borrow another family's silhouette (that rule killed `flag-2` for status and
+  a bare pencil for the edited mark). Type icons carry the categorical hue.
+  Owner-decided mapping lives in BACKLOG.md; don't re-litigate per screen.
+- **Education term** (`glossary.tsx`) — any rendered enum value or type/op icon
+  answers "what does this word mean" in place: hover/focus on desktop, tap on
+  touch, definition prefixed with its owning field ("claim kind · static — …").
+  One definition source. Never on interactive controls (help cursor on a toggle
+  is a contradiction). Collapsed exception chips ([flag] n) tint by worst
+  severity; the kinds stay filterable, not re-taxonomized per row.
 
 ## 6. Layout recipes (with mobile collapse)
 

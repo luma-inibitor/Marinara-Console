@@ -1,33 +1,27 @@
-// One claim, structured as three zones so mutation properties never blur into
-// memory properties (owner feedback, 2026-08-21):
-//   1. What this proposal does — per touched section: the memory's ALREADY
-//      STORED text (pre-existing, dim) above the PROPOSED text (editable).
-//   2. Derived context — the stored line it restates, the incoming duplicate.
-//   3. About this proposal — the mutation's own metadata (disposition, risk,
-//      claim, change kind, source, evidence).
+// One claim, structured as zones (owner-approved detail card v4, 2026-08-21):
+//   1. THE PROPOSAL — facts that belong to the mutation. Identity line (type
+//      icon · title · existence · confidence), op line (op icon · op word ·
+//      §section · contribution chars · refs), the proposed text (editable,
+//      with the target's ALREADY STORED text above it), and the enum chips
+//      (claim kind · disposition · risk) with field-prefixed definitions.
+//   2. COMPUTED SIGNALS — numbers the console computed about it, visually
+//      marked as signals, not properties; each is a sentence. The restated
+//      stored line / incoming duplicate render underneath as the evidence.
+//   3. PROVENANCE — source and evidence refs.
 // Edited text flows through preflight and accept as editedMutations.
 
 import { useState } from "preact/hooks";
 import { toast } from "../../shell/toast";
 import { type Row, type Mutation } from "./data";
-import { t, OURS } from "./strings";
+import { t } from "./strings";
 import { decisions, edited, rows, notesById, pressure, setDecision, setEdited } from "./store";
 import { SECTION_CAP } from "./data";
 import { NoteRef } from "./NotePeek";
-
-/** Human sentence for kind × disposition — the verb line. */
-function verbLine(r: Row, m: Mutation): string {
-  const type = r.targetType.replaceAll("_", " ");
-  switch (m.kind) {
-    case "create_note": return `Creates a new ${type} memory`;
-    case "append_section": return `Adds to the existing ${type} memory`;
-    case "update_section": return `Replaces text on the existing ${type} memory`;
-    case "add_link": return `Adds a link on the existing ${type} memory`;
-    case "set_keywords": return `Replaces the keywords on the existing ${type} memory`;
-    case "set_status": return `Changes the status of the existing ${type} memory`;
-    case "set_subjects": return `Rebinds the subjects of the existing ${type} memory`;
-  }
-}
+import { IconFlag } from "@tabler/icons-preact";
+import { OpIcon, TypeIcon, OP_WORD } from "./icons";
+import { Term, GLOSSARY, OP_TIP, TYPE_TIP } from "./glossary";
+import { flagsOf, contributionChars } from "./flags";
+import { OURS } from "./strings";
 
 export function ClaimDetail({ row }: { row: Row }) {
   const r = row;
@@ -76,15 +70,25 @@ export function ClaimDetail({ row }: { row: Row }) {
         <button class="dbtn is-drop-btn" aria-pressed={d === "drop"} onClick={() => setDecision(r, d === "drop" ? null : "drop")}>✗ {OURS.drop}</button>
       </div>
 
-      {/* ── zone 1: what this proposal does to which memory ── */}
-      <div class="target-line">
-        <span class={`chip t-data type-${r.targetType}`}>{r.targetType.replaceAll("_", " ")}</span>
+      {/* ── zone 1: THE PROPOSAL — the mutation's own facts ── */}
+      <div class="dz-line target-line">
+        <Term tip={TYPE_TIP[r.targetType] ?? r.targetType}><TypeIcon type={r.targetType} /></Term>
+        {!target && <span class="ndot" aria-label="will be created" />}
         {target
           ? <NoteRef id={r.targetId} label={r.targetTitle} />
-          : <span class="t-prose">{r.targetTitle}</span>}
+          : <span class="t-prose dz-title">{r.targetTitle}</span>}
         <span class={`exist-tag t-data ${target ? "" : "is-new-tag"}`}>{target ? "in the vault" : "will be created"}</span>
+        <span class="dz-sp" />
+        <span class="chs t-data">{Math.round(m.confidence * 100)}%</span>
       </div>
-      <p class="verb-line t-prose">{verbLine(r, m)}<span class="t-data dim"> · {m.summary}</span></p>
+      <div class="dz-line op-line t-data">
+        <Term tip={OP_TIP[m.kind]}><OpIcon kind={m.kind} /></Term>
+        <span class="enum">{OP_WORD[m.kind]}</span>
+        {m.sectionKey && <span class="skey">§{m.sectionKey}</span>}
+        <span class="dz-sp" />
+        {contributionChars(r) > 0 && <span class="chs">+{contributionChars(r).toLocaleString()} chars</span>}
+        <span class="chs">{m.evidence.length} refs</span>
+      </div>
 
       {editableSections.map((s) => {
         const stored = target?.sections?.[s.label]?.text;
@@ -140,6 +144,26 @@ export function ClaimDetail({ row }: { row: Row }) {
         </section>
       )}
 
+      {/* enum chips — the near-constant fields, each teaching its own word */}
+      <div class="dz-chips">
+        <Term chip tip={GLOSSARY[m.claimKind] ?? m.claimKind}>{m.claimKind}</Term>
+        <Term chip tip={GLOSSARY[r.disposition] ?? r.disposition}>{OURS.disposition[r.disposition]}</Term>
+        <Term chip tip={GLOSSARY[`${m.risk} risk`] ?? m.risk}>{m.risk} risk</Term>
+      </div>
+
+      {/* ── zone 2: COMPUTED SIGNALS — what the console noticed ── */}
+      {flagsOf(r).length > 0 && (
+        <section class="dsec dz-sig">
+          <h4 class="t-label t-label-s">computed signals</h4>
+          {flagsOf(r).map((f) => (
+            <div key={f.label} class="sig t-prose" data-sev={f.severity}>
+              <IconFlag size={13} stroke={1.75} aria-hidden />
+              <span>{f.sentence}</span>
+            </div>
+          ))}
+        </section>
+      )}
+
       {r.conflicts.length > 0 && (
         <section class="dsec">
           <h4 class="t-label t-label-s">conflicts with the stored memory</h4>
@@ -173,15 +197,10 @@ export function ClaimDetail({ row }: { row: Row }) {
         </section>
       )}
 
-      {/* ── zone 3: the proposal's own metadata ── */}
+      {/* ── zone 3: provenance ── */}
       <section class="dsec about-card">
-        <h4 class="t-label t-label-s">about this proposal</h4>
+        <h4 class="t-label t-label-s">provenance</h4>
         <div class="kvs t-data">
-          <div><span class="k">disposition</span><span class={`disp disp-${r.disposition}`}>{OURS.disposition[r.disposition]}</span></div>
-          <div><span class="k">risk</span>{m.risk}</div>
-          <div><span class="k">confidence</span>{Math.round(m.confidence * 100)}%</div>
-          <div><span class="k">claim</span>{m.claimKind}</div>
-          <div><span class="k">change</span>{m.kind}</div>
           <div><span class="k">{t("reviewqueue.sources")}</span><NoteRef id={r.sourceNoteId} label={r.sourceTitle} /></div>
           <div><span class="k">evidence</span><span>
             {m.evidence.map((e, i) => {

@@ -6,14 +6,10 @@
 // answers "what would I get if I toggled this" (prior art: the operator's
 // triage tools).
 
-import { type Row, type Note } from "./data";
+import { type Row } from "./data";
 import { t, OURS } from "./strings";
-import { decisions, edited, notesById, rowOverflows, pressure } from "./store";
-import { SECTION_CAP } from "./data";
-import { OURS as O2 } from "./strings";
-
-const DATE_RE = /\[\d{4}-\d{2}-\d{2}\]/;
-const tokensOf = (s: string) => Math.ceil(s.length / 4);
+import { decisions, edited } from "./store";
+import { flagsOf } from "./flags";
 
 export interface FacetDef {
   id: string;
@@ -22,26 +18,15 @@ export interface FacetDef {
   get: (r: Row) => string | string[] | null;
 }
 
+// The facet and the row chip read the same flags, so filtering by a flag
+// always matches exactly the rows whose chip counted it.
 function qualityFlags(r: Row): string[] | null {
-  const f: string[] = [];
-  if (r.restates) f.push("restates vault");
-  if (r.duplicateOf) f.push("duplicate incoming");
-  if (r.targetType === "timeline_event" && !DATE_RE.test(r.text)) f.push("undated event");
-  if (r.mutation.kind === "create_note" && !(r.mutation.note?.keywords ?? []).length) f.push("no keywords");
-  if (tokensOf(r.text) > 120) f.push("long");
-  if (r.mutation.confidence < 0.7) f.push("low confidence");
-  if (((notesById.value.get(r.targetId) as Note | undefined)?.keywords ?? []).length >= 25) f.push("target near keyword cap");
-  if (rowOverflows(r)) f.push("section would overflow");
-  else if (r.parts.some((p) => {
-    const proj = pressure.value.get(`${r.targetId} ${p.key}`)?.projected ?? 0;
-    return proj >= SECTION_CAP * 0.8;
-  })) f.push(O2.nearLimit);
+  const f = flagsOf(r).map((x) => x.label);
   return f.length ? f : null;
 }
 
 export const FACETS: FacetDef[] = [
   { id: "flags", label: "quality flags", source: "computed", get: qualityFlags },
-  { id: "conflicts", label: "conflicts", source: "computed", get: (r) => (r.conflicts.length ? "has conflicts" : null) },
   { id: "disposition", label: "disposition", source: "model", get: (r) => r.disposition },
   { id: "risk", label: "risk", source: "model", get: (r) => r.mutation.risk },
   { id: "kind", label: "change", source: "model", get: (r) => r.mutation.kind },

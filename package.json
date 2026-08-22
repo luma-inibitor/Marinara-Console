@@ -25,6 +25,7 @@
   "private": true,
   "dependencies": {
     "@preact/signals": "^2.11.1",
+    "@tabler/icons-preact": "^3.46.0",
     "preact": "^10.29.8"
   }
 }
