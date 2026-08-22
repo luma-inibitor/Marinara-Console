@@ -58,7 +58,10 @@ owner decision after explanation.
   additive ops; pencil = the one op that replaces. Note types: `movie` for
   scene, masks-theater stays RP-mode only. Use `@tabler/icons-preact`.
 - **[Luma] Review redesign specimens APPROVED (2026-08-21 evening) — "let's
-  rock".** Implementation queue: row v2 (status-icon cycling, op-icon slot,
+  rock". SHIPPED in 3d57d32** (row v2, header v4, detail zones, icon system,
+  education pattern, unified flags; verify green at 390/768/1280).
+  Edited-mark decision inside the wave: `writing` icon (bare pencil collides
+  with file-pencil's silhouette, same rule that killed flag-2).**Original scope:** Implementation queue: row v2 (status-icon cycling, op-icon slot,
   quiet severity-tinted flags chip, contribution chars, green-dot new
   marker) · group header v4 (aggregates, bar tally, icon bulk, 390px
   priority collapse) · detail card v4 (proposal / computed signals / stored
