@@ -59,6 +59,13 @@ owner decision after explanation.
 - **[Luma] List view column controls.** Power users get resize / reorder /
   add / remove columns in the review list. Ship with the default column set
   first; the controls come later.
+- **[Luma] Chars ⇄ estimated tokens toggle** on the contribution display —
+  "nice to not have to divide by 4". Stopgap: moot once column controls
+  exist (an est-tokens column covers it); until then, a display toggle.
+- **[Luma] New-target marker: green dot (2b) — chosen** 2026-08-21, "let's
+  see how much I hate it". Dashed-ring 2d rejected (inflates icon footprint).
+- **[Luma] Enum tooltips prefix their owning field** ("claim kind · static —
+  ..."), so the value is anchored to the field it belongs to.
 - **[Luma] Icon education pattern — approved direction.** Every type/op icon
   is clickable/hoverable with a tooltip naming the concept, everywhere it
   appears (tap-to-reveal on touch; tooltips are never hover-only). Feeds the
