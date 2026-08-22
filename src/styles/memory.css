@@ -176,10 +176,11 @@
 .gmenu-pop button:hover { background: var(--surface-3); }
 @media (max-width: 899px) {
   .ghead4 { flex-wrap: wrap; }
-  .ghead-id { flex: 1 1 100%; }
+  /* must out-specify the desktop `.ghead4 .ghead-id` rule */
+  .ghead4 .ghead-id { flex: 1 1 100%; }
   .ghead-agg { display: none; }
   .gcap .gcap-pct { display: none; }
-  .tbar-w { margin-right: auto; }
+  .ghead4 .tbar-w { margin-right: auto; }
 }
 .group-actions { display: flex; gap: var(--s2); padding: var(--s2) var(--s3); align-items: center; }
 
@@ -373,3 +374,7 @@
 .zone-tag { display: flex; align-items: baseline; gap: var(--s2); }
 .zone-ch { margin-left: auto; font-size: 10.5px; letter-spacing: 0;
   text-transform: none; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+
+/* the trailing new-dot hugs the title (lorebooks' .gn flex:1 would push it
+   to the line edge and detach it from the identity it marks) */
+.ghead4 .gn { flex: 0 1 auto; }

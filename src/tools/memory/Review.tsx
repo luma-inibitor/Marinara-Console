@@ -430,10 +430,12 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   return (
     <div>
       <div class={`grouphead ghead4 ${isTarget ? "is-object" : ""}`}>
+        {/* dot trails the title: a conditional marker must not shift where
+            titles start across sibling headers (checklist L1) */}
         <span class="ghead-id">
           {isTarget && g.meta && <TypeIcon type={g.meta} />}
-          {isNew && <span class="ndot" aria-label="will be created" />}
           <span class="gn t-prose">{g.label}</span>
+          {isNew && <span class="ndot" title="will be created" aria-label="will be created" />}
         </span>
         {chars > 0 && <span class="ghead-agg t-data">+{chars.toLocaleString()}</span>}
         <GroupPressure groupId={g.id} isTarget={isTarget} />
