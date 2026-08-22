@@ -368,3 +368,8 @@
 .sig[data-sev="warn"] { color: var(--warn); }
 .sig[data-sev="danger"] { color: var(--danger); }
 .edit-mark { color: var(--ok); }
+
+/* zone tags: label left, counts in a quiet right gutter (checklist T1) */
+.zone-tag { display: flex; align-items: baseline; gap: var(--s2); }
+.zone-ch { margin-left: auto; font-size: 10.5px; letter-spacing: 0;
+  text-transform: none; color: var(--text-dim); font-variant-numeric: tabular-nums; }

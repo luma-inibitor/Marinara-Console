@@ -98,19 +98,22 @@ export function ClaimDetail({ row }: { row: Row }) {
             <h4 class="t-label t-label-s dsec-head"><span class="dsec-title">{s.label}</span></h4>
             {stored && (
               <div class="stored-zone">
-                <span class="zone-tag t-label t-label-s">already stored · {stored.length.toLocaleString()} ch</span>
+                <span class="zone-tag t-label t-label-s">already stored<span class="zone-ch t-data">{stored.length.toLocaleString()} ch</span></span>
                 <div class="t-prose dim zone-text">{stored}</div>
               </div>
             )}
             <div class="proposed-zone">
               <span class="zone-tag t-label t-label-s is-proposed">
-                {m.kind === "update_section" ? "proposed replacement" : stored ? "proposed addition" : "proposed"} · {value.length.toLocaleString()} ch
-                {(() => {
-                  const p = pressure.value.get(`${r.targetId} ${s.label}`);
-                  if (!p || p.projected < SECTION_CAP * 0.8) return null;
-                  const over = p.projected > SECTION_CAP;
-                  return <span class={over ? " is-drop" : " fl"}> · {(p.projected / 1000).toFixed(1)}k / {(SECTION_CAP / 1000).toFixed(0)}k after batch</span>;
-                })()}
+                {m.kind === "update_section" ? "proposed replacement" : stored ? "proposed addition" : "proposed"}
+                <span class="zone-ch t-data">
+                  {(() => {
+                    const p = pressure.value.get(`${r.targetId} ${s.label}`);
+                    if (!p || p.projected < SECTION_CAP * 0.8) return null;
+                    const over = p.projected > SECTION_CAP;
+                    return <span class={over ? "is-drop" : "fl"}>{(p.projected / 1000).toFixed(1)}k / {(SECTION_CAP / 1000).toFixed(0)}k after batch · </span>;
+                  })()}
+                  {value.length.toLocaleString()} ch
+                </span>
               </span>
               <textarea
                 class="t-prose edit-area"
