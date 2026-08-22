@@ -525,7 +525,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .qchip.qblock { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
 .qchip.qblock b { color: var(--danger); }
 /* group heads and rows */
-.sghead .gexp { min-height: 30px; width: 22px; }
+.sghead .gexp { min-height: 30px; min-width: 26px; }
 .sghead { display: flex; align-items: center; gap: var(--s2); background: var(--surface-2);
   border-radius: var(--r-s); padding: 6px var(--s3); margin: var(--s3) 0 2px; }
 .gname { font-family: var(--font-label); font-weight: 650; font-size: 13px; }
