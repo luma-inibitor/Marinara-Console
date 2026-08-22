@@ -169,6 +169,13 @@ exists, use it; if it needs a new one, add it here in the same change.
   borrow another family's silhouette (that rule killed `flag-2` for status and
   a bare pencil for the edited mark). Type icons carry the categorical hue.
   Owner-decided mapping lives in BACKLOG.md; don't re-litigate per screen.
+- **Styling** — Tailwind v4 (`@tailwindcss/vite`) with the theme generated from
+  `tokens.css`, so utilities and the hand-written stylesheets share one palette.
+  Preflight is deliberately not imported: the base reset would strip margins and
+  borders the existing CSS assumes. Utilities sit in the `utilities` layer and
+  win over the hand-written rules, which is what you want for a one-off override.
+- **Mockups** — one shared kit, `design/MOCKUP-KIT.md`. Books never carry their
+  own palette.
 - **Copy provenance** — every user-visible string traces to the vendored
   catalog (`ltm-en.json`) or to a registered coinage in `OURS`, each with a
   comment saying why the product has no word for it. `design/copycheck.mjs`
@@ -208,7 +215,13 @@ exists, use it; if it needs a new one, add it here in the same change.
 
 A UI change is not done until `node verify.mjs` passes:
 
-1. Screenshots at 390×844, 768×1024, 1280×800 — attached to the change.
+1. Screenshots at the standard viewports — `node design/shots.mjs <url> <name>`:
+   **390×844** narrow floor · **486×1085** Luma's device, the one that must be
+   right · **768×1024** the band between the breakpoints · **1280×800** desktop.
+   A "mobile" rendering drawn in a small box on a wide page is not a mobile
+   rendering; render at the viewport or do not claim the result.
+   CSS breakpoints are two, semantic: **720px** (below it everything stacks)
+   and **900px** (above it master-detail sits side by side).
 2. Zero console/page errors on every screen visited.
 3. Tap-target sweep: interactive elements ≥44px primary / ≥24px+spacing secondary.
 4. Contrast sweep: computed fg/bg pairs meet the floors in §1.

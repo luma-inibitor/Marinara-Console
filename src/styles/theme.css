@@ -1,0 +1,75 @@
+/* Tailwind theme — generated from the same tokens the hand-written CSS uses.
+   design/DESIGN.md §1 stays the single source of visual truth: every value
+   below is `var(--token)`, so changing a token changes both the utilities and
+   the existing stylesheets at once. There is no second palette.
+
+   Preflight is deliberately NOT imported. Tailwind's base reset would strip
+   margins, borders and list styles that 1,206 lines of existing CSS assume,
+   so we take the theme and the utilities only. Utilities win over the
+   hand-written rules by cascade layer order, which is what you want when
+   overriding one property on one element. */
+
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme {
+  /* surfaces */
+  --color-canvas: var(--canvas);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-edge: var(--edge);
+  --color-edge-strong: var(--edge-strong);
+
+  /* text */
+  --color-ink: var(--text);
+  --color-dim: var(--text-dim);
+  --color-faint: var(--text-faint);
+
+  /* status — reserved meanings, see DESIGN.md §2 */
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-off: var(--off);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-flag: var(--flag);
+  --color-ok-wash: var(--ok-wash);
+  --color-warn-wash: var(--warn-wash);
+  --color-danger-wash: var(--danger-wash);
+  --color-accent-wash: var(--accent-wash);
+  --color-flag-wash: var(--flag-wash);
+
+  /* type */
+  --font-label: var(--font-label);
+  --font-data: var(--font-data);
+  --font-prose: var(--font-prose);
+  --text-label-s: var(--fs-label-s);
+  --text-label: var(--fs-label);
+  --text-data-s: var(--fs-data-s);
+  --text-data: var(--fs-data);
+  --text-data-l: var(--fs-data-l);
+  --text-prose: var(--fs-prose);
+  --text-title: var(--fs-title);
+  --text-head: var(--fs-head);
+
+  /* space — the 4px grid, named as the tokens name it */
+  --spacing-1: var(--s1);
+  --spacing-2: var(--s2);
+  --spacing-3: var(--s3);
+  --spacing-4: var(--s4);
+  --spacing-5: var(--s5);
+  --spacing-6: var(--s6);
+  --spacing-tap: var(--tap);
+  --spacing-tap-2: var(--tap-2);
+
+  /* shape */
+  --radius-s: var(--r-s);
+  --radius-m: var(--r-m);
+  --radius-l: var(--r-l);
+
+  /* the two semantic breakpoints (DESIGN.md §7): below stack, above split */
+  --breakpoint-stack: 720px;
+  --breakpoint-split: 900px;
+}
