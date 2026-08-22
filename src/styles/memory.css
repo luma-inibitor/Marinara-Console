@@ -404,6 +404,8 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .stack-screen .decbar { background: var(--surface-2); border-top: 1px solid var(--edge-strong);
   padding: var(--s2) var(--panel-pad); margin: 0 calc(-1 * var(--panel-pad)); }
 .stack-screen .dbtn2 { flex: 1 1 0; min-height: 44px; }
+/* sibling actions share a height and do not wrap (design/CHECKLIST.md §4) */
+.dbtn2 { white-space: nowrap; }
 
 
 .kvs > div { display: flex; gap: var(--s2); align-items: baseline; padding: 5px 0;
@@ -639,3 +641,17 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .emptybody b { color: var(--text); }
 .emptyact { display: flex; gap: var(--s2); justify-content: center; margin-top: var(--s3); flex-wrap: wrap; }
 .emptyact .dock-primary { margin-left: 0; }
+
+/* keyword editing in the claim editor: chips become removable, and a field
+   adds to the list. The cap is the product's own (30). */
+.kwedit { border-top: var(--hairline); margin-top: var(--s2); padding-top: var(--s2); }
+.kwc.kw-edit { display: inline-flex; align-items: center; gap: 5px; padding-right: 3px; }
+.kwx { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px;
+  border: none; background: none; border-radius: var(--r-s); color: var(--text-faint); }
+.kwx:hover { color: var(--danger); background: var(--danger-wash); }
+.kwx svg { display: block; }
+.kwadd { display: flex; gap: var(--s2); margin-top: var(--s2); }
+.kwadd input { flex: 1 1 auto; min-width: 0; min-height: 34px; background: var(--surface-1);
+  border: var(--hairline); border-radius: var(--r-s); color: var(--text); padding: 0 var(--s2); }
+.kwadd input:focus { outline: none; border-color: var(--accent); }
+.kwadd .zbtn { min-height: 34px; }

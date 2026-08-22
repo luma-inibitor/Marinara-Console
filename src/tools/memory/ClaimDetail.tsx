@@ -15,7 +15,7 @@
 
 import { type ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
-import { IconChevronRight, IconEye, IconFlag, IconInfoCircle, IconPencil, IconWriting, IconArrowRight } from "@tabler/icons-preact";
+import { IconChevronRight, IconEye, IconFlag, IconInfoCircle, IconPencil, IconWriting, IconArrowRight, IconX, IconPlus } from "@tabler/icons-preact";
 import { toast } from "../../shell/toast";
 import { type Mutation, type Row, KEYWORD_CAP, SECTION_CAP } from "./data";
 import { t, OURS } from "./strings";
@@ -131,7 +131,14 @@ export function ClaimDetail({ row }: { row: Row }) {
   const target = notesById.value.get(r.targetId);
   const [editing, setEditing] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  // Keywords are how recall finds a memory, so a claim that writes them has to
+  // let you fix them before they land (owner, 2026-08-22).
+  const storedKeywords = m.kind === "create_note" ? (m.note?.keywords ?? [])
+    : m.kind === "set_keywords" ? (m.keywords ?? []) : null;
+  const [kwDraft, setKwDraft] = useState<string[] | null>(null);
+  const keywords = kwDraft ?? storedKeywords;
 
+  const hasEditable = true;
   const editableSections: Array<{ id: string; label: string; text: string }> =
     m.kind === "create_note"
       ? Object.entries(m.note?.sections ?? {}).map(([key, s]) => ({ id: key, label: key, text: s.text ?? "" }))
@@ -142,6 +149,15 @@ export function ClaimDetail({ row }: { row: Row }) {
   const save = () => {
     const next = structuredClone(m) as Mutation;
     let changed = false;
+    if (kwDraft && storedKeywords) {
+      if (kwDraft.length > KEYWORD_CAP) {
+        toast(t("memorysettings.manualKeywordLimit"), { kind: "error" });
+        return;
+      }
+      if (next.kind === "create_note" && next.note) next.note.keywords = kwDraft;
+      else next.keywords = kwDraft;
+      changed ||= kwDraft.join("\u0000") !== storedKeywords.join("\u0000");
+    }
     for (const s of editableSections) {
       const v = drafts[s.id] ?? s.text;
       if (!v.trim()) { toast(t("reviewqueue.sectionTextCannotBeEmpty"), { kind: "error" }); return; }
@@ -156,10 +172,11 @@ export function ClaimDetail({ row }: { row: Row }) {
     }
     setEdited(r.key, changed ? next : null);
     setDrafts({});
+    setKwDraft(null);
     setEditing(false);
     toast(changed ? "Edit staged — applies with the batch" : "No changes");
   };
-  const discard = () => { setDrafts({}); setEditing(false); };
+  const discard = () => { setDrafts({}); setKwDraft(null); setEditing(false); };
 
   // Whole-memory toggle (owner feedback 2026-08-22): re-render the preview
   // with every section of the target present and the change marked in place,
@@ -170,7 +187,7 @@ export function ClaimDetail({ row }: { row: Row }) {
       <IconEye size={12} stroke={1.75} aria-hidden /> whole memory
     </button>
   );
-  const editBtn = editableSections.length > 0 && !editing && (
+  const editBtn = (editableSections.length > 0 || storedKeywords) && hasEditable && !editing && (
     <button class="zbtn hit" onClick={() => setEditing(true)}>
       <IconPencil size={12} stroke={1.75} aria-hidden /> {t("longtermmemorydetail.reviewEdit").toLowerCase()}
     </button>
@@ -191,7 +208,8 @@ export function ClaimDetail({ row }: { row: Row }) {
     <div class="claim-detail">
       <Headline r={r} m={m} target={Boolean(target)} />
       <Preview r={r} m={m} editing={editing} drafts={drafts} setDrafts={setDrafts}
-        editableSections={editableSections} whole={whole} controls={<>{wholeBtn}{editBtn}{stagedMark}</>} />
+        editableSections={editableSections} whole={whole} keywords={keywords} setKeywords={setKwDraft}
+        controls={<>{wholeBtn}{editBtn}{stagedMark}</>} />
       <Evidence r={r} m={m} />
       <div class="decbar">
         {editing ? (
@@ -259,6 +277,7 @@ function LinkTarget({ target, chip }: { target: string; chip?: boolean }) {
 
 function Preview(props: {
   r: Row; m: Mutation; editing: boolean; whole?: boolean;
+  keywords: string[] | null; setKeywords: (v: string[]) => void;
   drafts: Record<string, string>; setDrafts: (f: (p: Record<string, string>) => Record<string, string>) => void;
   editableSections: Array<{ id: string; label: string; text: string }>;
   controls: ComponentChildren;
@@ -362,8 +381,8 @@ function Preview(props: {
             </div>
           );
         })}
-        {kws.length > 0 && (
-          <div class="kwrap">{kws.map((k) => <span key={k} class="kwc kw-add t-data">+ {k}</span>)}</div>
+        {(kws.length > 0 || editing) && (
+          <KeywordEditor list={props.keywords ?? kws} editing={editing} onChange={props.setKeywords} allNew />
         )}
       </Zone>
     );
@@ -393,11 +412,15 @@ function Preview(props: {
     return (
       <Zone eyebrow={<span class="z-lab">{opTag}keywords · {OURS.zonePreview}</span>}
         foot={<span class={next.length >= KEYWORD_CAP ? "fl" : "dim"}>{next.length} of {KEYWORD_CAP} keywords</span>}>
-        <div class="kwrap">
-          {kept.map((k) => <span key={k} class="kwc t-data">{k}</span>)}
-          {added.map((k) => <span key={k} class="kwc kw-add t-data">+ {k}</span>)}
-          {removed.map((k) => <span key={k} class="kwc kw-del t-data">− {k}</span>)}
-        </div>
+        {editing
+          ? <KeywordEditor list={props.keywords ?? next} editing onChange={props.setKeywords} />
+          : (
+            <div class="kwrap">
+              {kept.map((k) => <span key={k} class="kwc t-data">{k}</span>)}
+              {added.map((k) => <span key={k} class="kwc kw-add t-data">+ {k}</span>)}
+              {removed.map((k) => <span key={k} class="kwc kw-del t-data">− {k}</span>)}
+            </div>
+          )}
         <Edu>{t("longtermmemorydetail.underTheHoodKeywords")}</Edu>
       </Zone>
     );
@@ -533,5 +556,55 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
         <Term tip={GLOSSARY[`${m.risk} risk`] ?? m.risk}>{m.risk} risk</Term>
       </div>
     </Zone>
+  );
+}
+
+/** Keywords are how recall finds a memory, so a claim that writes them has to
+ *  be correctable before it lands. Reading shows the list; editing turns each
+ *  into a removable chip and adds a field. The cap and the length rule are the
+ *  product's own (30 keywords, 80 characters each). */
+function KeywordEditor({ list, editing, onChange, allNew }: {
+  list: string[]; editing: boolean; onChange: (v: string[]) => void; allNew?: boolean;
+}) {
+  const [entry, setEntry] = useState("");
+  const add = () => {
+    const v = entry.trim();
+    if (!v) return;
+    if (v.length > 80) { toast(t("memorysettings.manualKeywordTooLong"), { kind: "error" }); return; }
+    if (list.includes(v)) { setEntry(""); return; }
+    if (list.length >= KEYWORD_CAP) { toast(t("memorysettings.manualKeywordLimit"), { kind: "error" }); return; }
+    onChange([...list, v]);
+    setEntry("");
+  };
+  if (!editing) {
+    return <div class="kwrap">{list.map((k) => <span key={k} class={`kwc t-data ${allNew ? "kw-add" : ""}`}>{allNew ? `+ ${k}` : k}</span>)}</div>;
+  }
+  return (
+    <div class="kwedit">
+      <div class="z-eye t-label t-label-s">
+        <span class="z-lab">{t("memoryvault.keywords")}</span>
+        <span class={`zcount t-data ${list.length >= KEYWORD_CAP ? "fl" : ""}`}>{list.length} / {KEYWORD_CAP}</span>
+      </div>
+      <div class="kwrap">
+        {list.map((k) => (
+          <span key={k} class="kwc kw-edit t-data">
+            {k}
+            <button class="kwx hit" aria-label={`Remove keyword ${k}`}
+              onClick={() => onChange(list.filter((x) => x !== k))}>
+              <IconX size={11} stroke={2} aria-hidden />
+            </button>
+          </span>
+        ))}
+      </div>
+      <div class="kwadd">
+        <input class="t-data" value={entry} placeholder={t("memoryvault.addKeyword")}
+          aria-label={t("memoryvault.addKeyword")}
+          onInput={(e) => setEntry(e.currentTarget.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }} />
+        <button class="zbtn hit" onClick={add} disabled={!entry.trim()}>
+          <IconPlus size={12} stroke={2} aria-hidden /> {t("memoryvault.addKeyword").toLowerCase()}
+        </button>
+      </div>
+    </div>
   );
 }
