@@ -516,13 +516,13 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
       {r.restates && (
         <div class="ev-rel">
           <div class="z-eye t-label t-label-s">restates <NoteRef id={r.restates.noteId} label={notesById.value.get(r.restates.noteId)?.title ?? r.restates.noteId} /> · {r.restates.score.toFixed(2)}</div>
-          <p class="t-prose dim ev-line">{r.restates.line}</p>
+          <div class="evq-q t-prose">{r.restates.line}</div>
         </div>
       )}
       {partner && (
         <div class="ev-rel">
           <div class="z-eye t-label t-label-s">duplicate incoming → {partner.targetTitle} · {r.duplicateOf!.score.toFixed(2)}</div>
-          <p class="t-prose dim ev-line">{partner.text}</p>
+          <div class="evq-q t-prose">{partner.text}</div>
         </div>
       )}
 

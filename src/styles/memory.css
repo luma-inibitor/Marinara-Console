@@ -388,7 +388,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
   flex-wrap: wrap; margin-bottom: 6px; }
 .ev-rel { margin-top: var(--s2); padding-top: var(--s2); border-top: var(--hairline); }
 .ev-rel .z-eye { margin-bottom: 2px; }
-.ev-line { margin: 0; font-size: 12.5px; }
 .readline { border-top: var(--hairline); margin-top: var(--s2); padding-top: 6px;
   color: var(--text-dim); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 /* decide bar: bottom, sticky, the list's circle vocabulary */
