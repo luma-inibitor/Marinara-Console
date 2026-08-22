@@ -169,6 +169,18 @@ exists, use it; if it needs a new one, add it here in the same change.
   borrow another family's silhouette (that rule killed `flag-2` for status and
   a bare pencil for the edited mark). Type icons carry the categorical hue.
   Owner-decided mapping lives in BACKLOG.md; don't re-litigate per screen.
+- **Detail pane zones (v5)** (`ClaimDetail.tsx`) — a claim's pane answers the
+  reviewer's questions in reading order: headline sentence (what this does, to
+  which memory) · preview (op-specific consequence: after-state for append,
+  diff for update, the memory-as-it-will-exist for create, resolved facts for
+  metadata ops; stored context and unchanged runs fold behind labeled
+  expanders) · evidence (source snippet + attribution, confidence as a
+  sentence, diagnostics, quiet extraction line) · decide bar at the bottom in
+  the list's circle vocabulary. Editing is a mode: accent border, textarea in
+  place of the proposed lines only, save/discard replace keep/drop. Preview
+  lines speak diff: + tint = lands in the vault, − = dies on apply; the gutter
+  glyph carries the meaning when color fails. Zone labels use catalog
+  vocabulary (preview · existing → proposed · evidence · extraction).
 - **Education term** (`glossary.tsx`) — any rendered enum value or type/op icon
   answers "what does this word mean" in place: hover/focus on desktop, tap on
   touch, definition prefixed with its owning field ("claim kind · static — …").
