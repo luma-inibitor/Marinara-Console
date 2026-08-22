@@ -49,6 +49,33 @@ owner decision after explanation.
 
 ## Owner feedback queue
 
+- **[Luma] Source import UI — IN REVIEW (2026-08-22).** Luma is blocked on
+  using the tool for real ("i can't really use it yet... we first have to
+  implement a decent source import ui"). Interview answers: (1) browse-to-
+  import is the only job that happens; maintenance never does. (2) Repair
+  lives in Sources, Review links to it. (3) Revalidate wanted. (4) Bulk for
+  lorebooks, curate+edit one at a time for chat summaries. (5) Confirm only
+  above a threshold. (6) Imported-visibility left to implementer (chose:
+  default view hides them, quick rail brings them back). (7) Title + state
+  only, no snippet body. Specimens: public/mockups/sources-v1.html (test
+  corpus, committable).
+
+- **DIAGNOSED (2026-08-22): the live 44x `source_stale` mystery is context
+  drift, not stale text.** Compared every blocked draft's
+  `extractionFingerprint` against its source note's current one: 0 of 45 have
+  changed source text; 44 differ only in context (note modes widened
+  roleplay -> roleplay+conversation, and personaId/personaIds added to
+  scope); 1 has a missing source note. Re-extracting all 45 would spend 45
+  model calls regenerating byte-identical claims. Open engineering question:
+  does the engine expose a cheap re-bless of an unchanged fingerprint
+  (needed for the "revalidate" action Luma asked for)?
+
+- **BUG (live, 2026-08-22): import preview reports everything as `new`.**
+  All 213 candidates come back `freshness: new` with `importedCount: 0`
+  while the vault holds 96 source notes. Also scans cap at 100 per kind with
+  no signal in the payload. The Sources UI cannot currently tell the user
+  what they already imported.
+
 - **[Luma] Detail surfaces pass — SHIPPED (2026-08-22, "go fix all yes").** Luma: both detail
   surfaces are rough; the claim pane is the worse one ("assaulted by
   information i have no idea what to do with and how it would impact my
