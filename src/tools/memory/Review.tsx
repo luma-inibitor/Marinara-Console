@@ -384,16 +384,20 @@ function FacetSheet(props: { shown: Row[] }) {
               {defs.map((f) => (
                 <div key={f.id} class="facet-line">
                   <span class="flabel t-label t-label-s">{f.label}</span>
-                  {[...counts.get(f.id)!.entries()].sort((a, b) => b[1] - a[1]).map(([value, n]) => {
-                    const on = activeFacets.value.get(f.id)?.has(value) ?? false;
-                    return (
-                      <button key={value} class="facet-chip t-data" aria-pressed={on}
-                        onClick={() => toggleFacet(f.id, value)}>
-                        <span class="fv">{value}</span>
-                        <span class="fc">{n}</span>
-                      </button>
-                    );
-                  })}
+                  {/* chips live in their own wrapping column so a second row
+                      aligns under the first chip, never under the label */}
+                  <span class="fchips">
+                    {[...counts.get(f.id)!.entries()].sort((a, b) => b[1] - a[1]).map(([value, n]) => {
+                      const on = activeFacets.value.get(f.id)?.has(value) ?? false;
+                      return (
+                        <button key={value} class="facet-chip t-data" aria-pressed={on}
+                          onClick={() => toggleFacet(f.id, value)}>
+                          <span class="fv">{value}</span>
+                          <span class="fc">{n}</span>
+                        </button>
+                      );
+                    })}
+                  </span>
                 </div>
               ))}
             </div>
