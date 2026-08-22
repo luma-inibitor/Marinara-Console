@@ -49,6 +49,26 @@ owner decision after explanation.
 
 ## Owner feedback queue
 
+- **[Luma] Navigation + scope wireframes — IN REVIEW (2026-08-22).**
+  public/mockups/nav-wire.html (low fidelity, greyscale, layout only). Four
+  views confirmed: Review Queue / Memory Vault / Sources / **Activity** (job
+  history + running jobs). Scope moves into the top navigation and stays
+  visible across all views. The shoehorned status line is dismantled: counts
+  attach to scope, index health becomes an alert that says nothing when fine,
+  and the engine instance sits beside the tool name. Upstream comparison from
+  Luma's screenshot: their picker is three stacked labelled menus
+  (wireframe C) with the counts line beneath, and their bottom nav carries
+  **Settings** as a peer view with counts as badges.
+  - **Undo — backlog by owner request.** Needs durable job history first;
+    Activity is the prerequisite.
+  - **Mode filter is missing from this console entirely.** Upstream has a
+    Mode menu (All / roleplay / conversation) beside scope; it filters what a
+    source imports as, which is a different question from scope.
+  - **Settings has no surface in this console at all.** The engine exposes
+    recall weights, caps, extraction prompt templates, AI keyword extraction
+    and the Active toggle; none of it is reachable.
+
+
 - **Sources screen SHIPPED (2026-08-22, 5307601 + follow-ups).** Built from
   the approved specimens; verify green at 390/768/1280; exercised read-only
   against the live instance (213 sources, 45 blocked drafts, no console
