@@ -69,9 +69,10 @@ owner decision after explanation.
   **Feedback round 1 (2026-08-22) applied:** char footers show signed net +
   total after (+86 - 272 ch); headline is a plain sentence, op icon moved
   to the preview zone label; paragraph keys in text tone (accent is links-only
-  now); extraction colon; open-memory button on append/update previews as
-  the pop-back-and-forth answer (peek overlay) - Luma to judge comfort on
-  device.
+  now); extraction colon; whole-memory toggle on append/update
+  previews (superseded the open-memory peek button, owner feedback
+  2026-08-22): the preview re-renders with every section present and the
+  change marked in place; diff folds open up in whole mode.
   **S7 inline-object cards — APPROVED ("s7 lgtm") and shipped:** link and
   status previews inline the object under review (vault memories first, then
   batch-pending creates; fold past 3 lines; live sizes: threads median 242

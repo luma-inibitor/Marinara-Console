@@ -20,7 +20,7 @@ import { toast } from "../../shell/toast";
 import { type Mutation, type Row, KEYWORD_CAP, SECTION_CAP } from "./data";
 import { t, OURS } from "./strings";
 import { decisions, edited, rows, notesById, pressure, setDecision, setEdited } from "./store";
-import { NoteRef, peekNote } from "./NotePeek";
+import { NoteRef } from "./NotePeek";
 import { OpIcon, TypeIcon, DecisionIcon } from "./icons";
 import { Term, GLOSSARY, OP_TIP, TYPE_TIP } from "./glossary";
 import { flagsOf } from "./flags";
@@ -161,9 +161,13 @@ export function ClaimDetail({ row }: { row: Row }) {
   };
   const discard = () => { setDrafts({}); setEditing(false); };
 
-  const openBtn = target && (m.kind === "append_section" || m.kind === "update_section") && !editing && (
-    <button class="zbtn hit" onClick={() => void peekNote(r.targetId)}>
-      <IconEye size={12} stroke={1.75} aria-hidden /> {t("reviewqueue.openMemory").toLowerCase()}
+  // Whole-memory toggle (owner feedback 2026-08-22): re-render the preview
+  // with every section of the target present and the change marked in place,
+  // instead of popping an overlay the reviewer has to bounce back from.
+  const [whole, setWhole] = useState(false);
+  const wholeBtn = target && (m.kind === "append_section" || m.kind === "update_section") && !editing && (
+    <button class="zbtn hit" aria-pressed={whole} onClick={() => setWhole(!whole)}>
+      <IconEye size={12} stroke={1.75} aria-hidden /> whole memory
     </button>
   );
   const editBtn = editableSections.length > 0 && !editing && (
@@ -187,7 +191,7 @@ export function ClaimDetail({ row }: { row: Row }) {
     <div class="claim-detail">
       <Headline r={r} m={m} target={Boolean(target)} />
       <Preview r={r} m={m} editing={editing} drafts={drafts} setDrafts={setDrafts}
-        editableSections={editableSections} controls={<>{openBtn}{editBtn}{stagedMark}</>} />
+        editableSections={editableSections} whole={whole} controls={<>{wholeBtn}{editBtn}{stagedMark}</>} />
       <Evidence r={r} m={m} />
       <div class="decbar">
         {editing ? (
@@ -254,12 +258,12 @@ function LinkTarget({ target, chip }: { target: string; chip?: boolean }) {
 // ── zone 2: preview ─────────────────────────────────────────────────
 
 function Preview(props: {
-  r: Row; m: Mutation; editing: boolean;
+  r: Row; m: Mutation; editing: boolean; whole?: boolean;
   drafts: Record<string, string>; setDrafts: (f: (p: Record<string, string>) => Record<string, string>) => void;
   editableSections: Array<{ id: string; label: string; text: string }>;
   controls: ComponentChildren;
 }) {
-  const { r, m, editing } = props;
+  const { r, m, editing, whole } = props;
   const target = notesById.value.get(r.targetId);
   // The op icon lives on the preview zone (not the headline — a sentence
   // starting with an icon read wrong), keeping its education tooltip in the pane.
@@ -271,6 +275,19 @@ function Preview(props: {
       onInput={(e) => { const v = e.currentTarget.value; props.setDrafts((p) => ({ ...p, [id]: v })); }} />
   );
 
+  // Whole-memory mode: every section of the target, in stored order, with the
+  // affected one swapped for its marked rendering. Context lines stay dim.
+  const wholeSections = (affectedKey: string, affected: ComponentChildren) => (
+    <>
+      {Object.entries(target?.sections ?? {}).map(([key, sec]) => (
+        <div key={key} class="nc-sec">
+          <div class="z-eye t-label t-label-s"><Skey k={key} /></div>
+          {key === affectedKey ? affected : splitLines(sec.text).map((l, i) => <Line key={i}>{l}</Line>)}
+        </div>
+      ))}
+    </>
+  );
+
   if (m.kind === "append_section") {
     const key = m.sectionKey ?? "";
     const stored = target?.sections?.[key]?.text ?? "";
@@ -279,16 +296,23 @@ function Preview(props: {
     const head = storedLines.slice(0, Math.max(0, storedLines.length - STORED_CONTEXT));
     const tail = storedLines.slice(Math.max(0, storedLines.length - STORED_CONTEXT));
     const addCh = (m.text ?? "").length;
+    const addLines = editing ? area("__text", m.text ?? "") : adds.map((l, i) => <Line key={i} mode="add">{l}</Line>);
     return (
       <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span class="z-lab">{opTag}<Skey k={key} /> · {editing ? "editing proposed content" : OURS.zonePreview}</span>{props.controls}</>}
         foot={<><span class="dim">+{addCh.toLocaleString()} · {(stored.length + addCh).toLocaleString()} ch</span>{capNote(r.targetId, key)}</>}>
-        {head.length > 0 && (
-          <Fold label={`${head.length} earlier line${head.length === 1 ? "" : "s"} · ${head.join(" ").length.toLocaleString()} ch`}>
-            {head.map((l, i) => <Line key={i}>{l}</Line>)}
-          </Fold>
+        {whole ? (
+          wholeSections(key, <>{storedLines.map((l, i) => <Line key={i}>{l}</Line>)}{addLines}</>)
+        ) : (
+          <>
+            {head.length > 0 && (
+              <Fold label={`${head.length} earlier line${head.length === 1 ? "" : "s"} · ${head.join(" ").length.toLocaleString()} ch`}>
+                {head.map((l, i) => <Line key={i}>{l}</Line>)}
+              </Fold>
+            )}
+            {tail.map((l, i) => <Line key={i}>{l}</Line>)}
+            {addLines}
+          </>
         )}
-        {tail.map((l, i) => <Line key={i}>{l}</Line>)}
-        {editing ? area("__text", m.text ?? "") : adds.map((l, i) => <Line key={i} mode="add">{l}</Line>)}
       </Zone>
     );
   }
@@ -303,7 +327,9 @@ function Preview(props: {
         foot={<><span class="dim">{after.length >= before.length ? "+" : "−"}{Math.abs(after.length - before.length).toLocaleString()} · {after.length.toLocaleString()} ch</span>{capNote(r.targetId, key)}</>}>
         {editing
           ? <>{splitLines(before).map((l, i) => <Line key={i} mode="del">{l}</Line>)}{area("__text", after)}</>
-          : <DiffLines before={before} after={after} />}
+          : whole
+            ? wholeSections(key, <DiffLines before={before} after={after} fold={false} />)
+            : <DiffLines before={before} after={after} />}
       </Zone>
     );
   }
@@ -408,7 +434,7 @@ function Preview(props: {
 
 /** Diff rendering with context folding: unchanged runs collapse to a fold,
  *  one context line stays visible on each side of a change. */
-function DiffLines({ before, after }: { before: string; after: string }) {
+function DiffLines({ before, after, fold = true }: { before: string; after: string; fold?: boolean }) {
   const ops = lineDiff(splitLines(before), splitLines(after));
   const out: ComponentChildren[] = [];
   let i = 0;
@@ -421,7 +447,7 @@ function DiffLines({ before, after }: { before: string; after: string }) {
       const keepEnd = j < ops.length ? 1 : 0; // context above a change
       const folded = run.slice(keepStart, run.length - keepEnd);
       run.slice(0, keepStart).forEach((op, k) => out.push(<Line key={`c${i}-${k}`}>{op.text}</Line>));
-      if (folded.length > 1) {
+      if (fold && folded.length > 1) {
         out.push(
           <Fold key={`f${i}`} label={`${folded.length} unchanged lines`}>
             {folded.map((op, k) => <Line key={k}>{op.text}</Line>)}
