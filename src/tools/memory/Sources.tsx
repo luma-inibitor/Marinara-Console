@@ -93,6 +93,21 @@ interface Chat { id: string; name?: string; mode?: string }
 const openRow = signal<string | null>(null);
 const railView = signal<"pending" | "imported" | "all">("pending");
 
+/** Same collapse vocabulary as the review queue: a chevron in the control
+ *  column, and a collapsed group keeps its header and its count so the
+ *  collapsed state is still informative. Persisted per view, because these
+ *  groups run to ninety rows and re-collapsing them every visit is a chore. */
+const COLLAPSE_KEY = "mc-ltm-sources-collapsed";
+const collapsedGroups = signal<Set<string>>(
+  new Set(JSON.parse(localStorage.getItem(COLLAPSE_KEY) ?? "[]") as string[]),
+);
+function toggleGroupCollapsed(id: string) {
+  const next = new Set(collapsedGroups.value);
+  next.has(id) ? next.delete(id) : next.add(id);
+  collapsedGroups.value = next;
+  localStorage.setItem(COLLAPSE_KEY, JSON.stringify([...next]));
+}
+
 export function Sources() {
   const [previews, setPreviews] = useState<Map<SourceKind, ImportPreview>>(new Map());
   const [errors, setErrors] = useState<Map<SourceKind, string>>(new Map());
@@ -222,11 +237,19 @@ export function Sources() {
           return names.map((gname) => {
           const group = gname ? inKind.filter((r) => r.group === gname) : inKind;
           const heading = gname || label();
+          const gid = id + "/" + gname;
+          const collapsed = collapsedGroups.value.has(gid);
           const eligible = group.filter(isSelectable);
           const allPicked = eligible.length > 0 && eligible.every((r) => selected.has(r.sourceId));
           return (
             <div key={id + gname}>
               <div class="sghead">
+                <button class="gexp hit" aria-expanded={!collapsed}
+                  aria-label={`${collapsed ? "Expand" : "Collapse"} ${heading} (${group.length})`}
+                  onClick={() => toggleGroupCollapsed(gid)}>
+                  {collapsed ? <IconChevronRight size={15} stroke={1.75} aria-hidden />
+                             : <IconChevronDown size={15} stroke={1.75} aria-hidden />}
+                </button>
                 <span class="ki"><KI size={15} stroke={1.75} aria-hidden /></span>
                 <span class="gname t-prose">{heading}</span>
                 <span class="gn t-data">{group.length}</span>
@@ -244,7 +267,7 @@ export function Sources() {
                 )}
                 {!bulk && <span class="gact-note t-data dim">{OURS.sourcesReviewEach}</span>}
               </div>
-              {group.map((r) => (
+              {!collapsed && group.map((r) => (
                 <SourceLine key={r.sourceId} row={r} bulk={bulk}
                   selected={selected.has(r.sourceId)} onToggle={() => toggle(r.sourceId)}
                   onReload={load} />
