@@ -14,7 +14,9 @@ agent UI, and whatever comes next. Audience of one: an expert user who lives in 
 tool. Density is respect; every needless click is a repeated tax.
 
 **Stack:** Vite + Preact + TypeScript, `@preact/signals`, hand-written CSS on design
-tokens (no Tailwind, no CSS-in-JS). Hash routing (`#/tool/id`) for deep links without
+tokens. Tailwind is present for its theme and utilities only, generated from the
+same tokens (§8); the component styles are still hand-written CSS, and there is no
+CSS-in-JS. Hash routing (`#/tool/id`) for deep links without
 server routes. Engine logic (keyword matching, token estimation) is vendored from
 upstream, never reimplemented — fidelity to the engine beats elegance.
 
