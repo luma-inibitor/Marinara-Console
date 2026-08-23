@@ -110,4 +110,27 @@ export const OURS = {
   // reports per batch, and the catalog has no word for the user's own
   // apply-unit.
   batch: "batch",
+  // The note sub-part. Unlike everything else in OURS, the product DOES have a
+  // word for this and we are deliberately not using it: memoryvault renames the
+  // sub-part to "detail" user-visibly (memoryvault.addSection = "Create detail",
+  // newSection = "New detail", detailRequired = "Add at least one detail before
+  // saving this memory.", detailNameExample = "e.g. Current state, Important
+  // facts"), so "detail" there really does mean the sub-part, not a detail pane.
+  // But the product contradicts itself: reviewqueue still says section
+  // (addToSection = "Add to section", updateSection = "Update section",
+  // sectionTextCannotBeEmpty). The schema and wire format do not contradict
+  // themselves at all — `sections: Record<string, NoteSection>`, mutation kinds
+  // `append_section` / `update_section`, `SECTION_CAP` (data.ts). The console
+  // keeps "section" because it matches the schema, the wire format, and one of
+  // the two product surfaces; memoryvault's "detail" is the outlier. Owner's
+  // call — recorded here so the divergence is a decision, not a drift.
+  section: "section",
+  // Diff-zone eyebrow labels, rendered on their own as well as inside zoneDiff.
+  // Derived from reviewqueue.existingValue ("Existing: {{value}}") and
+  // proposedValue ("Proposed: {{value}}"), which are whole interpolated
+  // sentences carrying the value — they cannot be used as bare labels, so the
+  // catalog has no string for the label alone. Lowercase because eyebrows
+  // uppercase in CSS, per the zonePreview / zoneEvidence convention above.
+  existing: "existing",
+  proposed: "proposed",
 };

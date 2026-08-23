@@ -101,7 +101,8 @@
                        accent — the interactive hue)
      background wash   row decision state (keep / drop)
      top shadow strip  sticky seam guard (Android repaint lag)
-     circle icons      decision states only
+     ring icons        decision states only (closed outline, state mark inside;
+                       a speech bubble is not a ring)
      flag glyph        exception flags only
      file/script icons content ops · categorical-hue icons: note types */
 
@@ -343,7 +344,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .ev-rel .z-eye { margin-bottom: 2px; }
 .readline { border-top: var(--hairline); margin-top: var(--s2); padding-top: 6px;
   color: var(--text-dim); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-/* decide bar: bottom, sticky, the list's circle vocabulary */
+/* decide bar: bottom, sticky, the list's ring vocabulary */
 .decbar { display: flex; align-items: center; gap: var(--s2); border-top: var(--hairline);
   padding: var(--s2) 0; position: sticky; bottom: 0; background: var(--surface-1); }
 .dbtn2 { display: inline-flex; align-items: center; justify-content: center; gap: 6px;

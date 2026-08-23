@@ -181,10 +181,13 @@ exists, use it; if it needs a new one, add it here in the same change.
   visual authority. Counts exclude the facet's own filter ("what would I get if I
   toggled this"). 3-5 quick chips stay inline; the sheet holds the long tail.
 - **Icon vocabulary** (`@tabler/icons-preact`; memory tool: `icons.tsx`) — icons
-  are reserved silhouette families: circles = decision states, the flag =
+  are reserved silhouette families: rings = decision states, the flag =
   exception flags, files/scripts = content ops (script = whole note, file = one
-  section; shared + marks additive ops, pencil marks replacement). No icon may
-  borrow another family's silhouette (that rule killed `flag-2` for status and
+  section; shared + marks additive ops, pencil marks replacement). A ring is a
+  closed outline whose entire content is the state mark (check / x / dashed);
+  a glyph that merely contains a curve — a speech bubble, an info dot — is not
+  in the family (owner-decided 2026-08-23). No icon may borrow another family's
+  silhouette (that rule killed `flag-2` for status and
   a bare pencil for the edited mark). Type icons carry the categorical hue.
   Owner-decided mapping lives in BACKLOG.md; don't re-litigate per screen.
 - **Styling** — Tailwind v4 (`@tailwindcss/vite`) with the theme generated from
@@ -206,7 +209,7 @@ exists, use it; if it needs a new one, add it here in the same change.
   metadata ops; stored context and unchanged runs fold behind labeled
   expanders) · evidence (source snippet + attribution, confidence as a
   sentence, diagnostics, quiet extraction line) · decide bar at the bottom in
-  the list's circle vocabulary. Editing is a mode: accent border, textarea in
+  the list's ring vocabulary. Editing is a mode: accent border, textarea in
   place of the proposed lines only, save/discard replace keep/drop. Preview
   lines speak diff: + tint = lands in the vault, − = dies on apply; the gutter
   glyph carries the meaning when color fails. Zone labels use catalog
