@@ -231,3 +231,44 @@ A UI change is not done until `node verify.mjs` passes:
 
 Screenshot before claiming; measure before asserting density. This habit has caught
 real bugs every time it was applied — treat it as part of the build, not QA.
+
+---
+
+## 8. Where UI lives — `src/ui/`
+
+Shared components live in `src/ui/`, one folder-level, each with its own
+co-located stylesheet (`Chip.tsx` + `Chip.css`). Anything used by more than one
+screen belongs there; anything used by one screen belongs beside that screen.
+
+**Why co-located plain CSS**, and not utility classes in the JSX or CSS
+modules. The rules in this repo carry explanations that utility strings cannot
+hold — why the sticky seam guard is 3px and not more, what each channel in the
+memory list means. Those are hard-won and would be deleted rather than
+migrated. CSS modules would give compiler-enforced unique names, but they hash
+the class in devtools, and this project is debugged by looking at rendered
+output and pointing at things. Keeping `.chip` greppable is worth more than
+uniqueness in a codebase this size. Tailwind utilities remain available as the
+escape hatch for a one-off override.
+
+**Preflight is on** (`src/styles/theme.css`). Our stylesheets are unlayered and
+preflight lands in `layer(base)`, so it reaches only properties we never set.
+Its measured effect: form controls inherit our font and leading instead of the
+browser's 13.33px default, icons lose the inline baseline gap, and tag margins
+are zero — so a component's spacing is the component's job. Do not add a rule
+that re-states a margin preflight already removed; give the component a `gap`.
+
+**Two components, not one, when the roles differ.** `Chip` is pressable and
+`Tag` is not, because one `.chip` class doing both meant you found out whether
+something was clickable by clicking it. Accent means interactive (§2); a
+component that is not interactive should not be able to reach for it.
+
+### Checks that belong to this layer
+
+- `node design/deadcss.mjs` — CSS classes nothing appears to use. A **candidate**
+  list: class names reach the DOM literally, composed as `` `type-${n.type}` ``,
+  and as bare strings passed to a `cls` prop. Read every hit. The first version
+  of this script reported 36 dead classes of which 20 were live.
+- `node design/domsnap.mjs before` / `... after --diff` — snapshots the rendered
+  element tree and its class hooks across five screens at two viewports. Any
+  refactor claiming "renders identically" runs this instead of asserting it. It
+  is what caught three silent regressions in the chip sweep.
