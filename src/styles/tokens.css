@@ -31,6 +31,41 @@
   --accent-ink: #0b0f1a;
   --flag: #e8734a;      /* computed outliers only */
 
+  /* ── categorical object-type hues — the third color axis ──
+     Identity, not state: one hue per long-lived object type, always paired
+     with the type name in text, kept dimmer than the status hues and never
+     reusing them. Consumed as `--tc` by the .type-* classes.
+
+     ⚠ --type-character is byte-identical to --accent, which DESIGN.md §1
+     forbids ("never reuse the status hues or --accent"). It is carried over
+     unchanged here so this refactor stays render-neutral; picking the real
+     hue is an owner decision. Constraints for whoever picks it: ≥20 ΔE from
+     both --accent and --type-thread (which is itself only 18.8 from accent),
+     and dimmer than the status hues. `character` is the highest-volume note
+     type, so an accent-colored chip and a selected chip are currently
+     indistinguishable. */
+  --type-character: #7d9bf0;      /* ⚠ === --accent, see above */
+  --type-relationship: #e08fc7;
+  --type-timeline-event: #e0b35f;
+  --type-thread: #b08fe0;
+  --type-world: #58c9a8;
+  --type-tone: #c9b98a;
+  --type-neutral: var(--text-dim); /* scene + source — deliberately hueless */
+
+  /* ── ink for text sitting on a filled status chip ── */
+  --warn-ink: #1a1705;  /* on --warn, as --accent-ink is to --accent */
+
+  /* ── scrim behind a layered surface ──
+     One dim for every modal: sheets, panels, the command palette. */
+  --scrim: rgba(4, 6, 10, 0.55);
+
+  /* ── elevation ──
+     §1 forbids decorative shadows; these are functional lift for things that
+     genuinely float over content. Three tiers, not six ad-hoc values. */
+  --shadow-pop: 0 6px 18px rgba(0, 0, 0, 0.5);      /* tooltips, menus, toasts */
+  --shadow-panel: 0 12px 34px rgba(0, 0, 0, 0.55);  /* dropdown panels */
+  --shadow-modal: 0 18px 50px rgba(0, 0, 0, 0.6);   /* sheets, palette */
+
   /* soft washes for status-tinted fills (text on top must still pass AA) */
   --ok-wash: rgba(52, 211, 153, 0.11);
   --warn-wash: rgba(253, 224, 71, 0.11);

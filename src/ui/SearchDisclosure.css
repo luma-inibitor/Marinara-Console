@@ -41,7 +41,7 @@
   background: var(--surface-1);
   border: 1px solid var(--edge-strong);
   border-radius: var(--r-m);
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-panel);
 }
 .disclosure-search { margin-bottom: var(--s2); }
 .disclosure-list { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; }

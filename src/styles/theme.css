@@ -46,6 +46,28 @@
   --color-danger-wash: var(--danger-wash);
   --color-accent-wash: var(--accent-wash);
   --color-flag-wash: var(--flag-wash);
+  --color-warn-ink: var(--warn-ink);
+  --color-scrim: var(--scrim);
+
+  /* categorical object-type hues — identity, not state. See DESIGN.md §1 */
+  --color-type-character: var(--type-character);
+  --color-type-relationship: var(--type-relationship);
+  --color-type-timeline-event: var(--type-timeline-event);
+  --color-type-thread: var(--type-thread);
+  --color-type-world: var(--type-world);
+  --color-type-tone: var(--type-tone);
+  --color-type-neutral: var(--type-neutral);
+
+  /* Elevation. These bridge a token onto ITSELF, which looks circular and is
+     not: tokens.css is unlayered and this @theme block lands in layer(theme),
+     and unlayered CSS beats every layer, so tokens.css supplies the value and
+     this line only registers the name with Tailwind so `shadow-pop` etc.
+     generate. The three --font-* bridges below have always worked the same
+     way. Verified 2026-08-23 by reading the computed values back off :root in
+     a browser, not by reasoning about the cascade. */
+  --shadow-pop: var(--shadow-pop);
+  --shadow-panel: var(--shadow-panel);
+  --shadow-modal: var(--shadow-modal);
 
   /* type */
   --font-label: var(--font-label);

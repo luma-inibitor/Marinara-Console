@@ -51,8 +51,15 @@ columns. Ligatures OFF wherever literal characters matter (keys, code, IDs).
   (e.g. memory note types) get one hue each, used consistently on every chip/dot
   that names the type, always paired with the type name in text. They are a third
   axis — never reuse the status hues or `--accent`, and keep them dimmer than both
-  (they are identity, not state). Defined next to the tool that owns the taxonomy
-  (`memory.css` `.type-*`).
+  (they are identity, not state). The hues are defined in `tokens.css` as
+  `--type-*`; the tool that owns the taxonomy binds them to its own classes
+  (`memory.css` `.type-*` sets `--tc` from them). They moved there on
+  2026-08-23: they had been the last hardcoded palette outside the token file,
+  which is what let `--type-character` drift into being byte-identical to
+  `--accent` without anything noticing. One palette, one place to check.
+  **Known violation, open:** `--type-character` IS `--accent` (`#7d9bf0`) and
+  needs a replacement hue — ≥20 ΔE from both `--accent` and `--type-thread`,
+  and dimmer than the status hues.
 - Surface ladder `--canvas → --surface-1..3` for depth; hairline `--edge` between
   regions. One subtle separator, never full grids of lines.
 - **Contrast floors are enforced by `verify.mjs`**: body/data text ≥4.5:1, large text

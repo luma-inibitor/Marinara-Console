@@ -1,6 +1,6 @@
 /* Below the split breakpoint a sheet rises from the bottom edge; above it, the
    same sheet is a right-hand panel. One markup, two projections. */
-.peek-scrim { position: fixed; inset: 0; z-index: 60; background: rgba(4, 6, 10, 0.55); }
+.peek-scrim { position: fixed; inset: 0; z-index: 60; background: var(--scrim); }
 
 .sheet {
   position: fixed;
@@ -57,5 +57,5 @@
   background: var(--surface-1);
   border: var(--hairline);
   border-radius: var(--r-l);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-modal);
 }

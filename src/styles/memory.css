@@ -6,14 +6,15 @@
 [data-d="drop"] { --dc: var(--danger); }
 [data-d="undecided"] { --dc: var(--off); }
 
-/* categorical memory-type hues — chips/dots always carry the name in text */
-.type-character    { --tc: #7d9bf0; }
-.type-relationship { --tc: #e08fc7; }
-.type-timeline_event { --tc: #e0b35f; }
-.type-thread       { --tc: #b08fe0; }
-.type-world        { --tc: #58c9a8; }
-.type-tone         { --tc: #c9b98a; }
-.type-scene, .type-source { --tc: var(--text-dim); }
+/* categorical memory-type hues — chips/dots always carry the name in text
+   The hues themselves now live in tokens.css as the --type-* family. */
+.type-character    { --tc: var(--type-character); }
+.type-relationship { --tc: var(--type-relationship); }
+.type-timeline_event { --tc: var(--type-timeline-event); }
+.type-thread       { --tc: var(--type-thread); }
+.type-world        { --tc: var(--type-world); }
+.type-tone         { --tc: var(--type-tone); }
+.type-scene, .type-source { --tc: var(--type-neutral); }
 
 .tag[class*="type-"] {
   color: var(--tc);
@@ -196,7 +197,7 @@
 .gmenu-scrim { position: fixed; inset: 0; z-index: 44; }
 .gmenu-pop { position: absolute; top: calc(100% + 4px); right: 0; z-index: 45;
   min-width: 180px; background: var(--surface-2); border: 1px solid var(--edge-strong);
-  border-radius: var(--r-m); padding: 4px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  border-radius: var(--r-m); padding: 4px; box-shadow: var(--shadow-pop);
   display: flex; flex-direction: column; }
 .gmenu-pop button { text-align: left; padding: 8px 10px; min-height: 38px;
   border-radius: var(--r-s); color: var(--text); font-size: 13px; }
