@@ -62,8 +62,13 @@ owner decision after explanation.
   - **Undo — backlog by owner request.** Needs durable job history first;
     Activity is the prerequisite.
   - **Mode filter is missing from this console entirely.** Upstream has a
-    Mode menu (All / roleplay / conversation) beside scope; it filters what a
-    source imports as, which is a different question from scope.
+    Mode menu (All / roleplay / conversation). Confirmed against the engine
+    2026-08-22: it is **not** a scope level. A draft's fingerprint records
+    `scope` (chatIds, characterIds) and `modes` / `extractionMode` as separate
+    fields, and every source carries its own `importMode`. Mode does not
+    cascade - picking roleplay does not change which chats exist - so it
+    belongs with the Sources list's filter control beside search, which is
+    also where upstream puts it.
   - **Settings has no surface in this console at all.** The engine exposes
     recall weights, caps, extraction prompt templates, AI keyword extraction
     and the Active toggle; none of it is reachable.
