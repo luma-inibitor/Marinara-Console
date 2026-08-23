@@ -12,7 +12,7 @@ move.
 ## Using it
 
 ```html
-<link rel="stylesheet" href="/legacy/mockups/kit.css">
+<link rel="stylesheet" href="/mockups/kit.css">
 <div class="mk-page wf"> … </div>
 ```
 

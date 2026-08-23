@@ -1,12 +1,10 @@
 #!/usr/bin/env node
-// Lorebook Mobile — standalone editor for Marinara Engine lorebooks.
+// Marinara Console server: serves the built client (dist/) and proxies /api/*
+// to a running Marinara Engine, stripping the `embedding` field from entry
+// payloads on the way back. Those vectors are ~85% of an entries response and
+// the console never renders them.
 //
-// Serves a static client and proxies /api/* through to a running engine,
-// stripping the `embedding` field from entry payloads on the way back. Those
-// vectors are 83% of the entries response (884 KB of 1,065 KB on a 47-entry
-// book) and the editor never renders them.
-//
-// No dependencies, no build step — `node server.mjs` is the whole thing.
+// The server itself is dependency-free — `node server.mjs` after `npm run build`.
 
 import { createServer } from "node:http";
 import { mkdir, readFile, readdir, rename, stat, unlink, writeFile } from "node:fs/promises";
@@ -14,8 +12,8 @@ import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = resolve(fileURLToPath(import.meta.url), "..");
-const PUBLIC = join(HERE, "public");   // legacy no-build app, served at /legacy/
-const DIST = join(HERE, "dist");       // built console (vite), served at /
+const DIST = join(HERE, "dist");       // built console (vite)
+const PUBLIC = join(HERE, "public");   // design mockups, served at /mockups/
 
 const PORT = Number(process.env.PORT ?? 7872);
 const HOST = process.env.HOST ?? "0.0.0.0";
@@ -206,25 +204,20 @@ async function proxy(req, res, url) {
 }
 
 // ── static ────────────────────────────────────────────────────────
-// / → dist (built console); /legacy/ → public (the original no-build app,
-// kept alive until the console reaches feature parity).
 async function serveStatic(res, pathname) {
-  let root = DIST;
-  let prefix = "";
-  if (pathname === "/legacy") {
+  // The built console at /, the design mockups at /mockups/. The mockup
+  // directory mirrors its URL underneath public/, so nothing is stripped from
+  // the path — only the root changes.
+  const root = pathname === "/mockups" || pathname.startsWith("/mockups/") ? PUBLIC : DIST;
+  if (pathname === "/mockups") {
     // Same reason as any other directory below: relative links on the page
     // only resolve correctly from the slashed form.
-    res.writeHead(302, { location: "/legacy/" }).end();
+    res.writeHead(302, { location: "/mockups/" }).end();
     return;
   }
-  if (pathname.startsWith("/legacy/")) {
-    root = PUBLIC;
-    prefix = "/legacy";
-    pathname = pathname.slice(prefix.length);
-  }
   // Any directory serves its index.html, not just the root. Only "/" was
-  // special-cased before, so /legacy/mockups/ 404'd while
-  // /legacy/mockups/index.html served fine — a front door nobody could open.
+  // special-cased before, so /mockups/ 404'd while /mockups/index.html served
+  // fine — a front door nobody could open.
   const rel = normalize(pathname.endsWith("/") ? `${pathname}index.html` : pathname)
     .replace(/^(\.\.[/\\])+/, "");
   const file = join(root, rel);
@@ -235,11 +228,11 @@ async function serveStatic(res, pathname) {
   try {
     const info = await stat(file);
     // A directory reached without a trailing slash redirects to one, so
-    // /legacy/mockups gets you where /legacy/mockups/ does. Relative links on
+    // /mockups/detail-v5 gets you where /mockups/detail-v5/ does. Relative links on
     // the page only resolve correctly from the slashed form, which is why the
     // redirect is the fix rather than serving the index from both.
     if (info.isDirectory()) {
-      res.writeHead(302, { location: `${prefix}${pathname}/` }).end();
+      res.writeHead(302, { location: `${pathname}/` }).end();
       return;
     }
     if (!info.isFile()) throw new Error("not a file");
@@ -273,6 +266,6 @@ createServer(async (req, res) => {
     res.end(JSON.stringify({ error: String(err?.message ?? err) }));
   }
 }).listen(PORT, HOST, () => {
-  console.log(`lorebook-mobile  →  http://${HOST}:${PORT}`);
+  console.log(`marinara-console  →  http://${HOST}:${PORT}`);
   console.log(`engine           →  ${TARGET}`);
 });
