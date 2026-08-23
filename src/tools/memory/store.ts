@@ -88,6 +88,34 @@ export const preflightRowState = computed(() => {
   return { auto, blockedRows };
 });
 
+/** How many mutations Apply will actually send: the engine's ready set for
+ *  each draft, minus the ids the reviewer dropped in that same draft.
+ *
+ *  The subtraction is the point. Preflight can auto-include a dependency the
+ *  reviewer explicitly dropped, and `applyDecided` already filters those out
+ *  before sending — but the dock used to add the raw engine number to the
+ *  local drop count, so that row landed in both terms and the button stated a
+ *  figure Apply would not honour. Same rule in both places, computed once. */
+export const readyToSend = computed(() => {
+  const pf = preflight.value;
+  if (!pf) return 0;
+  const droppedByDraft = new Map<string, Set<string>>();
+  for (const row of rows.value) {
+    if (decisions.value.get(row.key) !== "drop") continue;
+    let set = droppedByDraft.get(row.draftId);
+    if (!set) droppedByDraft.set(row.draftId, (set = new Set()));
+    set.add(row.mutation.id);
+  }
+  let n = 0;
+  for (const { draftId, pf: draftPf } of pf.perDraft) {
+    const dropped = droppedByDraft.get(draftId);
+    for (const id of draftPf.readyMutationIds ?? []) {
+      if (!dropped?.has(id)) n += 1;
+    }
+  }
+  return n;
+});
+
 export const tally = computed(() => {
   let keep = 0, drop = 0;
   const touched = new Set<string>(), undecidedDrafts = new Set<string>();
@@ -209,6 +237,13 @@ function snapshot(label: string, keys: string[]) {
   undoStack.push({ label, entries: keys.map((k) => [k, decisions.value.get(k) ?? null]) });
   if (undoStack.length > 50) undoStack.shift();
 }
+
+/** Sources waiting to be imported, in the current scope. The nav badge reads
+ *  this. It used to read the count of source notes already imported, so the
+ *  badge beside Sources meant "done" while the badge beside Review meant
+ *  "waiting" — the same channel carrying opposite meanings (owner's call,
+ *  2026-08-22). Null until the Sources screen has computed it once. */
+export const pendingSources = signal<number | null>(null);
 
 export const canUndo = signal(false);
 

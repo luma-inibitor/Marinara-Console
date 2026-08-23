@@ -13,6 +13,7 @@ import { fileURLToPath } from "node:url";
 
 const HERE = resolve(fileURLToPath(import.meta.url), "..");
 const DIST = join(HERE, "dist");       // built console (vite)
+const PUBLIC = join(HERE, "public");   // design mockups, served at /mockups/
 
 const PORT = Number(process.env.PORT ?? 7872);
 const HOST = process.env.HOST ?? "0.0.0.0";
@@ -204,8 +205,21 @@ async function proxy(req, res, url) {
 
 // ── static ────────────────────────────────────────────────────────
 async function serveStatic(res, pathname) {
-  const root = DIST;
-  const rel = normalize(pathname === "/" ? "/index.html" : pathname).replace(/^(\.\.[/\\])+/, "");
+  // The built console at /, the design mockups at /mockups/. The mockup
+  // directory mirrors its URL underneath public/, so nothing is stripped from
+  // the path — only the root changes.
+  const root = pathname === "/mockups" || pathname.startsWith("/mockups/") ? PUBLIC : DIST;
+  if (pathname === "/mockups") {
+    // Same reason as any other directory below: relative links on the page
+    // only resolve correctly from the slashed form.
+    res.writeHead(302, { location: "/mockups/" }).end();
+    return;
+  }
+  // Any directory serves its index.html, not just the root. Only "/" was
+  // special-cased before, so /mockups/ 404'd while /mockups/index.html served
+  // fine — a front door nobody could open.
+  const rel = normalize(pathname.endsWith("/") ? `${pathname}index.html` : pathname)
+    .replace(/^(\.\.[/\\])+/, "");
   const file = join(root, rel);
   if (!file.startsWith(root)) {
     res.writeHead(403).end("Forbidden");
@@ -213,6 +227,14 @@ async function serveStatic(res, pathname) {
   }
   try {
     const info = await stat(file);
+    // A directory reached without a trailing slash redirects to one, so
+    // /mockups/detail-v5 gets you where /mockups/detail-v5/ does. Relative links on
+    // the page only resolve correctly from the slashed form, which is why the
+    // redirect is the fix rather than serving the index from both.
+    if (info.isDirectory()) {
+      res.writeHead(302, { location: `${pathname}/` }).end();
+      return;
+    }
     if (!info.isFile()) throw new Error("not a file");
     const buf = await readFile(file);
     res.writeHead(200, {

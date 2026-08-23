@@ -1,12 +1,24 @@
 # Memory tool review — wired-but-dead, unwired, inconsistent affordances
 
+> **Status: audited 2026-08-22.** This is the report as it was written on
+> 2026-08-21, and its findings have not been edited. The codebase has moved
+> substantially since — the P0 batch shipped and a shared `src/ui/` component
+> layer was extracted — so the line numbers cited below no longer resolve and
+> some findings describe surfaces that have since been rebuilt. Every finding
+> at **[critical]** or **[high]** severity now carries an inline status marker
+> (`SHIPPED`, `OPEN`, `SUPERSEDED` or `UNVERIFIED`) naming the evidence.
+> Findings without a marker were not audited: check them against the current
+> code before acting on them. The reason this header exists is that the next
+> reader, human or agent, will otherwise re-fix a bug that is already fixed, or
+> "restore" a bug while reverting what looks like drift.
+
 `/Users/eli/code/mc-port` @ `feat/memory-tool`, scope `src/tools/memory/*` + `server.mjs`.
 
 ## Bugs
 
-- **[high] [bug]** — Apply can use a **stale preflight**, sending a mutation to `accept` that the same run just `skip`ped. `applyDecided` snapshots `const pf = preflight.value` (`src/tools/memory/store.ts:339`) but preflight is debounced 500 ms (`store.ts:281`) and is *not* awaited. Flip a row keep→drop and hit Apply inside 500 ms: the row is in `dropsByDraft` (`store.ts:341-346`) **and** still in the stale `pf.readyMutationIds` used at `store.ts:385`. Drops run first (`store.ts:367`), then `acceptDraft` is called with a deleted mutation id — the whole draft's accept fails, losing every keep in it. *Fix: in `applyDecided`, await a fresh `runPreflight()` (or drop `pf` and intersect `readyMutationIds` with current keep keys) before building `ids`.*
+- **[high] [bug]** — Apply can use a **stale preflight**, sending a mutation to `accept` that the same run just `skip`ped. `applyDecided` snapshots `const pf = preflight.value` (`src/tools/memory/store.ts:339`) but preflight is debounced 500 ms (`store.ts:281`) and is *not* awaited. Flip a row keep→drop and hit Apply inside 500 ms: the row is in `dropsByDraft` (`store.ts:341-346`) **and** still in the stale `pf.readyMutationIds` used at `store.ts:385`. Drops run first (`store.ts:367`), then `acceptDraft` is called with a deleted mutation id — the whole draft's accept fails, losing every keep in it. *Fix: in `applyDecided`, await a fresh `runPreflight()` (or drop `pf` and intersect `readyMutationIds` with current keep keys) before building `ids`.* **[SHIPPED — `applyDecided` now `await preflightNow()`s, which clears the debounce timer before running; the ids it sends are additionally filtered against `dropIds`, so a just-skipped mutation can no longer reach `acceptDraft` (`src/tools/memory/store.ts`).]**
 
-- **[high] [bug]** — `AcceptResponse.skippedMutationIds` is declared (`src/tools/memory/data.ts:93`) and never read; `store.ts:392` does `for (const id of res.appliedMutationIds ?? ids)` and marks **all** submitted ids `appliedThisSession` + deletes their decisions. If the engine omits `appliedMutationIds` on a partial success, server-rejected mutations are permanently hidden from the queue for the rest of the session (`appliedThisSession` filter at `store.ts:223`, and it is never cleared). *Fix: subtract `res.skippedMutationIds` before marking, and only mark ids present in `appliedMutationIds` when the field exists.*
+- **[high] [bug]** — `AcceptResponse.skippedMutationIds` is declared (`src/tools/memory/data.ts:93`) and never read; `store.ts:392` does `for (const id of res.appliedMutationIds ?? ids)` and marks **all** submitted ids `appliedThisSession` + deletes their decisions. If the engine omits `appliedMutationIds` on a partial success, server-rejected mutations are permanently hidden from the queue for the rest of the session (`appliedThisSession` filter at `store.ts:223`, and it is never cleared). *Fix: subtract `res.skippedMutationIds` before marking, and only mark ids present in `appliedMutationIds` when the field exists.* **[SHIPPED — `applyDecided` builds `const serverSkipped = new Set(res.skippedMutationIds ?? [])` and falls back to `ids.filter((id) => !serverSkipped.has(id))` when the engine omits `appliedMutationIds`, so a server-rejected mutation stays in the queue (`src/tools/memory/store.ts`).]**
 
 - **[medium] [bug]** — **Decision-ledger clobber on remount.** `Review` calls `refresh(true)` on every mount (`src/tools/memory/Review.tsx:40`) → `loadPersisted()` unconditionally overwrites `decisions`/`edited` from the server (`store.ts:130-136`), while `persist()` debounces the PUT by 700 ms (`store.ts:112`). Navigating Review → Vault → Review within 700 ms of a keypress silently reverts those decisions. *Fix: flush the pending persist (or skip `loadPersisted` when `saveState.value === "saving"` / a debounce timer is armed).*
 

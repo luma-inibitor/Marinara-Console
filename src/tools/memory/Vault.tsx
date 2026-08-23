@@ -4,7 +4,7 @@
 // destructive default (undoable); permanent delete confirms.
 
 import { useEffect, useMemo, useState } from "preact/hooks";
-import { openOverlay, closeTopOverlay } from "./overlays";
+import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { refreshLtmStatus } from "./MemoryTool";
 import { toast } from "../../shell/toast";
 import {
@@ -14,6 +14,8 @@ import {
 import { t, OURS } from "./strings";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
+import { IconSearch } from "@tabler/icons-preact";
+import { Chip, DetailSection, EmptyState, ErrorState, IconButton, Loading, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
 
@@ -23,17 +25,6 @@ function pressureOf(n: Note): number {
     worst = Math.max(worst, (s.text?.length ?? 0) / SECTION_CAP);
   }
   return Math.max(worst, (n.keywords?.length ?? 0) / KEYWORD_CAP);
-}
-
-function useIsDesktop(): boolean {
-  const [is, setIs] = useState(() => window.matchMedia("(min-width: 900px)").matches);
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 900px)");
-    const fn = () => setIs(mq.matches);
-    mq.addEventListener("change", fn);
-    return () => mq.removeEventListener("change", fn);
-  }, []);
-  return is;
 }
 
 export function Vault() {
@@ -53,9 +44,11 @@ export function Vault() {
     let list = (notes ?? []).filter((n) => (showSources ? n.type === "source" : n.type !== "source"));
     if (typeFilter) list = list.filter((n) => n.type === typeFilter);
     if (query.trim()) {
+      // Fuzzy on the title, plain substring in the body. Subsequence matching
+      // across a paragraph matches nearly everything, which is not a search.
       const q = query.toLowerCase();
       list = list.filter((n) =>
-        (n.title ?? n.id).toLowerCase().includes(q) ||
+        fuzzyScore(query, n.title ?? n.id) !== null ||
         Object.values(n.sections ?? {}).some((s) => s.text?.toLowerCase().includes(q)));
     }
     const statusRank: Record<string, number> = { active: 0, resolved: 1, archived: 2 };
@@ -77,8 +70,8 @@ export function Vault() {
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [notes]);
 
-  if (error) return <div class="screen"><div class="empty"><p class="t-label">Could not load</p><p class="t-data">{error}</p></div></div>;
-  if (!notes) return <div class="screen"><div class="empty">{t("memoryvault.loadingMemories")}</div></div>;
+  if (error) return <div class="screen"><ErrorState title="Could not load" message={error} /></div>;
+  if (!notes) return <div class="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
 
   const stackOpen = !desktop && Boolean(openId);
   useEffect(() => {
@@ -94,42 +87,39 @@ export function Vault() {
       <div class="audit-list">
         <header class="console">
           <div class="probe">
-            <div class="pwrap">
-              <input value={query} placeholder={t("memoryvault.searchMemories")}
-                aria-label={t("memoryvault.searchMemories")}
-                onInput={(e) => setQuery(e.currentTarget.value)} />
-              {query.trim() !== "" && <span class="res">{visible.length} match</span>}
-            </div>
+            <SearchBar label={t("memoryvault.searchMemories")} value={query}
+              onInput={setQuery} count={visible.length} />
           </div>
           <div class="chiprail">
-            <button class="chip" aria-pressed={!showSources} onClick={() => setShowSources(false)}>
+            <Chip pressed={!showSources} onClick={() => setShowSources(false)}>
               Memories <b class="t-num">{memoriesN}</b>
-            </button>
-            <button class="chip" aria-pressed={showSources} onClick={() => setShowSources(true)}>
+            </Chip>
+            <Chip pressed={showSources} onClick={() => setShowSources(true)}>
               {t("memoryvault.sources")} <b class="t-num">{sourcesN}</b>
-            </button>
+            </Chip>
             <span class="rail-gap" />
             {types.map(([type, n]) => (
-              <button key={type} class="chip" aria-pressed={typeFilter === type}
-                onClick={() => setTypeFilter(typeFilter === type ? null : type)}>
+              <Chip key={type} pressed={typeFilter === type} onClick={() => setTypeFilter(typeFilter === type ? null : type)}>
                 <span class={`tdot type-${type}`} aria-hidden="true" />{type.replaceAll("_", " ")} {n}
-              </button>
+              </Chip>
             ))}
             <span class="rail-gap" />
             {(["updated", "title", "pressure", "status"] as SortKey[]).map((k) => (
-              <button key={k} class="chip" aria-pressed={sort === k} onClick={() => setSort(k)}>
+              <Chip key={k} pressed={sort === k} onClick={() => setSort(k)}>
                 ↓ {{ updated: "Edited", title: "Title", pressure: "Limits", status: "Status" }[k]}
-              </button>
+              </Chip>
             ))}
           </div>
         </header>
         <main class="rows mem-rows">
           {visible.length === 0 && (
-            <p class="empty">
-              {query.trim() || typeFilter
-                ? t("memoryvault.filteredEmptyDescription", { value1: query.trim() ? t("memoryvault.filteredEmptySearch", { value1: query.trim() }) : (typeFilter ?? "") })
-                : t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")}
-            </p>
+            // The filtered case earns the magnifier; an empty vault has no
+            // search to point at, so it gets the sentence alone.
+            (query.trim() || typeFilter)
+              ? <EmptyState
+                  icon={<IconSearch size={22} stroke={1.75} aria-hidden />}
+                  title={t("memoryvault.filteredEmptyDescription", { value1: query.trim() ? t("memoryvault.filteredEmptySearch", { value1: query.trim() }) : (typeFilter ?? "") })} />
+              : <EmptyState title={t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")} />
           )}
           {visible.map((n) => <NoteRow key={n.id} note={n} isOpen={openId === n.id} onOpen={() => setOpenId(n.id)} />)}
         </main>
@@ -138,13 +128,13 @@ export function Vault() {
         <aside class="audit-detail">
           {open
             ? <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />
-            : <div class="empty"><p class="t-label t-label-s">No memory open</p><p class="t-prose">Select a memory to edit it.</p></div>}
+            : <EmptyState title="No memory open" body="Select a memory to edit it." />}
         </aside>
       )}
       {!desktop && open && (
         <div class="stack-screen">
           <header class="console"><div class="hrow">
-            <button class="icon-btn hit" aria-label="Back to vault" onClick={closeTopOverlay}>‹</button>
+            <IconButton class="hit" label="Back to vault" onClick={closeTopOverlay}>‹</IconButton>
             <h1 class="console-title">{open.title ?? open.id}</h1>
           </div></header>
           <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />
@@ -265,7 +255,7 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
     <div class="claim-detail">
       <div class="kvs t-data">
         <div><span class="k">id</span>{n.id}</div>
-        <div><span class="k">type</span><span class={`chip t-data type-${n.type}`}>{n.type.replaceAll("_", " ")}</span></div>
+        <div><span class="k">type</span><Tag class={`type-${n.type}`}>{n.type.replaceAll("_", " ")}</Tag></div>
         <div><span class="k">status</span>
           <span class="segset" role="group" aria-label="Status">
             {(["active", "resolved", "archived"] as const).map((st) => (
@@ -286,20 +276,19 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
         const value = drafts[key] ?? s.text ?? "";
         const pct = Math.min(100, Math.round((value.length / SECTION_CAP) * 100));
         return (
-          <section key={key} class="dsec">
-            <h4 class="t-label t-label-s dsec-head">
-              <span class="dsec-title">{key}</span>
+          <DetailSection key={key} sectionKey={key}
+            meta={<>
               <span class="seccount t-data">{value.length.toLocaleString()}<i> / {SECTION_CAP.toLocaleString()}</i></span>
-              <button class="chip" onClick={() => dedupe(key)}>Dedupe lines</button>
-            </h4>
-            <span class="pbar"><i class={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={`width:${pct}%`} /></span>
+              <Chip onClick={() => dedupe(key)}>Dedupe lines</Chip>
+            </>}
+            meter={<span class="pbar"><i class={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={`width:${pct}%`} /></span>}>
             <textarea
               class="t-prose edit-area"
               rows={Math.min(14, Math.max(3, Math.ceil(value.length / 60)))}
               value={value}
               onInput={(e) => setDrafts((prev) => ({ ...prev, [key]: e.currentTarget.value }))}
             />
-          </section>
+          </DetailSection>
         );
       })}
 

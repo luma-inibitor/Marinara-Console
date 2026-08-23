@@ -1,6 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { navigate } from "../../shell/router";
 import { fetchBooks, fetchEntries, entryTokens, type Lorebook } from "./data";
+import { ErrorState, Loading } from "../../ui";
 
 interface BookStats { n: number; constant: number; sum: number; }
 
@@ -30,9 +31,9 @@ export function Picker() {
   }, []);
 
   if (error) {
-    return <div class="screen"><div class="empty"><p class="t-label">Cannot reach engine</p><p class="t-data">{error}</p></div></div>;
+    return <div class="screen"><ErrorState title="Cannot reach engine" message={error} /></div>;
   }
-  if (!books) return <div class="screen"><div class="empty">Loading lorebooks…</div></div>;
+  if (!books) return <div class="screen"><Loading label="Loading lorebooks…" /></div>;
 
   return (
     <div class="screen">

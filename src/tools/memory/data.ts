@@ -11,9 +11,9 @@ export const KEYWORD_CAP = 30; // note keywords max
 // ── wire types (subset the tool reads; extras pass through) ─────────
 
 export type NoteType = "source" | "timeline_event" | "character" | "relationship" | "scene" | "thread" | "world" | "tone";
-export type NoteStatus = "active" | "resolved" | "archived";
+type NoteStatus = "active" | "resolved" | "archived";
 export type Disposition = "new" | "merge" | "rewrite";
-export type Risk = "low" | "medium" | "high";
+type Risk = "low" | "medium" | "high";
 
 export interface NoteSection { text: string; importance?: string; [extra: string]: unknown }
 
@@ -86,7 +86,7 @@ export interface PreflightResponse {
   rows: Array<{ mutationId: string; targetId: string; disposition: Disposition; status: "ready" | "blocked"; autoIncluded: boolean; blockers: Array<{ code: string; message: string }>; conflicts: Conflict[] }>;
 }
 
-export interface AcceptResponse {
+interface AcceptResponse {
   draft: { id: string; status: string; indexRebuildStatus?: string; indexRebuildError?: string };
   appliedMutationIds?: string[];
   skippedMutationIds?: string[];
@@ -183,7 +183,7 @@ export interface BlockedDraft {
 
 export interface Rejection { sourceNoteId: string; sourceTitle: string; reason: string; message?: string; snippet?: string }
 
-export function mutationText(m: Mutation): string {
+function mutationText(m: Mutation): string {
   if (m.kind === "create_note") {
     const first = Object.values(m.note?.sections ?? {})[0];
     return first?.text ?? m.summary;
@@ -193,7 +193,7 @@ export function mutationText(m: Mutation): string {
 }
 
 /** [{key, text}] of section text this mutation writes, for pressure math. */
-export function mutationParts(m: Mutation): Array<{ key: string; text: string }> {
+function mutationParts(m: Mutation): Array<{ key: string; text: string }> {
   if (m.kind === "create_note") {
     return Object.entries(m.note?.sections ?? {}).map(([key, s]) => ({ key, text: s.text ?? "" }));
   }
@@ -254,7 +254,7 @@ export function flattenReview(data: ReviewResponse, sourceTitles: Map<string, st
 // already holds plus what every kept-or-undecided claim would append. Mirrors
 // isAdditiveLtmSection in the package's draft-projector.
 
-export function isAdditive(type: string | undefined, tags: string[] | undefined, key: string): boolean {
+function isAdditive(type: string | undefined, tags: string[] | undefined, key: string): boolean {
   const tg = tags ?? [];
   if (type === "timeline_event") return true;
   if (type === "character") return !["items", "progression"].includes(key);

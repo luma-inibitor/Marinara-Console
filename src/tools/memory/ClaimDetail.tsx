@@ -25,6 +25,7 @@ import { OpIcon, TypeIcon, DecisionIcon } from "./icons";
 import { Term, GLOSSARY, OP_TIP, TYPE_TIP } from "./glossary";
 import { flagsOf } from "./flags";
 import { lineDiff, splitLines, wordEmphasis } from "./diff";
+import { Edu } from "../../ui";
 
 // ── small pieces ────────────────────────────────────────────────────
 
@@ -72,15 +73,6 @@ function Zone(props: { eyebrow: ComponentChildren; foot?: ComponentChildren; cls
 }
 
 /** Help text: the info glyph marks it as education, not content. */
-function Edu({ children }: { children: ComponentChildren }) {
-  return (
-    <p class="edu t-prose dim">
-      <IconInfoCircle size={12} stroke={1.75} aria-hidden />
-      <span>{children}</span>
-    </p>
-  );
-}
-
 /** The object under review, inlined (owner-approved S7): an inset card of the
  *  memory's content — dimmer, no diff gutters, folded past three lines. It is
  *  context, not part of the change. Resolves vault memories first, then

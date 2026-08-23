@@ -19,9 +19,7 @@
 .console { position: sticky; top: 0; z-index: 20; background: var(--canvas);
   border-bottom: var(--hairline); padding: var(--s2) var(--s3) 0; }
 .hrow { display: flex; align-items: center; gap: var(--s2); }
-.icon-btn { width: 38px; height: 38px; flex: 0 0 auto; border-radius: var(--r-m);
-  border: var(--hairline); background: var(--surface-1); color: var(--text);
-  font-size: 16px; display: flex; align-items: center; justify-content: center; }
+/* .icon-btn now lives with the component, src/ui/IconButton.css */
 .console-title { font-family: var(--font-label); font-variation-settings: "wdth" 116;
   font-weight: 700; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase;
   margin: 0; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -56,14 +54,7 @@
 .chiprail { display: flex; gap: 4px; margin-top: var(--s2); overflow-x: auto;
   scrollbar-width: none; padding-bottom: var(--s2); align-items: center; }
 .chiprail::-webkit-scrollbar { display: none; }
-.chip { flex: 0 0 auto; min-height: var(--tap-2); padding: 0 10px; border-radius: var(--r-m);
-  background: var(--surface-1); border: var(--hairline); color: var(--text-dim);
-  display: inline-flex; align-items: center; gap: 5px;
-  font-family: var(--font-label); font-variation-settings: "wdth" 110; font-weight: 600;
-  font-size: 9.5px; letter-spacing: 0.09em; text-transform: uppercase; white-space: nowrap; }
-.chip[aria-pressed="true"] { background: var(--surface-2); border-color: var(--accent); color: var(--text); }
-.chip .ar { color: var(--accent); }
-.chip.is-flag[aria-pressed="true"] { border-color: var(--flag); color: var(--flag); }
+/* .chip and .tag now live with the component, src/ui/Chip.css */
 .selcount { font-weight: 700; color: var(--accent); white-space: nowrap; margin-right: 4px; }
 
 /* ══ rows ══ */

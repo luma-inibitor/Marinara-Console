@@ -8,7 +8,7 @@ import { api } from "./api";
 
 export const paletteOpen = signal(false);
 
-export function toggleDensity() {
+function toggleDensity() {
   const el = document.documentElement;
   const next = el.dataset.density === "compact" ? "comfortable" : "compact";
   el.dataset.density = next;

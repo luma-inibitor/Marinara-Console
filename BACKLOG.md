@@ -9,6 +9,53 @@ them without asking.
 > arrived. The mobile round below (2:18 PM screenshot) may reconstruct part of
 > it; Luma — if more of the lost batch surfaces, send it and it lands here.
 
+## Found during the component refactor (2026-08-22)
+
+- **The Sources badge counts the wrong thing.** `MemoryTool.tsx` sets it from
+  `s.notes.sourceNotes`, which is *imported* source notes. The Review badge
+  next to it counts what is *waiting*. Same channel, opposite meanings — and
+  it currently reads 8 beside Sources when there is nothing pending at all.
+  It read 4 before, matching pending only by coincidence. Should almost
+  certainly be the pending count. **[needs Luma's yes]**
+- **Nav badge semantics need writing down** once the above is settled, so
+  Activity does not have to guess when it is built.
+
+## Still open from the 2026-08-21 UX review (audited 2026-08-22)
+
+Every **[critical]** and **[high]** finding in the five raw reports and the
+consolidation was re-checked against the current code on 2026-08-22 and marked
+inline; 24 of the 30 markers read SHIPPED. These three are what survived, and
+they are here because a live bug buried in a raw report is a bug nobody fixes.
+
+- **The apply dock double-counts an auto-included dropped create.**
+  `applyCount = (pf?.ready ?? 0) + c.drop` in `Review.tsx` `ApplyDock` never
+  reconciles `pf.ready` against local drops. Drop a `create_note` while keeping
+  its dependent `add_link` and preflight auto-includes the create, so it lands
+  in `ready` and in `drop` at once, and it is still listed under "added as
+  dependencies" although it will be skipped rather than sent. The dangerous
+  half of this finding shipped — `applyDecided` filters `dropIds` out of the
+  ids it sends, and `droppedDependencyWarnings` now checks
+  `mutation.link.target` so the warning fires — so what is left is a dock that
+  states a number no longer matching what Apply will do. Fix: intersect
+  `readyMutationIds` with the current keeps for both the count and the
+  auto-included list. [interaction.md high, review item 2]
+- **No roving tabindex in the review list.** `useRovingFocus` moves the cursor
+  and calls `focus()`, but nothing sets `tabindex=-1` on the controls of
+  non-cursor rows: measured 279 tabbable elements inside `.audit-list` at
+  390x844 and 486x1085, three per row, so crossing the list to reach the apply
+  dock takes most of a hundred Tab presses. DESIGN §3 mandates one tab stop per
+  composite, and `BookAudit.tsx` already does it with
+  `tabIndex={props.isFocused ? 0 : -1}` — the queue needs the same on the row
+  and its two buttons, driven off `cursor`. [mobile-a11y.md high, review
+  item 50]
+- **A vault memory has no path to the claims that target it.** `NoteEditor`
+  offers status, links, per-section dedupe, Save, Archive and Delete, and its
+  own helper text says pruning here is what unblocks the queue, but there is no
+  way to reach the queue from it. The target facet and `activeFacets` already
+  exist, so a "related claims (n)" control can navigate to review pre-filtered.
+  This is second in the owner's linkage order, after Sources → pending drafts.
+  [linkage.md high, review item 31]
+
 ## UX review 2026-08-21
 
 Five-reviewer audit consolidated at

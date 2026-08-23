@@ -10,21 +10,20 @@ import { signal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";
 import { fetchNote, type Note } from "./data";
 import { toast } from "../../shell/toast";
-import { openOverlay, closeTopOverlay } from "./overlays";
+import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { notesById } from "./store";
 import { TypeIcon } from "./icons";
 import { Term, TYPE_TIP } from "./glossary";
+import { CopyableText, DetailSection, ModePill, RawJson, Sheet, SheetHead, Tag } from "../../ui";
 
 export const peeked = signal<Note | null>(null);
 
 export async function peekNote(id: string) {
   try {
-    const note = await fetchNote(id);
-    const wasOpen = peeked.value !== null;
-    peeked.value = note;
-    // A chained peek replaces content inside the same overlay entry; only a
-    // fresh open pushes history.
-    if (!wasOpen) openOverlay(() => { peeked.value = null; });
+    // A chained peek replaces content inside the same <Sheet>, which stays
+    // mounted, so it does not push a second history entry — one back closes
+    // the peek however deep you followed the links.
+    peeked.value = await fetchNote(id);
   } catch (error) {
     toast(`${id}: ${(error as Error).message}`, { kind: "error" });
   }
@@ -38,24 +37,6 @@ export function NoteRef(props: { id: string; label?: string }) {
   );
 }
 
-/** The three chat modes as a fixed-width pill: every segment always renders,
- *  active ones lit — constant width keeps rows skimmable (owner-approved). */
-const MODES: Array<{ id: string; label: string; title: string }> = [
-  { id: "conversation", label: "DM", title: "conversation mode" },
-  { id: "roleplay", label: "RP", title: "roleplay mode" },
-  { id: "game", label: "GM", title: "game mode" },
-];
-export function ModePill(props: { modes: string[] }) {
-  return (
-    <span class="modepill" role="img" aria-label={`modes: ${props.modes.join(", ") || "none"}`}>
-      {MODES.map((m) => (
-        <span key={m.id} class={`mseg t-data ${props.modes.includes(m.id) ? "is-on" : ""}`} title={m.title}>
-          {m.label}
-        </span>
-      ))}
-    </span>
-  );
-}
 
 /** Resolve a link target to a titled, typed reference; raw id as last resort. */
 function PeekLinkTarget({ id }: { id: string }) {
@@ -73,25 +54,21 @@ function PeekLinkTarget({ id }: { id: string }) {
 
 export function NotePeek() {
   const n = peeked.value;
-  const closeRef = useRef<HTMLButtonElement>(null);
-  // Move focus into the dialog on open (restore is handled by the overlay stack).
-  useEffect(() => { if (n) closeRef.current?.focus(); }, [n === null]);
   if (!n) return null;
   return (
-    <div class="peek-scrim" onClick={closeTopOverlay}>
-      <aside class="peek" role="dialog" aria-modal="true" aria-label={n.title ?? n.id} onClick={(e) => e.stopPropagation()}>
-        <header class="peek-head sheet-head">
-          <Term tip={TYPE_TIP[n.type] ?? n.type}><TypeIcon type={n.type} size={16} /></Term>
-          <span class="peek-title t-prose">{n.title ?? n.id}</span>
-          <button ref={closeRef} class="hit peek-x" aria-label="Close" onClick={closeTopOverlay}>×</button>
-        </header>
+    <Sheet label={n.title ?? n.id} onClose={() => { peeked.value = null; }}>
+      <SheetHead
+        autoFocus
+        icon={<Term tip={TYPE_TIP[n.type] ?? n.type}><TypeIcon type={n.type} size={16} /></Term>}
+        title={n.title ?? n.id}
+      />
         <div class="peek-meta t-data">
           <span class={`stt st-${n.status}`}>{n.status}</span>
           <ModePill modes={n.modes ?? []} />
         </div>
         {(n.keywords ?? []).length > 0 && (
           <div class="peek-kw">
-            {n.keywords!.map((k) => <span key={k} class="chip t-data">{k}</span>)}
+            {n.keywords!.map((k) => <Tag key={k}>{k}</Tag>)}
           </div>
         )}
         {(n.links ?? []).length > 0 && (
@@ -105,13 +82,14 @@ export function NotePeek() {
           </div>
         )}
         {Object.entries(n.sections ?? {}).map(([key, s]) => (
-          <section key={key} class="peek-section">
-            <h4 class="t-label t-label-s"><span class="skey">§{key}</span></h4>
+          <DetailSection key={key} sectionKey={key}>
             <div class="t-prose peek-text">{s.text}</div>
-          </section>
+          </DetailSection>
         ))}
-        <div class="peek-id t-data" data-contrast-exempt>{n.id}</div>
-      </aside>
-    </div>
+      <div class="peek-id t-data">
+        <CopyableText value={n.id} label="the memory id" />
+      </div>
+      <RawJson value={n} label="Raw memory" />
+    </Sheet>
   );
 }

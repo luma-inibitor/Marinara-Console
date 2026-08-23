@@ -10,24 +10,20 @@ import { toast } from "../../shell/toast";
 import { type Row, backupExportUrl, extractNote } from "./data";
 import { t, OURS } from "./strings";
 import {
-  rows, blocked, rejections, loading, loadError, review,
-  decisions, edited, cursor, detailKey, facetSheetOpen, saveState,
-  activeFacets, groupBy, sortBy, sortDir, tally, preflight, preflightPending,
-  preflightRowState, applying, applyProgress, lastFailures,
-  droppedDependencyWarnings, canUndo, notesById, pressure,
-  refresh, retryPersist, setDecision, cycleDecision, bulkDecide, undo, applyDecided,
+  activeFacets, applyDecided, applying, applyProgress, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, droppedDependencyWarnings, edited, facetSheetOpen, groupBy, lastFailures, loadError, loading, notesById, preflight, preflightPending, preflightRowState, pressure, readyToSend, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, tally, undo,
 } from "./store";
 import { SECTION_CAP as CAP } from "./data";
 import { refreshLtmStatus } from "./MemoryTool";
-import { openOverlay, closeTopOverlay } from "./overlays";
+import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { signal } from "@preact/signals";
-import { IconFlag, IconCircleCheck, IconCircleX, IconDotsVertical, IconWriting, IconChevronDown, IconChevronRight } from "@tabler/icons-preact";
+import { IconFlag, IconCircleCheck, IconCircleX, IconDotsVertical, IconSearch, IconWriting } from "@tabler/icons-preact";
 import { DecisionIcon, OpIcon, TypeIcon } from "./icons";
 import { Term, OP_TIP } from "./glossary";
 import { flagsOf, worstSeverity, contributionChars } from "./flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./NotePeek";
+import { Chip, collapsedGroups, EmptyState, ErrorState, FacetDrawer, IconButton, ListGroup, Loading, Picker, useIsDesktop, useRovingFocus } from "../../ui";
 
 const RESTORE_POINT_THRESHOLD = 20;
 
@@ -35,25 +31,9 @@ const RESTORE_POINT_THRESHOLD = 20;
 const groupSheetOpen = signal(false);
 const sortSheetOpen = signal(false);
 
-// Collapsed groups (view state, per grouping key — resets with the session).
-const collapsedGroups = signal<Set<string>>(new Set());
-
-function toggleGroupCollapsed(id: string) {
-  const next = new Set(collapsedGroups.value);
-  next.has(id) ? next.delete(id) : next.add(id);
-  collapsedGroups.value = next;
-}
-
-function useIsDesktop(): boolean {
-  const [is, setIs] = useState(() => window.matchMedia("(min-width: 900px)").matches);
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 900px)");
-    const fn = () => setIs(mq.matches);
-    mq.addEventListener("change", fn);
-    return () => mq.removeEventListener("change", fn);
-  }, []);
-  return is;
-}
+// Collapsed groups. Not persisted: a queue you are working through should
+// start open every visit, unlike the sources inventory.
+const collapse = collapsedGroups();
 
 export function Review() {
   const desktop = useIsDesktop();
@@ -83,25 +63,23 @@ export function Review() {
   // Collapsed groups' rows leave the keyboard order too, or j/k would focus
   // rows the collapse has hidden.
   const visibleKeys = useMemo(
-    () => groups.flatMap((g) => (collapsedGroups.value.has(g.id) ? [] : g.rows.map((r) => r.key))),
-    [groups, collapsedGroups.value],
+    () => groups.flatMap((g) => (collapse.has(g.id) ? [] : g.rows.map((r) => r.key))),
+    [groups, collapse.ids.value],
   );
 
-  const focusRow = (key: string) => {
-    cursor.value = key;
-    detailKey.value = key; // mobile: opens the stacked detail; desktop: the pane
-    requestAnimationFrame(() => {
-      (listRef.current?.querySelector(`[data-row="${CSS.escape(key)}"]`) as HTMLElement | null)
-        ?.scrollIntoView({ block: "nearest" });
-    });
-  };
-
-  const move = (delta: number) => {
-    if (!visibleKeys.length) return;
-    const i = cursor.value ? visibleKeys.indexOf(cursor.value) : -1;
-    const next = i === -1 ? (delta > 0 ? 0 : visibleKeys.length - 1) : Math.max(0, Math.min(visibleKeys.length - 1, i + delta));
-    focusRow(visibleKeys[next]);
-  };
+  // Triage keys that keep working when a chip or header control has focus —
+  // everything else defers to the focused control.
+  const NAV_KEYS = ["j", "k", "ArrowDown", "ArrowUp", "Escape", "u", "?"];
+  const roving = useRovingFocus({
+    listRef, keys: visibleKeys, current: cursor.value,
+    rowSelector: ".mem-row", navKeys: NAV_KEYS,
+    onFocus: (key) => {
+      cursor.value = key;
+      detailKey.value = key; // mobile: opens the stacked detail; desktop: the pane
+    },
+  });
+  const focusRow = roving.reveal;
+  const move = roving.move;
 
   // Only rows in the current filtered view are actionable from the keyboard —
   // otherwise a/d silently mutate rows the filter has hidden.
@@ -123,14 +101,7 @@ export function Review() {
   };
 
   const onListKey = (ev: KeyboardEvent) => {
-    if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
-    const el = ev.target as HTMLElement;
-    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT") return;
-    // A focused button OUTSIDE the rows (chips, header controls) owns its own
-    // Space/Enter; buttons inside a row are part of the list composite, so
-    // the triage keys keep working after tapping a row.
-    const button = el.closest("button");
-    if (button && !button.closest(".mem-row") && !["j", "k", "ArrowDown", "ArrowUp", "Escape", "u", "?"].includes(ev.key)) return;
+    if (roving.ignore(ev)) return;
     switch (ev.key) {
       case "j": case "ArrowDown": ev.preventDefault(); move(1); break;
       case "k": case "ArrowUp": ev.preventDefault(); move(-1); break;
@@ -154,10 +125,10 @@ export function Review() {
   };
 
   if (loadError.value) {
-    return <div class="screen"><div class="empty"><p class="t-label">Could not load</p><p class="t-data">{loadError.value}</p></div></div>;
+    return <div class="screen"><ErrorState title="Could not load" message={loadError.value} /></div>;
   }
   if (loading.value) {
-    return <div class="screen"><div class="empty">{t("reviewqueue.loadingPendingReviewDrafts")}</div></div>;
+    return <div class="screen"><Loading label={t("reviewqueue.loadingPendingReviewDrafts")} /></div>;
   }
 
   // The stacked detail participates in the overlay stack (back/Escape close it).
@@ -181,13 +152,13 @@ export function Review() {
             <span class="t-data mem-save" data-contrast-exempt>
               {saveState.value === "saving" ? "Autosaving…"
                 : saveState.value === "failed"
-                  ? <span class="is-drop">Save FAILED <button class="chip" onClick={retryPersist}>Retry</button></span>
+                  ? <span class="is-drop">Save FAILED <Chip onClick={retryPersist}>Retry</Chip></span>
                   : "Saved"}
             </span>
             <button class="icon-btn t-data" aria-label="Refresh queue" title="Refresh" onClick={() => void refresh()}>↻</button>
-            <a class="icon-btn" href={backupExportUrl()} download title={OURS.restorePoint} aria-label="Export backup">
+            <IconButton href={backupExportUrl()} download label={OURS.restorePoint}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 12.5V14h12v-1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </a>
+            </IconButton>
           </div>
 
           {review.value && (
@@ -213,42 +184,40 @@ export function Review() {
           <div class="chiprail">
             {desktop ? (
               <>
-                <button class="chip" aria-pressed={facetSheetOpen.value} onClick={openFacetSheet}>
+                <Chip pressed={facetSheetOpen.value} onClick={openFacetSheet}>
                   Facets{activeFacetCount() > 0 && <b class="ar">{activeFacetCount()}</b>}
-                </button>
+                </Chip>
                 <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
                 <QuickChip facet="flags" value="restates vault" label="Restates" flag />
                 <QuickChip facet="flags" value="duplicate incoming" label="Dupes" flag />
                 <QuickChip facet="flags" value="has conflicts" label="Conflicts" flag />
                 <span class="rail-gap" />
                 {Object.entries(GROUPERS).map(([id, g]) => (
-                  <button key={id} class="chip" aria-pressed={groupBy.value === id}
-                    onClick={() => { groupBy.value = id as typeof groupBy.value; }}>
+                  <Chip key={id} pressed={groupBy.value === id} onClick={() => { groupBy.value = id as typeof groupBy.value; }}>
                     {g.label}
-                  </button>
+                  </Chip>
                 ))}
                 <span class="rail-gap" />
                 {Object.entries(SORTERS).map(([id, s]) => (
-                  <button key={id} class="chip" aria-pressed={sortBy.value === id}
-                    onClick={() => {
+                  <Chip key={id} pressed={sortBy.value === id} onClick={() => {
                       if (sortBy.value === id) sortDir.value = (sortDir.value === 1 ? -1 : 1);
                       else { sortBy.value = id as typeof sortBy.value; sortDir.value = 1; }
                     }}>
                     {sortDir.value === 1 || sortBy.value !== id ? "↓" : "↑"} {s.label}
-                  </button>
+                  </Chip>
                 ))}
               </>
             ) : (
               <>
-                <button class="chip ctl" aria-pressed={activeFacetCount() > 0} onClick={openFacetSheet}>
+                <Chip class="ctl" pressed={activeFacetCount() > 0} onClick={openFacetSheet}>
                   <span class="ctl-k">Filter</span><span class="ctl-v">{activeFacetCount() || "all"}</span>
-                </button>
-                <button class="chip ctl" onClick={() => { groupSheetOpen.value = true; openOverlay(() => { groupSheetOpen.value = false; }); }}>
+                </Chip>
+                <Chip class="ctl" onClick={() => { groupSheetOpen.value = true; }}>
                   <span class="ctl-k">Group</span><span class="ctl-v">{GROUPERS[groupBy.value].label}</span>
-                </button>
-                <button class="chip ctl" onClick={() => { sortSheetOpen.value = true; openOverlay(() => { sortSheetOpen.value = false; }); }}>
+                </Chip>
+                <Chip class="ctl" onClick={() => { sortSheetOpen.value = true; }}>
                   <span class="ctl-k">Sort</span><span class="ctl-v">{sortDir.value === 1 ? "↓" : "↑"} {SORTERS[sortBy.value].label}</span>
-                </button>
+                </Chip>
                 <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
                 <QuickChip facet="flags" value="restates vault" label="Restates" flag />
                 <QuickChip facet="flags" value="duplicate incoming" label="Dupes" flag />
@@ -260,10 +229,10 @@ export function Review() {
           {activeFacetCount() > 0 && (
             <div class="chiprail">
               <span class="t-data selcount">{shown.length} of {rows.value.length}</span>
-              <button class="chip" onClick={() => bulkDecide(shown, "keep", "keep shown")}>Keep shown</button>
-              <button class="chip" onClick={() => bulkDecide(shown, "drop", "drop shown")}>Drop shown</button>
-              <button class="chip" onClick={() => bulkDecide(shown, null, "reset shown")}>Reset</button>
-              <button class="chip" onClick={() => { activeFacets.value = new Map(); }}>Clear filters</button>
+              <Chip onClick={() => bulkDecide(shown, "keep", "keep shown")}>Keep shown</Chip>
+              <Chip onClick={() => bulkDecide(shown, "drop", "drop shown")}>Drop shown</Chip>
+              <Chip onClick={() => bulkDecide(shown, null, "reset shown")}>Reset</Chip>
+              <Chip onClick={() => { activeFacets.value = new Map(); }}>Clear filters</Chip>
             </div>
           )}
         </header>
@@ -272,12 +241,14 @@ export function Review() {
           <Obligations />
           <Failures />
           {shown.length === 0 && rows.value.length === 0 && !blocked.value.length && (
-            <p class="empty">{OURS.queueEmpty}</p>
+            // An emptied queue is the reviewer succeeding, so it reads the
+            // same way the Sources screen's cleared backlog does.
+            <EmptyState tone="ok" icon={<IconCircleCheck size={22} stroke={1.75} aria-hidden />} title={OURS.queueEmpty} />
           )}
           {shown.length === 0 && rows.value.length > 0 && (
-            <p class="empty">No proposals match the active facets.</p>
+            <EmptyState icon={<IconSearch size={22} stroke={1.75} aria-hidden />} title="No proposals match the active facets." />
           )}
-          {groups.map((g) => <GroupBlock key={g.id} group={g} showTarget={groupBy.value !== "target"} onActivate={focusRow} />)}
+          {groups.map((g) => <GroupBlock key={g.id} group={g} showTarget={groupBy.value !== "target"} onActivate={focusRow} tabbable={roving.tabbable} />)}
           <Rejections />
         </main>
       </div>
@@ -286,7 +257,7 @@ export function Review() {
         <aside class="audit-detail">
           {detailRow
             ? <ClaimDetail key={detailRow.key} row={detailRow} />
-            : <div class="empty"><p class="t-label t-label-s">No claim open</p><p class="t-prose">j/k to move · a keep · d drop · Enter opens</p></div>}
+            : <EmptyState title="No claim open" body="j/k to move · a keep · d drop · Enter opens" />}
         </aside>
       )}
       {showDetailStack && (
@@ -305,11 +276,13 @@ export function Review() {
         </div>
       )}
 
-      <FacetSheet shown={shown} />
-      <OptionSheet open={groupSheetOpen.value} label="Group by" current={groupBy.value}
+      <FacetSheet />
+      <Picker open={groupSheetOpen.value} label="Group by" current={groupBy.value}
         options={Object.entries(GROUPERS).map(([id, g]) => ({ id, label: g.label }))}
-        onPick={(id) => { groupBy.value = id as typeof groupBy.value; }} />
-      <OptionSheet open={sortSheetOpen.value} label="Sort by" current={sortBy.value}
+        onPick={(id) => { groupBy.value = id as typeof groupBy.value; }}
+        onClose={() => { groupSheetOpen.value = false; }} />
+      <Picker open={sortSheetOpen.value} label="Sort by" current={sortBy.value}
+        onClose={() => { sortSheetOpen.value = false; }}
         options={Object.entries(SORTERS).map(([id, sr]) => ({
           id, label: sr.label,
           hint: sortBy.value === id ? (sortDir.value === 1 ? "↓ tap to flip" : "↑ tap to flip") : undefined,
@@ -326,7 +299,6 @@ export function Review() {
 function openFacetSheet() {
   if (facetSheetOpen.value) { closeTopOverlay(); return; }
   facetSheetOpen.value = true;
-  openOverlay(() => { facetSheetOpen.value = false; });
 }
 
 function activeFacetCount(): number {
@@ -346,94 +318,64 @@ function toggleFacet(facetId: string, value: string) {
 function QuickChip(props: { facet: string; value: string; label: string; flag?: boolean }) {
   const on = activeFacets.value.get(props.facet)?.has(props.value) ?? false;
   return (
-    <button class={`chip ${props.flag ? "is-flag" : ""}`} aria-pressed={on}
-      onClick={() => toggleFacet(props.facet, props.value)}>
+    <Chip flag={props.flag} pressed={on} onClick={() => toggleFacet(props.facet, props.value)}>
       {props.label}
-    </button>
+    </Chip>
   );
 }
 
-function FacetSheet(props: { shown: Row[] }) {
+/** "Lorebook - Ashgate — Harbour Canon: The Tidewatch Compact" → "The
+ *  Tidewatch Compact". Anything without that shape is left alone. */
+function sourceFacetLabel(title: string): string {
+  const t = title.replace(/^Lorebook\s*-\s*/i, "");
+  const i = t.indexOf(":");
+  return i > 0 ? t.slice(i + 1).trim() : t;
+}
+
+/** The review queue's facets, shaped for <FacetDrawer>. Provenance grouping is
+ *  the review study's: what the console computed, what the model asserted, and
+ *  what the reviewer decided. */
+function FacetSheet() {
   if (!facetSheetOpen.value) return null;
   const counts = facetCounts(rows.value, activeFacets.value);
-  // Actively-selected values must stay listed even at count 0, or they become
-  // un-clearable and the sheet can render blank.
+  // A selected value must stay listed even at count 0, or the selection
+  // becomes un-clearable and the drawer can render blank.
   for (const [facetId, set] of activeFacets.value) {
     const m = counts.get(facetId);
     if (!m) continue;
     for (const v of set) if (!m.has(v)) m.set(v, 0);
   }
-  const bySource: Record<string, typeof FACETS> = { computed: [], model: [], yours: [] };
-  for (const f of FACETS) bySource[f.source].push(f);
-  const anyValues = [...counts.values()].some((m) => m.size > 0);
+  const label = { computed: OURS.facetsComputed, model: OURS.facetsFromModel, yours: OURS.facetsYours };
+  const groups = (["computed", "model", "yours"] as const).map((key) => ({
+    key,
+    label: label[key],
+    facets: FACETS.filter((f) => f.source === key).map((f) => ({
+      id: f.id,
+      label: f.label,
+      values: [...(counts.get(f.id) ?? new Map()).entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([value, count]) => ({
+          value,
+          // Source titles arrive as "Lorebook - <book>: <entry>". Four chips
+          // reading "Lorebook - Ashgate — …" name nothing, so the chip shows
+          // the entry and keeps the whole title in its tooltip.
+          label: f.id === "source" ? sourceFacetLabel(value) : undefined,
+          count,
+          on: activeFacets.value.get(f.id)?.has(value) ?? false,
+        })),
+    })),
+  }));
   return (
-    <div class="peek-scrim" onClick={closeTopOverlay}>
-      <aside class="facet-sheet" role="dialog" aria-modal="true" aria-label="Facets" onClick={(e) => e.stopPropagation()}>
-        <header class="peek-head sheet-head">
-          <span class="t-label t-label-s">Facets</span>
-          <button class="chip" onClick={() => { activeFacets.value = new Map(); }}>Clear</button>
-          <button class="hit peek-x" aria-label="Close" onClick={closeTopOverlay}>×</button>
-        </header>
-        {!anyValues && <p class="t-prose dim">No facet values in this slice.</p>}
-        {(["computed", "model", "yours"] as const).map((src) => {
-          const defs = bySource[src].filter((f) => (counts.get(f.id)?.size ?? 0) > 0);
-          if (!defs.length) return null;
-          return (
-            <div key={src} class="facet-block">
-              <h3 class="t-label t-label-s facet-src">{OURS[src === "computed" ? "facetsComputed" : src === "model" ? "facetsFromModel" : "facetsYours"]}</h3>
-              {defs.map((f) => (
-                <div key={f.id} class="facet-line">
-                  <span class="flabel t-label t-label-s">{f.label}</span>
-                  {/* chips live in their own wrapping column so a second row
-                      aligns under the first chip, never under the label */}
-                  <span class="fchips">
-                    {[...counts.get(f.id)!.entries()].sort((a, b) => b[1] - a[1]).map(([value, n]) => {
-                      const on = activeFacets.value.get(f.id)?.has(value) ?? false;
-                      return (
-                        <button key={value} class="facet-chip t-data" aria-pressed={on}
-                          onClick={() => toggleFacet(f.id, value)}>
-                          <span class="fv">{value}</span>
-                          <span class="fc">{n}</span>
-                        </button>
-                      );
-                    })}
-                  </span>
-                </div>
-              ))}
-            </div>
-          );
-        })}
-      </aside>
-    </div>
+    <FacetDrawer
+      groups={groups}
+      onToggle={toggleFacet}
+      onClear={() => { activeFacets.value = new Map(); }}
+      onClose={() => { facetSheetOpen.value = false; }}
+      emptyText="No facet values in this slice."
+    />
   );
 }
 
-/** Bottom-sheet chooser for the mobile three-button rail. */
-function OptionSheet(props: {
-  open: boolean; label: string;
-  options: Array<{ id: string; label: string; hint?: string }>;
-  current: string;
-  onPick: (id: string) => void;
-}) {
-  if (!props.open) return null;
-  return (
-    <div class="peek-scrim" onClick={closeTopOverlay}>
-      <aside class="facet-sheet option-sheet" role="dialog" aria-modal="true" aria-label={props.label} onClick={(e) => e.stopPropagation()}>
-        <header class="peek-head sheet-head">
-          <span class="t-label t-label-s">{props.label}</span>
-          <button class="hit peek-x" aria-label="Close" onClick={closeTopOverlay}>×</button>
-        </header>
-        {props.options.map((o) => (
-          <button key={o.id} class={`facet-row ${props.current === o.id ? "is-on" : ""}`}
-            onClick={() => { props.onPick(o.id); closeTopOverlay(); }}>
-            <span class="fv t-data">{o.label}</span>
-            {o.hint && <span class="fc t-data">{o.hint}</span>}
-          </button>
-        ))}
-      </aside>
-    </div>
-  );
-}
 
 // Group header v4 (owner-approved 2026-08-21): one line — identity · honest
 // aggregates (sections touched, chars added) · cap flag only when real · bar
@@ -442,28 +384,25 @@ function OptionSheet(props: {
 // pressure, open-note) exist only when the group key IS an object; enum lanes
 // get label + count + tally + bulk and nothing else. At narrow width the
 // header wraps to two lines and the aggregates drop (priority order, CSS).
-function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key: string) => void }) {
+function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key: string) => void; tabbable: (key: string) => boolean }) {
   const g = props.group;
   const isTarget = groupBy.value === "target";
   const kept = g.rows.filter((r) => decisions.value.get(r.key) === "keep").length;
   const dropped = g.rows.filter((r) => decisions.value.get(r.key) === "drop").length;
   const undecidedRows = g.rows.filter((r) => !decisions.value.get(r.key));
   const isNew = isTarget && !notesById.value.get(g.id) && g.rows.some((r) => r.mutation.kind === "create_note");
-  const collapsed = collapsedGroups.value.has(g.id);
+  const collapsed = collapse.has(g.id);
   // Section counts dropped from the header (Luma 2026-08-21: titles get the room).
   const chars = isTarget ? g.rows.reduce((n, r) => n + contributionChars(r), 0) : 0;
   return (
-    <div>
-      {/* Same grid as the rows: chevron in the rail (the control column gets
-          a control), type icon in the kind column, words in the body. The
-          new-target marker is the 2a green edge (owner call, color-only
-          tradeoff accepted) — an edge, so nothing in the title line shifts. */}
-      <div class={`mem-ghead ${isNew ? "is-new" : ""}`}>
-        <button class="gexp hit" aria-expanded={!collapsed}
-          aria-label={`${collapsed ? "Expand" : "Collapse"} ${g.label} (${g.rows.length})`}
-          onClick={() => toggleGroupCollapsed(g.id)}>
-          {collapsed ? <IconChevronRight size={16} stroke={1.75} aria-hidden /> : <IconChevronDown size={16} stroke={1.75} aria-hidden />}
-        </button>
+    /* Same grid as the rows: chevron in the rail (the control column gets a
+       control), type icon in the kind column, words in the body. The
+       new-target marker is the 2a green edge (owner call, color-only tradeoff
+       accepted) — an edge, so nothing in the title line shifts. */
+    <ListGroup class={`mem-ghead ${isNew ? "is-new" : ""}`}
+        collapsed={collapsed} onToggle={() => collapse.toggle(g.id)}
+        label={g.label} count={g.rows.length}
+        head={<>
         {isTarget && g.meta && <TypeIcon type={g.meta} />}
         <div class="ghead-body">
         <span class="gn t-prose">{g.label}</span>
@@ -494,9 +433,9 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
           {isTarget && <GroupMenu group={g} kept={kept} dropped={dropped} isNew={isNew} />}
         </span>
         </div>
-      </div>
-      {!collapsed && g.rows.map((r) => <ClaimRow key={r.key} row={r} showTarget={props.showTarget} onActivate={props.onActivate} />)}
-    </div>
+      </>}>
+      {g.rows.map((r) => <ClaimRow key={r.key} row={r} showTarget={props.showTarget} onActivate={props.onActivate} tabbable={props.tabbable(r.key)} />)}
+    </ListGroup>
   );
 }
 
@@ -535,7 +474,11 @@ function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: 
 // op-icon slot · one-line claim · quiet flags chip (worst severity tints it) ·
 // contribution chars. No secondary line, no per-row confidence — the enums
 // live in the detail card, their exceptions live in the flags.
-function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: string) => void }) {
+function ClaimRow(props: {
+  row: Row; showTarget: boolean; onActivate: (key: string) => void;
+  /** True for the one row that holds the list's tab stop. */
+  tabbable: boolean;
+}) {
   const r = props.row;
   const d = decisions.value.get(r.key);
   const pfState = preflightRowState.value;
@@ -547,20 +490,23 @@ function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: stri
   const sev = worstSeverity(flags);
   const chars = contributionChars(r);
   const isNew = r.mutation.kind === "create_note";
+  // Roving tabindex: only the cursor row is in the tab order (src/ui/useRovingFocus).
+  const tab = props.tabbable ? 0 : -1;
   return (
     <div class={`mem-row ${isOpen ? "is-open" : ""} ${isFocused ? "is-focused" : ""}`} data-row={r.key} data-d={d ?? "undecided"}>
       <div class="mem-summary">
         <button
           class="mem-dec hit"
+          tabIndex={tab}
           aria-label={`Decision: ${d ?? OURS.undecided}. Tap to cycle.`}
           onClick={(e) => { e.stopPropagation(); cycleDecision(r); }}
         >
           <DecisionIcon d={d} />
         </button>
         <span class="kslot">
-          <Term tip={OP_TIP[r.mutation.kind]}><OpIcon kind={r.mutation.kind} /></Term>
+          <Term tip={OP_TIP[r.mutation.kind]} tabIndex={tab}><OpIcon kind={r.mutation.kind} /></Term>
         </span>
-        <button class="mem-mid" onClick={() => props.onActivate(r.key)}>
+        <button class="mem-mid" tabIndex={tab} onClick={() => props.onActivate(r.key)}>
           {props.showTarget && (
             <span class="a1-tgt t-data">
               <TypeIcon type={r.targetType} size={13} />
@@ -646,9 +592,9 @@ function Obligations() {
           </div>
           {["source_stale", "source_context_unbound"].includes(code) && (
             <>
-              <button class="chip" disabled={Boolean(extracting)} onClick={() => void reextract(items)}>
+              <Chip disabled={Boolean(extracting)} onClick={() => void reextract(items)}>
                 {extracting ? `Extracting ${extracting}…` : t("memoryvault.extractToReview")}
-              </button>
+              </Chip>
               <p class="t-prose dim reex-note">Re-extracting calls the model once per source and replaces each blocked draft with a fresh one.</p>
             </>
           )}
@@ -669,7 +615,7 @@ function Failures() {
           <details><summary class="t-data dim">raw</summary><p class="t-data dim">{f.msg.slice(0, 400)}</p></details>
         </div>
       ))}
-      <div class="group-actions"><button class="chip" onClick={() => { lastFailures.value = []; }}>Dismiss</button></div>
+      <div class="group-actions"><Chip onClick={() => { lastFailures.value = []; }}>Dismiss</Chip></div>
     </>
   );
 }
@@ -703,7 +649,9 @@ function ApplyDock() {
   const checking = preflightPending.value;
   const progress = applyProgress.value;
   const warnings = droppedDependencyWarnings.value;
-  const applyCount = (pf?.ready ?? 0) + c.drop;
+  // ready-after-drops, not the raw engine count, or a dropped dependency
+  // preflight auto-included is counted twice (store.ts readyToSend)
+  const applyCount = readyToSend.value + c.drop;
   const offerRestore = c.keep + c.drop >= RESTORE_POINT_THRESHOLD;
   const rowByKey = new Map(rows.value.map((row) => [row.key, row]));
   const pfState = preflightRowState.value;
@@ -722,11 +670,11 @@ function ApplyDock() {
           {progress ? <>Applying draft {progress.done}/{progress.total}…</> : <>
             {c.willSend} draft{c.willSend === 1 ? "" : "s"} will be sent{c.stayPending ? ` (${c.stayPending} still hold undecided claims)` : ""}
             {pf?.error
-              ? <span class="is-drop"> · {pf.error} <button class="chip" onClick={() => void refresh()}>Retry</button></span>
+              ? <span class="is-drop"> · {pf.error} <Chip onClick={() => void refresh()}>Retry</Chip></span>
               : checking
                 ? <> · checking with the engine…</>
                 : pf
-                  ? <> · {pf.ready} ready{pf.blockedN ? <span class="is-drop"> · {pf.blockedN} blocked</span> : null}</>
+                  ? <> · {readyToSend.value} ready{pf.blockedN ? <span class="is-drop"> · {pf.blockedN} blocked</span> : null}</>
                   : null}
           </>}
         </span>
@@ -740,10 +688,18 @@ function ApplyDock() {
             {blockedRows.map(({ row, why }) => <div key={row.key} class="dim dock-detail-row">→ {row.targetTitle}: {why}</div>)}
           </details>
         )}
-        {warnings.length > 0 && <div class="is-drop">{warnings.length} kept claim{warnings.length === 1 ? "" : "s"} depend on a dropped create — they will fail; keep the create or drop them</div>}
+        {/* The whole sentence branches, not just the noun: pluralising "claim"
+            alone left "1 kept claim depend ... they will fail ... drop them". */}
+        {warnings.length > 0 && (
+          <div class="is-drop">
+            {warnings.length === 1
+              ? "1 kept claim depends on a dropped create — it will fail; keep the create or drop it"
+              : `${warnings.length} kept claims depend on a dropped create — they will fail; keep the create or drop them`}
+          </div>
+        )}
         {offerRestore && <><br /><a class="t-data restore-link" href={backupExportUrl()} download onClick={() => toast(OURS.restorePointDone)}>{OURS.restorePoint}</a></>}
       </div>
-      <button class="chip" disabled={!canUndo.value} onClick={undo}>Undo</button>
+      <Chip disabled={!canUndo.value} onClick={undo}>Undo</Chip>
       <button class="dock-primary t-label" disabled={applying.value || checking || (c.keep > 0 && !pf) || Boolean(pf?.error)} onClick={() => void applyDecided()}>
         {applying.value ? (progress ? `Applying ${progress.done}/${progress.total}…` : t("reviewqueue.accepting"))
           : checking ? "Apply decided (…)"

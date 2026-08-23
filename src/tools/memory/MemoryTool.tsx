@@ -13,7 +13,7 @@ import { Review } from "./Review";
 import { Vault } from "./Vault";
 import { Sources } from "./Sources";
 import { NotePeek } from "./NotePeek";
-import { activeFacets, review } from "./store";
+import { activeFacets, pendingSources, review } from "./store";
 
 const status = signal<LtmStatus | null>(null);
 const statusFailed = signal(false);
@@ -33,7 +33,7 @@ let pendingFocusSource: string | null = null;
 export function focusSource(sourceNoteId: string) {
   pendingFocusSource = sourceNoteId;
 }
-export function consumeFocusSource(): string | null {
+function consumeFocusSource(): string | null {
   const v = pendingFocusSource;
   pendingFocusSource = null;
   return v;
@@ -99,7 +99,7 @@ export function MemoryTool({ rest }: { rest: string[] }) {
           const I = VIEW_ICON[v.id];
           const count = v.id === "review" ? (review.value?.counts.mutations ?? s?.notes.pendingDrafts ?? 0)
             : v.id === "vault" ? (s?.notes.savedMemories ?? 0)
-            : (s?.notes.sourceNotes ?? 0);
+            : (pendingSources.value ?? 0);
           return (
             <button key={v.id} class="mem-tab t-label" aria-current={view === v.id ? "page" : undefined}
               onClick={() => { if (v.id === "review") activeFacets.value = new Map(); navigate(`memory/${v.id}`); }}>

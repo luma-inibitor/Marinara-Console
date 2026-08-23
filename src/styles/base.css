@@ -58,9 +58,6 @@ input, textarea, select { font-family: inherit; color: inherit; }
   font-variant-ligatures: none; }
 .meta > * + *::before { content: "·"; margin: 0 6px; color: var(--edge-strong); }
 
-/* hairline separators, not grids */
-.rule { border: 0; border-top: var(--hairline); margin: 0; }
-
 /* padded hit area without visual growth */
 .hit { position: relative; }
 .hit::after { content: ""; position: absolute; inset: calc((var(--tap) - 100%) / -2); }

@@ -9,7 +9,6 @@
 // feedback); its teaching lives in a first-use hint instead.
 
 import type { ComponentChildren } from "preact";
-import { useState } from "preact/hooks";
 import type { Mutation } from "./data";
 
 export const GLOSSARY: Record<string, string> = {
@@ -47,20 +46,5 @@ export const TYPE_TIP: Record<string, string> = {
   scene: "memory type · scene — one scene's record",
 };
 
-/** Dotted-underline term (or icon wrapper) that reveals its definition on
- *  hover/focus (desktop) and on tap (touch). Renders inline. */
-export function Term(props: { tip: string; children: ComponentChildren; chip?: boolean }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <span
-      class={`term ${props.chip ? "term-chip" : ""} ${open ? "tip-open" : ""}`}
-      tabIndex={0}
-      data-tip={props.tip}
-      onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
-      onBlur={() => setOpen(false)}
-      onKeyDown={(e) => { if (e.key === "Escape" && open) { e.stopPropagation(); setOpen(false); } }}
-    >
-      {props.children}
-    </span>
-  );
-}
+// Term itself now lives in src/ui — it is a tooltip, not a glossary.
+export { Term } from "../../ui";

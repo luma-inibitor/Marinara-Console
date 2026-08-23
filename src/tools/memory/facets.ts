@@ -11,7 +11,7 @@ import { t, OURS } from "./strings";
 import { decisions, edited } from "./store";
 import { flagsOf } from "./flags";
 
-export interface FacetDef {
+interface FacetDef {
   id: string;
   label: string;
   source: "computed" | "model" | "yours";
@@ -74,7 +74,7 @@ export function facetCounts(list: Row[], active: Map<string, Set<string>>): Map<
   return counts;
 }
 
-export interface Grouper { label: string; key: (r: Row) => { id: string; label: string; meta?: string } }
+interface Grouper { label: string; key: (r: Row) => { id: string; label: string; meta?: string } }
 
 export const GROUPERS: Record<string, Grouper> = {
   target: { label: "target memory", key: (r) => ({ id: r.targetId, label: r.targetTitle, meta: r.targetType }) },

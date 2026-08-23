@@ -14,7 +14,9 @@ agent UI, and whatever comes next. Audience of one: an expert user who lives in 
 tool. Density is respect; every needless click is a repeated tax.
 
 **Stack:** Vite + Preact + TypeScript, `@preact/signals`, hand-written CSS on design
-tokens (no Tailwind, no CSS-in-JS). Hash routing (`#/tool/id`) for deep links without
+tokens. Tailwind is present for its theme and utilities only, generated from the
+same tokens (§8); the component styles are still hand-written CSS, and there is no
+CSS-in-JS. Hash routing (`#/tool/id`) for deep links without
 server routes. Engine logic (keyword matching, token estimation) is vendored from
 upstream, never reimplemented — fidelity to the engine beats elegance.
 
@@ -231,3 +233,105 @@ A UI change is not done until `node verify.mjs` passes:
 
 Screenshot before claiming; measure before asserting density. This habit has caught
 real bugs every time it was applied — treat it as part of the build, not QA.
+
+---
+
+## 8. Where UI lives — `src/ui/`
+
+Shared components live in `src/ui/`, one folder-level, each with its own
+co-located stylesheet (`Chip.tsx` + `Chip.css`). Anything used by more than one
+screen belongs there; anything used by one screen belongs beside that screen.
+
+**Why co-located plain CSS**, and not utility classes in the JSX or CSS
+modules. The rules in this repo carry explanations that utility strings cannot
+hold — why the sticky seam guard is 3px and not more, what each channel in the
+memory list means. Those are hard-won and would be deleted rather than
+migrated. CSS modules would give compiler-enforced unique names, but they hash
+the class in devtools, and this project is debugged by looking at rendered
+output and pointing at things. Keeping `.chip` greppable is worth more than
+uniqueness in a codebase this size. Tailwind utilities remain available as the
+escape hatch for a one-off override.
+
+**Preflight is on** (`src/styles/theme.css`). Our stylesheets are unlayered and
+preflight lands in `layer(base)`, so it reaches only properties we never set.
+Its measured effect: form controls inherit our font and leading instead of the
+browser's 13.33px default, icons lose the inline baseline gap, and tag margins
+are zero — so a component's spacing is the component's job. Do not add a rule
+that re-states a margin preflight already removed; give the component a `gap`.
+
+**Two components, not one, when the roles differ.** `Chip` is pressable and
+`Tag` is not, because one `.chip` class doing both meant you found out whether
+something was clickable by clicking it. Accent means interactive (§2); a
+component that is not interactive should not be able to reach for it.
+
+The same split runs through `EmptyState` / `Loading` / `ErrorState`. They are
+one shape — centred text in a blank pane — and three roles, and a single
+`kind` prop would have kept the shape and lost the roles. A loading state must
+not be allowed a title in the label face, because half a second of latency
+announced in bold reads as a verdict; an error state must not be allowed to
+omit its cause, which an optional shared `body` prop permits and a required
+`message` prop does not. Seventeen hand-written `class="empty"` panes had
+drifted into four different appearances before this.
+
+### The inventory
+
+| Component | What it owns | Reach for instead |
+|---|---|---|
+| `Chip` / `Tag` | a small pressable / a small label | — |
+| `IconButton` | a square icon control; its name is a required prop | — |
+| `SearchBar` | a search field, its magnifier, its match tally | — |
+| `fuzzyFilter` / `fuzzyScore` | subsequence matching with a score | — |
+| `Sheet` / `Modal` | a layered surface and its dismissal contract | — |
+| `SheetHead` | a sheet's sticky title row | — |
+| `Picker` | choose one, short fixed list, bottom sheet | `SearchDisclosure` if long |
+| `SearchDisclosure` | choose one, long list, anchored popover | `Picker` on a thumb rail |
+| `FacetDrawer` | every facet in a slice, with counts, as toggles | — |
+| `ListGroup` / `CollapseButton` | collapse behaviour and its accessible name | — |
+| `DetailSection` | a §section heading and its body | — |
+| `JsonView` / `RawJson` | a JSON value, folding or literal | — |
+| `CopyableText` | a value meant to be taken elsewhere | — |
+| `ModePill` | the three chat modes, read-out or filter | — |
+| `EmptyState` | icon, title, explanation, actions | `Loading` while waiting, `ErrorState` when it failed |
+| `Loading` | one dim line while a view is still arriving | — |
+| `ErrorState` | a failure and the engine's reason for it | — |
+| `Edu` | one line of help text, with its icon | `Term` for a single word |
+| `Term` | a word that explains itself in place | `Edu` for a whole sentence |
+| `useIsDesktop` | the split-width query | — |
+| `collapsedGroups` | collapsed-group state, optionally persisted | — |
+
+Two rules the inventory encodes. **Split by role, not by shape**: `Chip` and
+`Tag` look alike and are separate components, because one is pressable and the
+other is not, and that had been something you found out by clicking. **Own the
+behaviour, slot the shape**: `ListGroup` owns the chevron and its accessible
+name, while the review queue and the sources list keep their own header
+layouts — one shares a grid with its rows, one does not, and forcing a single
+shape would have invented a layout neither wanted.
+
+### Reading measure
+
+`--measure: 68ch` caps prose line length. Apply it to the element that holds
+the words, never to the card around them — the zones in the claim detail keep
+their full width so a diff's added-line wash still reads as one block, while
+the sentences inside stop at a readable width.
+
+It applies to prose only. Identifiers, link targets and key/value data rows are
+deliberately left uncapped: wrapping `source_character_2cdcc172e8fe3cd6` at a
+prose measure serves nobody, and those lines have no return sweep to lose your
+place on. Measured before and after in the claim detail at a 1600px viewport:
+135–145 characters a line became 62–68.
+
+### Checks that belong to this layer
+
+- `node design/deadcss.mjs` — CSS classes nothing appears to use. A **candidate**
+  list: class names reach the DOM literally, composed as `` `type-${n.type}` ``,
+  and as bare strings passed to a `cls` prop. Read every hit. The first version
+  of this script reported 36 dead classes of which 20 were live.
+- `node design/domsnap.mjs before` / `... after --diff` — snapshots the rendered
+  element tree and its class hooks across five screens at two viewports. Any
+  refactor claiming "renders identically" runs this instead of asserting it. It
+  is what caught three silent regressions in the chip sweep.
+- `node design/overlaycheck.mjs` — every layered surface must close on scrim
+  tap, on Escape, and on back. The import confirm answered only one of those
+  for weeks, because each sheet registered with the overlay stack by hand and
+  one forgot. `Sheet` and `Modal` now do it, so the check guards a rule the
+  code already enforces rather than a habit.
