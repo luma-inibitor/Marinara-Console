@@ -13,7 +13,7 @@ import { notesById, pressure, rowOverflows } from "./store";
 import { t, OURS } from "./strings";
 
 export const LOW_CONFIDENCE = 0.93;
-export const LONG_CHARS = 800;
+const LONG_CHARS = 800;
 
 const DATE_RE = /\[\d{4}-\d{2}-\d{2}\]/;
 

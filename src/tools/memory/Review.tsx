@@ -28,7 +28,7 @@ import { flagsOf, worstSeverity, contributionChars } from "./flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./NotePeek";
-import { Chip, collapsedGroups, FacetDrawer, IconButton, ListGroup, Picker, useIsDesktop } from "../../ui";
+import { Chip, collapsedGroups, FacetDrawer, IconButton, ListGroup, Picker, useIsDesktop, useRovingFocus } from "../../ui";
 
 const RESTORE_POINT_THRESHOLD = 20;
 
@@ -72,21 +72,19 @@ export function Review() {
     [groups, collapse.ids.value],
   );
 
-  const focusRow = (key: string) => {
-    cursor.value = key;
-    detailKey.value = key; // mobile: opens the stacked detail; desktop: the pane
-    requestAnimationFrame(() => {
-      (listRef.current?.querySelector(`[data-row="${CSS.escape(key)}"]`) as HTMLElement | null)
-        ?.scrollIntoView({ block: "nearest" });
-    });
-  };
-
-  const move = (delta: number) => {
-    if (!visibleKeys.length) return;
-    const i = cursor.value ? visibleKeys.indexOf(cursor.value) : -1;
-    const next = i === -1 ? (delta > 0 ? 0 : visibleKeys.length - 1) : Math.max(0, Math.min(visibleKeys.length - 1, i + delta));
-    focusRow(visibleKeys[next]);
-  };
+  // Triage keys that keep working when a chip or header control has focus —
+  // everything else defers to the focused control.
+  const NAV_KEYS = ["j", "k", "ArrowDown", "ArrowUp", "Escape", "u", "?"];
+  const roving = useRovingFocus({
+    listRef, keys: visibleKeys, current: cursor.value,
+    rowSelector: ".mem-row", navKeys: NAV_KEYS,
+    onFocus: (key) => {
+      cursor.value = key;
+      detailKey.value = key; // mobile: opens the stacked detail; desktop: the pane
+    },
+  });
+  const focusRow = roving.reveal;
+  const move = roving.move;
 
   // Only rows in the current filtered view are actionable from the keyboard —
   // otherwise a/d silently mutate rows the filter has hidden.
@@ -108,14 +106,7 @@ export function Review() {
   };
 
   const onListKey = (ev: KeyboardEvent) => {
-    if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
-    const el = ev.target as HTMLElement;
-    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT") return;
-    // A focused button OUTSIDE the rows (chips, header controls) owns its own
-    // Space/Enter; buttons inside a row are part of the list composite, so
-    // the triage keys keep working after tapping a row.
-    const button = el.closest("button");
-    if (button && !button.closest(".mem-row") && !["j", "k", "ArrowDown", "ArrowUp", "Escape", "u", "?"].includes(ev.key)) return;
+    if (roving.ignore(ev)) return;
     switch (ev.key) {
       case "j": case "ArrowDown": ev.preventDefault(); move(1); break;
       case "k": case "ArrowUp": ev.preventDefault(); move(-1); break;

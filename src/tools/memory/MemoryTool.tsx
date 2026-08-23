@@ -33,7 +33,7 @@ let pendingFocusSource: string | null = null;
 export function focusSource(sourceNoteId: string) {
   pendingFocusSource = sourceNoteId;
 }
-export function consumeFocusSource(): string | null {
+function consumeFocusSource(): string | null {
   const v = pendingFocusSource;
   pendingFocusSource = null;
   return v;

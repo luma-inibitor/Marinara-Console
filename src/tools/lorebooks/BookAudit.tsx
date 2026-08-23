@@ -12,7 +12,7 @@ import {
   POS_COMPACT,
 } from "./data";
 import { EntryDrawer, FullscreenEditor, type FullscreenCtx } from "./entries";
-import { Chip, IconButton, useIsDesktop } from "../../ui";
+import { Chip, IconButton, useIsDesktop, useRovingFocus } from "../../ui";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
 type Mode = "find" | "test";
@@ -169,20 +169,15 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
   }, [bookId, selected]);
 
   // ── keyboard: j/k roving focus, Enter opens, Escape backs out ──
+  // The guards live in useRovingFocus. They used to live here, in a copy that
+  // had lost the modifier check, so Ctrl-J walked the cursor.
+  const roving = useRovingFocus({
+    listRef, keys: visible.map((e) => e.id), current: focusId, onFocus: setFocusId,
+  });
   const onListKey = useCallback((ev: KeyboardEvent) => {
-    const tag = (ev.target as HTMLElement).tagName;
-    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-    const idx = visible.findIndex((e) => e.id === focusId);
-    const move = (d: number) => {
-      const next = visible[Math.max(0, Math.min(visible.length - 1, (idx === -1 ? (d > 0 ? -1 : 0) : idx) + d))];
-      if (next) {
-        setFocusId(next.id);
-        (listRef.current?.querySelector(`[data-row="${CSS.escape(next.id)}"]`) as HTMLElement | null)
-          ?.focus({ preventScroll: false });
-      }
-    };
-    if (ev.key === "j" || ev.key === "ArrowDown") { ev.preventDefault(); move(1); }
-    else if (ev.key === "k" || ev.key === "ArrowUp") { ev.preventDefault(); move(-1); }
+    if (roving.ignore(ev)) return;
+    if (ev.key === "j" || ev.key === "ArrowDown") { ev.preventDefault(); roving.move(1); }
+    else if (ev.key === "k" || ev.key === "ArrowUp") { ev.preventDefault(); roving.move(-1); }
     else if ((ev.key === "Enter" || ev.key === "o") && focusId) {
       ev.preventDefault();
       if (!desktop) setOpen((s) => { const n = new Set(s); n.has(focusId) ? n.delete(focusId) : n.add(focusId); return n; });

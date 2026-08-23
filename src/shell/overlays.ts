@@ -62,7 +62,3 @@ export function openOverlay(close: () => void) {
 export function closeTopOverlay() {
   if (stack.length) history.back();
 }
-
-export function overlaysOpen(): number {
-  return stack.length;
-}

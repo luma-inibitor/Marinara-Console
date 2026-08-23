@@ -17,7 +17,7 @@ import {
 } from "@tabler/icons-preact";
 import type { Mutation } from "./data";
 
-export const OP_ICON: Record<Mutation["kind"], IconC> = {
+const OP_ICON: Record<Mutation["kind"], IconC> = {
   create_note: IconScriptPlus,
   append_section: IconFilePlus,
   update_section: IconFilePencil,
@@ -27,17 +27,7 @@ export const OP_ICON: Record<Mutation["kind"], IconC> = {
   set_subjects: IconUsers,
 };
 
-export const OP_WORD: Record<Mutation["kind"], string> = {
-  create_note: "create",
-  append_section: "append",
-  update_section: "update",
-  add_link: "link",
-  set_keywords: "keywords",
-  set_status: "status",
-  set_subjects: "subjects",
-};
-
-export const TYPE_ICON: Record<string, IconC> = {
+const TYPE_ICON: Record<string, IconC> = {
   character: IconUser,
   relationship: IconHeartHandshake,
   timeline_event: IconTimelineEvent,
@@ -48,7 +38,7 @@ export const TYPE_ICON: Record<string, IconC> = {
   scene: IconMovie,
 };
 
-export const DECISION_ICON: Record<"keep" | "drop" | "undecided", IconC> = {
+const DECISION_ICON: Record<"keep" | "drop" | "undecided", IconC> = {
   keep: IconCircleCheck,
   drop: IconCircleX,
   undecided: IconCircleDashed,

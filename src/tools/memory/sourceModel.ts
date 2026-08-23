@@ -42,11 +42,6 @@ export interface SourceRow {
   blocked: string[];
 }
 
-/** New is the majority state and carries no mark; the other five do. */
-export const MARKED_STATES: SourceState[] = [
-  "current", "source_updated", "context_updated", "extraction_incomplete", "source_missing",
-];
-
 export function isImported(r: SourceRow): boolean {
   return r.state !== "new";
 }

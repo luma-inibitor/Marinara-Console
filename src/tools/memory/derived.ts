@@ -13,7 +13,7 @@
 
 import type { Note, Row } from "./data";
 
-export const RESTATES_THRESHOLD = 0.45;
+const RESTATES_THRESHOLD = 0.45;
 export const DUPLICATE_THRESHOLD = 0.7;
 
 export function shingles(text: string, size = 4): Set<string> {

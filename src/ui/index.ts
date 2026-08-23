@@ -24,3 +24,4 @@ export { fuzzyFilter, fuzzyScore } from "./fuzzy";
 export { Modal, Sheet, SheetHead } from "./Sheet";
 export { collapsedGroups } from "./useCollapsedGroups";
 export { useIsDesktop } from "./useIsDesktop";
+export { useRovingFocus } from "./useRovingFocus";
