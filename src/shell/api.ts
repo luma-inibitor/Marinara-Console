@@ -21,6 +21,8 @@ export class ApiError extends Error {
   }
 }
 
+let restorePointWarned = false;
+
 export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "body"> & { body?: unknown } = {}): Promise<T> {
   const { body, ...rest } = opts;
   let res: Response;
@@ -34,6 +36,12 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
   } catch (err) {
     // fetch rejects only on network failure — the browser never reached us.
     throw new ApiError("No connection to the console server", { status: 0, offline: true });
+  }
+  if (!restorePointWarned && res.headers.get("x-ltm-restore-point") === "failed") {
+    restorePointWarned = true;
+    // Lazy import avoids a cycle (toast lives beside the shell).
+    void import("./toast").then(({ toast }) =>
+      toast("Restore point FAILED — this write proceeded without a backup. Check the server log.", { kind: "error" }));
   }
   if (!res.ok) {
     let payload: { error?: string; detail?: string; details?: unknown } = {};

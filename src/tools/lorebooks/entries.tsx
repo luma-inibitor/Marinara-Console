@@ -12,6 +12,7 @@ import {
   STATUS_LABEL, STATUS_HINT, POS_COMPACT, POS_FULL, ADVANCED_FIELDS,
   statusOf, entryTokens,
 } from "./data";
+import { Chip } from "../../ui";
 
 export interface FullscreenCtx { id: string; field: "content" | "description"; }
 
@@ -30,7 +31,7 @@ export function EntryDrawer(props: {
   onExpand: (field: FullscreenCtx["field"]) => void;
 }) {
   const { entry: e, draft } = props;
-  // multi-expand: a Set, siblings never auto-close (survey §11 / Eli-confirmed)
+  // multi-expand: a Set, siblings never auto-close (survey §11 / Luma-confirmed)
   const [openSubs, setOpenSubs] = useState<Set<Sub>>(new Set(["keys"]));
   const toggle = (s: Sub) => setOpenSubs((prev) => {
     const n = new Set(prev); n.has(s) ? n.delete(s) : n.add(s); return n;
@@ -93,7 +94,7 @@ export function EntryDrawer(props: {
         () => (
           <>
             <div class="fieldbar">
-              <button class="chip" onClick={() => props.onExpand("description")}>⤢ Edit in full screen</button>
+              <Chip onClick={() => props.onExpand("description")}>⤢ Edit in full screen</Chip>
             </div>
             <textarea class={`ta ${isDirty("description") ? "is-dirty" : ""}`} rows={4} value={e.description}
               placeholder="Brief summary for routing."
@@ -108,7 +109,7 @@ export function EntryDrawer(props: {
         () => (
           <>
             <div class="fieldbar">
-              <button class="chip" onClick={() => props.onExpand("content")}>⤢ Edit in full screen</button>
+              <Chip onClick={() => props.onExpand("content")}>⤢ Edit in full screen</Chip>
             </div>
             <textarea class={`ta is-mono ${isDirty("content") ? "is-dirty" : ""}`} rows={7} value={e.content}
               aria-invalid={!!err("content")}

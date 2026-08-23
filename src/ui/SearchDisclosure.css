@@ -1,0 +1,76 @@
+.disclosure { position: relative; }
+
+/* Reads as part of a sentence, not as a boxed control: the caret and the hover
+   fill carry the affordance, so a row of these is a path rather than a fence. */
+.disclosure-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  max-width: 240px;
+  padding: 0 var(--s2);
+  background: none;
+  border: none;
+  border-radius: var(--r-s);
+  color: var(--text);
+}
+.disclosure-trigger:hover,
+.disclosure-trigger[aria-expanded="true"] { background: var(--surface-2); }
+.disclosure-trigger svg { flex: 0 0 auto; color: var(--text-dim); }
+.disclosure-trigger .disclosure-value { border-bottom: 1px dotted transparent; }
+.disclosure-trigger:hover .disclosure-value { border-bottom-color: var(--text-faint); }
+
+.disclosure-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+/* Anchored to the control, but never past the viewport: a trigger near the
+   right edge would otherwise open a panel that runs off screen. */
+.disclosure-pop {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(300px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  padding: var(--s2);
+  background: var(--surface-1);
+  border: 1px solid var(--edge-strong);
+  border-radius: var(--r-m);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+}
+.disclosure-search { margin-bottom: var(--s2); }
+.disclosure-list { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; }
+
+.disclosure-opt {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  min-height: 34px;
+  padding: 0 var(--s2);
+  border: none;
+  background: none;
+  border-radius: var(--r-s);
+  color: var(--text);
+  text-align: left;
+  font-size: 13px;
+}
+.disclosure-opt:hover { background: var(--surface-2); }
+.disclosure-opt.is-on { background: var(--accent-wash); color: var(--text); }
+.disclosure-optname {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.disclosure-opthint { flex: 0 0 auto; color: var(--text-dim); }
+.disclosure-none { padding: var(--s2); margin: 0; }
+
+@media (max-width: 720px) {
+  .disclosure-trigger { max-width: 44vw; }
+}

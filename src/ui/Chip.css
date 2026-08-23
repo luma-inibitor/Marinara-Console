@@ -1,0 +1,31 @@
+/* Chip and Tag share a silhouette on purpose — they are the same size of
+   thought — but only Chip can light up, because only Chip does anything. */
+.chip, .tag {
+  flex: 0 0 auto;
+  min-height: var(--tap-2);
+  font-variant-ligatures: none;
+  padding: 0 10px;
+  border-radius: var(--r-m);
+  background: var(--surface-1);
+  border: var(--hairline);
+  color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-label);
+  font-variation-settings: "wdth" 110;
+  font-weight: 600;
+  font-size: 9.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--surface-2);
+  border-color: var(--accent);
+  color: var(--text);
+}
+.chip:disabled { opacity: 0.45; cursor: default; }
+.chip .ar { color: var(--accent); }
+.chip.is-flag[aria-pressed="true"] { border-color: var(--flag); color: var(--flag); }

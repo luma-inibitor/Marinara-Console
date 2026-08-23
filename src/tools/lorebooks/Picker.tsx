@@ -1,6 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { navigate } from "../../shell/router";
 import { fetchBooks, fetchEntries, entryTokens, type Lorebook } from "./data";
+import { ErrorState, Loading } from "../../ui";
 
 // A book's stats are fetched per-book and can fail independently of the list.
 // A failed fetch must NOT render as zeros: "0 / 1,000 tokens" is indistinguishable
@@ -38,14 +39,12 @@ export function Picker() {
 
   if (error) {
     return (
-      <div class="screen"><div class="empty">
-        <p class="t-label">Cannot reach engine</p>
-        <p>{error}</p>
-        <button class="dbtn" onClick={() => { setError(null); setBooks(null); loadAll(setBooks, setError, loadStats); }}>Retry</button>
-      </div></div>
+      <div class="screen"><ErrorState title="Cannot reach engine" message={error}
+        actions={<button class="dbtn" onClick={() => { setError(null); setBooks(null); loadAll(setBooks, setError, loadStats); }}>Retry</button>} />
+      </div>
     );
   }
-  if (!books) return <div class="screen"><div class="empty">Loading lorebooks…</div></div>;
+  if (!books) return <div class="screen"><Loading label="Loading lorebooks…" /></div>;
 
   return (
     <div class="screen">

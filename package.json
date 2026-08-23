@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "kit": "npx @tailwindcss/cli -i design/mockup-kit.css -o public/mockups/kit.css"
   },
   "keywords": [],
   "author": "",
@@ -18,13 +19,16 @@
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource-variable/source-sans-3": "^5.3.0",
     "@preact/preset-vite": "^2.10.6",
+    "@tailwindcss/vite": "^4.3.3",
     "playwright": "^1.62.1",
+    "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.2"
   },
   "private": true,
   "dependencies": {
     "@preact/signals": "^2.11.1",
+    "@tabler/icons-preact": "^3.46.0",
     "preact": "^10.29.8"
   }
 }
