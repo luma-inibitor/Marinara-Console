@@ -1,7 +1,7 @@
 // Entry editor surfaces: the drawer (sub-accordions, MULTI-EXPAND per DESIGN.md)
 // and the fullscreen text editor with live counts.
 import type { ComponentChildren } from "preact";
-import { useMemo, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
 import { tokensOf } from "../../shell/api";
 import {
   type Entry, type EntryStatus,
@@ -167,65 +167,4 @@ export function EntryDrawer(props: {
   );
 }
 
-// ── fullscreen text editor ──
-const MD_TOKENS = ["# ", "## ", "**", "_", "- ", "> ", "`", "[]", "\n"];
-const FIELD_TITLE: Record<FullscreenCtx["field"], string> = {
-  content: "Edit Content", description: "Edit Description",
-};
-
-export function FullscreenEditor(props: {
-  entry: Entry;
-  field: FullscreenCtx["field"];
-  budget: number;
-  onDone: (value: string) => void;
-}) {
-  const original = String(props.entry[props.field] ?? "");
-  const [value, setValue] = useState(original);
-  const [wrap, setWrap] = useState(true);
-  const startTokens = useMemo(() => tokensOf(original), [original]);
-
-  const ch = value.length, tk = tokensOf(value);
-  const dCh = ch - original.length, dTk = tk - startTokens;
-  const sign = (n: number) => (n > 0 ? `+${n.toLocaleString()}` : n.toLocaleString());
-
-  const insert = (tok: string) => {
-    const ta = document.getElementById("fs-ta") as HTMLTextAreaElement | null;
-    if (!ta) return;
-    const a = ta.selectionStart, b = ta.selectionEnd;
-    const next = value.slice(0, a) + tok + value.slice(b);
-    setValue(next);
-    requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = a + tok.length; ta.focus(); });
-  };
-
-  return (
-    <div class="fseditor" role="dialog" aria-modal="true" aria-label={FIELD_TITLE[props.field]}>
-      <div class="fs-head">
-        <div class="fs-title-wrap">
-          <div class="t-label">{FIELD_TITLE[props.field]}</div>
-          <div class="meta"><span>{props.entry.name}</span></div>
-        </div>
-        <Chip pressed={wrap} onClick={() => setWrap(!wrap)}>↵ wrap</Chip>
-        <button class="dbtn is-primary" onClick={() => props.onDone(value)}>Done</button>
-      </div>
-      <div class="fs-counts meta">
-        <span><b class="t-num">{ch.toLocaleString()}</b> ch</span>
-        <span><b class="t-num">{tk.toLocaleString()}</b> tokens (est.)</span>
-        {props.budget > 0 && <span>{((tk / props.budget) * 100).toFixed(1)}% of budget</span>}
-        {(dTk !== 0 || dCh !== 0) && (
-          <span class={`delta ${dTk > 0 ? "is-up" : dTk < 0 ? "is-down" : ""}`}>
-            {sign(dCh)} ch · {sign(dTk)} tokens
-          </span>
-        )}
-      </div>
-      <div class="fs-body">
-        <textarea id="fs-ta" class={wrap ? "" : "is-nowrap"} spellcheck={false} value={value}
-          onInput={(ev) => setValue(ev.currentTarget.value)} />
-      </div>
-      <div class="fs-foot">
-        {MD_TOKENS.map((t) => (
-          <button key={t} class="mdb t-data" onClick={() => insert(t)}>{t.trim() || "↵"}</button>
-        ))}
-      </div>
-    </div>
-  );
-}
+export { FullscreenText } from "../../ui/FullscreenText";

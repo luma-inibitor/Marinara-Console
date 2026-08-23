@@ -3,6 +3,7 @@
 .chip, .tag {
   flex: 0 0 auto;
   min-height: var(--tap-2);
+  font-variant-ligatures: none;
   padding: 0 10px;
   border-radius: var(--r-m);
   background: var(--surface-1);

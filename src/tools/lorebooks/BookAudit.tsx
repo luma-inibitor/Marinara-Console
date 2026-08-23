@@ -12,7 +12,8 @@ import {
   fetchBooks, fetchEntries, patchEntry, createEntry, deleteEntry, bulkPatch,
   POS_COMPACT,
 } from "./data";
-import { EntryDrawer, FullscreenEditor, type FullscreenCtx } from "./entries";
+import { EntryDrawer, type FullscreenCtx } from "./entries";
+import { FullscreenText } from "../../ui/FullscreenText";
 import { Chip, IconButton, useIsDesktop, useRovingFocus } from "../../ui";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
@@ -357,8 +358,9 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       {full && (() => {
         const e = entries.find((x) => x.id === full.id);
         return e ? (
-          <FullscreenEditor
-            entry={e} field={full.field} budget={book.tokenBudget}
+          <FullscreenText
+            title={full.field === "content" ? "Edit Content" : "Edit Description"}
+            subtitle={e.name} initial={String(e[full.field] ?? "")} budget={book.tokenBudget}
             onDone={(value) => { save(full.id, { [full.field]: value }, true); setFull(null); }}
           />
         ) : null;

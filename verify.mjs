@@ -101,10 +101,17 @@ const bookId = await (async () => {
   return books[0]?.id;
 })();
 
+const presetId = await (async () => {
+  const res = await fetch(`${URL}/api/prompts`);
+  const presets = await res.json().catch(() => []);
+  return presets[0]?.id;
+})();
+
 const SCREENS = [
   { name: "picker", path: "/#/lorebooks", waitFor: ".card" },
   { name: "audit", path: `/#/lorebooks/${bookId}`, waitFor: ".row" },
-  { name: "presets", path: "/#/presets", waitFor: ".emptystate" },
+  { name: "presets", path: "/#/presets", waitFor: ".card" },
+  ...(presetId ? [{ name: "preset-editor", path: `/#/presets/${presetId}`, waitFor: ".row" }] : []),
   { name: "memory-review", path: "/#/memory/review", waitFor: ".mem-rows" },
   { name: "memory-vault", path: "/#/memory/vault", waitFor: ".mem-rows" },
   { name: "memory-sources", path: "/#/memory/sources", waitFor: ".mem-rows" },
@@ -161,6 +168,14 @@ for (const vp of VIEWPORTS) {
       if (!hash.includes("presets")) { failures++; console.log(`FAIL ${vp.name} — palette Enter did not navigate (hash=${hash})`); }
       else console.log(`ok   ${vp.name}/palette — Cmd-K opens, search + Enter navigates`);
     }
+    // g-sequence navigation
+    await page.goto(URL + "/#/lorebooks", { waitUntil: "networkidle" });
+    await page.keyboard.press("g");
+    await page.keyboard.press("p");
+    await page.waitForTimeout(400);
+    const gHash = await page.evaluate(() => location.hash);
+    if (!gHash.includes("presets")) { failures++; console.log(`FAIL ${vp.name} — g p did not navigate (hash=${gHash})`); }
+    else console.log(`ok   ${vp.name}/hotkeys — g p navigates to presets`);
   }
 
   // keyboard walk on desktop audit screen

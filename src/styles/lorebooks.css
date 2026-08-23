@@ -53,12 +53,17 @@
 
 .chiprail { display: flex; gap: 4px; margin-top: var(--s2); overflow-x: auto;
   scrollbar-width: none; padding-bottom: var(--s2); align-items: center; }
+/* fade the right edge so an overflowing rail advertises itself */
+.chiprail { mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); }
 .chiprail::-webkit-scrollbar { display: none; }
 /* .chip and .tag now live with the component, src/ui/Chip.css */
 .selcount { font-weight: 700; color: var(--accent); white-space: nowrap; margin-right: 4px; }
 
 /* ══ rows ══ */
-.rows { flex: 1; padding-bottom: 84px; }
+/* .dock-actions is sticky and therefore IN FLOW — it needs no scroll padding
+   to clear it. Only breathing room below the last row. (Measured: a larger
+   pad bought nothing but ~2.5 rows of dead space on a 390px viewport.) */
+.rows { flex: 1; padding-bottom: calc(var(--s3) + env(safe-area-inset-bottom)); }
 .grouphead { position: sticky; top: 0; z-index: 5; display: flex; align-items: center;
   gap: var(--s2); padding: 5px var(--s3); background: var(--surface-2);
   border-top: var(--hairline); border-bottom: var(--hairline); }
@@ -135,9 +140,12 @@
 .ta.is-mono { font-family: var(--font-data); font-size: var(--fs-data); line-height: 1.6;
   font-variant-ligatures: none; }
 .ta:focus { border-color: var(--accent); }
-.tin { width: 100%; height: 40px; background: var(--canvas); border: var(--hairline);
-  border-radius: var(--r-m); color: var(--text); font-family: var(--font-label);
-  font-weight: 600; font-size: 13.5px; padding: 0 var(--s3); outline: none; }
+/* A name is user-authored content, so it takes the prose face — the label face
+   at body size read as a static heading, not an editable field (§1 type roles).
+   Height meets the 44px touch floor. */
+.tin { width: 100%; min-height: var(--tap); background: var(--canvas); border: var(--hairline);
+  border-radius: var(--r-m); color: var(--text); font-family: var(--font-prose);
+  font-weight: 500; font-size: var(--fs-prose); padding: 0 var(--s3); outline: none; }
 .tin:focus { border-color: var(--accent); }
 .fieldbar { display: flex; justify-content: flex-end; margin-bottom: 6px; }
 

@@ -1,6 +1,6 @@
 .icon-btn {
-  width: 38px;
-  height: 38px;
+  width: var(--tap);
+  height: var(--tap);
   flex: 0 0 auto;
   border-radius: var(--r-m);
   border: var(--hairline);

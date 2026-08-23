@@ -36,7 +36,10 @@ let cacheAt = 0;
 async function loadDataItems(): Promise<Item[]> {
   if (Date.now() - cacheAt < 30_000 && cache.length) return cache;
   try {
-    const books = await api<Array<{ id: string; name: string }>>("/lorebooks");
+    const [books, prompts] = await Promise.all([
+      api<Array<{ id: string; name: string }>>("/lorebooks"),
+      api<Array<{ id: string; name: string }>>("/prompts").catch(() => []),
+    ]);
     const bookItems: Item[] = books.map((b) => ({
       id: `b:${b.id}`, label: b.name, group: "Lorebooks",
       run: () => navigate(`lorebooks/${b.id}`),
@@ -50,7 +53,11 @@ async function loadDataItems(): Promise<Item[]> {
         }));
       } catch { return []; }
     }));
-    cache = [...bookItems, ...entryLists.flat()];
+    const presetItems: Item[] = prompts.map((p) => ({
+      id: `p:${p.id}`, label: p.name, group: "Presets",
+      run: () => navigate(`presets/${p.id}`),
+    }));
+    cache = [...bookItems, ...presetItems, ...entryLists.flat()];
     cacheAt = Date.now();
   } catch { /* engine unreachable — navigation items still work */ }
   return cache;
