@@ -1,5 +1,6 @@
 import type { ComponentType } from "preact";
 import { route, navigate } from "./router";
+import { useStore } from "../lib/store";
 import { LorebooksTool } from "../tools/lorebooks/LorebooksTool";
 import { MemoryTool } from "../tools/memory/MemoryTool";
 import { PlaceholderTool } from "../tools/PlaceholderTool";
@@ -31,7 +32,7 @@ setResultHook((err) => {
 export function App() {
   useHotkeys();
 
-  const { tool, rest } = route.value;
+  const { tool, rest } = useStore(route);
   const active = TOOLS.find((t) => t.id === tool) ?? TOOLS[0];
   const Screen = active.component;
 

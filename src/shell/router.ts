@@ -1,5 +1,5 @@
 // Hash router: #/tool/rest... — deep links with no server routes.
-import { signal } from "@preact/signals";
+import { createStore } from "../lib/store";
 
 export interface Route {
   tool: string;
@@ -11,10 +11,10 @@ function parse(): Route {
   return { tool: parts[0] ?? "lorebooks", rest: parts.slice(1) };
 }
 
-export const route = signal<Route>(parse());
+export const route = createStore<Route>(parse());
 
 window.addEventListener("hashchange", () => {
-  route.value = parse();
+  route.set(parse());
 });
 
 export function navigate(path: string) {
