@@ -31,7 +31,7 @@ import {
   buildSources, isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,
 } from "./sourceModel";
-import { collapsedGroups, Edu, EmptyState, IconButton, Modal } from "../../ui";
+import { collapsedGroups, Edu, EmptyState, IconButton, Modal, ModePill, MODES } from "../../ui";
 import { closeTopOverlay } from "../../shell/overlays";
 
 /** Above this many sources, spending model calls raises a confirm first. */
@@ -88,27 +88,6 @@ function Spend({ n }: { n: number }) {
 
 interface Chat { id: string; name?: string; mode?: string }
 
-/** The three chat modes as a segmented pill: each segment toggles on its own,
- *  all three lit means no filter, and the width never changes. */
-const MODES = [
-  { id: "conversation", short: "DM", Icon: IconMessage },
-  { id: "roleplay", short: "RP", Icon: IconMasksTheater },
-  { id: "game", short: "GM", Icon: IconDeviceGamepad2 },
-];
-
-function ModePill({ on, onToggle }: { on: Set<string>; onToggle: (id: string) => void }) {
-  return (
-    <div class="modepill2" role="group" aria-label="Filter by mode">
-      {MODES.map(({ id, short, Icon }) => (
-        <button key={id} class="mseg2 hit" aria-pressed={on.has(id)}
-          aria-label={`${short} — ${id}`} onClick={() => onToggle(id)}>
-          <Icon size={13} stroke={1.75} aria-hidden />
-          <span class="t-data">{short}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
 
 const openRow = signal<string | null>(null);
 const railView = signal<"pending" | "imported" | "all">("pending");
@@ -216,7 +195,7 @@ export function Sources() {
             <input class="t-prose" placeholder="Search sources" value={q}
               onInput={(e) => setQ(e.currentTarget.value)} aria-label="Search sources" />
           </label>
-          <ModePill on={modes} onToggle={(id) => setModes((prev) => {
+          <ModePill modes={modes} onToggle={(id) => setModes((prev) => {
             const n = new Set(prev);
             n.has(id) ? n.delete(id) : n.add(id);
             return n.size ? n : new Set(MODES.map((m) => m.id)); // never filter everything away

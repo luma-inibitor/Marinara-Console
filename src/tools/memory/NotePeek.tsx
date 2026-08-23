@@ -14,7 +14,7 @@ import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { notesById } from "./store";
 import { TypeIcon } from "./icons";
 import { Term, TYPE_TIP } from "./glossary";
-import { Sheet, SheetHead, Tag } from "../../ui";
+import { ModePill, Sheet, SheetHead, Tag } from "../../ui";
 
 export const peeked = signal<Note | null>(null);
 
@@ -37,24 +37,6 @@ export function NoteRef(props: { id: string; label?: string }) {
   );
 }
 
-/** The three chat modes as a fixed-width pill: every segment always renders,
- *  active ones lit — constant width keeps rows skimmable (owner-approved). */
-const MODES: Array<{ id: string; label: string; title: string }> = [
-  { id: "conversation", label: "DM", title: "conversation mode" },
-  { id: "roleplay", label: "RP", title: "roleplay mode" },
-  { id: "game", label: "GM", title: "game mode" },
-];
-export function ModePill(props: { modes: string[] }) {
-  return (
-    <span class="modepill" role="img" aria-label={`modes: ${props.modes.join(", ") || "none"}`}>
-      {MODES.map((m) => (
-        <span key={m.id} class={`mseg t-data ${props.modes.includes(m.id) ? "is-on" : ""}`} title={m.title}>
-          {m.label}
-        </span>
-      ))}
-    </span>
-  );
-}
 
 /** Resolve a link target to a titled, typed reference; raw id as last resort. */
 function PeekLinkTarget({ id }: { id: string }) {

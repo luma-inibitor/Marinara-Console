@@ -9,6 +9,7 @@ export { Chip, Tag } from "./Chip";
 export { Edu } from "./Edu";
 export { EmptyState } from "./EmptyState";
 export { IconButton } from "./IconButton";
+export { MODES, ModePill } from "./ModePill";
 export { Modal, Sheet, SheetHead } from "./Sheet";
 export { collapsedGroups } from "./useCollapsedGroups";
 export { useIsDesktop } from "./useIsDesktop";

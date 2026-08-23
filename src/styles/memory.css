@@ -261,10 +261,6 @@
    The peek speaks the list's vocabulary. The mode pill always renders all
    three segments (DM · RP · GM) at constant width; active segments lit. */
 .peek-meta { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
-.modepill { display: inline-flex; border: var(--hairline); border-radius: var(--r-s); overflow: hidden; }
-.mseg { padding: 2px 8px; color: var(--text-faint); border-right: var(--hairline); }
-.mseg:last-child { border-right: none; }
-.mseg.is-on { color: var(--text); background: var(--accent-wash); }
 .peek-id { color: var(--text-faint); font-size: 10.5px; margin-top: var(--s3);
   padding-top: var(--s2); border-top: var(--hairline); overflow-wrap: anywhere; }
 
@@ -642,14 +638,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 /* the view tabs carry their own counts; the status line is gone */
 .mem-tab { display: inline-flex; align-items: center; gap: 6px; }
 .mem-tab svg { display: block; flex: 0 0 auto; }
-/* mode: a segmented filter, each segment independent, constant width */
-.modepill2 { display: inline-flex; border: var(--hairline); border-radius: var(--r-s);
-  overflow: hidden; flex: 0 0 auto; }
-.mseg2 { display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-  min-width: 58px; min-height: 40px; padding: 0 var(--s2); background: none; border: none;
-  border-right: var(--hairline); color: var(--text-faint); }
-.mseg2:last-child { border-right: none; }
-.mseg2[aria-pressed="true"] { color: var(--text); background: var(--surface-3); }
 @media (max-width: 720px) {
   .scoperow { padding: var(--s2); }
   .scopesel { max-width: 44vw; }
