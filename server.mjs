@@ -210,15 +210,23 @@ async function proxy(req, res, url) {
 // kept alive until the console reaches feature parity).
 async function serveStatic(res, pathname) {
   let root = DIST;
+  let prefix = "";
   if (pathname === "/legacy") {
+    // Same reason as any other directory below: relative links on the page
+    // only resolve correctly from the slashed form.
     res.writeHead(302, { location: "/legacy/" }).end();
     return;
   }
   if (pathname.startsWith("/legacy/")) {
     root = PUBLIC;
-    pathname = pathname.slice("/legacy".length);
+    prefix = "/legacy";
+    pathname = pathname.slice(prefix.length);
   }
-  const rel = normalize(pathname === "/" ? "/index.html" : pathname).replace(/^(\.\.[/\\])+/, "");
+  // Any directory serves its index.html, not just the root. Only "/" was
+  // special-cased before, so /legacy/mockups/ 404'd while
+  // /legacy/mockups/index.html served fine — a front door nobody could open.
+  const rel = normalize(pathname.endsWith("/") ? `${pathname}index.html` : pathname)
+    .replace(/^(\.\.[/\\])+/, "");
   const file = join(root, rel);
   if (!file.startsWith(root)) {
     res.writeHead(403).end("Forbidden");
@@ -226,6 +234,14 @@ async function serveStatic(res, pathname) {
   }
   try {
     const info = await stat(file);
+    // A directory reached without a trailing slash redirects to one, so
+    // /legacy/mockups gets you where /legacy/mockups/ does. Relative links on
+    // the page only resolve correctly from the slashed form, which is why the
+    // redirect is the fix rather than serving the index from both.
+    if (info.isDirectory()) {
+      res.writeHead(302, { location: `${prefix}${pathname}/` }).end();
+      return;
+    }
     if (!info.isFile()) throw new Error("not a file");
     const buf = await readFile(file);
     res.writeHead(200, {
