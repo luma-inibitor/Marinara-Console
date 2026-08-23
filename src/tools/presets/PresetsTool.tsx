@@ -11,6 +11,8 @@ import type { ComponentChildren } from "preact";
 import { navigate } from "../../shell/router";
 import { toast } from "../../shell/toast";
 import { useDraft, type Draft } from "../../shell/draft";
+import { Loading, ErrorState, NotFound, EmptyState } from "../../ui/states";
+import { ApiError } from "../../shell/api";
 import { tokensOf } from "../../shell/api";
 import { FullscreenText } from "../../ui/FullscreenText";
 import {
@@ -43,11 +45,14 @@ type BrowserSort = "tokens" | "sections" | "name";
 function Browser() {
   const [presets, setPresets] = useState<PromptPreset[] | null>(null);
   const [loads, setLoads] = useState<Record<string, PresetLoad | "error">>({});
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = () => setReloadKey((k) => k + 1);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<BrowserSort>("tokens");
 
   useEffect(() => {
+    setPresets(null); setError(null);
     fetchPresets().then((list) => {
       setPresets(list);
       for (const p of list) {
@@ -55,11 +60,11 @@ function Browser() {
           .then((full) => setLoads((s) => ({ ...s, [p.id]: presetLoad(full, "conversation") })))
           .catch(() => setLoads((s) => ({ ...s, [p.id]: "error" })));
       }
-    }).catch((e: Error) => setError(e.message));
-  }, []);
+    }).catch((e: unknown) => setError(e));
+  }, [reloadKey]);
 
-  if (error) return <div class="screen"><div class="empty"><p class="t-label">Cannot reach engine</p><p>{error}</p></div></div>;
-  if (!presets) return <div class="screen"><div class="empty">Loading presets…</div></div>;
+  if (error) return <div class="screen is-narrow"><ErrorState error={error} onRetry={reload} /></div>;
+  if (!presets) return <div class="screen is-narrow"><Loading what="presets" onRetry={reload} /></div>;
 
   const visible = presets
     .filter((p) => !query.trim() || (p.name + " " + p.description + " " + p.author).toLowerCase().includes(query.toLowerCase()))
@@ -135,7 +140,11 @@ function Browser() {
           </button>
         );
       })}
-      {visible.length === 0 && <p class="empty">No presets match your search</p>}
+      {visible.length === 0 && (presets.length === 0
+        ? <EmptyState kind="first-run" what="presets" />
+        : <EmptyState kind="filtered" what="presets"
+            filters={query.trim() ? [{ label: `search: ${query.trim()}`, clear: () => setQuery("") }] : []}
+            onClearAll={() => setQuery("")} />)}
     </div>
   );
 }
@@ -149,7 +158,10 @@ type Pill = "dirty" | "saved" | "err";
 function Editor({ presetId }: { presetId: string }) {
   const desktop = useIsDesktop();
   const [full, setFull] = useState<PresetFull | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
+  const [missing, setMissing] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const reloadEditor = () => setReloadKey((k) => k + 1);
   const [open, setOpen] = useState<Set<string>>(new Set());
   const [focusId, setFocusId] = useState<string | null>(null);
   const [pill, setPill] = useState<Pill>("saved");   // reorder only — field edits use drafts
@@ -159,14 +171,23 @@ function Editor({ presetId }: { presetId: string }) {
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
   useEffect(() => {
+    let alive = true;
+    setFull(null); setError(null); setMissing(false);
     fetchFull(presetId).then((f) => {
+      if (!alive) return;
       setFull(f);
       // Desktop detail pane is never usefully empty — select the first section.
       if (window.matchMedia("(min-width: 900px)").matches) {
         setFocusId(orderedSections(f)[0]?.id ?? null);
       }
-    }).catch((e: Error) => setError(e.message));
-  }, [presetId]);
+    }).catch((e: unknown) => {
+      if (!alive) return;
+      // A preset id that does not exist is a dead link, not a server fault.
+      if (e instanceof ApiError && e.status === 404) setMissing(true);
+      else setError(e);
+    });
+    return () => { alive = false; };
+  }, [presetId, reloadKey]);
 
   // flush pending debounces on unmount so a save can't be lost silently
   useEffect(() => () => {
@@ -334,8 +355,9 @@ function Editor({ presetId }: { presetId: string }) {
     } else if (ev.key === "Escape") navigate("presets");
   }, [sections, focusId, move, openRow]);
 
-  if (error) return <div class="screen"><div class="empty"><p class="t-label">Could not load</p><p>{error}</p></div></div>;
-  if (!full) return <div class="screen"><div class="empty">Loading preset…</div></div>;
+  if (missing) return <div class="screen"><NotFound what="Preset" id={presetId} backTo="presets" backLabel="Back to presets" /></div>;
+  if (error) return <div class="screen"><ErrorState error={error} onRetry={reloadEditor} /></div>;
+  if (!full) return <div class="screen"><Loading what="preset" onRetry={reloadEditor} /></div>;
 
   const conv = presetLoad(full, "conversation");
   const game = presetLoad(full, "game");
@@ -425,7 +447,7 @@ function Editor({ presetId }: { presetId: string }) {
 
         <main class="rows">
           {sections.length === 0 && (
-            <p class="empty">No sections yet. Add one to start building the prompt.</p>
+            <EmptyState kind="first-run" what="sections" />
           )}
           {sections.map((s, i) => {
             const isOpen = !desktop && open.has(s.id);

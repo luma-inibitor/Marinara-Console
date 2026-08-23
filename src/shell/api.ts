@@ -35,7 +35,9 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
     });
   } catch (err) {
     // fetch rejects only on network failure — the browser never reached us.
-    throw new ApiError("No connection to the console server", { status: 0, offline: true });
+    const e = new ApiError("No connection to the console server", { status: 0, offline: true });
+    onResult?.(e);
+    throw e;
   }
   if (!restorePointWarned && res.headers.get("x-ltm-restore-point") === "failed") {
     restorePointWarned = true;
@@ -49,13 +51,23 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
     // The proxy returns 502 + {error, detail} when the engine itself is unreachable.
     const engineDown = res.status === 502;
     const msg = payload.error || payload.detail || `${res.status} ${res.statusText}`;
-    throw new ApiError(
+    const e = new ApiError(
       payload.detail && payload.error ? `${payload.error} (${payload.detail})` : msg,
       { status: res.status, details: payload.details, offline: engineDown },
     );
+    onResult?.(e);
+    throw e;
   }
+  onResult?.(null);
   return res.status === 204 ? (null as T) : ((await res.json()) as T);
 }
+
+/**
+ * Outcome hook, set once at startup. Kept as a callback rather than an import so
+ * api.ts stays free of UI dependencies and remains importable in isolation.
+ */
+let onResult: ((err: unknown | null) => void) | null = null;
+export const setResultHook = (fn: (err: unknown | null) => void) => { onResult = fn; };
 
 /** Engine-faithful token estimate — approximateTokens() in packages/shared. */
 export const tokensOf = (text: string | null | undefined): number =>
