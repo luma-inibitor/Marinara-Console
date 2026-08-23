@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockups — review group headers</title>
+<style>
+  :root {
+    --canvas:#0b0d12; --surface-1:#12161d; --surface-2:#1a202a; --surface-3:#232b37;
+    --edge:#232a38; --edge-strong:#33405a;
+    --text:#e2e8f1; --text-dim:#8b95a3; --text-faint:#667080;
+    --ok:#34d399; --warn:#fde047; --danger:#f87171; --off:#4a5364;
+    --accent:#7d9bf0; --flag:#e8734a;
+    --t-char:#7d9bf0; --t-rel:#e08fc7; --t-time:#e0b35f; --t-thread:#b08fe0; --t-world:#58c9a8;
+    --mono:ui-monospace,"JetBrains Mono",SFMono-Regular,Menlo,monospace;
+    --label:system-ui,-apple-system,"Archivo",sans-serif;
+    --prose:system-ui,-apple-system,"Source Sans 3",sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#05070a; color:var(--text); font-family:var(--prose); font-size:15px; padding:16px 8px 80px; }
+  h1 { font-family:var(--label); font-size:15px; letter-spacing:.06em; text-transform:uppercase; margin:8px 8px 4px; }
+  p.note { color:var(--text-dim); font-size:13px; margin:0 8px 18px; max-width:420px; }
+  .variant { max-width:420px; margin:0 auto 34px; }
+  .vtitle { font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:.08em;
+    text-transform:uppercase; margin:0 4px 4px; }
+  .vnote { font-size:12.5px; color:var(--text-dim); margin:0 4px 8px; }
+  .frame { background:var(--canvas); border:1px solid var(--edge-strong); border-radius:10px; overflow:hidden; }
+
+  /* shared row bits */
+  .lbl { font-family:var(--label); font-weight:600; font-size:9.5px; letter-spacing:.09em; text-transform:uppercase; }
+  .mono { font-family:var(--mono); }
+  .dim { color:var(--text-dim); } .faint { color:var(--text-faint); }
+  .row { display:grid; grid-template-columns:40px 1fr 52px; border-bottom:1px solid var(--edge); padding:8px 10px 8px 0; }
+  .tri { width:22px; height:22px; border-radius:50%; box-shadow:inset 0 0 0 1.5px var(--off); margin:2px auto 0; }
+  .rtxt { font-size:14px; line-height:1.35; }
+  .rmeta { font-family:var(--mono); font-size:11px; margin-top:3px; }
+  .rmeta .merge { color:var(--ok); font-weight:700; } .rmeta .new { color:var(--accent); font-weight:700; }
+  .rmeta .rewrite { color:var(--warn); font-weight:700; }
+  .conf { text-align:right; font-family:var(--mono); }
+  .conf b { display:block; font-size:13px; } .conf span { font-size:8.5px; color:var(--text-dim); }
+
+  /* ── A: current ── */
+  .gh-a { display:flex; align-items:center; gap:8px; padding:6px 10px; background:var(--surface-2);
+    border-top:1px solid var(--edge); border-bottom:1px solid var(--edge); }
+  .gh-a .gn { flex:1; font-size:15px; }
+  .chip-a { font-family:var(--mono); font-size:10.5px; padding:6px 10px; border:1px solid; border-radius:8px; white-space:nowrap; }
+  .chip-b { font-family:var(--label); font-size:9px; letter-spacing:.09em; text-transform:uppercase;
+    padding:6px 10px; border:1px solid var(--edge-strong); border-radius:8px; color:var(--text-dim); white-space:nowrap; }
+  .gact { font-family:var(--label); font-size:9px; letter-spacing:.08em; padding:5px 8px; border-radius:8px; border:1px solid; white-space:nowrap; }
+  .gk { color:var(--ok); border-color:rgba(52,211,153,.4); } .gd { color:var(--danger); border-color:rgba(248,113,113,.4); }
+
+  /* ── B/D/E: two-line header ── */
+  .gh2 { padding:7px 10px 6px; background:var(--surface-2); border-top:1px solid var(--edge); border-bottom:1px solid var(--edge); }
+  .gh2 .title { font-size:15px; line-height:1.3; overflow-wrap:anywhere; }
+  .gh2 .title a { color:var(--text); text-decoration:none; border-bottom:1px dotted var(--text-faint); }
+  .gh2 .meta { display:flex; align-items:center; gap:0 6px; flex-wrap:wrap; margin-top:3px;
+    font-family:var(--mono); font-size:11px; color:var(--text-dim); }
+  .tdot { width:8px; height:8px; border-radius:50%; display:inline-block; flex:0 0 auto; }
+  .meta .sep { color:var(--edge-strong); }
+  .meta .keep { color:var(--ok); } .meta .press { color:var(--flag); }
+  .meta .acts { margin-left:auto; display:inline-flex; gap:6px; }
+  .touch { color:var(--text-dim); } .touch b { color:var(--text); font-weight:600; }
+
+  /* C: touched-section expansion */
+  .stored-x { background:var(--surface-1); border-bottom:1px solid var(--edge); padding:8px 10px; }
+  .stored-x .sk { font-family:var(--label); font-size:9px; letter-spacing:.09em; text-transform:uppercase; color:var(--text-dim); }
+  .stored-x .pend { color:var(--accent); font-family:var(--mono); font-size:10px; }
+  .stored-x .txt { font-size:12.5px; color:var(--text-dim); margin:2px 0 8px; white-space:pre-line; }
+</style>
+</head>
+<body>
+
+<h1>Review group headers — 5 variants</h1>
+<p class="note">Same three groups in each: Watson (3 claims, note exists), the long-titled relationship (2 claims, exists), a single-claim timeline create. Sample claim rows included for skim context.</p>
+
+<!-- ═══ A: CURRENT ═══ -->
+<div class="variant">
+  <div class="vtitle">A · current (baseline)</div>
+  <div class="vnote">Conditional STORED + conditional ✓/✗ → nothing column-aligns; type chip looks tappable; long titles wrap against the chips.</div>
+  <div class="frame">
+    <div class="gh-a"><span class="gn">Watson</span>
+      <span class="chip-a" style="color:var(--t-char);border-color:rgba(125,155,240,.4)">character</span>
+      <span class="mono dim">3</span>
+      <span class="chip-b">stored · 2</span>
+      <span class="gact gk">✓ ALL</span><span class="gact gd">✗ ALL</span></div>
+    <div class="row"><span class="tri"></span><span><span class="rtxt">- Watson holds the harbour master's writ and may board any vessel at the wall.</span><br><span class="rmeta"><span class="merge">merge</span> · medium</span></span><span class="conf"><b>73</b><span>% conf</span></span></div>
+    <div class="gh-a"><span class="gn">Sherlock Holmes and Watson</span>
+      <span class="chip-a" style="color:var(--t-rel);border-color:rgba(224,143,199,.4)">relationship</span>
+      <span class="mono dim">2</span>
+      <span class="chip-b">stored · 1</span>
+      <span class="gact gk">✓ ALL</span><span class="gact gd">✗ ALL</span></div>
+    <div class="row"><span class="tri"></span><span><span class="rtxt">Sherlock named the debt from the winter of the flood at last…</span><br><span class="rmeta"><span class="rewrite">rewrite</span> · medium</span></span><span class="conf"><b>86</b><span>% conf</span></span></div>
+    <div class="gh-a"><span class="gn">Timeline The Household 904998 0</span>
+      <span class="chip-a" style="color:var(--t-time);border-color:rgba(224,179,95,.4)">timeline event</span>
+      <span class="mono dim">1</span></div>
+    <div class="row"><span class="tri"></span><span><span class="rtxt">- the household missed the last ferry and spent the night…</span><br><span class="rmeta"><span class="new">new</span> · low</span></span><span class="conf"><b>96</b><span>% conf</span></span></div>
+  </div>
+</div>
+
+<!-- ═══ B ═══ -->
+<div class="variant">
+  <div class="vtitle">B · two-line + touch map (proposal 1+2+3c)</div>
+  <div class="vnote">Title full-width (tap = note peek, dotted underline = the one interactive thing). Meta line in fixed slot order: type dot·word → claims → touch map → tallies → pressure, bulk actions anchored right. No stored expansion.</div>
+  <div class="frame">
+    <div class="gh2">
+      <div class="title"><a href="#">Watson</a></div>
+      <div class="meta"><span class="tdot" style="background:var(--t-char)"></span>character
+        <span class="sep">·</span>3 claims
+        <span class="sep">·</span><span class="touch">touches <b>core</b> +2 <b>appearance</b> ±1</span>
+        <span class="acts"><span class="gact gk">✓ ALL</span><span class="gact gd">✗ ALL</span></span></div>
+    </div>
+    <div class="row"><span class="tri"></span><span><span class="rtxt">- Watson holds the harbour master's writ and may board any vessel at the wall.</span><br><span class="rmeta"><span class="merge">merge</span> · medium</span></span><span class="conf"><b>73</b><span>% conf</span></span></div>
+    <div class="gh2">
+      <div class="title"><a href="#">Sherlock Holmes and Watson</a></div>
+      <div class="meta"><span class="tdot" style="background:var(--t-rel)"></span>relationship
+        <span class="sep">·</span>2 claims
+        <span class="sep">·</span><span class="touch">touches <b>state</b> ↻1</span>
+        <span class="sep">·</span><span class="keep">✓1</span>
+        <span class="acts"><span class="gact gk">✓ ALL</span><span class="gact gd">✗ ALL</span></span></div>
+    </div>
+    <div class="row"><span class="tri"></span><span><span class="rtxt">Sherlock named the debt from the winter of the flood at last…</span><br><span class="rmeta"><span class="rewrite">rewrite</span> · medium</span></span><span class="conf"><b>86</b><span>% conf</span></span></div>
+    <div class="gh2">
+      <div class="title">Timeline The Household 904998 0</div>
+      <div class="meta"><span class="tdot" style="background:var(--t-time)"></span>timeline event
+        <span class="sep">·</span>1 claim
+        <span class="sep">·</span><span class="touch">will be created</span></div>
+    </div>
+    <div class="row"><span class="tri"></span><span><span class="rtxt">- the household missed the last ferry and spent the night…</span><br><span class="rmeta"><span class="new">new</span> · low</span></span><span class="conf"><b>96</b><span>% conf</span></span></div>
+  </div>
+</div>
+
+<!-- ═══ C ═══ -->
+<div class="variant">
+  <div class="vtitle">C · B + touched-sections expansion (3b, shown open)</div>
+  <div class="vnote">Touch map is tappable; expansion shows ONLY the sections this group changes — stored text with pending count per section. (Group-level version of the claim detail's stored/proposed zones.)</div>
+  <div class="frame">
+    <div class="gh2">
+      <div class="title"><a href="#">Watson</a></div>
+      <div class="meta"><span class="tdot" style="background:var(--t-char)"></span>character
+        <span class="sep">·</span>3 claims
+        <span class="sep">·</span><span class="touch" style="color:var(--accent)">touches core +2 · appearance ±1 ▾</span>
+        <span class="acts"><span class="gact gk">✓ ALL</span><span class="gact gd">✗ ALL</span></span></div>
+    </div>
+    <div class="stored-x">
+      <div><span class="sk">core</span> <span class="pend">+2 pending additions</span></div>
+      <div class="txt">- Watson reads people through what their hands are doing rather than what they say.
+- Watson carries the harbour master's writ, and with it the right to board any vessel at the wall.</div>
+      <div><span class="sk">appearance</span> <span class="pend">1 pending replacement</span></div>
+      <div class="txt">- Watson wears a coat a size too large, inherited, and refuses to have it taken in.</div>
+    </div>
+    <div class="row"><span class="tri"></span><span><span class="rtxt">- Watson holds the harbour master's writ and may board any vessel at the wall.</span><br><span class="rmeta"><span class="merge">merge</span> · medium</span></span><span class="conf"><b>73</b><span>% conf</span></span></div>
+    <div class="row"><span class="tri"></span><span><span class="rtxt">- Watson finally had the inherited coat taken in, and mourns the lost room in the sleeves.</span><br><span class="rmeta"><span class="merge">merge</span> · medium</span></span><span class="conf"><b>73</b><span>% conf</span></span></div>
+  </div>
+</div>
+
+<!-- ═══ D ═══ -->
+<div class="variant">
+  <div class="vtitle">D · B, but bulk actions always render</div>
+  <div class="vnote">Even single-claim groups get ✓/✗ (acting on one row) — perfect slot consistency, at the cost of duplicate affordance with the row's own tri.</div>
+  <div class="frame">
+    <div class="gh2">
+      <div class="title"><a href="#">Watson</a></div>
+      <div class="meta"><span class="tdot" style="background:var(--t-char)"></span>character
+        <span class="sep">·</span>3 claims
+        <span class="sep">·</span><span class="touch">touches <b>core</b> +2 <b>appearance</b> ±1</span>
+        <span class="acts"><span class="gact gk">✓ ALL</span><span class="gact gd">✗ ALL</span></span></div>
+    </div>
+    <div class="row"><span class="tri"></span><span><span class="rtxt">- Watson holds the harbour master's writ…</span><br><span class="rmeta"><span class="merge">merge</span> · medium</span></span><span class="conf"><b>73</b><span>% conf</span></span></div>
+    <div class="gh2">
+      <div class="title">Timeline The Household 904998 0</div>
+      <div class="meta"><span class="tdot" style="background:var(--t-time)"></span>timeline event
+        <span class="sep">·</span>1 claim
+        <span class="sep">·</span><span class="touch">will be created</span>
+        <span class="acts"><span class="gact gk">✓ ALL</span><span class="gact gd">✗ ALL</span></span></div>
+    </div>
+    <div class="row"><span class="tri"></span><span><span class="rtxt">- the household missed the last ferry…</span><br><span class="rmeta"><span class="new">new</span> · low</span></span><span class="conf"><b>96</b><span>% conf</span></span></div>
+  </div>
+</div>
+
+<!-- ═══ E ═══ -->
+<div class="variant">
+  <div class="vtitle">E · no per-group buttons at all</div>
+  <div class="vnote">Cleanest headers; bulk decide happens by filtering to a target (tap the count?) + "keep shown". Adds a step to the most common bulk move.</div>
+  <div class="frame">
+    <div class="gh2">
+      <div class="title"><a href="#">Watson</a></div>
+      <div class="meta"><span class="tdot" style="background:var(--t-char)"></span>character
+        <span class="sep">·</span>3 claims
+        <span class="sep">·</span><span class="touch">touches <b>core</b> +2 <b>appearance</b> ±1</span></div>
+    </div>
+    <div class="row"><span class="tri"></span><span><span class="rtxt">- Watson holds the harbour master's writ and may board any vessel at the wall.</span><br><span class="rmeta"><span class="merge">merge</span> · medium</span></span><span class="conf"><b>73</b><span>% conf</span></span></div>
+    <div class="gh2">
+      <div class="title"><a href="#">Sherlock Holmes and Watson</a></div>
+      <div class="meta"><span class="tdot" style="background:var(--t-rel)"></span>relationship
+        <span class="sep">·</span>2 claims
+        <span class="sep">·</span><span class="touch">touches <b>state</b> ↻1</span>
+        <span class="sep">·</span><span class="keep">✓1</span></div>
+    </div>
+    <div class="row"><span class="tri"></span><span><span class="rtxt">Sherlock named the debt from the winter of the flood at last…</span><br><span class="rmeta"><span class="rewrite">rewrite</span> · medium</span></span><span class="conf"><b>86</b><span>% conf</span></span></div>
+  </div>
+</div>
+
+<p class="note">Touch-map notation used above: <b>+n</b> pending additions · <b>↻n</b> pending replacements · <b>±n</b> mixed. "will be created" for create-targets. Pressure would append like <span class="mono" style="color:var(--flag)">core 19.4k→21.3k/20k</span> when ≥80%.</p>
+
+</body>
+</html>

@@ -1,0 +1,103 @@
+.jsonview {
+  position: relative;
+  max-height: 40vh;
+  overflow: auto;
+  padding: var(--s2);
+  background: var(--canvas);
+  border: var(--hairline);
+  border-radius: var(--r-s);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+/* Pinned inside the block: no row of its own, and it stays put while the
+   content scrolls beneath it. The wash is opaque enough that a long line
+   passing underneath cannot be mistaken for part of a control. */
+.jsonview-tools {
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 1;
+  display: inline-flex;
+  gap: 2px;
+  margin: -2px -2px 0 var(--s2);
+  padding: 2px;
+  border: var(--hairline);
+  border-radius: var(--r-s);
+  background: var(--surface-2);
+}
+.jsonview-t {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-faint);
+}
+.jsonview-t:hover { color: var(--text); background: var(--surface-3); }
+.jsonview-t[aria-pressed="true"] { color: var(--accent); background: var(--accent-wash); }
+
+.jsonview-raw {
+  margin: 0;
+  color: var(--text-dim);
+  white-space: pre;
+  font-family: var(--font-data);
+}
+.jsonview-tree { font-family: var(--font-data); color: var(--text-dim); }
+
+/* the first line clears the control cluster; deeper lines run full width */
+.jsonview-tree > .jgroup > .jn:first-child { padding-right: 84px; }
+.jsonview-raw::first-line { /* raw text wraps around the float on its own */ }
+
+.jn {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* the whole line is the target for a foldable node */
+.jn-head {
+  width: 100%;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.jn-head:hover { background: var(--surface-2); }
+.jn-head:hover .jtoggle { color: var(--text); }
+.jn-close { color: var(--text-faint); }
+
+.jtoggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  width: 12px;
+  height: 14px;
+  margin-left: -12px;
+  color: var(--text-faint);
+}
+
+.jk { color: var(--text); flex: 0 0 auto; }
+.jb { color: var(--text-faint); }
+.jc { color: var(--text-faint); }
+/* how much a fold hides, stated rather than implied */
+.jn-count {
+  margin: 0 4px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 9.5px;
+}
+
+.jv { min-width: 0; overflow-wrap: anywhere; }
+.jv-str { color: var(--ok); }
+.jv-num { color: var(--accent); }
+.jv-bool { color: var(--warn); }
+.jv-null { color: var(--text-faint); font-style: italic; }

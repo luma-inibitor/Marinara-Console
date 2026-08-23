@@ -96,7 +96,12 @@
 .card .bar > i { display: block; height: 100%; background: var(--ok); }
 .card .bar > i.is-over { background: var(--flag); }
 
-.empty { padding: var(--s6); text-align: center; color: var(--text-dim); }
+/* Preflight zeroes tag margins, so the gap between an empty state's title and
+   its body is the component's job, not the browser's. */
+.empty { padding: var(--s6); text-align: center; color: var(--text-dim);
+  display: flex; flex-direction: column; align-items: center; gap: var(--s2);
+  margin: 0; }
+.empty p { margin: 0; }
 
 /* ══ command palette (Cmd/Ctrl-K) ══ */
 .palette-backdrop { position: fixed; inset: 0; z-index: 70;

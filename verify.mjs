@@ -13,6 +13,7 @@ const URL = process.argv.includes("--url")
 
 const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844, mobile: true },
+  { name: "phone", width: 486, height: 1085, mobile: true }, // Luma's device
   { name: "tablet", width: 768, height: 1024, mobile: true },
   { name: "desktop", width: 1280, height: 800, mobile: false },
 ];
@@ -103,7 +104,10 @@ const bookId = await (async () => {
 const SCREENS = [
   { name: "picker", path: "/#/lorebooks", waitFor: ".card" },
   { name: "audit", path: `/#/lorebooks/${bookId}`, waitFor: ".row" },
-  { name: "presets", path: "/#/presets", waitFor: ".empty" },
+  { name: "presets", path: "/#/presets", waitFor: ".emptystate" },
+  { name: "memory-review", path: "/#/memory/review", waitFor: ".mem-rows" },
+  { name: "memory-vault", path: "/#/memory/vault", waitFor: ".mem-rows" },
+  { name: "memory-sources", path: "/#/memory/sources", waitFor: ".mem-rows" },
 ];
 
 let failures = 0, warnings = 0;

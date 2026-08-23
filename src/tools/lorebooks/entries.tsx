@@ -9,6 +9,7 @@ import {
   statusOf, entryTokens,
 } from "./data";
 import type { SavePill } from "./BookAudit";
+import { Chip } from "../../ui";
 
 export interface FullscreenCtx { id: string; field: "content" | "description"; }
 
@@ -25,7 +26,7 @@ export function EntryDrawer(props: {
   onExpand: (field: FullscreenCtx["field"]) => void;
 }) {
   const { entry: e, save } = props;
-  // multi-expand: a Set, siblings never auto-close (survey §11 / Eli-confirmed)
+  // multi-expand: a Set, siblings never auto-close (survey §11 / Luma-confirmed)
   const [openSubs, setOpenSubs] = useState<Set<Sub>>(new Set(["keys"]));
   const toggle = (s: Sub) => setOpenSubs((prev) => {
     const n = new Set(prev); n.has(s) ? n.delete(s) : n.add(s); return n;
@@ -76,7 +77,7 @@ export function EntryDrawer(props: {
         () => (
           <>
             <div class="fieldbar">
-              <button class="chip" onClick={() => props.onExpand("description")}>⤢ Edit Description</button>
+              <Chip onClick={() => props.onExpand("description")}>⤢ Edit Description</Chip>
             </div>
             <textarea class="ta" rows={4} value={e.description}
               placeholder="Brief summary for routing."
@@ -90,7 +91,7 @@ export function EntryDrawer(props: {
         () => (
           <>
             <div class="fieldbar">
-              <button class="chip" onClick={() => props.onExpand("content")}>⤢ Edit Content</button>
+              <Chip onClick={() => props.onExpand("content")}>⤢ Edit Content</Chip>
             </div>
             <textarea class="ta is-mono" rows={7} value={e.content}
               onInput={(ev) => save(e.id, { content: ev.currentTarget.value })}
@@ -203,7 +204,7 @@ export function FullscreenEditor(props: {
           <div class="t-label">{FIELD_TITLE[props.field]}</div>
           <div class="meta"><span>{props.entry.name}</span></div>
         </div>
-        <button class="chip" aria-pressed={wrap} onClick={() => setWrap(!wrap)}>↵ wrap</button>
+        <Chip pressed={wrap} onClick={() => setWrap(!wrap)}>↵ wrap</Chip>
         <button class="dbtn is-primary" onClick={() => props.onDone(value)}>Done</button>
       </div>
       <div class="fs-counts meta">
