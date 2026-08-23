@@ -18,12 +18,12 @@ export function Chip(props: {
   flag?: boolean;
   disabled?: boolean;
   title?: string;
-  class?: string;
+  className?: string;
 }) {
   return (
     <button
       type="button"
-      class={`chip ${props.flag ? "is-flag" : ""} ${props.class ?? ""}`}
+      className={`chip ${props.flag ? "is-flag" : ""} ${props.className ?? ""}`}
       aria-pressed={props.pressed}
       disabled={props.disabled}
       title={props.title}
@@ -36,6 +36,6 @@ export function Chip(props: {
 
 /** A chip-shaped static label — a keyword, a type, a value. Not pressable.
  *  See `<Chip>` for why this is its own component. */
-export function Tag(props: { children: ComponentChildren; class?: string }) {
-  return <span class={`tag t-data ${props.class ?? ""}`}>{props.children}</span>;
+export function Tag(props: { children: ComponentChildren; className?: string }) {
+  return <span className={`tag t-data ${props.className ?? ""}`}>{props.children}</span>;
 }

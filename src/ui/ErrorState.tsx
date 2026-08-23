@@ -66,15 +66,15 @@ export function ErrorState(props: {
       title={title}
       body={
         <>
-          <span class="t-data">{cause}</span>
+          <span className="t-data">{cause}</span>
           {advice && <><br />{advice}</>}
-          {status > 0 && <><br /><span class="t-data dim">HTTP {status}</span></>}
+          {status > 0 && <><br /><span className="t-data dim">HTTP {status}</span></>}
         </>
       }
       actions={
         (props.onRetry || props.actions) && (
           <>
-            {props.onRetry && <button class="dbtn is-primary" onClick={props.onRetry}>Try again</button>}
+            {props.onRetry && <button className="dbtn is-primary" onClick={props.onRetry}>Try again</button>}
             {props.actions}
           </>
         )

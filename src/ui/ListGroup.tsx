@@ -16,13 +16,13 @@ export function CollapseButton(props: {
   /** How many rows it holds. */
   count: number;
   size?: number;
-  class?: string;
+  className?: string;
 }) {
   const Chevron = props.collapsed ? ChevronRight : ChevronDown;
   return (
     <button
       type="button"
-      class={`gexp hit ${props.class ?? ""}`}
+      className={`gexp hit ${props.className ?? ""}`}
       aria-expanded={!props.collapsed}
       aria-label={`${props.collapsed ? "Expand" : "Collapse"} ${props.label} (${props.count})`}
       onClick={props.onToggle}
@@ -34,7 +34,7 @@ export function CollapseButton(props: {
 
 /** A collapsible group of rows: a header, and the rows when it is open.
  *
- *  The header's shape is the caller's — pass `class` to pick it. The review
+ *  The header's shape is the caller's — pass `className` to pick it. The review
  *  queue's header shares a grid with its rows so the columns line up by
  *  construction; the sources list is a plain flex row. Those are genuinely
  *  different headers over the same behaviour, and this component owns the
@@ -48,12 +48,12 @@ export function ListGroup(props: {
   /** Everything in the header after the chevron — icon, title, controls. */
   head: ComponentChildren;
   children: ComponentChildren;
-  class?: string;
+  className?: string;
   chevronSize?: number;
 }) {
   return (
-    <div class="listgroup">
-      <div class={props.class}>
+    <div className="listgroup">
+      <div className={props.className}>
         <CollapseButton
           collapsed={props.collapsed}
           onToggle={props.onToggle}

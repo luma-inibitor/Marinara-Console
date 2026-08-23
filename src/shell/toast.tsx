@@ -83,20 +83,20 @@ function ToastRow({ t }: { t: Toast }) {
   const undoable = !!t.onExpire;
   const left = useCountdown(t.expiresAt);
   return (
-    <div class={`toast ${t.kind === "error" ? "is-error" : ""} ${undoable ? "is-undoable" : ""}`}>
-      <span class="toast-msg">
+    <div className={`toast ${t.kind === "error" ? "is-error" : ""} ${undoable ? "is-undoable" : ""}`}>
+      <span className="toast-msg">
         {t.message}
-        {t.count > 1 && <span class="toast-count t-data">×{t.count}</span>}
+        {t.count > 1 && <span className="toast-count t-data">×{t.count}</span>}
       </span>
       {t.actionLabel && (
-        <button class="toast-action" onClick={() => { t.onAction?.(); remove(t.id, false); }}>
-          {t.actionLabel}{undoable && left > 0 && <span class="toast-left t-data">{left}s</span>}
+        <button className="toast-action" onClick={() => { t.onAction?.(); remove(t.id, false); }}>
+          {t.actionLabel}{undoable && left > 0 && <span className="toast-left t-data">{left}s</span>}
         </button>
       )}
       {/* No dismiss on an undoable toast: dismissing it would have to either
           commit or cancel, and a "×" reads as cancel while committing. */}
       {!undoable && (
-        <button class="toast-x" aria-label="Dismiss" onClick={() => remove(t.id, false)}>
+        <button className="toast-x" aria-label="Dismiss" onClick={() => remove(t.id, false)}>
           <Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
         </button>
       )}
@@ -106,7 +106,7 @@ function ToastRow({ t }: { t: Toast }) {
 
 export function Toaster() {
   return (
-    <div class="toaster" role="status" aria-live="polite">
+    <div className="toaster" role="status" aria-live="polite">
       {toasts.value.map((t) => <ToastRow key={t.id} t={t} />)}
     </div>
   );

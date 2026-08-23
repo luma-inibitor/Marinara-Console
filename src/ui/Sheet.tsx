@@ -23,9 +23,9 @@ export function Sheet(props: {
   onClose: () => void;
   children: ComponentChildren;
   /** Extra classes on the panel — `option-sheet` caps its height, for one. */
-  class?: string;
+  className?: string;
 }) {
-  return <Overlay {...props} surface={`sheet ${props.class ?? ""}`} />;
+  return <Overlay {...props} surface={`sheet ${props.className ?? ""}`} />;
 }
 
 /** A centred dialog. The surface for a question the reviewer has to answer
@@ -38,9 +38,9 @@ export function Modal(props: {
   label: string;
   onClose: () => void;
   children: ComponentChildren;
-  class?: string;
+  className?: string;
 }) {
-  return <Overlay {...props} surface={`modal ${props.class ?? ""}`} />;
+  return <Overlay {...props} surface={`modal ${props.className ?? ""}`} />;
 }
 
 /** Scrim, dialog semantics, and the overlay-stack registration that every
@@ -58,9 +58,9 @@ function Overlay(props: {
   useEffect(() => { openOverlay(() => close.current()); }, []);
 
   return (
-    <div class="peek-scrim" onClick={closeTopOverlay}>
+    <div className="peek-scrim" onClick={closeTopOverlay}>
       <aside
-        class={props.surface}
+        className={props.surface}
         role="dialog"
         aria-modal="true"
         aria-label={props.label}
@@ -90,11 +90,11 @@ export function SheetHead(props: {
   const closeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => { if (props.autoFocus) closeRef.current?.focus(); }, []);
   return (
-    <header class="sheet-head">
+    <header className="sheet-head">
       {props.icon}
-      <span class="sheet-title t-prose">{props.title}</span>
+      <span className="sheet-title t-prose">{props.title}</span>
       {props.children}
-      <button ref={closeRef} class="hit sheet-x" aria-label="Close" onClick={closeTopOverlay}>
+      <button ref={closeRef} className="hit sheet-x" aria-label="Close" onClick={closeTopOverlay}>
         <Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
       </button>
     </header>

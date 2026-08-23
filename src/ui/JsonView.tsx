@@ -35,17 +35,17 @@ export function JsonView(props: { value: unknown; label?: string }) {
   };
 
   return (
-    <div class="jsonview">
-      <div class="jsonview-tools" role="group" aria-label={props.label ?? "JSON view"}>
-        <button type="button" class="jsonview-t" aria-pressed={mode === "tree"}
+    <div className="jsonview">
+      <div className="jsonview-tools" role="group" aria-label={props.label ?? "JSON view"}>
+        <button type="button" className="jsonview-t" aria-pressed={mode === "tree"}
           aria-label="Folding view" title="Folding view" onClick={() => setMode("tree")}>
           <Preview size={13} stroke={1.75} aria-hidden />
         </button>
-        <button type="button" class="jsonview-t" aria-pressed={mode === "raw"}
+        <button type="button" className="jsonview-t" aria-pressed={mode === "raw"}
           aria-label="Plain text" title="Plain text" onClick={() => setMode("raw")}>
           <Raw size={13} stroke={1.75} aria-hidden />
         </button>
-        <button type="button" class="jsonview-t" aria-label={copied ? "Copied" : "Copy JSON"}
+        <button type="button" className="jsonview-t" aria-label={copied ? "Copied" : "Copy JSON"}
           title="Copy JSON" onClick={copy}>
           {copied
             ? <Copied size={13} stroke={2} aria-hidden />
@@ -53,8 +53,8 @@ export function JsonView(props: { value: unknown; label?: string }) {
         </button>
       </div>
       {mode === "raw"
-        ? <pre class="jsonview-raw t-data">{text}</pre>
-        : <div class="jsonview-tree t-data"><Node value={props.value} depth={0} last /></div>}
+        ? <pre className="jsonview-raw t-data">{text}</pre>
+        : <div className="jsonview-tree t-data"><Node value={props.value} depth={0} last /></div>}
     </div>
   );
 }
@@ -70,10 +70,10 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
 
   if (!isArray && !isObject) {
     return (
-      <div class="jn" style={`padding-left:${props.depth * 12}px`}>
-        {props.name !== undefined && <span class="jk">{props.name}:</span>}
+      <div className="jn" style={`padding-left:${props.depth * 12}px`}>
+        {props.name !== undefined && <span className="jk">{props.name}:</span>}
         <Leaf value={value} />
-        {!props.last && <span class="jc">,</span>}
+        {!props.last && <span className="jc">,</span>}
       </div>
     );
   }
@@ -86,25 +86,25 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
   const Chevron = open ? ChevronDown : ChevronRight;
 
   return (
-    <div class="jgroup">
+    <div className="jgroup">
       {/* The whole header line is the control, not just the chevron. An 11px
           glyph is a sniper target, and the key and the brace are the parts you
           were already looking at (owner's call, 2026-08-22). */}
       <button
         type="button"
-        class="jn jn-head"
+        className="jn jn-head"
         style={`padding-left:${props.depth * 12}px`}
         aria-expanded={open}
         aria-label={`${open ? "Collapse" : "Expand"} ${props.name ?? "root"} (${entries.length})`}
         onClick={() => setOpen(!open)}
       >
-        <span class="jtoggle"><Chevron size={11} stroke={2} aria-hidden /></span>
-        {props.name !== undefined && <span class="jk">{props.name}:</span>}
-        <span class="jb">{openBrace}</span>
+        <span className="jtoggle"><Chevron size={11} stroke={2} aria-hidden /></span>
+        {props.name !== undefined && <span className="jk">{props.name}:</span>}
+        <span className="jb">{openBrace}</span>
         {/* a folded node still says how much it hides, so a fold never reads
             as missing content */}
-        {!open && <><span class="jn-count">{entries.length}</span><span class="jb">{closeBrace}</span>
-          {!props.last && <span class="jc">,</span>}</>}
+        {!open && <><span className="jn-count">{entries.length}</span><span className="jb">{closeBrace}</span>
+          {!props.last && <span className="jc">,</span>}</>}
       </button>
       {open && (
         <>
@@ -114,11 +114,11 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
           ))}
           {/* the closing brace closes the group too — the same target, at the
               other end, for when you have scrolled past the header */}
-          <button type="button" class="jn jn-head jn-close"
+          <button type="button" className="jn jn-head jn-close"
             style={`padding-left:${props.depth * 12}px`}
             aria-label={`Collapse ${props.name ?? "root"} (${entries.length})`}
             onClick={() => setOpen(false)}>
-            <span class="jb">{closeBrace}</span>{!props.last && <span class="jc">,</span>}
+            <span className="jb">{closeBrace}</span>{!props.last && <span className="jc">,</span>}
           </button>
         </>
       )}
@@ -129,11 +129,11 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
 /** Leaves are typed by hue as well as by shape, so a "42" and a 42 are not the
  *  same thing on screen — the difference is exactly what you open this for. */
 function Leaf({ value }: { value: unknown }) {
-  if (value === null) return <span class="jv jv-null">null</span>;
+  if (value === null) return <span className="jv jv-null">null</span>;
   switch (typeof value) {
-    case "string": return <span class="jv jv-str">"{value}"</span>;
-    case "number": return <span class="jv jv-num">{String(value)}</span>;
-    case "boolean": return <span class="jv jv-bool">{String(value)}</span>;
-    default: return <span class="jv">{String(value)}</span>;
+    case "string": return <span className="jv jv-str">"{value}"</span>;
+    case "number": return <span className="jv jv-num">{String(value)}</span>;
+    case "boolean": return <span className="jv jv-bool">{String(value)}</span>;
+    default: return <span className="jv">{String(value)}</span>;
   }
 }

@@ -16,21 +16,21 @@ export function SearchBar(props: {
   /** Placeholder and accessible name — the field has no visible label. */
   label: string;
   count?: number;
-  class?: string;
+  className?: string;
 }) {
   const showCount = props.count !== undefined && props.value.trim() !== "";
   return (
-    <label class={`searchbar ${props.class ?? ""}`}>
+    <label className={`searchbar ${props.className ?? ""}`}>
       <Search size={14} stroke={1.75} aria-hidden />
       <input
-        class="t-prose"
+        className="t-prose"
         type="search"
         placeholder={props.label}
         aria-label={props.label}
         value={props.value}
         onInput={(e) => props.onInput(e.currentTarget.value)}
       />
-      {showCount && <span class="searchbar-count t-data">{props.count} match</span>}
+      {showCount && <span className="searchbar-count t-data">{props.count} match</span>}
     </label>
   );
 }

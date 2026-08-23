@@ -17,10 +17,10 @@ export function IconButton(props: {
   href?: string;
   download?: boolean;
   disabled?: boolean;
-  class?: string;
+  className?: string;
 }) {
   const shared = {
-    class: `icon-btn ${props.class ?? ""}`,
+    className: `icon-btn ${props.className ?? ""}`,
     "aria-label": props.label,
     title: props.label,
   };

@@ -34,7 +34,7 @@ export function ListEmpty(props: {
             {props.filters?.map((f) => (
               <Chip key={f.label} onClick={f.clear}>{f.label}<Remove size={ICON_SIZE.sm} stroke={2} aria-hidden /></Chip>
             ))}
-            {props.onClearAll && <button class="dbtn" onClick={props.onClearAll}>Clear all filters</button>}
+            {props.onClearAll && <button className="dbtn" onClick={props.onClearAll}>Clear all filters</button>}
           </>
         }
       />
@@ -58,7 +58,7 @@ export function ListEmpty(props: {
       title={`No ${props.what} yet`}
       body={`This is where ${props.what} appear once you add them.`}
       actions={props.action && (
-        <button class="dbtn is-primary" onClick={props.action.run}>
+        <button className="dbtn is-primary" onClick={props.action.run}>
           {/* First-run's only action is "make the first one", so the glyph is
               fixed here rather than smuggled into each caller's label string. */}
           <Add size={ICON_SIZE.md} stroke={1.75} aria-hidden />{props.action.label}

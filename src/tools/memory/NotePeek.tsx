@@ -31,7 +31,7 @@ export async function peekNote(id: string) {
 
 export function NoteRef(props: { id: string; label?: string }) {
   return (
-    <button class="notelink t-data" onClick={(e) => { e.stopPropagation(); peekNote(props.id); }}>
+    <button className="notelink t-data" onClick={(e) => { e.stopPropagation(); peekNote(props.id); }}>
       {props.label ?? props.id}
     </button>
   );
@@ -43,7 +43,7 @@ function PeekLinkTarget({ id }: { id: string }) {
   const note = notesById.value.get(id);
   if (note) {
     return (
-      <span class="nref">
+      <span className="nref">
         <TypeIcon type={note.type} size={14} />
         <NoteRef id={id} label={note.title ?? id} />
       </span>
@@ -62,20 +62,20 @@ export function NotePeek() {
         icon={<Term tip={TYPE_TIP[n.type] ?? n.type}><TypeIcon type={n.type} size={16} /></Term>}
         title={n.title ?? n.id}
       />
-        <div class="peek-meta t-data">
-          <span class={`stt st-${n.status}`}>{n.status}</span>
+        <div className="peek-meta t-data">
+          <span className={`stt st-${n.status}`}>{n.status}</span>
           <ModePill modes={n.modes ?? []} />
         </div>
         {(n.keywords ?? []).length > 0 && (
-          <div class="peek-kw">
+          <div className="peek-kw">
             {n.keywords!.map((k) => <Tag key={k}>{k}</Tag>)}
           </div>
         )}
         {(n.links ?? []).length > 0 && (
-          <div class="peek-links t-data">
+          <div className="peek-links t-data">
             {n.links.map((l, i) => (
-              <div key={i} class="linkrow">
-                <span class="rel">{l.relation.replaceAll("_", " ")} →</span>
+              <div key={i} className="linkrow">
+                <span className="rel">{l.relation.replaceAll("_", " ")} →</span>
                 <PeekLinkTarget id={l.target} />
               </div>
             ))}
@@ -83,10 +83,10 @@ export function NotePeek() {
         )}
         {Object.entries(n.sections ?? {}).map(([key, s]) => (
           <DetailSection key={key} sectionKey={key}>
-            <div class="t-prose peek-text">{s.text}</div>
+            <div className="t-prose peek-text">{s.text}</div>
           </DetailSection>
         ))}
-      <div class="peek-id t-data">
+      <div className="peek-id t-data">
         <CopyableText value={n.id} label="the memory id" />
       </div>
       <RawJson value={n} label="Raw memory" />

@@ -18,11 +18,11 @@ export function NotFound(props: { what: string; id?: string; backTo?: string; ba
       body={
         <>
           It may have been deleted, or the link may be out of date.
-          {props.id && <> The id was <span class="t-data">{props.id}</span>.</>}
+          {props.id && <> The id was <span className="t-data">{props.id}</span>.</>}
         </>
       }
       actions={
-        <button class="dbtn is-primary" onClick={() => navigate(props.backTo ?? "lorebooks")}>
+        <button className="dbtn is-primary" onClick={() => navigate(props.backTo ?? "lorebooks")}>
           {props.backLabel ?? "Back to lorebooks"}
         </button>
       }

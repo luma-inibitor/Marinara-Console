@@ -17,12 +17,12 @@ export function DetailSection(props: {
   meta?: ComponentChildren;
   meter?: ComponentChildren;
   children: ComponentChildren;
-  class?: string;
+  className?: string;
 }) {
   return (
-    <section class={`dsec ${props.class ?? ""}`}>
-      <h4 class="dsec-head t-label t-label-s">
-        <span class="skey">§{props.sectionKey}</span>
+    <section className={`dsec ${props.className ?? ""}`}>
+      <h4 className="dsec-head t-label t-label-s">
+        <span className="skey">§{props.sectionKey}</span>
         {props.meta}
       </h4>
       {props.meter}

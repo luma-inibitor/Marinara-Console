@@ -73,16 +73,16 @@ export function ConnectionBanner() {
   if (r === "ok") return null;
   const offline = r === "offline";
   return (
-    <div class="connbar" role="status" aria-live="polite">
-      <span class="connbar-dot" aria-hidden="true" />
-      <span class="connbar-text">
+    <div className="connbar" role="status" aria-live="polite">
+      <span className="connbar-dot" aria-hidden="true" />
+      <span className="connbar-text">
         <b>{offline ? "No network connection" : "Cannot reach the engine"}</b>
         {" — "}
         {offline
           ? "you can read what's already loaded; edits can't be saved until you're back."
           : "the engine may be asleep. Your unsaved edits are kept."}
       </span>
-      <button class="connbar-btn" onClick={() => void probe()}>Retry now</button>
+      <button className="connbar-btn" onClick={() => void probe()}>Retry now</button>
     </div>
   );
 }

@@ -25,15 +25,15 @@ export function EmptyState(props: {
   tone?: "ok" | "danger";
 }) {
   return (
-    <div class="emptystate">
+    <div className="emptystate">
       {props.icon && (
-        <span class={`es-icon ${props.tone ? `es-${props.tone}` : ""}`} aria-hidden>
+        <span className={`es-icon ${props.tone ? `es-${props.tone}` : ""}`} aria-hidden>
           {props.icon}
         </span>
       )}
-      <div class="es-title t-prose">{props.title}</div>
-      {props.body && <p class="es-body t-prose dim">{props.body}</p>}
-      {props.actions && <div class="es-acts">{props.actions}</div>}
+      <div className="es-title t-prose">{props.title}</div>
+      {props.body && <p className="es-body t-prose dim">{props.body}</p>}
+      {props.actions && <div className="es-acts">{props.actions}</div>}
     </div>
   );
 }

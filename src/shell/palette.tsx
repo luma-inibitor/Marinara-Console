@@ -108,40 +108,40 @@ export function Palette() {
 
   let lastGroup = "";
   return (
-    <div class="palette-backdrop" onClick={() => { paletteOpen.value = false; }}>
-      <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette"
+    <div className="palette-backdrop" onClick={() => { paletteOpen.value = false; }}>
+      <div className="palette" role="dialog" aria-modal="true" aria-label="Command palette"
         onClick={(ev) => ev.stopPropagation()}>
         <input
           ref={inputRef}
-          class="palette-input t-data"
+          className="palette-input t-data"
           placeholder="Search tools, books, entries…"
           aria-label="Search commands"
           value={query}
           onInput={(ev) => { setQuery(ev.currentTarget.value); setActive(0); }}
           onKeyDown={onKey}
         />
-        <div class="palette-results" role="listbox">
-          {results.length === 0 && <div class="palette-empty meta"><span>No matches</span></div>}
+        <div className="palette-results" role="listbox">
+          {results.length === 0 && <div className="palette-empty meta"><span>No matches</span></div>}
           {results.map((it, i) => {
             const header = it.group !== lastGroup ? (lastGroup = it.group) : null;
             return (
               <div key={it.id}>
-                {header && <div class="palette-group t-label t-label-s">{header}</div>}
+                {header && <div className="palette-group t-label t-label-s">{header}</div>}
                 <button
-                  class={`palette-item ${i === active ? "is-active" : ""}`}
+                  className={`palette-item ${i === active ? "is-active" : ""}`}
                   role="option"
                   aria-selected={i === active}
                   onMouseEnter={() => setActive(i)}
                   onClick={() => run(it)}
                 >
-                  <span class="palette-label">{it.label}</span>
-                  {it.hint && <span class="palette-hint t-data">{it.hint}</span>}
+                  <span className="palette-label">{it.label}</span>
+                  {it.hint && <span className="palette-hint t-data">{it.hint}</span>}
                 </button>
               </div>
             );
           })}
         </div>
-        <div class="palette-foot meta" data-contrast-exempt>
+        <div className="palette-foot meta" data-contrast-exempt>
           <span>↑↓ move</span><span>↵ open</span><span>esc close</span>
         </div>
       </div>

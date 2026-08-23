@@ -64,8 +64,8 @@ function Browser() {
     }).catch((e: unknown) => setError(e));
   }, [reloadKey]);
 
-  if (error) return <div class="screen is-narrow"><ErrorState error={error} onRetry={reload} /></div>;
-  if (!presets) return <div class="screen is-narrow"><Loading what="presets" onRetry={reload} /></div>;
+  if (error) return <div className="screen is-narrow"><ErrorState error={error} onRetry={reload} /></div>;
+  if (!presets) return <div className="screen is-narrow"><Loading what="presets" onRetry={reload} /></div>;
 
   const visible = presets
     .filter((p) => !query.trim() || (p.name + " " + p.description + " " + p.author).toLowerCase().includes(query.toLowerCase()))
@@ -83,27 +83,27 @@ function Browser() {
   }, 0);
 
   return (
-    <div class="screen is-narrow">
-      <div class="screen-head">
-        <h1 class="screen-title">Presets</h1>
-        <span class="meta">
+    <div className="screen is-narrow">
+      <div className="screen-head">
+        <h1 className="screen-title">Presets</h1>
+        <span className="meta">
           <span>{presets.length === 1 ? "1 preset" : `${presets.length} presets`}</span>
-          {grand > 0 && <span><b class="t-num">{grand.toLocaleString()}</b> tokens total</span>}
+          {grand > 0 && <span><b className="t-num">{grand.toLocaleString()}</b> tokens total</span>}
         </span>
       </div>
 
-      <div class="probe">
-        <div class="pwrap">
+      <div className="probe">
+        <div className="pwrap">
           <input value={query} placeholder="Search presets…" aria-label="Search presets"
             onInput={(e) => setQuery(e.currentTarget.value)} />
-          {query.trim() !== "" && <span class="res">{visible.length} match</span>}
+          {query.trim() !== "" && <span className="res">{visible.length} match</span>}
         </div>
       </div>
-      <div class="chiprail">
+      <div className="chiprail">
         {(["tokens", "sections", "name"] as BrowserSort[]).map((k) => (
           <Chip key={k} pressed={sort === k} onClick={() => setSort(k)}>
             {{ tokens: "Tokens", sections: "Sections", name: "Name" }[k]}
-            {sort === k && <span class="ar"> ↓</span>}
+            {sort === k && <span className="ar"> ↓</span>}
           </Chip>
         ))}
       </div>
@@ -113,31 +113,31 @@ function Browser() {
         const known = l && l !== "error" ? l : null;
         const maxSeen = Math.max(...Object.values(loads).map((x) => (x && x !== "error" ? x.total : 0)), 1);
         return (
-          <button key={p.id} class="card preset-card" onClick={() => navigate(`presets/${p.id}`)}>
-            <div class="preset-card-main">
-              <div class="card-title">
+          <button key={p.id} className="card preset-card" onClick={() => navigate(`presets/${p.id}`)}>
+            <div className="preset-card-main">
+              <div className="card-title">
                 {p.name}
-                {p.isDefault && <span class="tg is-default">default</span>}
-                {p.systemKey && <span class="tg">stock</span>}
-                <span class="tg">{p.wrapFormat}</span>
+                {p.isDefault && <span className="tg is-default">default</span>}
+                {p.systemKey && <span className="tg">stock</span>}
+                <span className="tg">{p.wrapFormat}</span>
               </div>
               {p.description
-                ? <p class="preset-desc">{p.description}</p>
-                : <p class="preset-desc is-empty">No description</p>}
-              <div class="meta">
-                <span><b class="t-num">{known ? known.totalSections : "—"}</b> sections</span>
+                ? <p className="preset-desc">{p.description}</p>
+                : <p className="preset-desc is-empty">No description</p>}
+              <div className="meta">
+                <span><b className="t-num">{known ? known.totalSections : "—"}</b> sections</span>
                 {known && known.enabled !== known.totalSections && (
-                  <span><b class="t-num" style="color: var(--text-dim)">{known.totalSections - known.enabled}</b> off</span>
+                  <span><b className="t-num" style="color: var(--text-dim)">{known.totalSections - known.enabled}</b> off</span>
                 )}
-                {known && known.markers > 0 && <span><b class="t-num">{known.markers}</b> runtime</span>}
+                {known && known.markers > 0 && <span><b className="t-num">{known.markers}</b> runtime</span>}
                 {l === "error" && <span style="color: var(--danger)">could not load detail</span>}
               </div>
             </div>
-            <div class="preset-card-gutter">
-              <b class="tok t-num">{known ? known.total.toLocaleString() : "—"}</b>
-              <span class="unit t-data">tokens</span>
+            <div className="preset-card-gutter">
+              <b className="tok t-num">{known ? known.total.toLocaleString() : "—"}</b>
+              <span className="unit t-data">tokens</span>
             </div>
-            {known && <div class="bar"><i style={`width:${(known.total / maxSeen) * 100}%`} /></div>}
+            {known && <div className="bar"><i style={`width:${(known.total / maxSeen) * 100}%`} /></div>}
           </button>
         );
       })}
@@ -356,9 +356,9 @@ function Editor({ presetId }: { presetId: string }) {
     } else if (ev.key === "Escape") navigate("presets");
   }, [sections, focusId, move, openRow]);
 
-  if (missing) return <div class="screen"><NotFound what="Preset" id={presetId} backTo="presets" backLabel="Back to presets" /></div>;
-  if (error) return <div class="screen"><ErrorState error={error} onRetry={reloadEditor} /></div>;
-  if (!full) return <div class="screen"><Loading what="preset" onRetry={reloadEditor} /></div>;
+  if (missing) return <div className="screen"><NotFound what="Preset" id={presetId} backTo="presets" backLabel="Back to presets" /></div>;
+  if (error) return <div className="screen"><ErrorState error={error} onRetry={reloadEditor} /></div>;
+  if (!full) return <div className="screen"><Loading what="preset" onRetry={reloadEditor} /></div>;
 
   const conv = presetLoad(full, "conversation");
   const game = presetLoad(full, "game");
@@ -383,11 +383,11 @@ function Editor({ presetId }: { presetId: string }) {
   );
 
   const dockButtons = [
-    <button key="dup" class="dbtn" onClick={() => { void duplicatePreset(presetId).then((p) => navigate(`presets/${p.id}`)); }}>
+    <button key="dup" className="dbtn" onClick={() => { void duplicatePreset(presetId).then((p) => navigate(`presets/${p.id}`)); }}>
       <Duplicate size={ICON_SIZE.md} stroke={1.75} aria-hidden />Duplicate
     </button>,
     !full.preset.isDefault && (
-      <button key="def" class="dbtn" onClick={() => {
+      <button key="def" className="dbtn" onClick={() => {
         void setDefaultPreset(presetId)
           .then(() => fetchFull(presetId).then(setFull))
           .catch((e: Error) => toast(`Could not set default: ${e.message}`, { kind: "error" }));
@@ -396,67 +396,67 @@ function Editor({ presetId }: { presetId: string }) {
       </button>
     ),
     readOnly
-      ? <button key="copy" class="dbtn is-primary" onClick={() => { void duplicatePreset(presetId).then((p) => navigate(`presets/${p.id}`)); }}>
+      ? <button key="copy" className="dbtn is-primary" onClick={() => { void duplicatePreset(presetId).then((p) => navigate(`presets/${p.id}`)); }}>
           <Duplicate size={ICON_SIZE.md} stroke={1.75} aria-hidden />Editable copy
         </button>
-      : <button key="add" class="dbtn is-primary" onClick={addSection}>
+      : <button key="add" className="dbtn is-primary" onClick={addSection}>
           <Add size={ICON_SIZE.md} stroke={1.75} aria-hidden />Add Section
         </button>,
   ].filter(Boolean) as ComponentChildren[];
 
   return (
-    <div class={`audit ${desktop ? "is-desktop" : ""}`}>
-      <div class="audit-list" ref={listRef} onKeyDown={onListKey}>
-        <header class="console">
-          <div class="hrow">
+    <div className={`audit ${desktop ? "is-desktop" : ""}`}>
+      <div className="audit-list" ref={listRef} onKeyDown={onListKey}>
+        <header className="console">
+          <div className="hrow">
             <IconButton label="Back to presets" onClick={() => navigate("presets")}>
               <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
             </IconButton>
-            <h1 class="console-title is-wrapping">{full.preset.name}</h1>
-            <span class={`savepill is-${sectionDraft.dirty || presetDraft.dirty ? "dirty" : pill}`}>
+            <h1 className="console-title is-wrapping">{full.preset.name}</h1>
+            <span className={`savepill is-${sectionDraft.dirty || presetDraft.dirty ? "dirty" : pill}`}>
               {sectionDraft.dirty || presetDraft.dirty ? "Unsaved changes"
                 : pill === "dirty" ? "Saving…" : pill === "err" ? "Save failed" : "Saved"}
             </span>
           </div>
-          <div class="tagline">
-            {full.preset.isDefault && <span class="tg is-default">default</span>}
-            {readOnly && <span class="tg">read-only</span>}
-            <span class="meta">
-              <span><b class="t-num">{conv.total.toLocaleString()}</b> conv</span>
-              <span><b class="t-num">{game.total.toLocaleString()}</b> game</span>
+          <div className="tagline">
+            {full.preset.isDefault && <span className="tg is-default">default</span>}
+            {readOnly && <span className="tg">read-only</span>}
+            <span className="meta">
+              <span><b className="t-num">{conv.total.toLocaleString()}</b> conv</span>
+              <span><b className="t-num">{game.total.toLocaleString()}</b> game</span>
               <span>{conv.enabled}/{conv.totalSections} on</span>
               {conv.markers > 0 && <span>+{conv.markers} runtime</span>}
             </span>
           </div>
           {budget > 0 && (
-            <div class="meter">
-              <span class="t-label t-label-s">of context</span>
-              <span class="mbar">
-                <span class="m-k" style={`width:${Math.min(100, (conv.total / budget) * 100)}%`} />
+            <div className="meter">
+              <span className="t-label t-label-s">of context</span>
+              <span className="mbar">
+                <span className="m-k" style={`width:${Math.min(100, (conv.total / budget) * 100)}%`} />
               </span>
-              <span class="mval t-data"><b>{Math.round((conv.total / budget) * 100)}%</b><span class="of"> of {budget.toLocaleString()}</span></span>
+              <span className="mval t-data"><b>{Math.round((conv.total / budget) * 100)}%</b><span className="of"> of {budget.toLocaleString()}</span></span>
             </div>
           )}
-          <p class="costnote t-data">Template only — excludes characters, personas, lorebooks and history.</p>
+          <p className="costnote t-data">Template only — excludes characters, personas, lorebooks and history.</p>
 
-          <div class="segrow" role="group" aria-label="Wrap format">
+          <div className="segrow" role="group" aria-label="Wrap format">
             {(["xml", "markdown", "none"] as const).map((w) => (
-              <button key={w} class="segbtn is-pos t-data" aria-pressed={full.preset.wrapFormat === w}
+              <button key={w} className="segbtn is-pos t-data" aria-pressed={full.preset.wrapFormat === w}
                 disabled={readOnly} onClick={() => { presetDraft.set("wrapFormat", w); void presetDraft.save(); }}>{w}</button>
             ))}
           </div>
-          <div class="chiprail">
+          <div className="chiprail">
             <Chip onClick={() => setFs({ kind: "preset", field: "conversationPrompt" })}>
-              Conv prompt <b class="t-num">{tokensOf(expand(full.preset.conversationPrompt, full.preset))}</b>
+              Conv prompt <b className="t-num">{tokensOf(expand(full.preset.conversationPrompt, full.preset))}</b>
             </Chip>
             <Chip onClick={() => setFs({ kind: "preset", field: "gamePrompt" })}>
-              Game prompt <b class="t-num">{tokensOf(expand(full.preset.gamePrompt, full.preset))}</b>
+              Game prompt <b className="t-num">{tokensOf(expand(full.preset.gamePrompt, full.preset))}</b>
             </Chip>
             <Chip onClick={() => setFs({ kind: "preset", field: "description" })}>Description</Chip>
           </div>
         </header>
 
-        <main class="rows">
+        <main className="rows">
           {sections.length === 0 && (
             <ListEmpty kind="first-run" what="sections" />
           )}
@@ -468,34 +468,34 @@ function Editor({ presetId }: { presetId: string }) {
             const run = runs.get(s.id);
             return (
               <article key={s.id}
-                class={`row ${isOpen ? "is-open" : ""} ${focusId === s.id ? "is-focused" : ""} ${run ? `in-group is-${run}` : ""}`}
+                className={`row ${isOpen ? "is-open" : ""} ${focusId === s.id ? "is-focused" : ""} ${run ? `in-group is-${run}` : ""}`}
                 data-s={on ? "normal" : "disabled"}>
-                <button class="row-summary" data-row={s.id} tabIndex={focusId === s.id ? 0 : -1}
+                <button className="row-summary" data-row={s.id} tabIndex={focusId === s.id ? 0 : -1}
                   aria-expanded={isOpen} onClick={() => openRow(s)}>
-                  <span class="rail-cell">
-                    <span class="ord t-num">{i + 1}</span>
-                    {!on && <span class="off-mark" aria-hidden="true" />}
+                  <span className="rail-cell">
+                    <span className="ord t-num">{i + 1}</span>
+                    {!on && <span className="off-mark" aria-hidden="true" />}
                   </span>
-                  <span class="mid">
-                    <span class="nm">{s.name}</span>
-                    <span class="metaline">
-                      {marker && <span class="tg is-marker">{markerLabel(s)}</span>}
+                  <span className="mid">
+                    <span className="nm">{s.name}</span>
+                    <span className="metaline">
+                      {marker && <span className="tg is-marker">{markerLabel(s)}</span>}
                       {groupName(s.groupId) && (
-                        <span class={`tg ${groupOff(s.groupId) ? "is-off" : ""}`}>
+                        <span className={`tg ${groupOff(s.groupId) ? "is-off" : ""}`}>
                           {groupName(s.groupId)}{groupOff(s.groupId) ? " off" : ""}
                         </span>
                       )}
-                      {!on && <span class="tg is-off">disabled</span>}
+                      {!on && <span className="tg is-off">disabled</span>}
                       {s.injectionPosition !== "ordered" && (
-                        <span class="keys t-data">{s.injectionPosition} {s.injectionDepth}</span>
+                        <span className="keys t-data">{s.injectionPosition} {s.injectionDepth}</span>
                       )}
                     </span>
                   </span>
-                  <span class="num">
+                  <span className="num">
                     {marker
-                      ? <span class="tok-runtime t-data">runtime</span>
-                      : <><b class={`tok t-num ${tok > tokenP90 && tokenP90 > 0 ? "is-hot" : ""}`}>{tok}</b>
-                         <span class="unit t-data">tokens</span></>}
+                      ? <span className="tok-runtime t-data">runtime</span>
+                      : <><b className={`tok t-num ${tok > tokenP90 && tokenP90 > 0 ? "is-hot" : ""}`}>{tok}</b>
+                         <span className="unit t-data">tokens</span></>}
                   </span>
                 </button>
                 {isOpen && detailFor(s)}
@@ -504,13 +504,13 @@ function Editor({ presetId }: { presetId: string }) {
           })}
         </main>
 
-        <nav class="dock-actions" style={`grid-template-columns: repeat(${dockButtons.length}, 1fr)`}>
+        <nav className="dock-actions" style={`grid-template-columns: repeat(${dockButtons.length}, 1fr)`}>
           {dockButtons}
         </nav>
       </div>
 
       {desktop && (
-        <aside class="audit-detail">
+        <aside className="audit-detail">
           {focused ? detailFor(focused) : (
             <EmptyState title="No sections" body="Add a section to start building this prompt." />
           )}
@@ -579,13 +579,13 @@ function SectionDetail(props: {
   const sub = (id: Sub, label: string, summary: ComponentChildren, body: () => ComponentChildren) => {
     const isOpen = openSubs.has(id);
     return (
-      <div class={`sub ${isOpen ? "is-open" : ""}`}>
-        <button class="sub-head" aria-expanded={isOpen} onClick={() => toggle(id)}>
-          <span class="t-label t-label-s">{label}</span>
-          <span class="sub-summary t-data">{summary}</span>
-          <span class="caret" aria-hidden="true">{isOpen ? "▴" : "▾"}</span>
+      <div className={`sub ${isOpen ? "is-open" : ""}`}>
+        <button className="sub-head" aria-expanded={isOpen} onClick={() => toggle(id)}>
+          <span className="t-label t-label-s">{label}</span>
+          <span className="sub-summary t-data">{summary}</span>
+          <span className="caret" aria-hidden="true">{isOpen ? "▴" : "▾"}</span>
         </button>
-        {isOpen && <div class="sub-body">{body()}</div>}
+        {isOpen && <div className="sub-body">{body()}</div>}
       </div>
     );
   };
@@ -598,59 +598,59 @@ function SectionDetail(props: {
   ].filter(Boolean) as string[];
 
   return (
-    <div class="drawer">
+    <div className="drawer">
       {sub("section", "Section",
-        <><span class={s.enabled ? "is-on" : "is-off"}>{s.enabled ? "on" : "off"}</span> · {s.role} · {props.index + 1}/{props.total}</>,
+        <><span className={s.enabled ? "is-on" : "is-off"}>{s.enabled ? "on" : "off"}</span> · {s.role} · {props.index + 1}/{props.total}</>,
         () => (
           <>
-            <input class="tin" value={s.name} placeholder="Section name" disabled={readOnly}
+            <input className="tin" value={s.name} placeholder="Section name" disabled={readOnly}
               data-name-input={s.id}
               onInput={(ev) => save(s.id, { name: ev.currentTarget.value })}
               aria-invalid={!!fErr("name")} />
-            {fErr("name") && <p class="field-err t-data" role="alert">{fErr("name")}</p>}
+            {fErr("name") && <p className="field-err t-data" role="alert">{fErr("name")}</p>}
 
-            <div class="field">
-              <span class="t-label t-label-s">Included</span>
-              <button class="toggle" role="switch" aria-checked={s.enabled} disabled={readOnly}
+            <div className="field">
+              <span className="t-label t-label-s">Included</span>
+              <button className="toggle" role="switch" aria-checked={s.enabled} disabled={readOnly}
                 onClick={() => save(s.id, { enabled: !s.enabled })}>
-                <span class="toggle-track"><span class="toggle-thumb" /></span>
-                <span class="toggle-label">{s.enabled ? "Enabled" : "Disabled"}</span>
+                <span className="toggle-track"><span className="toggle-thumb" /></span>
+                <span className="toggle-label">{s.enabled ? "Enabled" : "Disabled"}</span>
               </button>
               {props.groupOff && (
-                <p class="hint t-data">Group “{props.groupName}” is disabled — this section will not be injected regardless.</p>
+                <p className="hint t-data">Group “{props.groupName}” is disabled — this section will not be injected regardless.</p>
               )}
             </div>
 
-            <div class="field">
-              <span class="t-label t-label-s">Role</span>
-              <div class="segrow is-3">
+            <div className="field">
+              <span className="t-label t-label-s">Role</span>
+              <div className="segrow is-3">
                 {(["system", "user", "assistant"] as const).map((r) => (
-                  <button key={r} class="segbtn is-pos t-data" aria-pressed={s.role === r} disabled={readOnly}
+                  <button key={r} className="segbtn is-pos t-data" aria-pressed={s.role === r} disabled={readOnly}
                     onClick={() => save(s.id, { role: r })}>{r}</button>
                 ))}
               </div>
             </div>
 
-            <div class="field">
-              <span class="t-label t-label-s">Position</span>
-              <div class="movebar">
-                <button class="movebtn" disabled={readOnly || props.index === 0}
-                  onClick={() => props.onMove(s.id, -1)}>↑ <span class="t-label t-label-s">up</span></button>
-                <span class="slot">
-                  <span class="v t-num">{props.index + 1}</span>
-                  <span class="c t-data">of {props.total}</span>
+            <div className="field">
+              <span className="t-label t-label-s">Position</span>
+              <div className="movebar">
+                <button className="movebtn" disabled={readOnly || props.index === 0}
+                  onClick={() => props.onMove(s.id, -1)}>↑ <span className="t-label t-label-s">up</span></button>
+                <span className="slot">
+                  <span className="v t-num">{props.index + 1}</span>
+                  <span className="c t-data">of {props.total}</span>
                 </span>
-                <button class="movebtn" disabled={readOnly || props.index === props.total - 1}
-                  onClick={() => props.onMove(s.id, 1)}>↓ <span class="t-label t-label-s">down</span></button>
+                <button className="movebtn" disabled={readOnly || props.index === props.total - 1}
+                  onClick={() => props.onMove(s.id, 1)}>↓ <span className="t-label t-label-s">down</span></button>
               </div>
-              {props.desktop && <p class="hint t-data">Shift+J / Shift+K reorders from the list.</p>}
+              {props.desktop && <p className="hint t-data">Shift+J / Shift+K reorders from the list.</p>}
             </div>
           </>
         ))}
 
       {marker
-        ? sub("content", "Content", <span class="is-runtime">injected at runtime</span>, () => (
-            <p class="prose-note">
+        ? sub("content", "Content", <span className="is-runtime">injected at runtime</span>, () => (
+            <p className="prose-note">
               This is a <b>{markerLabel(s)}</b> marker. The engine replaces it at generation time with live
               {" "}{markerLabel(s)?.toLowerCase()} content, so it has no fixed token cost here.
             </p>
@@ -659,21 +659,21 @@ function SectionDetail(props: {
             <><b>{(macroDelta > 0 ? expanded.length : s.content.length).toLocaleString()}</b> ch · <b>{tok}</b> tokens{macroDelta > 0 ? " (expanded)" : ""}</>,
             () => (
               <>
-                <button class="edit-content" onClick={props.onExpand}>
-                  <span class="ec-label t-label t-label-s">
+                <button className="edit-content" onClick={props.onExpand}>
+                  <span className="ec-label t-label t-label-s">
                     <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />Edit in full screen
                   </span>
-                  <span class="ec-meta t-data">{s.content.length.toLocaleString()} ch raw</span>
+                  <span className="ec-meta t-data">{s.content.length.toLocaleString()} ch raw</span>
                 </button>
                 {props.desktop && (
-                  <textarea class="ta is-mono is-fill" value={s.content} disabled={readOnly}
+                  <textarea className="ta is-mono is-fill" value={s.content} disabled={readOnly}
                     onInput={(ev) => save(s.id, { content: ev.currentTarget.value })} />
                 )}
                 {!props.desktop && s.content && (
-                  <p class="content-preview t-data">{s.content.slice(0, 160)}{s.content.length > 160 ? "…" : ""}</p>
+                  <p className="content-preview t-data">{s.content.slice(0, 160)}{s.content.length > 160 ? "…" : ""}</p>
                 )}
                 {macroDelta > 0 && (
-                  <p class="hint t-data">
+                  <p className="hint t-data">
                     Macros expand to {expanded.length.toLocaleString()} ch (+{macroDelta.toLocaleString()}) — token count reflects the expansion.
                   </p>
                 )}
@@ -687,12 +687,12 @@ function SectionDetail(props: {
             {([["injectionPosition", s.injectionPosition], ["injectionDepth", s.injectionDepth],
                ["injectionOrder", s.injectionOrder], ["forbidOverrides", String(s.forbidOverrides)],
                ["identifier", s.identifier]] as const).map(([k, v]) => (
-              <div key={k} class="advrow"><span class="an t-data">{k}</span><span class="av t-data">{String(v)}</span></div>
+              <div key={k} className="advrow"><span className="an t-data">{k}</span><span className="av t-data">{String(v)}</span></div>
             ))}
             {!readOnly && !marker && (
-              <button class="dangerbtn" onClick={props.onDelete}>Delete section</button>
+              <button className="dangerbtn" onClick={props.onDelete}>Delete section</button>
             )}
-            {marker && <p class="prose-note">Markers cannot be deleted — remove the feature upstream instead.</p>}
+            {marker && <p className="prose-note">Markers cannot be deleted — remove the feature upstream instead.</p>}
           </>
         ))}
 
@@ -706,31 +706,31 @@ function SectionSaveBar(props: { draft: Draft<PromptSection>; onSave: () => Prom
   const d = props.draft;
   if (d.conflict) {
     return (
-      <div class="savebar has-conflict" role="alertdialog">
-        <p class="t-label">Changed by someone else</p>
-        <p class="prose-note">
+      <div className="savebar has-conflict" role="alertdialog">
+        <p className="t-label">Changed by someone else</p>
+        <p className="prose-note">
           This section was updated elsewhere while you were editing
           {d.conflict.fields.length > 0 && <> — the same {d.conflict.fields.length === 1 ? "field" : "fields"} you changed ({d.conflict.fields.join(", ")})</>}
           . Saving now would overwrite that.
         </p>
-        <div class="savebar-acts">
-          <button class="dbtn" onClick={d.takeTheirs}>Discard mine, load theirs</button>
-          <button class="dbtn is-primary" onClick={d.keepMine}>Re-apply mine over theirs</button>
+        <div className="savebar-acts">
+          <button className="dbtn" onClick={d.takeTheirs}>Discard mine, load theirs</button>
+          <button className="dbtn is-primary" onClick={d.keepMine}>Re-apply mine over theirs</button>
         </div>
       </div>
     );
   }
   return (
-    <div class={`savebar ${d.dirty ? "is-dirty" : ""}`}>
-      <span class="savebar-state t-data">
+    <div className={`savebar ${d.dirty ? "is-dirty" : ""}`}>
+      <span className="savebar-state t-data">
         {d.saving ? "Saving…"
-          : d.error ? <span class="is-err">{d.error}</span>
+          : d.error ? <span className="is-err">{d.error}</span>
           : d.dirty ? <><b>{d.dirtyFields.length}</b> unsaved {d.dirtyFields.length === 1 ? "change" : "changes"}</>
           : "No changes"}
       </span>
-      <div class="savebar-acts">
-        <button class="dbtn" disabled={!d.dirty || d.saving} onClick={d.cancel}>Cancel</button>
-        <button class="dbtn is-primary" disabled={!d.dirty || d.saving} onClick={() => void props.onSave()}>
+      <div className="savebar-acts">
+        <button className="dbtn" disabled={!d.dirty || d.saving} onClick={d.cancel}>Cancel</button>
+        <button className="dbtn is-primary" disabled={!d.dirty || d.saving} onClick={() => void props.onSave()}>
           {d.saving ? "Saving…" : "Save changes"}
         </button>
       </div>

@@ -251,10 +251,10 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     }
   }, [visible, focusId, desktop]);
 
-  if (missing) return <div class="screen"><NotFound what="Lorebook" id={bookId} /></div>;
-  if (error) return <div class="screen"><ErrorState error={error} onRetry={() => setReloadKey((k) => k + 1)} /></div>;
+  if (missing) return <div className="screen"><NotFound what="Lorebook" id={bookId} /></div>;
+  if (error) return <div className="screen"><ErrorState error={error} onRetry={() => setReloadKey((k) => k + 1)} /></div>;
   if (!entries || !book) {
-    return <div class="screen"><Loading what="lorebook entries" onRetry={() => setReloadKey((k) => k + 1)} /></div>;
+    return <div className="screen"><Loading what="lorebook entries" onRetry={() => setReloadKey((k) => k + 1)} /></div>;
   }
 
   const flaggedN = entries.filter(isFlagged).length;
@@ -301,25 +301,25 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     : null;
 
   return (
-    <div class={`audit ${desktop ? "is-desktop" : ""}`}>
-      <div class="audit-list" ref={listRef} onKeyDown={onListKey}>
-        <header class="console">
-          <div class="hrow">
+    <div className={`audit ${desktop ? "is-desktop" : ""}`}>
+      <div className="audit-list" ref={listRef} onKeyDown={onListKey}>
+        <header className="console">
+          <div className="hrow">
             <IconButton label="Back to lorebooks" onClick={() => navigate("lorebooks")}>
               <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
             </IconButton>
-            <h1 class="console-title">{book.name}</h1>
+            <h1 className="console-title">{book.name}</h1>
             <IconButton label="Tag distribution" onClick={() => setShowTags(true)}>
               <Tags size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
             </IconButton>
           </div>
 
-          <div class="probe">
-            <div class="modeswap" role="group" aria-label="Search mode">
+          <div className="probe">
+            <div className="modeswap" role="group" aria-label="Search mode">
               <button aria-pressed={mode === "find"} onClick={() => setMode("find")}>Find</button>
-              <button class="t" aria-pressed={mode === "test"} onClick={() => setMode("test")}>Test</button>
+              <button className="t" aria-pressed={mode === "test"} onClick={() => setMode("test")}>Test</button>
             </div>
-            <div class="pwrap">
+            <div className="pwrap">
               <input
                 value={query}
                 placeholder={mode === "test" ? "Paste a paragraph or sample messages here…" : "Search entries…"}
@@ -327,39 +327,39 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
                 onInput={(e) => setQuery(e.currentTarget.value)}
               />
               {query.trim() !== "" && (
-                <span class="res">{meter.testing ? `${meter.pool.length} match` : `${visible.length} match`}</span>
+                <span className="res">{meter.testing ? `${meter.pool.length} match` : `${visible.length} match`}</span>
               )}
             </div>
           </div>
 
-          <div class="meter">
-            <span class="t-label t-label-s">{meter.testing ? "Would activate" : "All active"}</span>
-            <span class="mbar">
-              <span class="m-a" style={`width:${Math.min(100, (meter.aTok / meter.budget) * 100)}%`} />
-              <span class="m-k" style={`width:${Math.min(100 - Math.min(100, (meter.aTok / meter.budget) * 100), (meter.kTok / meter.budget) * 100)}%`} />
+          <div className="meter">
+            <span className="t-label t-label-s">{meter.testing ? "Would activate" : "All active"}</span>
+            <span className="mbar">
+              <span className="m-a" style={`width:${Math.min(100, (meter.aTok / meter.budget) * 100)}%`} />
+              <span className="m-k" style={`width:${Math.min(100 - Math.min(100, (meter.aTok / meter.budget) * 100), (meter.kTok / meter.budget) * 100)}%`} />
             </span>
-            <span class="t-data mval">
+            <span className="t-data mval">
               <b style={meter.over ? "color: var(--flag)" : undefined}>{meter.total.toLocaleString()}</b>
-              <span class="of"> / {meter.budget.toLocaleString()}</span>
+              <span className="of"> / {meter.budget.toLocaleString()}</span>
             </span>
           </div>
 
           {!selecting ? (
-            <div class="chiprail">
+            <div className="chiprail">
               {(["tokens", "order", "keys", "name", "updated"] as SortKey[]).map((k) => (
                 <Chip key={k} pressed={sort === k && !group} onClick={() => { setSort(k); setGroup(false); }}>
                   {{ tokens: "Tokens", order: "Order", keys: "Keys", name: "Title", updated: "Edited" }[k]}
-                  {sort === k && !group && <span class="ar"> ↓</span>}
+                  {sort === k && !group && <span className="ar"> ↓</span>}
                 </Chip>
               ))}
               <Chip pressed={group} onClick={() => setGroup(!group)}>Group by tag</Chip>
               <Chip flag pressed={flaggedOnly} onClick={() => setFlaggedOnly(!flaggedOnly)}>
-                Flagged <b class="t-num">{flaggedN}</b>
+                Flagged <b className="t-num">{flaggedN}</b>
               </Chip>
             </div>
           ) : (
-            <div class="chiprail">
-              <span class="t-data selcount">{selected.size} selected</span>
+            <div className="chiprail">
+              <span className="t-data selcount">{selected.size} selected</span>
               <Chip onClick={() => runBulk({ enabled: true })}>Enable</Chip>
               <Chip onClick={() => runBulk({ enabled: false })}>Disable</Chip>
               <Chip onClick={() => { const t = prompt("Add tag… (blank to clear)"); if (t !== null) void runBulk({ tag: t.trim() }); }}>Add tag…</Chip>
@@ -368,7 +368,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
           )}
         </header>
 
-        <main class="rows">
+        <main className="rows">
           {visible.length === 0 && (
             mode === "test"
               ? <EmptyState title="Nothing would activate"
@@ -385,9 +385,9 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
           {grouped
             ? grouped.map(([tag, items]) => (
                 <div key={tag}>
-                  <div class="grouphead">
-                    <span class="t-label t-label-s gn">{tag === UNTAGGED ? "untagged" : tag}</span>
-                    <span class="meta"><span>{items.length}</span><span>{items.reduce((a, e) => a + entryTokens(e), 0).toLocaleString()}t</span></span>
+                  <div className="grouphead">
+                    <span className="t-label t-label-s gn">{tag === UNTAGGED ? "untagged" : tag}</span>
+                    <span className="meta"><span>{items.length}</span><span>{items.reduce((a, e) => a + entryTokens(e), 0).toLocaleString()}t</span></span>
                     <Chip onClick={() => { setSelecting(true); setSelected((s) => new Set([...s, ...items.map((e) => e.id)])); }}>Select</Chip>
                   </div>
                   {rows(items)}
@@ -396,21 +396,21 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
             : rows(visible)}
         </main>
 
-        <nav class="dock-actions">
-          <button class="dbtn" onClick={() => { setSelecting(!selecting); if (selecting) setSelected(new Set()); }}>
+        <nav className="dock-actions">
+          <button className="dbtn" onClick={() => { setSelecting(!selecting); if (selecting) setSelected(new Set()); }}>
             <SelectMode size={ICON_SIZE.md} stroke={1.75} aria-hidden />Select
           </button>
-          <button class="dbtn" onClick={() => setShowTags(true)}>
+          <button className="dbtn" onClick={() => setShowTags(true)}>
             <Tags size={ICON_SIZE.md} stroke={1.75} aria-hidden />Tags
           </button>
-          <button class="dbtn is-primary" onClick={addEntry}>
+          <button className="dbtn is-primary" onClick={addEntry}>
             <Add size={ICON_SIZE.md} stroke={1.75} aria-hidden />Add Entry
           </button>
         </nav>
       </div>
 
       {desktop && (
-        <aside class="audit-detail">
+        <aside className="audit-detail">
           {focused ? (
             <EntryDrawer entry={focused.id === editingId ? draft.value : focused}
               draft={focused.id === editingId ? draft : null} kp90={kp90}
@@ -419,7 +419,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
               onDelete={() => removeWithUndo(focused)}
               onExpand={(field) => setFull({ id: focused.id, field })} />
           ) : (
-            <EmptyState title="Select an entry to edit it." body={<span class="t-data">j / k moves between entries.</span>} />
+            <EmptyState title="Select an entry to edit it." body={<span className="t-data">j / k moves between entries.</span>} />
           )}
         </aside>
       )}
@@ -458,40 +458,40 @@ function Row(props: {
   const status = statusOf(e);
   const idle = ev?.tested && !ev.fires;
   const keyline = e.constant
-    ? <span class="k-const">always injected — keys ignored</span>
+    ? <span className="k-const">always injected — keys ignored</span>
     : e.keys.length
       ? e.keys.slice(0, 6).map((k, i) => (
           <span key={i}>
-            {i > 0 && <i class="sep" data-contrast-exempt>·</i>}
-            <span class={ev?.hits.includes(k) ? "k-hit" : undefined}>{k}</span>
+            {i > 0 && <i className="sep" data-contrast-exempt>·</i>}
+            <span className={ev?.hits.includes(k) ? "k-hit" : undefined}>{k}</span>
           </span>
         ))
-      : <span class="k-none">no keys — never fires</span>;
+      : <span className="k-none">no keys — never fires</span>;
 
   return (
-    <article class={`row ${props.isOpen ? "is-open" : ""} ${props.isSelected ? "is-selected" : ""} ${idle ? "is-idle" : ""} ${props.isFocused ? "is-focused" : ""}`} data-s={status}>
+    <article className={`row ${props.isOpen ? "is-open" : ""} ${props.isSelected ? "is-selected" : ""} ${idle ? "is-idle" : ""} ${props.isFocused ? "is-focused" : ""}`} data-s={status}>
       <button
-        class="row-summary"
+        className="row-summary"
         data-row={e.id}
         tabIndex={props.isFocused ? 0 : -1}
         aria-expanded={props.isOpen}
         onClick={props.onActivate}
       >
-        <span class="rail-cell"><span class="dot" /><span class="ord t-data">{e.order}</span></span>
-        <span class="mid">
-          <span class="nm">{e.name || "Untitled entry"}</span>
-          <span class="metaline">
-            <span class={`tg ${!(e.tag ?? "").trim() ? "is-none" : ""}`}>{(e.tag ?? "").trim() || "untagged"}</span>
-            {ev?.tested && (ev.fires ? <span class="verdict is-fire">Would activate</span> : <span class="verdict">idle</span>)}
-            {e.position !== 0 && <span class="tg">{POS_COMPACT[e.position] ?? ""}</span>}
-            {hotT && <span class="fl">bloated</span>}
-            {hotK && <span class="fl">key-heavy</span>}
-            <span class="keys t-data">{keyline}</span>
+        <span className="rail-cell"><span className="dot" /><span className="ord t-data">{e.order}</span></span>
+        <span className="mid">
+          <span className="nm">{e.name || "Untitled entry"}</span>
+          <span className="metaline">
+            <span className={`tg ${!(e.tag ?? "").trim() ? "is-none" : ""}`}>{(e.tag ?? "").trim() || "untagged"}</span>
+            {ev?.tested && (ev.fires ? <span className="verdict is-fire">Would activate</span> : <span className="verdict">idle</span>)}
+            {e.position !== 0 && <span className="tg">{POS_COMPACT[e.position] ?? ""}</span>}
+            {hotT && <span className="fl">bloated</span>}
+            {hotK && <span className="fl">key-heavy</span>}
+            <span className="keys t-data">{keyline}</span>
           </span>
         </span>
-        <span class="num">
-          <b class={`tok t-num ${hotT ? "is-hot" : ""}`}>{entryTokens(e)}</b><span class="unit t-data">tokens</span>
-          <b class={`tok t-num ${hotK ? "is-hot" : ""}`}>{e.keys.length}</b><span class="unit t-data">keys</span>
+        <span className="num">
+          <b className={`tok t-num ${hotT ? "is-hot" : ""}`}>{entryTokens(e)}</b><span className="unit t-data">tokens</span>
+          <b className={`tok t-num ${hotK ? "is-hot" : ""}`}>{e.keys.length}</b><span className="unit t-data">keys</span>
         </span>
       </button>
       {props.drawer}
@@ -507,30 +507,30 @@ function TagOverlay(props: {
   const stats = tagStats(props.entries);
   const max = Math.max(...stats.map((s) => s.n), 1);
   return (
-    <div class="tagpanel">
-      <div class="hrow">
+    <div className="tagpanel">
+      <div className="hrow">
         <IconButton label="Back to entries" onClick={props.onClose}>
           <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
         </IconButton>
-        <h2 class="console-title">Tags</h2>
-        <span class="meta"><span>{stats.length}</span><span>{props.entries.length} entries</span></span>
+        <h2 className="console-title">Tags</h2>
+        <span className="meta"><span>{stats.length}</span><span>{props.entries.length} entries</span></span>
       </div>
       {stats.map((s) => (
-        <div key={s.tag} class="trow">
+        <div key={s.tag} className="trow">
           <div>
-            <div class={`tn ${s.tag === UNTAGGED ? "is-none" : ""}`}>{s.tag === UNTAGGED ? "untagged" : s.tag}</div>
-            <div class="meta">
+            <div className={`tn ${s.tag === UNTAGGED ? "is-none" : ""}`}>{s.tag === UNTAGGED ? "untagged" : s.tag}</div>
+            <div className="meta">
               <span>{s.n} {s.n === 1 ? "entry" : "entries"}</span>
               <span>{s.tokens.toLocaleString()} tokens (est.)</span>
               {s.constant > 0 && <span>{s.constant} constant</span>}
               {s.disabled > 0 && <span>{s.disabled} disabled</span>}
             </div>
           </div>
-          <div class="tacts">
+          <div className="tacts">
             <Chip onClick={() => props.onShow(s.tag)}>Show</Chip>
             <Chip onClick={() => props.onSelect(s.ids)}>Select</Chip>
           </div>
-          <div class="tbar"><i style={`width:${(s.n / max) * 100}%`} /></div>
+          <div className="tbar"><i style={`width:${(s.n / max) * 100}%`} /></div>
         </div>
       ))}
     </div>

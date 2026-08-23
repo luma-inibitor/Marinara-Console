@@ -11,7 +11,7 @@ import "./CopyableText.css";
  *  is reserved for the failure, which is the case you actually need to know
  *  about — clipboard writes are refused outside a secure context, and silently
  *  doing nothing would look like a broken button. */
-export function CopyableText(props: { value: string; label?: string; class?: string }) {
+export function CopyableText(props: { value: string; label?: string; className?: string }) {
   const [done, setDone] = useState(false);
   const copy = async () => {
     try {
@@ -23,11 +23,11 @@ export function CopyableText(props: { value: string; label?: string; class?: str
     }
   };
   return (
-    <span class={`copyable ${props.class ?? ""}`}>
-      <span class="copyable-v t-data">{props.value}</span>
+    <span className={`copyable ${props.className ?? ""}`}>
+      <span className="copyable-v t-data">{props.value}</span>
       <button
         type="button"
-        class="copyable-b hit"
+        className="copyable-b hit"
         aria-label={done ? "Copied" : `Copy ${props.label ?? props.value}`}
         onClick={copy}
       >

@@ -9,7 +9,7 @@ export function PlaceholderTool(_props: { rest: string[] }) {
     memory: "Long-term-memory agent console — builds against the long-term-memory capability package. Not built yet.",
   };
   return (
-    <div class="screen">
+    <div className="screen">
       <EmptyState title={tool} body={copy[tool] ?? "Unknown tool."} />
     </div>
   );

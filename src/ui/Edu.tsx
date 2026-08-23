@@ -10,7 +10,7 @@ import "./Edu.css";
  *  the icon is not a thing anyone remembers to add. */
 export function Edu({ children }: { children: ComponentChildren }) {
   return (
-    <p class="edu t-prose dim">
+    <p className="edu t-prose dim">
       <Info size={12} stroke={1.75} aria-hidden />
       <span>{children}</span>
     </p>

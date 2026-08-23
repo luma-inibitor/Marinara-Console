@@ -51,34 +51,34 @@ export function SearchDisclosure(props: {
   const pick = (id: string) => { props.onPick(id); setOpen(false); };
 
   return (
-    <div class="disclosure" ref={ref}>
+    <div className="disclosure" ref={ref}>
       <button
         type="button"
-        class="disclosure-trigger hit"
+        className="disclosure-trigger hit"
         aria-expanded={open}
         aria-label={`${props.label}: ${props.value}`}
         onClick={() => { setOpen(!open); setQ(""); }}
       >
         <I size={14} stroke={1.75} />
-        <span class="disclosure-value">{props.value}</span>
+        <span className="disclosure-value">{props.value}</span>
         <ChevronDown size={13} stroke={1.75} aria-hidden />
       </button>
       {open && (
-        <div class="disclosure-pop" role="dialog" aria-label={props.label}>
-          <SearchBar class="disclosure-search" label={`Search ${props.label.toLowerCase()}`}
+        <div className="disclosure-pop" role="dialog" aria-label={props.label}>
+          <SearchBar className="disclosure-search" label={`Search ${props.label.toLowerCase()}`}
             value={q} onInput={setQ} />
-          <div class="disclosure-list">
-            <button type="button" class={`disclosure-opt hit ${props.current === "" ? "is-on" : ""}`}
+          <div className="disclosure-list">
+            <button type="button" className={`disclosure-opt hit ${props.current === "" ? "is-on" : ""}`}
               onClick={() => pick("")}>{props.allLabel}</button>
             {shown.map((o) => (
               <button key={o.id} type="button"
-                class={`disclosure-opt hit ${props.current === o.id ? "is-on" : ""}`}
+                className={`disclosure-opt hit ${props.current === o.id ? "is-on" : ""}`}
                 onClick={() => pick(o.id)}>
-                <span class="disclosure-optname">{o.name}</span>
-                {o.hint && <span class="disclosure-opthint t-data">{o.hint}</span>}
+                <span className="disclosure-optname">{o.name}</span>
+                {o.hint && <span className="disclosure-opthint t-data">{o.hint}</span>}
               </button>
             ))}
-            {shown.length === 0 && <p class="disclosure-none t-prose dim">{props.emptyText}</p>}
+            {shown.length === 0 && <p className="disclosure-none t-prose dim">{props.emptyText}</p>}
           </div>
         </div>
       )}

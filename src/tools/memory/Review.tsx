@@ -125,10 +125,10 @@ export function Review() {
   };
 
   if (loadError.value) {
-    return <div class="screen"><ErrorState title="Could not load" message={loadError.value} /></div>;
+    return <div className="screen"><ErrorState title="Could not load" message={loadError.value} /></div>;
   }
   if (loading.value) {
-    return <div class="screen"><Loading label={t("reviewqueue.loadingPendingReviewDrafts")} /></div>;
+    return <div className="screen"><Loading label={t("reviewqueue.loadingPendingReviewDrafts")} /></div>;
   }
 
   // The stacked detail participates in the overlay stack (back/Escape close it).
@@ -144,15 +144,15 @@ export function Review() {
   const showDetailStack = !desktop && detailRow;
 
   return (
-    <div class={`audit ${desktop ? "is-desktop" : ""}`}>
-      <div class="audit-list" ref={listRef} tabIndex={0} onKeyDown={onListKey}>
-        <header class="console">
-          <div class="hrow">
-            <h1 class="console-title">{t("reviewqueue.reviewQueue")}</h1>
-            <span class="t-data mem-save" data-contrast-exempt>
+    <div className={`audit ${desktop ? "is-desktop" : ""}`}>
+      <div className="audit-list" ref={listRef} tabIndex={0} onKeyDown={onListKey}>
+        <header className="console">
+          <div className="hrow">
+            <h1 className="console-title">{t("reviewqueue.reviewQueue")}</h1>
+            <span className="t-data mem-save" data-contrast-exempt>
               {saveState.value === "saving" ? "Autosaving…"
                 : saveState.value === "failed"
-                  ? <span class="is-drop">Save FAILED <Chip onClick={retryPersist}>Retry</Chip></span>
+                  ? <span className="is-drop">Save FAILED <Chip onClick={retryPersist}>Retry</Chip></span>
                   : "Saved"}
             </span>
             <IconButton label="Refresh queue" onClick={() => void refresh()}><Refresh size={15} stroke={1.75} aria-hidden /></IconButton>
@@ -162,42 +162,42 @@ export function Review() {
           </div>
 
           {review.value && (
-            <div class="gen-line t-data" data-contrast-exempt>
+            <div className="gen-line t-data" data-contrast-exempt>
               generated {new Date(review.value.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               {review.value.counts.deduplications > 0 && <> · {review.value.counts.deduplications} deduped upstream</>}
             </div>
           )}
 
           {/* decision meter: tally as data, one line */}
-          <div class="meter">
-            <span class="t-label t-label-s">Decided</span>
-            <span class="mbar">
-              <span class="m-keep" style={`width:${total ? (c.keep / total) * 100 : 0}%`} />
-              <span class="m-drop" style={`width:${total ? (c.drop / total) * 100 : 0}%`} />
+          <div className="meter">
+            <span className="t-label t-label-s">Decided</span>
+            <span className="mbar">
+              <span className="m-keep" style={`width:${total ? (c.keep / total) * 100 : 0}%`} />
+              <span className="m-drop" style={`width:${total ? (c.drop / total) * 100 : 0}%`} />
             </span>
-            <span class="t-data mval">
-              <b class="is-keep"><DecisionIcon d="keep" size={12} />{c.keep}</b> · <b class="is-drop"><DecisionIcon d="drop" size={12} />{c.drop}</b>
-              <span class="of"> / {total}</span>
+            <span className="t-data mval">
+              <b className="is-keep"><DecisionIcon d="keep" size={12} />{c.keep}</b> · <b className="is-drop"><DecisionIcon d="drop" size={12} />{c.drop}</b>
+              <span className="of"> / {total}</span>
             </span>
           </div>
 
-          <div class="chiprail">
+          <div className="chiprail">
             {desktop ? (
               <>
                 <Chip pressed={facetSheetOpen.value} onClick={openFacetSheet}>
-                  Facets{activeFacetCount() > 0 && <b class="ar">{activeFacetCount()}</b>}
+                  Facets{activeFacetCount() > 0 && <b className="ar">{activeFacetCount()}</b>}
                 </Chip>
                 <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
                 <QuickChip facet="flags" value="restates vault" label="Restates" flag />
                 <QuickChip facet="flags" value="duplicate incoming" label="Dupes" flag />
                 <QuickChip facet="flags" value="has conflicts" label="Conflicts" flag />
-                <span class="rail-gap" />
+                <span className="rail-gap" />
                 {Object.entries(GROUPERS).map(([id, g]) => (
                   <Chip key={id} pressed={groupBy.value === id} onClick={() => { groupBy.value = id as typeof groupBy.value; }}>
                     {g.label}
                   </Chip>
                 ))}
-                <span class="rail-gap" />
+                <span className="rail-gap" />
                 {Object.entries(SORTERS).map(([id, s]) => (
                   <Chip key={id} pressed={sortBy.value === id} onClick={() => {
                       if (sortBy.value === id) sortDir.value = (sortDir.value === 1 ? -1 : 1);
@@ -209,14 +209,14 @@ export function Review() {
               </>
             ) : (
               <>
-                <Chip class="ctl" pressed={activeFacetCount() > 0} onClick={openFacetSheet}>
-                  <span class="ctl-k">Filter</span><span class="ctl-v">{activeFacetCount() || "all"}</span>
+                <Chip className="ctl" pressed={activeFacetCount() > 0} onClick={openFacetSheet}>
+                  <span className="ctl-k">Filter</span><span className="ctl-v">{activeFacetCount() || "all"}</span>
                 </Chip>
-                <Chip class="ctl" onClick={() => { groupSheetOpen.value = true; }}>
-                  <span class="ctl-k">Group</span><span class="ctl-v">{GROUPERS[groupBy.value].label}</span>
+                <Chip className="ctl" onClick={() => { groupSheetOpen.value = true; }}>
+                  <span className="ctl-k">Group</span><span className="ctl-v">{GROUPERS[groupBy.value].label}</span>
                 </Chip>
-                <Chip class="ctl" onClick={() => { sortSheetOpen.value = true; }}>
-                  <span class="ctl-k">Sort</span><span class="ctl-v">{sortDir.value === 1 ? "↓" : "↑"} {SORTERS[sortBy.value].label}</span>
+                <Chip className="ctl" onClick={() => { sortSheetOpen.value = true; }}>
+                  <span className="ctl-k">Sort</span><span className="ctl-v">{sortDir.value === 1 ? "↓" : "↑"} {SORTERS[sortBy.value].label}</span>
                 </Chip>
                 <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
                 <QuickChip facet="flags" value="restates vault" label="Restates" flag />
@@ -227,8 +227,8 @@ export function Review() {
           </div>
 
           {activeFacetCount() > 0 && (
-            <div class="chiprail">
-              <span class="t-data selcount">{shown.length} of {rows.value.length}</span>
+            <div className="chiprail">
+              <span className="t-data selcount">{shown.length} of {rows.value.length}</span>
               <Chip onClick={() => bulkDecide(shown, "keep", "keep shown")}>Keep shown</Chip>
               <Chip onClick={() => bulkDecide(shown, "drop", "drop shown")}>Drop shown</Chip>
               <Chip onClick={() => bulkDecide(shown, null, "reset shown")}>Reset</Chip>
@@ -237,7 +237,7 @@ export function Review() {
           )}
         </header>
 
-        <main class="rows mem-rows">
+        <main className="rows mem-rows">
           <Obligations />
           <Failures />
           {shown.length === 0 && rows.value.length === 0 && !blocked.value.length && (
@@ -254,19 +254,19 @@ export function Review() {
       </div>
 
       {showDetailPane && (
-        <aside class="audit-detail">
+        <aside className="audit-detail">
           {detailRow
             ? <ClaimDetail key={detailRow.key} row={detailRow} />
             : <EmptyState title="No claim open" body="j/k to move · a keep · d drop · Enter opens" />}
         </aside>
       )}
       {showDetailStack && (
-        <div class="stack-screen">
-          <header class="console"><div class="hrow">
-            <IconButton class="hit" label="Back to queue" onClick={closeTopOverlay}><Back size={18} stroke={1.75} aria-hidden /></IconButton>
+        <div className="stack-screen">
+          <header className="console"><div className="hrow">
+            <IconButton className="hit" label="Back to queue" onClick={closeTopOverlay}><Back size={18} stroke={1.75} aria-hidden /></IconButton>
             {/* Queue position, not the target title — the headline right below
                 already names the target, and position is what j/k triage wants. */}
-            <h1 class="console-title">
+            <h1 className="console-title">
               {visibleKeys.includes(detailRow!.key)
                 ? `claim ${visibleKeys.indexOf(detailRow!.key) + 1} of ${visibleKeys.length}`
                 : detailRow!.targetTitle}
@@ -399,31 +399,31 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
        control), type icon in the kind column, words in the body. The
        new-target marker is the 2a green edge (owner call, color-only tradeoff
        accepted) — an edge, so nothing in the title line shifts. */
-    <ListGroup class={`mem-ghead ${isNew ? "is-new" : ""}`}
+    <ListGroup className={`mem-ghead ${isNew ? "is-new" : ""}`}
         collapsed={collapsed} onToggle={() => collapse.toggle(g.id)}
         label={g.label} count={g.rows.length}
         head={<>
         {isTarget && g.meta && <TypeIcon type={g.meta} />}
-        <div class="ghead-body">
-        <span class="gn t-prose">{g.label}</span>
-        {chars > 0 && <span class="ghead-agg t-data">+{chars.toLocaleString()}</span>}
-        <span class="ghead-ctl">
+        <div className="ghead-body">
+        <span className="gn t-prose">{g.label}</span>
+        {chars > 0 && <span className="ghead-agg t-data">+{chars.toLocaleString()}</span>}
+        <span className="ghead-ctl">
           <GroupPressure groupId={g.id} isTarget={isTarget} />
-          <span class="tbar-w" aria-label={`${kept + dropped} of ${g.rows.length} decided`}>
-            <span class="tbar">
-              <i class="tk" style={`width:${(kept / g.rows.length) * 100}%`} />
-              <i class="td" style={`width:${(dropped / g.rows.length) * 100}%`} />
+          <span className="tbar-w" aria-label={`${kept + dropped} of ${g.rows.length} decided`}>
+            <span className="tbar">
+              <i className="tk" style={`width:${(kept / g.rows.length) * 100}%`} />
+              <i className="td" style={`width:${(dropped / g.rows.length) * 100}%`} />
             </span>
-            <span class="tbar-n t-data">{kept + dropped}/{g.rows.length}</span>
+            <span className="tbar-n t-data">{kept + dropped}/{g.rows.length}</span>
           </span>
           {undecidedRows.length > 0 && (
-            <span class="ghead-acts">
-              <button class="gib gk" title={`Keep ${undecidedRows.length} undecided`}
+            <span className="ghead-acts">
+              <button className="gib gk" title={`Keep ${undecidedRows.length} undecided`}
                 aria-label={`Keep all ${undecidedRows.length} undecided in ${g.label}`}
                 onClick={() => bulkDecide(undecidedRows, "keep", `keep ${g.label}`)}>
                 <DECISION_ICON.keep size={15} stroke={1.75} aria-hidden />
               </button>
-              <button class="gib gd" title={`Drop ${undecidedRows.length} undecided`}
+              <button className="gib gd" title={`Drop ${undecidedRows.length} undecided`}
                 aria-label={`Drop all ${undecidedRows.length} undecided in ${g.label}`}
                 onClick={() => bulkDecide(undecidedRows, "drop", `drop ${g.label}`)}>
                 <DECISION_ICON.drop size={15} stroke={1.75} aria-hidden />
@@ -446,15 +446,15 @@ function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: 
   const [open, setOpen] = useState(false);
   const g = props.group;
   return (
-    <span class="gmenu-wrap">
-      <button class="gib gmenu" aria-label={`Actions for ${g.label}`} aria-expanded={open}
+    <span className="gmenu-wrap">
+      <button className="gib gmenu" aria-label={`Actions for ${g.label}`} aria-expanded={open}
         onClick={() => setOpen(!open)}>
         <More size={16} stroke={1.75} aria-hidden />
       </button>
       {open && (
         <>
-          <span class="gmenu-scrim" onClick={() => setOpen(false)} />
-          <div class="gmenu-pop" role="menu">
+          <span className="gmenu-scrim" onClick={() => setOpen(false)} />
+          <div className="gmenu-pop" role="menu">
             {!props.isNew && (
               <button role="menuitem" onClick={() => { setOpen(false); peekNote(g.id); }}>{t("reviewqueue.openMemory")}</button>
             )}
@@ -493,42 +493,42 @@ function ClaimRow(props: {
   // Roving tabindex: only the cursor row is in the tab order (src/ui/useRovingFocus).
   const tab = props.tabbable ? 0 : -1;
   return (
-    <div class={`mem-row ${isOpen ? "is-open" : ""} ${isFocused ? "is-focused" : ""}`} data-row={r.key} data-d={d ?? "undecided"}>
-      <div class="mem-summary">
+    <div className={`mem-row ${isOpen ? "is-open" : ""} ${isFocused ? "is-focused" : ""}`} data-row={r.key} data-d={d ?? "undecided"}>
+      <div className="mem-summary">
         <button
-          class="mem-dec hit"
+          className="mem-dec hit"
           tabIndex={tab}
           aria-label={`Decision: ${d ?? OURS.undecided}. Tap to cycle.`}
           onClick={(e) => { e.stopPropagation(); cycleDecision(r); }}
         >
           <DecisionIcon d={d} />
         </button>
-        <span class="kslot">
+        <span className="kslot">
           <Term tip={OP_TIP[r.mutation.kind]} tabIndex={tab}><OpIcon kind={r.mutation.kind} /></Term>
         </span>
-        <button class="mem-mid" tabIndex={tab} onClick={() => props.onActivate(r.key)}>
+        <button className="mem-mid" tabIndex={tab} onClick={() => props.onActivate(r.key)}>
           {props.showTarget && (
-            <span class="a1-tgt t-data">
+            <span className="a1-tgt t-data">
               <TypeIcon type={r.targetType} size={13} />
-              {isNew && <span class="ndot" aria-label="will be created" />}
+              {isNew && <span className="ndot" aria-label="will be created" />}
               {r.targetTitle}
             </span>
           )}
-          <span class="claim-text t-prose">{r.text}</span>
-          <span class="row-trail t-data">
+          <span className="claim-text t-prose">{r.text}</span>
+          <span className="row-trail t-data">
             {edited.value.has(r.key) && (
               <Term tip="edited · you replaced this claim's proposed text — your version applies with the batch">
-                <EditedMark size={14} stroke={1.75} class="edit-mark" aria-label={t("reviewqueue.editedChange")} />
+                <EditedMark size={14} stroke={1.75} className="edit-mark" aria-label={t("reviewqueue.editedChange")} />
               </Term>
             )}
-            {isAuto && <span class="dep-tag">dependency</span>}
-            {blockedMsg && <span class="is-drop" title={blockedMsg}>blocked</span>}
+            {isAuto && <span className="dep-tag">dependency</span>}
+            {blockedMsg && <span className="is-drop" title={blockedMsg}>blocked</span>}
             {flags.length > 0 && (
-              <span class="fq" data-sev={sev} title={flags.map((f) => f.label).join(" · ")}>
+              <span className="fq" data-sev={sev} title={flags.map((f) => f.label).join(" · ")}>
                 <Flag size={13} stroke={1.75} aria-hidden />{flags.length}
               </span>
             )}
-            <span class="chs">{chars > 0 ? `+${chars.toLocaleString()}` : ""}</span>
+            <span className="chs">{chars > 0 ? `+${chars.toLocaleString()}` : ""}</span>
           </span>
         </button>
       </div>
@@ -550,9 +550,9 @@ function GroupPressure(props: { groupId: string; isTarget: boolean }) {
   const over = worst.projected > CAP;
   const pct = Math.round((worst.projected / CAP) * 100);
   return (
-    <span class="fq gcap" data-sev={over ? "danger" : "warn"}
+    <span className="fq gcap" data-sev={over ? "danger" : "warn"}
       title={`§${worst.key}: stored ${worst.current.toLocaleString()} ch, ${worst.projected.toLocaleString()} after this batch, cap ${CAP.toLocaleString()}`}>
-      <Flag size={12} stroke={1.75} aria-hidden /><span class="gcap-pct">cap {pct}%</span>
+      <Flag size={12} stroke={1.75} aria-hidden /><span className="gcap-pct">cap {pct}%</span>
     </span>
   );
 }
@@ -580,13 +580,13 @@ function Obligations() {
   return (
     <>
       {[...byCode.entries()].map(([code, { message, items }]) => (
-        <div key={code} class="mem-card">
-          <div class="t-data"><span class="fl">{code.replaceAll("_", " ")}</span> <b>{items.length}</b> draft{items.length === 1 ? "" : "s"} blocked · {items.reduce((n, b) => n + b.mutationCount, 0)} claims held</div>
-          <p class="t-prose dim">{message}</p>
-          <div class="blocked-srcs">
+        <div key={code} className="mem-card">
+          <div className="t-data"><span className="fl">{code.replaceAll("_", " ")}</span> <b>{items.length}</b> draft{items.length === 1 ? "" : "s"} blocked · {items.reduce((n, b) => n + b.mutationCount, 0)} claims held</div>
+          <p className="t-prose dim">{message}</p>
+          <div className="blocked-srcs">
             {items.map((b) => (
-              <span key={b.draftId} class="t-data blocked-src">
-                <NoteRef id={b.sourceNoteId} label={b.sourceTitle} /> <span class="dim">· {b.mutationCount} claim{b.mutationCount === 1 ? "" : "s"}</span>
+              <span key={b.draftId} className="t-data blocked-src">
+                <NoteRef id={b.sourceNoteId} label={b.sourceTitle} /> <span className="dim">· {b.mutationCount} claim{b.mutationCount === 1 ? "" : "s"}</span>
               </span>
             ))}
           </div>
@@ -595,7 +595,7 @@ function Obligations() {
               <Chip disabled={Boolean(extracting)} onClick={() => void reextract(items)}>
                 {extracting ? `Extracting ${extracting}…` : t("memoryvault.extractToReview")}
               </Chip>
-              <p class="t-prose dim reex-note">Re-extracting calls the model once per source and replaces each blocked draft with a fresh one.</p>
+              <p className="t-prose dim reex-note">Re-extracting calls the model once per source and replaces each blocked draft with a fresh one.</p>
             </>
           )}
         </div>
@@ -609,13 +609,13 @@ function Failures() {
   return (
     <>
       {lastFailures.value.map((f) => (
-        <div key={f.title} class="mem-card is-danger">
-          <div class="t-data"><span class="fl">apply failed</span> <b>{f.n}</b> · {f.title}</div>
-          <p class="t-prose dim">{f.fix}</p>
-          <details><summary class="t-data dim">raw</summary><p class="t-data dim">{f.msg.slice(0, 400)}</p></details>
+        <div key={f.title} className="mem-card is-danger">
+          <div className="t-data"><span className="fl">apply failed</span> <b>{f.n}</b> · {f.title}</div>
+          <p className="t-prose dim">{f.fix}</p>
+          <details><summary className="t-data dim">raw</summary><p className="t-data dim">{f.msg.slice(0, 400)}</p></details>
         </div>
       ))}
-      <div class="group-actions"><Chip onClick={() => { lastFailures.value = []; }}>Dismiss</Chip></div>
+      <div className="group-actions"><Chip onClick={() => { lastFailures.value = []; }}>Dismiss</Chip></div>
     </>
   );
 }
@@ -627,13 +627,13 @@ function Rejections() {
     byReason.set(item.reason, [...(byReason.get(item.reason) ?? []), item]);
   }
   return (
-    <div class="mem-rejections">
-      <div class="mem-ghead is-plain"><span class="gn t-prose">{t("reviewqueue.suggestionsThatWerentSaved")}</span>
-        <span class="t-data dim">{rejections.value.length}</span></div>
+    <div className="mem-rejections">
+      <div className="mem-ghead is-plain"><span className="gn t-prose">{t("reviewqueue.suggestionsThatWerentSaved")}</span>
+        <span className="t-data dim">{rejections.value.length}</span></div>
       {[...byReason.entries()].map(([reason, items]) => (
-        <details key={reason} class="mem-card">
-          <summary class="t-data"><span class="fl">{reason.replaceAll("_", " ")}</span> <b>{items.length}</b> · <span class="dim">{items[0].message ?? ""}</span></summary>
-          {items.map((i, idx) => <p key={idx} class="t-prose dim rej-snippet">{i.snippet}</p>)}
+        <details key={reason} className="mem-card">
+          <summary className="t-data"><span className="fl">{reason.replaceAll("_", " ")}</span> <b>{items.length}</b> · <span className="dim">{items[0].message ?? ""}</span></summary>
+          {items.map((i, idx) => <p key={idx} className="t-prose dim rej-snippet">{i.snippet}</p>)}
         </details>
       ))}
     </div>
@@ -660,47 +660,47 @@ function ApplyDock() {
     .map(([k, why]) => ({ row: rowByKey.get(k), why }))
     .filter((x) => x.row) as Array<{ row: Row; why: string }>;
   return (
-    <div class="apply-dock">
-      <div class="dock-info t-data">
-        <b class="is-keep">{c.keep}</b> {OURS.keep} · <b class="is-drop">{c.drop}</b> {OURS.drop}
-        {c.undecided > 0 && <span class="dim"> · {c.undecided} {OURS.undecided}</span>}
+    <div className="apply-dock">
+      <div className="dock-info t-data">
+        <b className="is-keep">{c.keep}</b> {OURS.keep} · <b className="is-drop">{c.drop}</b> {OURS.drop}
+        {c.undecided > 0 && <span className="dim"> · {c.undecided} {OURS.undecided}</span>}
         {c.edited > 0 && <span> · {c.edited} edited</span>}
         <br />
-        <span class="dim">
+        <span className="dim">
           {progress ? <>Applying draft {progress.done}/{progress.total}…</> : <>
             {OURS.draftsWillApply(c.willSend)}{c.stayPending ? ` (${c.stayPending} still hold undecided claims)` : ""}
             {pf?.error
-              ? <span class="is-drop"> · {pf.error} <Chip onClick={() => void refresh()}>Retry</Chip></span>
+              ? <span className="is-drop"> · {pf.error} <Chip onClick={() => void refresh()}>Retry</Chip></span>
               : checking
                 ? <> · checking with the engine…</>
                 : pf
-                  ? <> · {readyToSend.value} ready{pf.blockedN ? <span class="is-drop"> · {pf.blockedN} blocked</span> : null}</>
+                  ? <> · {readyToSend.value} ready{pf.blockedN ? <span className="is-drop"> · {pf.blockedN} blocked</span> : null}</>
                   : null}
           </>}
         </span>
         {!checking && autoRows.length > 0 && (
-          <details class="dock-detail"><summary>{OURS.autoIncluded(autoRows.length)}</summary>
-            {autoRows.map((row) => <div key={row.key} class="dim dock-detail-row">→ {row.targetTitle}: {row.text.slice(0, 80)}</div>)}
+          <details className="dock-detail"><summary>{OURS.autoIncluded(autoRows.length)}</summary>
+            {autoRows.map((row) => <div key={row.key} className="dim dock-detail-row">→ {row.targetTitle}: {row.text.slice(0, 80)}</div>)}
           </details>
         )}
         {!checking && blockedRows.length > 0 && (
-          <details class="dock-detail is-drop"><summary>{blockedRows.length} blocked — held back from Apply</summary>
-            {blockedRows.map(({ row, why }) => <div key={row.key} class="dim dock-detail-row">→ {row.targetTitle}: {why}</div>)}
+          <details className="dock-detail is-drop"><summary>{blockedRows.length} blocked — held back from Apply</summary>
+            {blockedRows.map(({ row, why }) => <div key={row.key} className="dim dock-detail-row">→ {row.targetTitle}: {why}</div>)}
           </details>
         )}
         {/* The whole sentence branches, not just the noun: pluralising "claim"
             alone left "1 kept claim depend ... they will fail ... drop them". */}
         {warnings.length > 0 && (
-          <div class="is-drop">
+          <div className="is-drop">
             {warnings.length === 1
               ? "1 kept claim depends on a dropped create — it will fail; keep the create or drop it"
               : `${warnings.length} kept claims depend on a dropped create — they will fail; keep the create or drop them`}
           </div>
         )}
-        {offerRestore && <><br /><a class="t-data restore-link" href={backupExportUrl()} download onClick={() => toast(OURS.restorePointDone)}>{OURS.restorePoint}</a></>}
+        {offerRestore && <><br /><a className="t-data restore-link" href={backupExportUrl()} download onClick={() => toast(OURS.restorePointDone)}>{OURS.restorePoint}</a></>}
       </div>
       <Chip disabled={!canUndo.value} onClick={undo}>Undo</Chip>
-      <button class="dock-primary t-label" disabled={applying.value || checking || (c.keep > 0 && !pf) || Boolean(pf?.error)} onClick={() => void applyDecided()}>
+      <button className="dock-primary t-label" disabled={applying.value || checking || (c.keep > 0 && !pf) || Boolean(pf?.error)} onClick={() => void applyDecided()}>
         {applying.value ? (progress ? `Applying ${progress.done}/${progress.total}…` : OURS.applying)
           : checking ? "Apply decided (…)"
           : `Apply decided (${applyCount})`}

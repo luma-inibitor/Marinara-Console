@@ -22,7 +22,7 @@ import type { Mutation } from "./data";
 export function TypeIcon(props: { type: string; size?: number }) {
   const I = TYPE_ICON[props.type] ?? TYPE_ICON.source;
   return (
-    <span class={`ti type-${props.type}`} aria-hidden="true">
+    <span className={`ti type-${props.type}`} aria-hidden="true">
       <I size={props.size ?? 15} stroke={1.75} />
     </span>
   );
@@ -37,7 +37,7 @@ export function DecisionIcon(props: { d: "keep" | "drop" | null | undefined; siz
   const state = props.d ?? "undecided";
   const I = DECISION_ICON[state];
   return (
-    <span class={`dec dec-${state}`} aria-hidden="true">
+    <span className={`dec dec-${state}`} aria-hidden="true">
       <I size={props.size ?? 17} stroke={1.75} />
     </span>
   );

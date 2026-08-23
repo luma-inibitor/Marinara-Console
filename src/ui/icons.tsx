@@ -247,7 +247,7 @@ export function Glyph(props: {
   icon: Icon;
   size?: number;
   stroke?: number;
-  class?: string;
+  className?: string;
   label?: string;
 }) {
   const I = props.icon;
@@ -256,7 +256,7 @@ export function Glyph(props: {
     <I
       size={size}
       stroke={props.stroke ?? strokeFor(size)}
-      class={props.class}
+      className={props.className}
       aria-hidden={props.label ? undefined : true}
       aria-label={props.label}
     />

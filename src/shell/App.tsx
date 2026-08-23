@@ -36,22 +36,22 @@ export function App() {
   const Screen = active.component;
 
   return (
-    <div class="shell">
-      <nav class="rail" aria-label="Tools">
-        <div class="rail-brand t-label-s t-label" data-contrast-exempt>Marinara<br />Console</div>
+    <div className="shell">
+      <nav className="rail" aria-label="Tools">
+        <div className="rail-brand t-label-s t-label" data-contrast-exempt>Marinara<br />Console</div>
         {TOOLS.map((t) => (
           <button
             key={t.id}
-            class={`rail-item ${t.id === active.id ? "is-active" : ""}`}
+            className={`rail-item ${t.id === active.id ? "is-active" : ""}`}
             aria-current={t.id === active.id ? "page" : undefined}
             onClick={() => navigate(t.id)}
           >
-            <span class="rail-glyph" aria-hidden="true">{t.glyph}</span>
-            <span class="rail-label">{t.label}</span>
+            <span className="rail-glyph" aria-hidden="true">{t.glyph}</span>
+            <span className="rail-label">{t.label}</span>
           </button>
         ))}
       </nav>
-      <main class="stage">
+      <main className="stage">
         <Screen rest={rest} />
       </main>
       <ConnectionBanner />

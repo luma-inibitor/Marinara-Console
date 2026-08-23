@@ -22,7 +22,7 @@ export function Term(props: {
   const [open, setOpen] = useState(false);
   return (
     <span
-      class={`term ${props.chip ? "term-chip" : ""} ${open ? "tip-open" : ""}`}
+      className={`term ${props.chip ? "term-chip" : ""} ${open ? "tip-open" : ""}`}
       tabIndex={props.tabIndex ?? 0}
       data-tip={props.tip}
       onClick={(e) => { e.stopPropagation(); setOpen(!open); }}

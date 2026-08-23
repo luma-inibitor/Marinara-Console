@@ -32,11 +32,11 @@ export function ModePill(props: {
   if (!props.onToggle) {
     const lit = MODES.filter((m) => on(m.id)).map((m) => m.name);
     return (
-      <span class="modepill" role="img" aria-label={`modes: ${lit.join(", ") || "none"}`}>
+      <span className="modepill" role="img" aria-label={`modes: ${lit.join(", ") || "none"}`}>
         {MODES.map((m) => (
-          <span key={m.id} class={`mseg ${on(m.id) ? "is-on" : ""}`} title={m.name}>
+          <span key={m.id} className={`mseg ${on(m.id) ? "is-on" : ""}`} title={m.name}>
             <m.Icon size={13} stroke={1.75} aria-hidden />
-            <span class="t-data">{m.short}</span>
+            <span className="t-data">{m.short}</span>
           </span>
         ))}
       </span>
@@ -44,18 +44,18 @@ export function ModePill(props: {
   }
 
   return (
-    <div class="modepill is-interactive" role="group" aria-label={props.label ?? "Filter by mode"}>
+    <div className="modepill is-interactive" role="group" aria-label={props.label ?? "Filter by mode"}>
       {MODES.map((m) => (
         <button
           key={m.id}
           type="button"
-          class="mseg hit"
+          className="mseg hit"
           aria-pressed={on(m.id)}
           aria-label={`${m.short} — ${m.name}`}
           onClick={() => props.onToggle!(m.id)}
         >
           <m.Icon size={13} stroke={1.75} aria-hidden />
-          <span class="t-data">{m.short}</span>
+          <span className="t-data">{m.short}</span>
         </button>
       ))}
     </div>

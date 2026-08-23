@@ -40,27 +40,27 @@ export function FacetDrawer(props: {
 
   return (
     <Sheet label="Facets" onClose={props.onClose}>
-      <SheetHead title={<span class="t-label t-label-s">Facets</span>}>
+      <SheetHead title={<span className="t-label t-label-s">Facets</span>}>
         <Chip onClick={props.onClear}>Clear</Chip>
       </SheetHead>
-      {live.length === 0 && <p class="t-prose dim">{props.emptyText}</p>}
+      {live.length === 0 && <p className="t-prose dim">{props.emptyText}</p>}
       {live.map((g) => (
-        <div key={g.key} class="facet-block">
-          <h3 class="t-label t-label-s facet-src">{g.label}</h3>
+        <div key={g.key} className="facet-block">
+          <h3 className="t-label t-label-s facet-src">{g.label}</h3>
           {g.facets.map((f) => (
-            <div key={f.id} class="facet-line">
-              <span class="facet-lab t-label t-label-s">{f.label}</span>
-              <span class="facet-vals">
+            <div key={f.id} className="facet-line">
+              <span className="facet-lab t-label t-label-s">{f.label}</span>
+              <span className="facet-vals">
                 {f.values.map((v) => (
                   <button
                     key={v.value}
                     type="button"
-                    class="facet-chip t-data"
+                    className="facet-chip t-data"
                     aria-pressed={v.on}
                     onClick={() => props.onToggle(f.id, v.value)}
                   >
-                    <span class="facet-v" title={v.value}>{v.label ?? v.value}</span>
-                    <span class="facet-n">{v.count}</span>
+                    <span className="facet-v" title={v.value}>{v.label ?? v.value}</span>
+                    <span className="facet-n">{v.count}</span>
                   </button>
                 ))}
               </span>

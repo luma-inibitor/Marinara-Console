@@ -59,15 +59,15 @@ const SHORTCUTS: Array<[string, string]> = [
 export function CheatSheet() {
   if (!cheatOpen.value) return null;
   return (
-    <div class="palette-backdrop" onClick={() => { cheatOpen.value = false; }}>
-      <div class="palette cheat" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts"
+    <div className="palette-backdrop" onClick={() => { cheatOpen.value = false; }}>
+      <div className="palette cheat" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts"
         onClick={(ev) => ev.stopPropagation()}>
-        <div class="cheat-head t-label">Keyboard shortcuts</div>
-        <div class="cheat-body">
+        <div className="cheat-head t-label">Keyboard shortcuts</div>
+        <div className="cheat-body">
           {SHORTCUTS.map(([keys, what]) => (
-            <div key={keys} class="cheat-row">
-              <span class="cheat-keys t-data">{keys}</span>
-              <span class="cheat-what">{what}</span>
+            <div key={keys} className="cheat-row">
+              <span className="cheat-keys t-data">{keys}</span>
+              <span className="cheat-what">{what}</span>
             </div>
           ))}
         </div>

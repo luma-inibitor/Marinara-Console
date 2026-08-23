@@ -20,18 +20,18 @@ export function Picker(props: {
 }) {
   if (!props.open) return null;
   return (
-    <Sheet class="option-sheet" label={props.label} onClose={props.onClose}>
-      <SheetHead title={<span class="t-label t-label-s">{props.label}</span>} />
+    <Sheet className="option-sheet" label={props.label} onClose={props.onClose}>
+      <SheetHead title={<span className="t-label t-label-s">{props.label}</span>} />
       {props.options.map((o) => (
         <button
           key={o.id}
           type="button"
-          class={`picker-opt ${props.current === o.id ? "is-on" : ""}`}
+          className={`picker-opt ${props.current === o.id ? "is-on" : ""}`}
           aria-current={props.current === o.id ? "true" : undefined}
           onClick={() => { props.onPick(o.id); closeTopOverlay(); }}
         >
-          <span class="picker-label t-data">{o.label}</span>
-          {o.hint && <span class="picker-hint t-data">{o.hint}</span>}
+          <span className="picker-label t-data">{o.label}</span>
+          {o.hint && <span className="picker-hint t-data">{o.hint}</span>}
         </button>
       ))}
     </Sheet>

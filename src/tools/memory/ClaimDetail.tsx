@@ -33,21 +33,21 @@ import { Edu } from "../../ui";
 /** A memory reference: type icon + tappable title. */
 function Ref(props: { id?: string; title: string; type?: string }) {
   return (
-    <span class="nref">
+    <span className="nref">
       {props.type && <Term tip={TYPE_TIP[props.type] ?? props.type}><TypeIcon type={props.type} size={14} /></Term>}
-      {props.id ? <NoteRef id={props.id} label={props.title} /> : <b class="nref-plain">{props.title}</b>}
+      {props.id ? <NoteRef id={props.id} label={props.title} /> : <b className="nref-plain">{props.title}</b>}
     </span>
   );
 }
 
 function Skey(props: { k: string }) {
-  return <span class="skey">§{props.k}</span>;
+  return <span className="skey">§{props.k}</span>;
 }
 
 function Fold(props: { label: string; children: ComponentChildren }) {
   return (
-    <details class="fold">
-      <summary class="t-data"><ChevronRight class="fold-c" size={12} stroke={1.75} aria-hidden /><span>{props.label}</span></summary>
+    <details className="fold">
+      <summary className="t-data"><ChevronRight className="fold-c" size={12} stroke={1.75} aria-hidden /><span>{props.label}</span></summary>
       {props.children}
     </details>
   );
@@ -56,19 +56,19 @@ function Fold(props: { label: string; children: ComponentChildren }) {
 function Line(props: { mode?: "add" | "del"; children: ComponentChildren }) {
   const g = props.mode === "add" ? "+" : props.mode === "del" ? "−" : "";
   return (
-    <div class={`ln ln-${props.mode ?? "ctx"}`}>
-      <span class="lg" data-contrast-exempt>{g}</span>
-      <span class="lt">{props.children}</span>
+    <div className={`ln ln-${props.mode ?? "ctx"}`}>
+      <span className="lg" data-contrast-exempt>{g}</span>
+      <span className="lt">{props.children}</span>
     </div>
   );
 }
 
 function Zone(props: { eyebrow: ComponentChildren; foot?: ComponentChildren; cls?: string; children: ComponentChildren }) {
   return (
-    <div class={`zone ${props.cls ?? ""}`}>
-      <div class="z-eye t-label t-label-s">{props.eyebrow}</div>
+    <div className={`zone ${props.cls ?? ""}`}>
+      <div className="z-eye t-label t-label-s">{props.eyebrow}</div>
       {props.children}
-      {props.foot && <div class="z-foot t-data">{props.foot}</div>}
+      {props.foot && <div className="z-foot t-data">{props.foot}</div>}
     </div>
   );
 }
@@ -90,11 +90,11 @@ function InlineMemory({ id }: { id: string }) {
   const head = lines.slice(0, 3);
   const rest = lines.slice(3);
   return (
-    <div class="inline-card">
-      {head.map((l, i) => <div key={i} class="lt-i t-prose">{l}</div>)}
+    <div className="inline-card">
+      {head.map((l, i) => <div key={i} className="lt-i t-prose">{l}</div>)}
       {rest.length > 0 && (
         <Fold label={`${rest.length} more line${rest.length === 1 ? "" : "s"} · ${rest.join(" ").length.toLocaleString()} ch`}>
-          {rest.map((l, i) => <div key={i} class="lt-i t-prose">{l}</div>)}
+          {rest.map((l, i) => <div key={i} className="lt-i t-prose">{l}</div>)}
         </Fold>
       )}
     </div>
@@ -107,7 +107,7 @@ function capNote(targetId: string, key: string) {
   if (!p || p.projected < SECTION_CAP * 0.8) return null;
   const over = p.projected > SECTION_CAP;
   return (
-    <span class={over ? "is-drop" : "fl"}>
+    <span className={over ? "is-drop" : "fl"}>
       {(p.projected / 1000).toFixed(1)}k / {(SECTION_CAP / 1000).toFixed(0)}k after batch
     </span>
   );
@@ -176,48 +176,48 @@ export function ClaimDetail({ row }: { row: Row }) {
   // instead of popping an overlay the reviewer has to bounce back from.
   const [whole, setWhole] = useState(false);
   const wholeBtn = target && (m.kind === "append_section" || m.kind === "update_section") && !editing && (
-    <button class="zbtn hit" aria-pressed={whole} onClick={() => setWhole(!whole)}>
+    <button className="zbtn hit" aria-pressed={whole} onClick={() => setWhole(!whole)}>
       <PreviewIcon size={12} stroke={1.75} aria-hidden /> whole memory
     </button>
   );
   const editBtn = (editableSections.length > 0 || storedKeywords) && hasEditable && !editing && (
-    <button class="zbtn hit" onClick={() => setEditing(true)}>
+    <button className="zbtn hit" onClick={() => setEditing(true)}>
       <Edit size={12} stroke={1.75} aria-hidden /> {t("longtermmemorydetail.reviewEdit").toLowerCase()}
     </button>
   );
   const staged = edited.value.has(r.key);
   const stagedMark = staged && !editing && (
-    <span class="zbtn-group">
+    <span className="zbtn-group">
       <Term tip="edited — this claim's text was changed by you; the edit applies with the batch">
-        <EditedMark class="edit-mark" size={13} stroke={1.75} aria-hidden />
+        <EditedMark className="edit-mark" size={13} stroke={1.75} aria-hidden />
       </Term>
-      <button class="zbtn hit" onClick={() => { setEdited(r.key, null); setDrafts({}); }}>
+      <button className="zbtn hit" onClick={() => { setEdited(r.key, null); setDrafts({}); }}>
         {t("memorysettings.discardChanges").toLowerCase()}
       </button>
     </span>
   );
 
   return (
-    <div class="claim-detail">
+    <div className="claim-detail">
       <Headline r={r} m={m} target={Boolean(target)} />
       <Preview r={r} m={m} editing={editing} drafts={drafts} setDrafts={setDrafts}
         editableSections={editableSections} whole={whole} keywords={keywords} setKeywords={setKwDraft}
         controls={<>{wholeBtn}{editBtn}{stagedMark}</>} />
       <Evidence r={r} m={m} />
-      <div class="decbar">
+      <div className="decbar">
         {editing ? (
           <>
-            <button class="dbtn2 save-on hit" onClick={save}>{t("memoryvault.save").toLowerCase()}</button>
-            <button class="dbtn2 hit" onClick={discard}>{t("memorysettings.discardChanges").toLowerCase()}</button>
-            <span class="decbar-note t-data" data-contrast-exempt>applies with the batch</span>
+            <button className="dbtn2 save-on hit" onClick={save}>{t("memoryvault.save").toLowerCase()}</button>
+            <button className="dbtn2 hit" onClick={discard}>{t("memorysettings.discardChanges").toLowerCase()}</button>
+            <span className="decbar-note t-data" data-contrast-exempt>applies with the batch</span>
           </>
         ) : (
           <>
-            <button class="dbtn2 hit" data-on={d === "keep"} data-dk="keep"
+            <button className="dbtn2 hit" data-on={d === "keep"} data-dk="keep"
               onClick={() => setDecision(r, d === "keep" ? null : "keep")}>
               <DecisionIcon d="keep" size={15} /> {OURS.keep}
             </button>
-            <button class="dbtn2 hit" data-on={d === "drop"} data-dk="drop"
+            <button className="dbtn2 hit" data-on={d === "drop"} data-dk="drop"
               onClick={() => setDecision(r, d === "drop" ? null : "drop")}>
               <DecisionIcon d="drop" size={15} /> {OURS.drop}
             </button>
@@ -250,7 +250,7 @@ function Headline({ r, m, target }: { r: Row; m: Mutation; target: boolean }) {
         return <>changes the subjects of {ref}</>;
     }
   })();
-  return <div class="hl t-prose">{body}</div>;
+  return <div className="hl t-prose">{body}</div>;
 }
 
 /** Resolve a link target against the vault, then against this batch. The
@@ -261,9 +261,9 @@ function LinkTarget({ target, chip }: { target: string; chip?: boolean }) {
   if (note) return <Ref id={target} title={note.title ?? target} type={note.type} />;
   const pending = rows.value.find((x) => x.targetId === target && x.mutation.kind === "create_note");
   if (pending) {
-    return <span class="nref"><Ref title={pending.targetTitle} type={pending.targetType} />{chip && <span class="chip-batch t-data">pending in this batch</span>}</span>;
+    return <span className="nref"><Ref title={pending.targetTitle} type={pending.targetType} />{chip && <span className="chip-batch t-data">pending in this batch</span>}</span>;
   }
-  return <span class="dim t-data">{target}</span>;
+  return <span className="dim t-data">{target}</span>;
 }
 
 // ── zone 2: preview ─────────────────────────────────────────────────
@@ -279,10 +279,10 @@ function Preview(props: {
   const target = notesById.value.get(r.targetId);
   // The op icon lives on the preview zone (not the headline — a sentence
   // starting with an icon read wrong), keeping its education tooltip in the pane.
-  const opTag = <Term tip={OP_TIP[m.kind]}><span class="z-opi"><OpIcon kind={m.kind} size={13} /></span></Term>;
+  const opTag = <Term tip={OP_TIP[m.kind]}><span className="z-opi"><OpIcon kind={m.kind} size={13} /></span></Term>;
 
   const area = (id: string, text: string) => (
-    <textarea class="edit-area t-prose" rows={Math.min(10, Math.max(3, Math.ceil(text.length / 60)))}
+    <textarea className="edit-area t-prose" rows={Math.min(10, Math.max(3, Math.ceil(text.length / 60)))}
       value={props.drafts[id] ?? text}
       onInput={(e) => { const v = e.currentTarget.value; props.setDrafts((p) => ({ ...p, [id]: v })); }} />
   );
@@ -292,8 +292,8 @@ function Preview(props: {
   const wholeSections = (affectedKey: string, affected: ComponentChildren) => (
     <>
       {Object.entries(target?.sections ?? {}).map(([key, sec]) => (
-        <div key={key} class="nc-sec">
-          <div class="z-eye t-label t-label-s"><Skey k={key} /></div>
+        <div key={key} className="nc-sec">
+          <div className="z-eye t-label t-label-s"><Skey k={key} /></div>
           {key === affectedKey ? affected : splitLines(sec.text).map((l, i) => <Line key={i}>{l}</Line>)}
         </div>
       ))}
@@ -310,8 +310,8 @@ function Preview(props: {
     const addCh = (m.text ?? "").length;
     const addLines = editing ? area("__text", m.text ?? "") : adds.map((l, i) => <Line key={i} mode="add">{l}</Line>);
     return (
-      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span class="z-lab">{opTag}<Skey k={key} /> · {editing ? "editing proposed content" : OURS.zonePreview}</span>{props.controls}</>}
-        foot={<><span class="dim">+{addCh.toLocaleString()} · {(stored.length + addCh).toLocaleString()} ch</span>{capNote(r.targetId, key)}</>}>
+      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<Skey k={key} /> · {editing ? "editing proposed content" : OURS.zonePreview}</span>{props.controls}</>}
+        foot={<><span className="dim">+{addCh.toLocaleString()} · {(stored.length + addCh).toLocaleString()} ch</span>{capNote(r.targetId, key)}</>}>
         {whole ? (
           wholeSections(key, <>{storedLines.map((l, i) => <Line key={i}>{l}</Line>)}{addLines}</>)
         ) : (
@@ -335,8 +335,8 @@ function Preview(props: {
     const before = change?.before ?? target?.sections?.[key]?.text ?? "";
     const after = change?.after ?? m.section?.text ?? m.text ?? "";
     return (
-      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span class="z-lab">{opTag}<Skey k={key} /> · {editing ? "editing proposed content" : OURS.zoneDiff}</span>{props.controls}</>}
-        foot={<><span class="dim">{after.length >= before.length ? "+" : "−"}{Math.abs(after.length - before.length).toLocaleString()} · {after.length.toLocaleString()} ch</span>{capNote(r.targetId, key)}</>}>
+      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<Skey k={key} /> · {editing ? "editing proposed content" : OURS.zoneDiff}</span>{props.controls}</>}
+        foot={<><span className="dim">{after.length >= before.length ? "+" : "−"}{Math.abs(after.length - before.length).toLocaleString()} · {after.length.toLocaleString()} ch</span>{capNote(r.targetId, key)}</>}>
         {editing
           ? <>{splitLines(before).map((l, i) => <Line key={i} mode="del">{l}</Line>)}{area("__text", after)}</>
           : whole
@@ -352,15 +352,15 @@ function Preview(props: {
     const kws = m.note?.keywords ?? [];
     return (
       <Zone cls={`nc ${editing ? "is-editing" : ""}`}
-        eyebrow={<><span class="z-lab">{opTag}{OURS.zoneNewMemory} · {editing ? "editing proposed content" : OURS.zonePreview}</span>{props.controls}</>}
-        foot={<span class="dim">+{totalCh.toLocaleString()} ch · {OURS.zoneNewMemory}</span>}>
+        eyebrow={<><span className="z-lab">{opTag}{OURS.zoneNewMemory} · {editing ? "editing proposed content" : OURS.zonePreview}</span>{props.controls}</>}
+        foot={<span className="dim">+{totalCh.toLocaleString()} ch · {OURS.zoneNewMemory}</span>}>
         {secs.map(([key, s]) => {
           const lines = splitLines(s.text);
           const headLines = lines.slice(0, 3);
           const rest = lines.slice(3);
           return (
-            <div key={key} class="nc-sec">
-              <div class="z-eye t-label t-label-s"><Skey k={key} /></div>
+            <div key={key} className="nc-sec">
+              <div className="z-eye t-label t-label-s"><Skey k={key} /></div>
               {editing ? area(key, s.text ?? "") : (
                 <>
                   {headLines.map((l, i) => <Line key={i} mode="add">{l}</Line>)}
@@ -384,10 +384,10 @@ function Preview(props: {
   if (m.kind === "add_link") {
     const rel = (m.link?.relation ?? "").replaceAll("_", " ");
     return (
-      <Zone eyebrow={<span class="z-lab">{opTag}{OURS.zonePreview}</span>}>
-        <div class="linkrow">
+      <Zone eyebrow={<span className="z-lab">{opTag}{OURS.zonePreview}</span>}>
+        <div className="linkrow">
           <Ref id={notesById.value.has(r.targetId) ? r.targetId : undefined} title={r.targetTitle} type={r.targetType} />
-          <span class="rel t-data">— {rel} →</span>
+          <span className="rel t-data">— {rel} →</span>
           <LinkTarget target={m.link?.target ?? ""} chip />
         </div>
         <InlineMemory id={m.link?.target ?? ""} />
@@ -403,15 +403,15 @@ function Preview(props: {
     const added = next.filter((k) => !old.includes(k));
     const removed = old.filter((k) => !next.includes(k));
     return (
-      <Zone eyebrow={<span class="z-lab">{opTag}keywords · {OURS.zonePreview}</span>}
-        foot={<span class={next.length >= KEYWORD_CAP ? "fl" : "dim"}>{next.length} of {KEYWORD_CAP} keywords</span>}>
+      <Zone eyebrow={<span className="z-lab">{opTag}keywords · {OURS.zonePreview}</span>}
+        foot={<span className={next.length >= KEYWORD_CAP ? "fl" : "dim"}>{next.length} of {KEYWORD_CAP} keywords</span>}>
         {editing
           ? <KeywordEditor list={props.keywords ?? next} editing onChange={props.setKeywords} />
           : (
-            <div class="kwrap">
-              {kept.map((k) => <span key={k} class="kwc t-data">{k}</span>)}
-              {added.map((k) => <span key={k} class="kwc kw-add t-data">+ {k}</span>)}
-              {removed.map((k) => <span key={k} class="kwc kw-del t-data">− {k}</span>)}
+            <div className="kwrap">
+              {kept.map((k) => <span key={k} className="kwc t-data">{k}</span>)}
+              {added.map((k) => <span key={k} className="kwc kw-add t-data">+ {k}</span>)}
+              {removed.map((k) => <span key={k} className="kwc kw-del t-data">− {k}</span>)}
             </div>
           )}
         <Edu>{t("longtermmemorydetail.underTheHoodKeywords")}</Edu>
@@ -423,11 +423,11 @@ function Preview(props: {
     const from = target?.status ?? "?";
     const to = String(m.status ?? "");
     return (
-      <Zone eyebrow={<span class="z-lab">{opTag}{OURS.zonePreview}</span>}>
-        <div class="linkrow">
-          <span class="stt t-data">{from}</span>
-          <Forward class="dim-i" size={13} stroke={1.75} aria-hidden />
-          <span class={`stt t-data st-${to}`}>{to}</span>
+      <Zone eyebrow={<span className="z-lab">{opTag}{OURS.zonePreview}</span>}>
+        <div className="linkrow">
+          <span className="stt t-data">{from}</span>
+          <Forward className="dim-i" size={13} stroke={1.75} aria-hidden />
+          <span className={`stt t-data st-${to}`}>{to}</span>
         </div>
         <InlineMemory id={r.targetId} />
         <Edu>{t("memoryvault.statusHelp")}</Edu>
@@ -437,7 +437,7 @@ function Preview(props: {
 
   // set_subjects and anything the ops above did not claim: honest before/after.
   return (
-    <Zone eyebrow={<span class="z-lab">{opTag}{OURS.zonePreview}</span>}>
+    <Zone eyebrow={<span className="z-lab">{opTag}{OURS.zonePreview}</span>}>
       {r.changes.map((c, i) => (
         <div key={i}>
           {c.before && <Line mode="del">{c.before}</Line>}
@@ -481,8 +481,8 @@ function DiffLines({ before, after, fold = true }: { before: string; after: stri
       const w = wordEmphasis(ops[i].text, ops[i + 1].text);
       if (w) {
         out.push(
-          <Line key={`d${i}`} mode="del">{w.pre}<mark class="wd">{w.delMid}</mark>{w.post}</Line>,
-          <Line key={`a${i}`} mode="add">{w.pre}<mark class="wa">{w.addMid}</mark>{w.post}</Line>,
+          <Line key={`d${i}`} mode="del">{w.pre}<mark className="wd">{w.delMid}</mark>{w.post}</Line>,
+          <Line key={`a${i}`} mode="add">{w.pre}<mark className="wa">{w.addMid}</mark>{w.post}</Line>,
         );
         i += 2;
         continue;
@@ -507,11 +507,11 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
   const partner = r.duplicateOf ? rows.value.find((x) => x.key === r.duplicateOf!.key) : null;
 
   return (
-    <Zone cls="z-ev" eyebrow={<span class="z-lab">{OURS.zoneEvidence}</span>}>
-      {snippet && <div class="evq-q t-prose">{snippet}{snippet.length === 220 ? "…" : ""}</div>}
-      <div class="evq-a t-data">source: <Ref id={r.sourceNoteId} title={r.sourceTitle} type="source" /></div>
+    <Zone cls="z-ev" eyebrow={<span className="z-lab">{OURS.zoneEvidence}</span>}>
+      {snippet && <div className="evq-q t-prose">{snippet}{snippet.length === 220 ? "…" : ""}</div>}
+      <div className="evq-a t-data">source: <Ref id={r.sourceNoteId} title={r.sourceTitle} type="source" /></div>
 
-      <div class={`sig t-prose ${low ? "" : "sig-ok"}`} data-sev={low ? "warn" : undefined}>
+      <div className={`sig t-prose ${low ? "" : "sig-ok"}`} data-sev={low ? "warn" : undefined}>
         {/* Only the low branch gets a glyph. A flag marks an exception; the else
             branch marks the *absence* of one, which by this codebase's own
             precedent carries no mark — cf. Sources.tsx StateMark: "New carries
@@ -523,33 +523,33 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
         <span>extraction confidence {conf}%{low && <> — below the 93% threshold</>}</span>
       </div>
       {diags.map((f) => (
-        <div key={f.label} class="sig t-prose" data-sev={f.severity}>
+        <div key={f.label} className="sig t-prose" data-sev={f.severity}>
           <Flag size={13} stroke={1.75} aria-hidden />
           <span>{f.sentence}</span>
         </div>
       ))}
 
       {r.conflicts.map((c, i) => (
-        <div key={i} class="ev-rel">
-          <div class="z-eye t-label t-label-s">{c.field ?? "field"} · existing → proposed</div>
+        <div key={i} className="ev-rel">
+          <div className="z-eye t-label t-label-s">{c.field ?? "field"} · existing → proposed</div>
           <Line mode="del">{String(c.existing ?? "")}</Line>
           <Line mode="add">{String(c.proposed ?? "")}</Line>
         </div>
       ))}
       {r.restates && (
-        <div class="ev-rel">
-          <div class="z-eye t-label t-label-s">restates <NoteRef id={r.restates.noteId} label={notesById.value.get(r.restates.noteId)?.title ?? r.restates.noteId} /> · {r.restates.score.toFixed(2)}</div>
-          <div class="evq-q t-prose">{r.restates.line}</div>
+        <div className="ev-rel">
+          <div className="z-eye t-label t-label-s">restates <NoteRef id={r.restates.noteId} label={notesById.value.get(r.restates.noteId)?.title ?? r.restates.noteId} /> · {r.restates.score.toFixed(2)}</div>
+          <div className="evq-q t-prose">{r.restates.line}</div>
         </div>
       )}
       {partner && (
-        <div class="ev-rel">
-          <div class="z-eye t-label t-label-s">duplicate incoming → {partner.targetTitle} · {r.duplicateOf!.score.toFixed(2)}</div>
-          <div class="evq-q t-prose">{partner.text}</div>
+        <div className="ev-rel">
+          <div className="z-eye t-label t-label-s">duplicate incoming → {partner.targetTitle} · {r.duplicateOf!.score.toFixed(2)}</div>
+          <div className="evq-q t-prose">{partner.text}</div>
         </div>
       )}
 
-      <div class="readline t-data">
+      <div className="readline t-data">
         {OURS.zoneExtraction}:{" "}
         <Term tip={GLOSSARY[m.claimKind] ?? m.claimKind}>{m.claimKind}</Term> ·{" "}
         <Term tip={GLOSSARY[r.disposition] ?? r.disposition}>{OURS.disposition[r.disposition]}</Term> ·{" "}
@@ -577,31 +577,31 @@ function KeywordEditor({ list, editing, onChange, allNew }: {
     setEntry("");
   };
   if (!editing) {
-    return <div class="kwrap">{list.map((k) => <span key={k} class={`kwc t-data ${allNew ? "kw-add" : ""}`}>{allNew ? `+ ${k}` : k}</span>)}</div>;
+    return <div className="kwrap">{list.map((k) => <span key={k} className={`kwc t-data ${allNew ? "kw-add" : ""}`}>{allNew ? `+ ${k}` : k}</span>)}</div>;
   }
   return (
-    <div class="kwedit">
-      <div class="z-eye t-label t-label-s">
-        <span class="z-lab">{t("memoryvault.keywords")}</span>
-        <span class={`zcount t-data ${list.length >= KEYWORD_CAP ? "fl" : ""}`}>{list.length} / {KEYWORD_CAP}</span>
+    <div className="kwedit">
+      <div className="z-eye t-label t-label-s">
+        <span className="z-lab">{t("memoryvault.keywords")}</span>
+        <span className={`zcount t-data ${list.length >= KEYWORD_CAP ? "fl" : ""}`}>{list.length} / {KEYWORD_CAP}</span>
       </div>
-      <div class="kwrap">
+      <div className="kwrap">
         {list.map((k) => (
-          <span key={k} class="kwc kw-edit t-data">
+          <span key={k} className="kwc kw-edit t-data">
             {k}
-            <button class="kwx hit" aria-label={`Remove keyword ${k}`}
+            <button className="kwx hit" aria-label={`Remove keyword ${k}`}
               onClick={() => onChange(list.filter((x) => x !== k))}>
               <Remove size={11} stroke={2} aria-hidden />
             </button>
           </span>
         ))}
       </div>
-      <div class="kwadd">
-        <input class="t-data" value={entry} placeholder={t("memoryvault.addKeyword")}
+      <div className="kwadd">
+        <input className="t-data" value={entry} placeholder={t("memoryvault.addKeyword")}
           aria-label={t("memoryvault.addKeyword")}
           onInput={(e) => setEntry(e.currentTarget.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }} />
-        <button class="zbtn hit" onClick={add} disabled={!entry.trim()}>
+        <button className="zbtn hit" onClick={add} disabled={!entry.trim()}>
           <Add size={12} stroke={2} aria-hidden /> {t("memoryvault.addKeyword").toLowerCase()}
         </button>
       </div>

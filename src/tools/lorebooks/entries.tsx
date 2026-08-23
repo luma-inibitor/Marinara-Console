@@ -57,32 +57,32 @@ export function EntryDrawer(props: {
   const sub = (id: Sub, label: string, summary: ComponentChildren, body: () => ComponentChildren, flag = false) => {
     const isOpen = openSubs.has(id);
     return (
-      <div class={`sub ${isOpen ? "is-open" : ""} ${flag ? "has-error" : ""}`}>
-        <button class="sub-head" aria-expanded={isOpen} onClick={() => toggle(id)}>
-          <span class="t-label t-label-s">{label}{flag && <span class="err-dot" aria-label="has an error">●</span>}</span>
-          <span class="sub-summary t-data">{summary}</span>
-          <span class="caret" aria-hidden="true">{isOpen ? "▴" : "▾"}</span>
+      <div className={`sub ${isOpen ? "is-open" : ""} ${flag ? "has-error" : ""}`}>
+        <button className="sub-head" aria-expanded={isOpen} onClick={() => toggle(id)}>
+          <span className="t-label t-label-s">{label}{flag && <span className="err-dot" aria-label="has an error">●</span>}</span>
+          <span className="sub-summary t-data">{summary}</span>
+          <span className="caret" aria-hidden="true">{isOpen ? "▴" : "▾"}</span>
         </button>
-        {isOpen && <div class="sub-body">{body()}</div>}
+        {isOpen && <div className="sub-body">{body()}</div>}
       </div>
     );
   };
 
   const fieldErr = (field: string) =>
-    err(field) ? <p class="field-err t-data" role="alert">{err(field)}</p> : null;
+    err(field) ? <p className="field-err t-data" role="alert">{err(field)}</p> : null;
 
   return (
-    <div class="drawer" data-s={status}>
+    <div className="drawer" data-s={status}>
       {sub("keys", "Primary Keys",
         e.keys.length
           ? <><b>{e.keys.length}</b> · {e.keys.slice(0, 3).join(", ")}{e.keys.length > 3 ? "…" : ""}</>
-          : <span class="is-warn">none</span>,
+          : <span className="is-warn">none</span>,
         () => (
-          <div class="kchips">
+          <div className="kchips">
             {e.keys.map((k, i) => (
-              <span key={`${k}:${i}`} class={`kchip ${props.evHits.includes(k) ? "is-hit" : ""}`}>
-                <span class="kt">{k}</span>
-                <button class="x" aria-label={`Remove ${k}`}
+              <span key={`${k}:${i}`} className={`kchip ${props.evHits.includes(k) ? "is-hit" : ""}`}>
+                <span className="kt">{k}</span>
+                <button className="x" aria-label={`Remove ${k}`}
                   onClick={() => set("keys", e.keys.filter((_, j) => j !== i))}>
                   <Remove size={ICON_SIZE.xs} stroke={2} aria-hidden />
                 </button>
@@ -96,12 +96,12 @@ export function EntryDrawer(props: {
         <><b>{(e.description ?? "").length}</b> ch · <b>{tokensOf(e.description)}</b> tokens</>,
         () => (
           <>
-            <div class="fieldbar">
+            <div className="fieldbar">
               <Chip onClick={() => props.onExpand("description")}>
                 <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />Edit in full screen
               </Chip>
             </div>
-            <textarea class={`ta ${isDirty("description") ? "is-dirty" : ""}`} rows={4} value={e.description}
+            <textarea className={`ta ${isDirty("description") ? "is-dirty" : ""}`} rows={4} value={e.description}
               placeholder="Brief summary for routing."
               aria-invalid={!!err("description")}
               onInput={(ev) => set("description", ev.currentTarget.value)} />
@@ -113,12 +113,12 @@ export function EntryDrawer(props: {
         <><b>{(e.content ?? "").length}</b> ch · <b>{entryTokens(e)}</b> tokens</>,
         () => (
           <>
-            <div class="fieldbar">
+            <div className="fieldbar">
               <Chip onClick={() => props.onExpand("content")}>
                 <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />Edit in full screen
               </Chip>
             </div>
-            <textarea class={`ta is-mono ${isDirty("content") ? "is-dirty" : ""}`} rows={7} value={e.content}
+            <textarea className={`ta is-mono ${isDirty("content") ? "is-dirty" : ""}`} rows={7} value={e.content}
               aria-invalid={!!err("content")}
               onInput={(ev) => set("content", ev.currentTarget.value)} />
             {fieldErr("content")}
@@ -126,34 +126,34 @@ export function EntryDrawer(props: {
         ), !!err("content"))}
 
       {sub("trigger", "Trigger & Position",
-        <><span class="st">{STATUS_LABEL[status]}</span> · {POS_COMPACT[e.position] ?? ""} · Order <b>{e.order}</b></>,
+        <><span className="st">{STATUS_LABEL[status]}</span> · {POS_COMPACT[e.position] ?? ""} · Order <b>{e.order}</b></>,
         () => (
           <>
-            <div class="seg4">
+            <div className="seg4">
               {(["disabled", "normal", "constant", "selective"] as EntryStatus[]).map((v) => (
-                <button key={v} class="segbtn" data-v={v} aria-pressed={status === v}
+                <button key={v} className="segbtn" data-v={v} aria-pressed={status === v}
                   onClick={() => merge(
                     v === "disabled" ? { enabled: false }
                       : v === "constant" ? { enabled: true, constant: true, selective: false }
                       : v === "selective" ? { enabled: true, constant: false, selective: true }
                       : { enabled: true, constant: false, selective: false })}>
-                  <span class="d" aria-hidden="true" />{STATUS_LABEL[v]}
+                  <span className="d" aria-hidden="true" />{STATUS_LABEL[v]}
                 </button>
               ))}
             </div>
-            <p class="prose-note">{STATUS_HINT[status]}</p>
-            <div class="seg4">
+            <p className="prose-note">{STATUS_HINT[status]}</p>
+            <div className="seg4">
               {[0, 1, 2, 7].map((p) => (
-                <button key={p} class="segbtn is-pos t-data" aria-pressed={e.position === p}
+                <button key={p} className="segbtn is-pos t-data" aria-pressed={e.position === p}
                   onClick={() => set("position", p)}>{POS_COMPACT[p]}</button>
               ))}
             </div>
-            <div class="movebar">
+            <div className="movebar">
               <button aria-label="Lower order" onClick={() => set("order", Math.max(0, e.order - 10))}>−</button>
-              <span class="slot">
-                <input class="ordin t-num" type="number" value={e.order} aria-label="Order"
+              <span className="slot">
+                <input className="ordin t-num" type="number" value={e.order} aria-label="Order"
                   onInput={(ev) => set("order", Number(ev.currentTarget.value))} />
-                <span class="c">{POS_FULL[e.position] ?? ""}{e.position === 2 ? ` ${e.depth}` : ""}{e.position === 7 ? ` ${e.outletName || "—"}` : ""}</span>
+                <span className="c">{POS_FULL[e.position] ?? ""}{e.position === 2 ? ` ${e.depth}` : ""}{e.position === 7 ? ` ${e.outletName || "—"}` : ""}</span>
               </span>
               <button aria-label="Raise order" onClick={() => set("order", e.order + 10)}>＋</button>
             </div>
@@ -167,22 +167,22 @@ export function EntryDrawer(props: {
             {ADVANCED_FIELDS.map(([f, d]) => {
               const nd = e[f] !== undefined && JSON.stringify(e[f]) !== JSON.stringify(d);
               return (
-                <div key={f} class={`advrow ${nd ? "is-nd" : ""}`}>
-                  <span class="an t-data">{f}</span>
-                  <span class="av t-data">{JSON.stringify(e[f] ?? d)}</span>
+                <div key={f} className={`advrow ${nd ? "is-nd" : ""}`}>
+                  <span className="an t-data">{f}</span>
+                  <span className="av t-data">{JSON.stringify(e[f] ?? d)}</span>
                 </div>
               );
             })}
-            <div class="advrow"><span class="an t-data">vector</span><span class="av t-data">{e.hasEmbedding ? "yes" : "none"}</span></div>
-            <div class="advrow"><span class="an t-data">updated</span><span class="av t-data">{String(e.updatedAt ?? "").slice(0, 16).replace("T", " ")} UTC</span></div>
-            <button class="dangerbtn" onClick={props.onDelete}>Delete entry</button>
+            <div className="advrow"><span className="an t-data">vector</span><span className="av t-data">{e.hasEmbedding ? "yes" : "none"}</span></div>
+            <div className="advrow"><span className="an t-data">updated</span><span className="av t-data">{String(e.updatedAt ?? "").slice(0, 16).replace("T", " ")} UTC</span></div>
+            <button className="dangerbtn" onClick={props.onDelete}>Delete entry</button>
           </>
         ))}
 
-      {sub("name", "Name", <span class="t-data">{e.name || "Untitled entry"}</span>,
+      {sub("name", "Name", <span className="t-data">{e.name || "Untitled entry"}</span>,
         () => (
           <>
-            <input class={`tin ${isDirty("name") ? "is-dirty" : ""}`} value={e.name} placeholder="Untitled entry"
+            <input className={`tin ${isDirty("name") ? "is-dirty" : ""}`} value={e.name} placeholder="Untitled entry"
               aria-invalid={!!err("name")}
               onInput={(ev) => set("name", ev.currentTarget.value)} />
             {fieldErr("name")}
@@ -199,31 +199,31 @@ function SaveBar(props: { draft: Draft<Entry>; onSave: () => Promise<boolean> })
   const d = props.draft;
   if (d.conflict) {
     return (
-      <div class="savebar has-conflict" role="alertdialog">
-        <p class="t-label">Changed by someone else</p>
-        <p class="prose-note">
+      <div className="savebar has-conflict" role="alertdialog">
+        <p className="t-label">Changed by someone else</p>
+        <p className="prose-note">
           This entry was updated elsewhere while you were editing
           {d.conflict.fields.length > 0 && <> — the same {d.conflict.fields.length === 1 ? "field" : "fields"} you changed ({d.conflict.fields.join(", ")})</>}
           . Saving now would overwrite that.
         </p>
-        <div class="savebar-acts">
-          <button class="dbtn" onClick={d.takeTheirs}>Discard mine, load theirs</button>
-          <button class="dbtn is-primary" onClick={d.keepMine}>Re-apply mine over theirs</button>
+        <div className="savebar-acts">
+          <button className="dbtn" onClick={d.takeTheirs}>Discard mine, load theirs</button>
+          <button className="dbtn is-primary" onClick={d.keepMine}>Re-apply mine over theirs</button>
         </div>
       </div>
     );
   }
   return (
-    <div class={`savebar ${d.dirty ? "is-dirty" : ""}`}>
-      <span class="savebar-state t-data">
+    <div className={`savebar ${d.dirty ? "is-dirty" : ""}`}>
+      <span className="savebar-state t-data">
         {d.saving ? "Saving…"
-          : d.error ? <span class="is-err">{d.error}</span>
+          : d.error ? <span className="is-err">{d.error}</span>
           : d.dirty ? <><b>{d.dirtyFields.length}</b> unsaved {d.dirtyFields.length === 1 ? "change" : "changes"}</>
           : "No changes"}
       </span>
-      <div class="savebar-acts">
-        <button class="dbtn" disabled={!d.dirty || d.saving} onClick={d.cancel}>Cancel</button>
-        <button class="dbtn is-primary" disabled={!d.dirty || d.saving} onClick={() => void props.onSave()}>
+      <div className="savebar-acts">
+        <button className="dbtn" disabled={!d.dirty || d.saving} onClick={d.cancel}>Cancel</button>
+        <button className="dbtn is-primary" disabled={!d.dirty || d.saving} onClick={() => void props.onSave()}>
           {d.saving ? "Saving…" : "Save changes"}
         </button>
       </div>
@@ -241,7 +241,7 @@ function KeyAdd(props: { onAdd: (vals: string[]) => void }) {
   };
   return (
     <input
-      class="kadd-in t-data"
+      className="kadd-in t-data"
       value={v}
       placeholder="+ key"
       aria-label="Add key"
