@@ -6,12 +6,12 @@
 // rail (order is THE attribute of a prompt preset), enabled/role split into two
 // controls, save state always visible, titles wrap, markers labelled by type
 // rather than shown as "0 tokens", and optimistic writes that roll back.
+import { Chip, EmptyState, IconButton, Loading, ErrorState, ListEmpty, NotFound } from "../../ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { ComponentChildren } from "preact";
 import { navigate } from "../../shell/router";
 import { toast } from "../../shell/toast";
 import { useDraft, type Draft } from "../../shell/draft";
-import { Loading, ErrorState, NotFound, EmptyState } from "../../ui/states";
 import { ApiError } from "../../shell/api";
 import { tokensOf } from "../../shell/api";
 import { FullscreenText } from "../../ui/FullscreenText";
@@ -100,10 +100,10 @@ function Browser() {
       </div>
       <div class="chiprail">
         {(["tokens", "sections", "name"] as BrowserSort[]).map((k) => (
-          <button key={k} class="chip" aria-pressed={sort === k} onClick={() => setSort(k)}>
+          <Chip key={k} pressed={sort === k} onClick={() => setSort(k)}>
             {{ tokens: "Tokens", sections: "Sections", name: "Name" }[k]}
             {sort === k && <span class="ar"> ↓</span>}
-          </button>
+          </Chip>
         ))}
       </div>
 
@@ -141,8 +141,8 @@ function Browser() {
         );
       })}
       {visible.length === 0 && (presets.length === 0
-        ? <EmptyState kind="first-run" what="presets" />
-        : <EmptyState kind="filtered" what="presets"
+        ? <ListEmpty kind="first-run" what="presets" />
+        : <ListEmpty kind="filtered" what="presets"
             filters={query.trim() ? [{ label: `search: ${query.trim()}`, clear: () => setQuery("") }] : []}
             onClearAll={() => setQuery("")} />)}
     </div>
@@ -400,7 +400,7 @@ function Editor({ presetId }: { presetId: string }) {
       <div class="audit-list" ref={listRef} onKeyDown={onListKey}>
         <header class="console">
           <div class="hrow">
-            <button class="icon-btn" aria-label="Back to presets" onClick={() => navigate("presets")}>‹</button>
+            <IconButton label="Back to presets" onClick={() => navigate("presets")}>‹</IconButton>
             <h1 class="console-title is-wrapping">{full.preset.name}</h1>
             <span class={`savepill is-${sectionDraft.dirty || presetDraft.dirty ? "dirty" : pill}`}>
               {sectionDraft.dirty || presetDraft.dirty ? "Unsaved changes"
@@ -435,19 +435,19 @@ function Editor({ presetId }: { presetId: string }) {
             ))}
           </div>
           <div class="chiprail">
-            <button class="chip" onClick={() => setFs({ kind: "preset", field: "conversationPrompt" })}>
+            <Chip onClick={() => setFs({ kind: "preset", field: "conversationPrompt" })}>
               Conv prompt <b class="t-num">{tokensOf(expand(full.preset.conversationPrompt, full.preset))}</b>
-            </button>
-            <button class="chip" onClick={() => setFs({ kind: "preset", field: "gamePrompt" })}>
+            </Chip>
+            <Chip onClick={() => setFs({ kind: "preset", field: "gamePrompt" })}>
               Game prompt <b class="t-num">{tokensOf(expand(full.preset.gamePrompt, full.preset))}</b>
-            </button>
-            <button class="chip" onClick={() => setFs({ kind: "preset", field: "description" })}>Description</button>
+            </Chip>
+            <Chip onClick={() => setFs({ kind: "preset", field: "description" })}>Description</Chip>
           </div>
         </header>
 
         <main class="rows">
           {sections.length === 0 && (
-            <EmptyState kind="first-run" what="sections" />
+            <ListEmpty kind="first-run" what="sections" />
           )}
           {sections.map((s, i) => {
             const isOpen = !desktop && open.has(s.id);
@@ -501,10 +501,7 @@ function Editor({ presetId }: { presetId: string }) {
       {desktop && (
         <aside class="audit-detail">
           {focused ? detailFor(focused) : (
-            <div class="empty">
-              <p class="t-label" style="margin-bottom:8px">No sections</p>
-              <p>Add a section to start building this prompt.</p>
-            </div>
+            <EmptyState title="No sections" body="Add a section to start building this prompt." />
           )}
         </aside>
       )}

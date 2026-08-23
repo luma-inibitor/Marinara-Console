@@ -20,7 +20,11 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const SHEETS = ["base", "shell", "lorebooks", "memory"];
+// Every stylesheet under src/, found rather than listed. The hardcoded list
+// this replaced named four sheets and so never scanned src/ui/*.css — which
+// is precisely where the rules that go stale now live, since §8 gives each
+// component its own sheet. It also missed presets.css entirely, and with it
+// four dead rules left behind when the duplicate state components merged.
 
 // Composed prefixes and their value domains, read off the types in source.
 // Add an entry here whenever a new `prefix-${...}` appears in the JSX.
@@ -31,6 +35,7 @@ const DOMAINS = {
   "st-": ["active", "resolved", "archived"],
   "is-": ["dirty", "saved", "err"],       // SavePill
   "kw-": ["add", "del"],
+  "es-": ["ok", "danger"],          // EmptyState tone
 };
 
 const src = [];
@@ -51,17 +56,38 @@ const add = (s) => {
 for (const m of code.matchAll(/class(?:Name)?=(?:"([^"]*)"|\{`([^`]*)`\})/g)) add(m[1] ?? m[2]);
 for (const m of code.matchAll(/\bcls=(?:"([^"]*)"|\{`([^`]*)`\})/g)) add(m[1] ?? m[2]);
 for (const m of code.matchAll(/"([a-z][\w-]*(?: [\w-]+)*)"/g)) add(m[1]);   // case 3
+// Every template literal, not only the ones sitting in a class= attribute.
+// Sheet/Modal hand their class down as `surface={`sheet ${...}`}`, and the
+// tone icon in EmptyState nests a template inside its class template, which
+// the attribute patterns above cannot see past. Over-reporting live is the
+// safe direction to be wrong in (see the header).
+for (const m of code.matchAll(/`([^`]*)`/g)) add(m[1]);
+// And the literal head of any template, matched without needing to find its
+// closing backtick — nesting one template inside another desynchronises the
+// pairing above for everything after it in the file.
+for (const m of code.matchAll(/`([^`$]+)\$\{/g)) add(m[1]);
 for (const m of code.matchAll(/([a-z][\w-]*-)\$\{/g))
   for (const v of DOMAINS[m[1]] ?? []) live.add(m[1] + v);
 
+const SHEETS = [];
+(function sheets(dir) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) sheets(p);
+    else if (e.name.endsWith(".css")) SHEETS.push(p);
+  }
+})("src");
+
 let total = 0;
 for (const f of SHEETS) {
-  const css = fs.readFileSync(`src/styles/${f}.css`, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const css = fs.readFileSync(f, "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*@(?:import|charset|use)[^;]*;/gm, "");   // URLs are not selectors
   const names = new Set();
   for (const m of css.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) names.add(m[1]);
   const dead = [...names].filter((n) => !live.has(n)).sort();
   total += dead.length;
-  console.log(`src/styles/${f}.css: ${names.size} classes, ${dead.length} unused`);
+  if (names.size) console.log(`${f}: ${names.size} classes, ${dead.length} unused`);
   if (dead.length) console.log("   " + dead.join(" "));
 }
 console.log(total === 0 ? "\nno candidates" : `\n${total} candidates — verify each before deleting`);

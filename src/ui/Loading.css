@@ -7,3 +7,7 @@
   text-align: center;
   color: var(--text-dim);
 }
+
+/* The admission that it is slow rides on the same line rather than adding a
+   second one, so the pane does not change height while the reader waits. */
+.loading-slow { color: var(--text-faint, var(--text-dim)); }

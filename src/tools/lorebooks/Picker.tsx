@@ -1,7 +1,7 @@
+import { Loading, ErrorState, EmptyState, ListEmpty } from "../../ui";
 import { useEffect, useState } from "preact/hooks";
 import { navigate } from "../../shell/router";
 import { fetchBooks, fetchEntries, entryTokens, type Lorebook } from "./data";
-import { Loading, ErrorState, EmptyState } from "../../ui/states";
 
 // A book's stats are fetched per-book and can fail independently of the list.
 // A failed fetch must NOT render as zeros: "0 / 1,000 tokens" is indistinguishable
@@ -48,7 +48,7 @@ export function Picker() {
         <h1 class="screen-title">Lorebooks</h1>
         <span class="meta"><span>{books.length} {books.length === 1 ? "book" : "books"}</span></span>
       </div>
-      {books.length === 0 && <EmptyState kind="first-run" what="lorebooks" />}
+      {books.length === 0 && <ListEmpty kind="first-run" what="lorebooks" />}
       {books.map((b) => {
         const s = stats[b.id];
         const ok = s?.state === "ok" ? s : null;
