@@ -210,6 +210,13 @@ function snapshot(label: string, keys: string[]) {
   if (undoStack.length > 50) undoStack.shift();
 }
 
+/** Sources waiting to be imported, in the current scope. The nav badge reads
+ *  this. It used to read the count of source notes already imported, so the
+ *  badge beside Sources meant "done" while the badge beside Review meant
+ *  "waiting" — the same channel carrying opposite meanings (owner's call,
+ *  2026-08-22). Null until the Sources screen has computed it once. */
+export const pendingSources = signal<number | null>(null);
+
 export const canUndo = signal(false);
 
 export function undo() {

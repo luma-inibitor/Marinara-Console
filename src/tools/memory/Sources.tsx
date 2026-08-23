@@ -26,7 +26,7 @@ import {
 import { t, OURS } from "./strings";
 import { focusSource, refreshLtmStatus } from "./MemoryTool";
 import { TypeIcon } from "./icons";
-import { scopeChatId, setScope } from "./store";
+import { pendingSources, scopeChatId, setScope } from "./store";
 import {
   buildSources, isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,
@@ -160,6 +160,7 @@ export function Sources() {
 
   const rows = useMemo(() => buildSources(previews, review, notes), [previews, review, notes]);
   const { pending, imported, all } = partition(rows);
+  useEffect(() => { pendingSources.value = pending.length; }, [pending.length]);
   const blockedDrafts = useMemo(
     () => (review?.sources ?? []).flatMap((s) => s.drafts.filter((d) => d.blockReasons.length)),
     [review]);
