@@ -21,14 +21,14 @@ import { SECTION_CAP as CAP } from "./data";
 import { refreshLtmStatus } from "./MemoryTool";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { signal } from "@preact/signals";
-import { IconFlag, IconCircleCheck, IconCircleX, IconDotsVertical, IconWriting, IconChevronDown, IconChevronRight } from "@tabler/icons-preact";
+import { IconFlag, IconCircleCheck, IconCircleX, IconDotsVertical, IconWriting } from "@tabler/icons-preact";
 import { DecisionIcon, OpIcon, TypeIcon } from "./icons";
 import { Term, OP_TIP } from "./glossary";
 import { flagsOf, worstSeverity, contributionChars } from "./flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./NotePeek";
-import { Chip, collapsedGroups, FacetDrawer, IconButton, Picker, useIsDesktop } from "../../ui";
+import { Chip, collapsedGroups, FacetDrawer, IconButton, ListGroup, Picker, useIsDesktop } from "../../ui";
 
 const RESTORE_POINT_THRESHOLD = 20;
 
@@ -407,17 +407,14 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   // Section counts dropped from the header (Luma 2026-08-21: titles get the room).
   const chars = isTarget ? g.rows.reduce((n, r) => n + contributionChars(r), 0) : 0;
   return (
-    <div>
-      {/* Same grid as the rows: chevron in the rail (the control column gets
-          a control), type icon in the kind column, words in the body. The
-          new-target marker is the 2a green edge (owner call, color-only
-          tradeoff accepted) — an edge, so nothing in the title line shifts. */}
-      <div class={`mem-ghead ${isNew ? "is-new" : ""}`}>
-        <button class="gexp hit" aria-expanded={!collapsed}
-          aria-label={`${collapsed ? "Expand" : "Collapse"} ${g.label} (${g.rows.length})`}
-          onClick={() => collapse.toggle(g.id)}>
-          {collapsed ? <IconChevronRight size={16} stroke={1.75} aria-hidden /> : <IconChevronDown size={16} stroke={1.75} aria-hidden />}
-        </button>
+    /* Same grid as the rows: chevron in the rail (the control column gets a
+       control), type icon in the kind column, words in the body. The
+       new-target marker is the 2a green edge (owner call, color-only tradeoff
+       accepted) — an edge, so nothing in the title line shifts. */
+    <ListGroup class={`mem-ghead ${isNew ? "is-new" : ""}`}
+        collapsed={collapsed} onToggle={() => collapse.toggle(g.id)}
+        label={g.label} count={g.rows.length}
+        head={<>
         {isTarget && g.meta && <TypeIcon type={g.meta} />}
         <div class="ghead-body">
         <span class="gn t-prose">{g.label}</span>
@@ -448,9 +445,9 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
           {isTarget && <GroupMenu group={g} kept={kept} dropped={dropped} isNew={isNew} />}
         </span>
         </div>
-      </div>
-      {!collapsed && g.rows.map((r) => <ClaimRow key={r.key} row={r} showTarget={props.showTarget} onActivate={props.onActivate} />)}
-    </div>
+      </>}>
+      {g.rows.map((r) => <ClaimRow key={r.key} row={r} showTarget={props.showTarget} onActivate={props.onActivate} />)}
+    </ListGroup>
   );
 }
 

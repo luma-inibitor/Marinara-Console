@@ -31,7 +31,7 @@ import {
   buildSources, isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,
 } from "./sourceModel";
-import { collapsedGroups, Edu, EmptyState, IconButton, Modal, ModePill, MODES, SearchBar, fuzzyFilter } from "../../ui";
+import { collapsedGroups, Edu, EmptyState, IconButton, ListGroup, Modal, ModePill, MODES, SearchBar, fuzzyFilter } from "../../ui";
 import { closeTopOverlay } from "../../shell/overlays";
 
 /** Above this many sources, spending model calls raises a confirm first. */
@@ -238,14 +238,10 @@ export function Sources() {
           const eligible = group.filter(isSelectable);
           const allPicked = eligible.length > 0 && eligible.every((r) => selected.has(r.sourceId));
           return (
-            <div key={id + gname}>
-              <div class="sghead">
-                <button class="gexp hit" aria-expanded={!collapsed}
-                  aria-label={`${collapsed ? "Expand" : "Collapse"} ${heading} (${group.length})`}
-                  onClick={() => collapse.toggle(gid)}>
-                  {collapsed ? <IconChevronRight size={15} stroke={1.75} aria-hidden />
-                             : <IconChevronDown size={15} stroke={1.75} aria-hidden />}
-                </button>
+            <ListGroup key={id + gname} class="sghead" chevronSize={15}
+              collapsed={collapsed} onToggle={() => collapse.toggle(gid)}
+              label={heading} count={group.length}
+              head={<>
                 <span class="ki"><KI size={15} stroke={1.75} aria-hidden /></span>
                 <span class="gname t-prose">{heading}</span>
                 <span class="gn t-data">{group.length}</span>
@@ -262,13 +258,13 @@ export function Sources() {
                   </button>
                 )}
                 {!bulk && <span class="gact-note t-data dim">{OURS.sourcesReviewEach}</span>}
-              </div>
-              {!collapsed && group.map((r) => (
+              </>}>
+              {group.map((r) => (
                 <SourceLine key={r.sourceId} row={r} bulk={bulk}
                   selected={selected.has(r.sourceId)} onToggle={() => toggle(r.sourceId)}
                   onReload={load} />
               ))}
-            </div>
+            </ListGroup>
           );
           });
         })}
