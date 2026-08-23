@@ -49,6 +49,22 @@ owner decision after explanation.
 
 ## Owner feedback queue
 
+- **Navigation SHIPPED (2026-08-22).** Scope lives in the memory tool header
+  above the views (it decides what they show, and it is the phone's order
+  too); views are Sources / Vault / Review with icons and counts as badges;
+  the shoehorned status line is gone. Mode is a segmented DM/RP/GM filter on
+  Sources, not a scope level. Verify green at 390/486/768/1280.
+  - **Branch scope needs an endpoint.** The wireframes draw character → chat →
+    branch. Only the first two ship: this console has no `/branches` route and
+    chats carry no branch field, so branch is left out rather than rendered as
+    a control that can never work. Upstream has it, so the capability exists;
+    the console needs the route exposed.
+  - **Activity view is designed, not built.** The fourth tab is in the
+    wireframes with its badge. It is the prerequisite for undo.
+  - **Index health has no home now.** It left the status line; the design says
+    it becomes an alert that is silent when fine. Not built.
+
+
 - **[Luma] Navigation + scope wireframes — IN REVIEW (2026-08-22).**
   public/mockups/nav-wire.html (low fidelity, greyscale, layout only). Four
   views confirmed: Review Queue / Memory Vault / Sources / **Activity** (job

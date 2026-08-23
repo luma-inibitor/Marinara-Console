@@ -47,9 +47,17 @@ export const facetSheetOpen = signal(false);
  *  records it into a draft's extraction context, so changing it after an
  *  extraction is what makes drafts go stale. */
 export const scopeChatId = signal<string>(localStorage.getItem("mc-ltm-chat") ?? "");
+export const scopeCharacterId = signal<string>(localStorage.getItem("mc-ltm-character") ?? "");
 export function setScope(id: string) {
   scopeChatId.value = id;
   localStorage.setItem("mc-ltm-chat", id);
+}
+/** Choosing a character narrows the chats below it, so a chat that no longer
+ *  belongs to the scope cannot stay selected. */
+export function setScopeCharacter(id: string) {
+  scopeCharacterId.value = id;
+  localStorage.setItem("mc-ltm-character", id);
+  if (id) setScope("");
 }
 export const saveState = signal<"saved" | "saving" | "failed">("saved");
 export const applying = signal(false);

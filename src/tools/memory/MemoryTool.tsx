@@ -5,6 +5,8 @@ import { useEffect } from "preact/hooks";
 import { navigate } from "../../shell/router";
 import { ltmStatus, rebuildIndexes, type LtmStatus } from "./data";
 import { signal } from "@preact/signals";
+import { IconFileImport, IconLibrary, IconListCheck, type Icon } from "@tabler/icons-preact";
+import { ScopeBar, useScopeData } from "./ScopeBar";
 import { toast } from "../../shell/toast";
 import { t, OURS } from "./strings";
 import { Review } from "./Review";
@@ -41,6 +43,11 @@ export function consumeFocusSource(): string | null {
 // fit a phone without truncating. Sources first — material arrives there —
 // then Vault, Review, Activity. Review stays the default landing view because
 // it is the work.
+const VIEW_ICON: Record<string, Icon> = {
+  sources: IconFileImport,   // the screen's own verb
+  vault: IconLibrary,        // database is taken: it is the source-note type icon
+  review: IconListCheck,
+};
 const VIEWS = [
   { id: "sources", label: () => OURS.nav.sources },
   { id: "vault", label: () => OURS.nav.vault },
@@ -49,6 +56,7 @@ const VIEWS = [
 
 export function MemoryTool({ rest }: { rest: string[] }) {
   const view = VIEWS.some((v) => v.id === rest[0]) ? rest[0] : "review";
+  const { chats, characters } = useScopeData();
 
   useEffect(() => { void refreshLtmStatus(); }, [view]);
 
@@ -79,24 +87,27 @@ export function MemoryTool({ rest }: { rest: string[] }) {
   };
   return (
     <div class="memory-tool">
+      {/* Scope above the views: it decides what every view shows, and this is
+          the same order the phone uses. The old status line is gone — its
+          counts are badges on the tabs, and index health is an alert below
+          rather than a word in the corner. */}
+      <ScopeBar chats={chats} characters={characters} />
       <nav class="mem-nav" aria-label="Memory views">
-        {VIEWS.map((v) => (
-          <button key={v.id} class="mem-tab t-label" aria-current={view === v.id ? "page" : undefined}
-            onClick={() => { if (v.id === "review") activeFacets.value = new Map(); navigate(`memory/${v.id}`); }}>
-            {v.label()}
-            {v.id === "review" && (review.value?.counts.mutations ?? s?.notes.pendingDrafts ?? 0) > 0 && (
-              <b class="mem-badge t-data">{review.value?.counts.mutations ?? s?.notes.pendingDrafts}</b>
-            )}
-          </button>
-        ))}
-        {s ? (
-          <span class="mem-status t-data" data-contrast-exempt>
-            {s.notes.savedMemories} memories · {s.notes.sourceNotes} sources ·{" "}
-            <span class={health === "healthy" ? "is-keep" : health === "not_built" ? "dim" : "is-drop"}>index {health!.replaceAll("_", " ")}</span>
-          </span>
-        ) : statusFailed.value ? (
-          <span class="mem-status t-data is-drop">status unavailable</span>
-        ) : null}
+        {VIEWS.map((v) => {
+          const I = VIEW_ICON[v.id];
+          const count = v.id === "review" ? (review.value?.counts.mutations ?? s?.notes.pendingDrafts ?? 0)
+            : v.id === "vault" ? (s?.notes.savedMemories ?? 0)
+            : (s?.notes.sourceNotes ?? 0);
+          return (
+            <button key={v.id} class="mem-tab t-label" aria-current={view === v.id ? "page" : undefined}
+              onClick={() => { if (v.id === "review") activeFacets.value = new Map(); navigate(`memory/${v.id}`); }}>
+              <I size={15} stroke={1.75} aria-hidden />
+              {v.label()}
+              {count > 0 && <b class="mem-badge t-data">{count}</b>}
+            </button>
+          );
+        })}
+        {statusFailed.value && <span class="mem-status t-data is-drop">status unavailable</span>}
       </nav>
       {(unhealthy || noEmbeddings) && (
         <div class="health-banner">

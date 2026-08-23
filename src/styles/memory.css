@@ -655,3 +655,48 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
   border: var(--hairline); border-radius: var(--r-s); color: var(--text); padding: 0 var(--s2); }
 .kwadd input:focus { outline: none; border-color: var(--accent); }
 .kwadd .zbtn { min-height: 34px; }
+
+/* ══ SCOPE BAR + NAV (approved wireframes, public/mockups/nav-wire.html) ══
+   Scope sits above the views because it decides what they show, and it is the
+   same order the phone uses. Each level is its own disclosure, so opening
+   "chat" does not disturb the character above it. The search inside a
+   disclosure never autofocuses: opening a picker should not take the keyboard
+   from someone who came to click. */
+.scoperow { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap;
+  padding: var(--s2) var(--s3); border-bottom: var(--hairline); }
+.scopelevel { position: relative; }
+.scopesel { display: inline-flex; align-items: center; gap: 6px; min-height: 32px;
+  background: var(--surface-2); border: var(--hairline); border-radius: var(--r-s);
+  color: var(--text); padding: 0 var(--s2); max-width: 240px; }
+.scopesel svg { flex: 0 0 auto; display: block; color: var(--text-dim); }
+.scopeval { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.scopepop { position: absolute; z-index: 60; top: calc(100% + 6px); left: 0;
+  width: min(300px, calc(100vw - 32px)); background: var(--surface-1);
+  border: 1px solid var(--edge-strong); border-radius: var(--r-m);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55); padding: var(--s2); }
+.scopesearch { margin-bottom: var(--s2); }
+.scopelist { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; }
+.scopeopt { display: flex; align-items: center; gap: var(--s2); min-height: 34px;
+  padding: 0 var(--s2); border: none; background: none; color: var(--text);
+  border-radius: var(--r-s); text-align: left; font-size: 13px; }
+.scopeopt:hover { background: var(--surface-2); }
+.scopeopt.is-on { background: var(--accent-wash); color: var(--text); }
+.scopeoptname { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scopeopthint { color: var(--text-dim); flex: 0 0 auto; }
+.scopenone { padding: var(--s2); margin: 0; }
+/* the view tabs carry their own counts; the status line is gone */
+.mem-tab { display: inline-flex; align-items: center; gap: 6px; }
+.mem-tab svg { display: block; flex: 0 0 auto; }
+/* mode: a segmented filter, each segment independent, constant width */
+.modepill2 { display: inline-flex; border: var(--hairline); border-radius: var(--r-s);
+  overflow: hidden; flex: 0 0 auto; }
+.mseg2 { display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  min-width: 58px; min-height: 40px; padding: 0 var(--s2); background: none; border: none;
+  border-right: var(--hairline); color: var(--text-faint); }
+.mseg2:last-child { border-right: none; }
+.mseg2 svg { display: block; }
+.mseg2[aria-pressed="true"] { color: var(--text); background: var(--surface-3); }
+@media (max-width: 720px) {
+  .scoperow { padding: var(--s2); }
+  .scopesel { max-width: 44vw; }
+}

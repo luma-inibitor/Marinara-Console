@@ -14,7 +14,7 @@ import {
   IconBook2, IconMessageCircle, IconUser, IconSearch, IconFilter, IconChevronRight,
   IconChevronDown, IconExternalLink, IconCheck, IconRefreshAlert, IconAdjustments,
   IconAlertTriangle, IconUnlink, IconSparkles, IconInfoCircle, IconPencil, IconArrowRight,
-  IconCircleCheck, IconCircleDashed,
+  IconCircleCheck, IconCircleDashed, IconMessage, IconMasksTheater, IconDeviceGamepad2,
 } from "@tabler/icons-preact";
 import { navigate } from "../../shell/router";
 import { api } from "../../shell/api";
@@ -90,6 +90,28 @@ function Edu({ children }: { children: preact.ComponentChildren }) {
 
 interface Chat { id: string; name?: string; mode?: string }
 
+/** The three chat modes as a segmented pill: each segment toggles on its own,
+ *  all three lit means no filter, and the width never changes. */
+const MODES = [
+  { id: "conversation", short: "DM", Icon: IconMessage },
+  { id: "roleplay", short: "RP", Icon: IconMasksTheater },
+  { id: "game", short: "GM", Icon: IconDeviceGamepad2 },
+];
+
+function ModePill({ on, onToggle }: { on: Set<string>; onToggle: (id: string) => void }) {
+  return (
+    <div class="modepill2" role="group" aria-label="Filter by mode">
+      {MODES.map(({ id, short, Icon }) => (
+        <button key={id} class="mseg2 hit" aria-pressed={on.has(id)}
+          aria-label={`${short} — ${id}`} onClick={() => onToggle(id)}>
+          <Icon size={13} stroke={1.75} aria-hidden />
+          <span class="t-data">{short}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 const openRow = signal<string | null>(null);
 const railView = signal<"pending" | "imported" | "all">("pending");
 
@@ -115,6 +137,9 @@ export function Sources() {
   const [review, setReview] = useState<Awaited<ReturnType<typeof fetchReview>> | null>(null);
   const [chats, setChats] = useState<Chat[]>([]);
   const [q, setQ] = useState("");
+  // Mode filters what a source imports as. It is not a scope level: it does not
+  // cascade, and the engine records it separately from scope (nav-wire §N6).
+  const [modes, setModes] = useState<Set<string>>(new Set(MODES.map((m) => m.id)));
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [job, setJob] = useState<{ done: number; total: number; stopped?: boolean } | null>(null);
@@ -152,7 +177,8 @@ export function Sources() {
 
   const view = railView.value === "pending" ? pending : railView.value === "imported" ? imported : all;
   const needle = q.trim().toLowerCase();
-  const shown = needle ? view.filter((r) => r.title.toLowerCase().includes(needle)) : view;
+  const byMode = modes.size === MODES.length ? view : view.filter((r) => modes.has(r.importMode));
+  const shown = needle ? byMode.filter((r) => r.title.toLowerCase().includes(needle)) : byMode;
 
   const selectedRows = rows.filter((r) => selected.has(r.sourceId));
   const toggle = (id: string) => setSelected((prev) => {
@@ -194,13 +220,17 @@ export function Sources() {
   return (
     <div class="audit"><div class="audit-list">
       <header class="console">
-        <ScopeBar chats={chats} />
         <div class="sbar">
           <label class="sinput">
             <IconSearch size={14} stroke={1.75} aria-hidden />
             <input class="t-prose" placeholder="Search sources" value={q}
               onInput={(e) => setQ(e.currentTarget.value)} aria-label="Search sources" />
           </label>
+          <ModePill on={modes} onToggle={(id) => setModes((prev) => {
+            const n = new Set(prev);
+            n.has(id) ? n.delete(id) : n.add(id);
+            return n.size ? n : new Set(MODES.map((m) => m.id)); // never filter everything away
+          })} />
         </div>
         <div class="qrail">
           <RailChip id="pending" label={OURS.sourcesPending} n={pending.length} />
@@ -308,25 +338,6 @@ function RailChip({ id, label, n }: { id: "pending" | "imported" | "all"; label:
   );
 }
 
-function ScopeBar({ chats }: { chats: Chat[] }) {
-  const current = chats.find((c) => c.id === scopeChatId.value);
-  return (
-    <div class="scopebar">
-      <label class="scopelab t-label t-label-s" for="scope-sel">{t("sourcesworkspace.importScope")}</label>
-      <select id="scope-sel" class="scopesel t-prose" value={scopeChatId.value}
-        onChange={(e) => setScope(e.currentTarget.value)}>
-        <option value="">{t("sourcesworkspace.allChats")}</option>
-        {chats.map((c) => <option key={c.id} value={c.id}>{c.name ?? c.id}</option>)}
-      </select>
-      <span class="gsp" />
-      <span class="scopehint t-data dim">
-        <IconInfoCircle size={12} stroke={1.75} aria-hidden />
-        <span>{t("sourcesworkspace.limitImportsToThisChatAndItsRelatedScope")}</span>
-      </span>
-      {current && <span class="sr-only">Scoped to {current.name ?? current.id}</span>}
-    </div>
-  );
-}
 
 // ── one line per source, expanding in place ─────────────────────────
 // Chat summaries expand to their extraction text, because they must be
