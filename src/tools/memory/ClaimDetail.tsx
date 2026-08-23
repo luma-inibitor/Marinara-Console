@@ -517,8 +517,8 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
             precedent carries no mark — cf. Sources.tsx StateMark: "New carries
             no mark — it is the majority state, and marking it would put a
             symbol on nearly every row while the exceptions fought for
-            attention." (The circle family is reserved for decision states
-            anyway; confidence is not a decision.) */}
+            attention." (A tick/cross/dash inside a circle is reserved for
+            decision states anyway; confidence is not a decision.) */}
         {low && <Flag size={13} stroke={1.75} aria-hidden />}
         <span>extraction confidence {conf}%{low && <> — below the 93% threshold</>}</span>
       </div>

@@ -101,8 +101,9 @@
                        accent — the interactive hue)
      background wash   row decision state (keep / drop)
      top shadow strip  sticky seam guard (Android repaint lag)
-     ring icons        decision states only (closed outline, state mark inside;
-                       a speech bubble is not a ring)
+     tick/cross/dash   decision states only — what is reserved is the interior
+                       mark, not the round outline (a speech tail, an i or an
+                       ! inside a circle is a different object, and is free)
      flag glyph        exception flags only
      file/script icons content ops · categorical-hue icons: note types */
 

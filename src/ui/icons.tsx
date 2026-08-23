@@ -7,19 +7,26 @@
 //
 // ── The silhouette families (DESIGN.md §5, owner-decided; do not re-litigate)
 //
-//   rings        decision states ONLY — keep / drop / undecided. A "ring" is a
-//                closed outline whose whole content is the state mark; a glyph
-//                that merely contains a curve (message-circle, info-circle) is
-//                a different object and is NOT in this family — owner-decided
-//                2026-08-23.
+//   decision     decision states ONLY — keep / drop / undecided. What is
+//                reserved is the INTERIOR MARK, not the round outline: a round
+//                outline holding a tick, a cross, or a dashed edge is this
+//                family. A round outline holding anything else (an `i`, an
+//                `!`, an arc, a speech tail) is a different object and is free
+//                — info-circle, message-circle, alert-circle and progress-alert
+//                are all fine. `progress-x` is NOT: `✗` is a reserved interior,
+//                and the segmented arc puts it visually between circle-dashed
+//                (undecided) and circle-x (drop). Only the reserved interiors
+//                can be misread as a decision, which is the whole point of the
+//                rule — owner-decided 2026-08-23.
 //   flag         exception flags ONLY
 //   files+script content ops — script = the whole note, file = one section;
 //                the shared + marks the two additive ops, the pencil marks the
 //                one op that replaces instead of adds
 //
 // No icon may borrow another family's silhouette. That rule killed `flag-2`
-// for status and a bare pencil for the edited mark. If you reach for a ring
-// and you are not naming a decision, you have the wrong icon.
+// for status and a bare pencil for the edited mark. If you reach for a round
+// glyph whose interior is a tick, a cross, or a dashed edge and you are not
+// naming a decision, you have the wrong icon.
 //
 // Domain mappings that are *taxonomies* (note types, mutation ops, source
 // kinds) live next to their meaning in this file too, keyed by the domain
@@ -35,7 +42,7 @@ import {
   IconDotsVertical, IconEye, IconCode,
   // signals
   IconInfoCircle, IconFlag, IconAlertTriangle, IconSparkles,
-  // the decision family — rings, reserved
+  // the decision family — reserved interiors: tick / cross / dashed edge
   IconCircleCheck, IconCircleX, IconCircleDashed,
   // empty states
   IconInbox, IconQuestionMark,
@@ -147,8 +154,9 @@ export const Duplicate = IconCopy;              // make a second copy of a
 export const SetDefault = IconStar;             // mark the record the app
                                                 // reaches for when unasked
 export const SelectMode = IconCheckbox;         // enter multi-select on a list.
-                                                // A square, not a ring: the
-                                                // rings are decision states.
+                                                // A square, not a ticked round
+                                                // glyph: that interior belongs
+                                                // to the decision family.
 export const Tags = IconHash;                   // the tag DISTRIBUTION panel.
                                                 // Not IconTags — that is the
                                                 // `set_keywords` mutation op,
@@ -161,7 +169,7 @@ export const Flag = IconFlag;                   // exception flags + computed ou
 export const Alert = IconAlertTriangle;         // failure
 export const Cost = IconSparkles;               // spends model calls
 
-// the decision family — rings, reserved (see header)
+// the decision family — the reserved interiors (see header)
 export const DECISION_ICON: Record<"keep" | "drop" | "undecided", Icon> = {
   keep: IconCircleCheck,
   drop: IconCircleX,
@@ -172,13 +180,14 @@ export const DECISION_ICON: Record<"keep" | "drop" | "undecided", Icon> = {
 export const FirstRun = IconInbox;              // nothing added yet
 export const Missing = IconQuestionMark;        // record does not exist
 export const AllClear = IconCircleCheck;        // empty state: everything handled.
-                                                // Borrows the decision family's
-                                                // ring today — a true ring, so
-                                                // this is the real violation the
-                                                // rule names, which the header
-                                                // rule says it should not — known
-                                                // DESIGN.md tension, flagged for
-                                                // the owner. Glyph unchanged for
+                                                // A reserved interior (the tick)
+                                                // on a non-decision — exactly the
+                                                // confusion the rule exists to
+                                                // prevent, and still a violation
+                                                // under the loosened 2026-08-23
+                                                // wording. Known DESIGN.md
+                                                // tension, flagged for the
+                                                // owner. Glyph unchanged for
                                                 // now so the refactor stays pure.
 
 // memory tool views. `database` is taken — it is the source-note type icon.
@@ -264,11 +273,12 @@ export function Glyph(props: {
 }
 
 export const Pending = IconCircleDashed;        // "work still waiting on you".
-                                                // Like `AllClear`, this borrows
-                                                // the reserved decision-family
-                                                // ring (a true ring, not a
-                                                // glyph that merely curves)
-                                                // — known DESIGN.md
+                                                // Like `AllClear`, this wears a
+                                                // reserved interior (the dashed
+                                                // edge = undecided) on a
+                                                // non-decision, so the loosened
+                                                // 2026-08-23 rule still catches
+                                                // it — known DESIGN.md
                                                 // tension, flagged for the
                                                 // owner. Glyph unchanged for
                                                 // now so the refactor stays pure.

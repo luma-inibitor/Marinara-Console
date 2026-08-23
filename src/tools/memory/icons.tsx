@@ -9,11 +9,13 @@
 //
 // Op semantics: script = the whole note (a bundle of sections), file = one
 // section; the shared + marks the two additive ops; the pencil marks the one
-// op that replaces instead of adds. Rings are reserved for the decision
-// family; the flag is reserved for exception flags — no op or type icon may
-// use either silhouette. "Ring" means a closed outline whose whole content is
-// the state mark; a glyph that merely contains a curve (the chat_summary
-// speech bubble) is not in the family — owner-decided 2026-08-23.
+// op that replaces instead of adds. The decision family is reserved, as is
+// the flag (exception flags only) — no op or type icon may take either.
+// What the decision family reserves is the INTERIOR MARK, not the round
+// outline: a round glyph holding a tick, a cross, or a dashed edge is a
+// decision state. A round glyph holding anything else — the chat_summary
+// speech tail, an `i`, an `!`, an arc — is a different object and is free
+// (owner-decided 2026-08-23).
 
 import { TYPE_ICON, OP_ICON, DECISION_ICON, type Icon as IconC } from "../../ui/icons";
 import type { Mutation } from "./data";

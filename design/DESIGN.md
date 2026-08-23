@@ -182,14 +182,20 @@ exists, use it; if it needs a new one, add it here in the same change.
   visual authority. Counts exclude the facet's own filter ("what would I get if I
   toggled this"). 3-5 quick chips stay inline; the sheet holds the long tail.
 - **Icon vocabulary** (`@tabler/icons-preact`; memory tool: `icons.tsx`) — icons
-  are reserved silhouette families: rings = decision states, the flag =
-  exception flags, files/scripts = content ops (script = whole note, file = one
-  section; shared + marks additive ops, pencil marks replacement). A ring is a
-  closed outline whose entire content is the state mark (check / x / dashed);
-  a glyph that merely contains a curve — a speech bubble, an info dot — is not
-  in the family (owner-decided 2026-08-23). No icon may borrow another family's
-  silhouette (that rule killed `flag-2` for status and
-  a bare pencil for the edited mark). Type icons carry the categorical hue.
+  are reserved silhouette families: the decision family = decision states, the
+  flag = exception flags, files/scripts = content ops (script = whole note,
+  file = one section; shared + marks additive ops, pencil marks replacement).
+  What the decision family reserves is the **interior mark, not the round
+  outline**: a round outline holding a tick, a cross, or a dashed edge is a
+  decision state; a round outline holding anything else (an `i`, an `!`, an
+  arc, a speech tail) is a different object and is free — so `info-circle`,
+  `message-circle` and `alert-circle`/`progress-alert` are fine, while
+  `progress-x` is not (`✗` is reserved, and its segmented arc reads between
+  undecided and drop). Only the reserved interiors can be misread as a
+  decision; that is the whole point of the rule (owner-decided 2026-08-23).
+  No icon may borrow another family's silhouette (that rule killed `flag-2`
+  for status and a bare pencil for the edited mark). Type icons carry the
+  categorical hue.
   Owner-decided mapping lives in BACKLOG.md; don't re-litigate per screen.
 - **Styling** — Tailwind v4 (`@tailwindcss/vite`) with the theme generated from
   `tokens.css`, so utilities and the hand-written stylesheets share one palette.
