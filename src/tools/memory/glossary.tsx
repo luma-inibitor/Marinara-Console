@@ -1,3 +1,4 @@
+/* @copy-strict */ // every string literal in this file is user-visible copy
 // The education pattern (owner-approved 2026-08-21): every enum value and
 // icon the UI renders can answer "what does this word mean" in place. One
 // definition source; each definition leads with the field the value belongs

@@ -49,6 +49,10 @@ import {
   IconActivity,
   // source freshness
   IconRefreshAlert, IconAdjustments, IconUnlink,
+  // navigation + transfer
+  IconChevronLeft, IconRefresh, IconDownload,
+  // affordances that were ad-hoc text glyphs before 2026-08-23
+  IconArrowsDiagonal, IconStar, IconCheckbox, IconHash,
   type Icon,
 } from "@tabler/icons-preact";
 
@@ -80,6 +84,7 @@ export function strokeFor(size: number): number {
 
 // disclosure + direction
 export const ChevronRight = IconChevronRight;   // collapsed / drill in
+export const Back = IconChevronLeft;            // up one level in a mobile stack
 export const ChevronDown = IconChevronDown;     // expanded
 export const Forward = IconArrowRight;          // forward navigation on an action
 export const ExternalLink = IconExternalLink;   // leaves for another tool
@@ -100,8 +105,51 @@ export const EditedMark = IconWriting;          // "edited by you" STATE.
 export const Add = IconPlus;
 export const Remove = IconX;
 export const More = IconDotsVertical;           // kebab / overflow
+export const Refresh = IconRefresh;             // re-fetch what is already here
+                                                // (distinct from Retry, which
+                                                // re-runs a FAILED action)
+export const Download = IconDownload;           // hand the user a file
 export const Preview = IconEye;                 // show the rendered thing
 export const Raw = IconCode;                    // show the source thing
+export const Close = IconX;                     // dismiss a SURFACE — sheet,
+                                                // modal, toast, result card.
+                                                // Same glyph as `Remove` on
+                                                // purpose, and checked rather
+                                                // than assumed: an X is the one
+                                                // dismiss mark users already
+                                                // read, and every Tabler
+                                                // alternative (circle-x,
+                                                // square-x) borrows the
+                                                // reserved decision family.
+                                                // Two names because the
+                                                // concepts differ — Close takes
+                                                // a surface away, Remove takes
+                                                // an ITEM out of a set (a key
+                                                // chip, a filter chip) — so if
+                                                // one ever needs its own glyph
+                                                // the call sites are already
+                                                // sorted.
+export const Fullscreen = IconArrowsDiagonal;   // open this field in the
+                                                // fullscreen text editor
+export const Duplicate = IconCopy;              // make a second copy of a
+                                                // record. Shares `Copy`'s
+                                                // glyph: both are "make another
+                                                // one of this", the only
+                                                // difference being where it
+                                                // lands. copy-plus and files
+                                                // were both rejected — the +
+                                                // and the file shape belong to
+                                                // the content-ops family.
+export const SetDefault = IconStar;             // mark the record the app
+                                                // reaches for when unasked
+export const SelectMode = IconCheckbox;         // enter multi-select on a list.
+                                                // A square, not a circle: the
+                                                // circles are decision states.
+export const Tags = IconHash;                   // the tag DISTRIBUTION panel.
+                                                // Not IconTags — that is the
+                                                // `set_keywords` mutation op,
+                                                // and this opens a stats view
+                                                // rather than changing anything.
 
 // signals
 export const Info = IconInfoCircle;             // help text, always this one

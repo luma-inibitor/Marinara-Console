@@ -16,7 +16,7 @@ import { SECTION_CAP as CAP } from "./data";
 import { refreshLtmStatus } from "./MemoryTool";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { signal } from "@preact/signals";
-import { Flag, AllClear, NoMatches, DECISION_ICON, More, EditedMark } from "../../ui/icons";
+import { Flag, AllClear, NoMatches, DECISION_ICON, More, EditedMark, Back, Refresh, Download } from "../../ui/icons";
 import { DecisionIcon, OpIcon, TypeIcon } from "./icons";
 import { Term, OP_TIP } from "./glossary";
 import { flagsOf, worstSeverity, contributionChars } from "./flags";
@@ -155,9 +155,9 @@ export function Review() {
                   ? <span class="is-drop">Save FAILED <Chip onClick={retryPersist}>Retry</Chip></span>
                   : "Saved"}
             </span>
-            <button class="icon-btn t-data" aria-label="Refresh queue" title="Refresh" onClick={() => void refresh()}>↻</button>
+            <IconButton label="Refresh queue" onClick={() => void refresh()}><Refresh size={15} stroke={1.75} aria-hidden /></IconButton>
             <IconButton href={backupExportUrl()} download label={OURS.restorePoint}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 12.5V14h12v-1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <Download size={16} stroke={1.5} aria-hidden />
             </IconButton>
           </div>
 
@@ -176,7 +176,7 @@ export function Review() {
               <span class="m-drop" style={`width:${total ? (c.drop / total) * 100 : 0}%`} />
             </span>
             <span class="t-data mval">
-              <b class="is-keep">✓{c.keep}</b> · <b class="is-drop">✗{c.drop}</b>
+              <b class="is-keep"><DecisionIcon d="keep" size={12} />{c.keep}</b> · <b class="is-drop"><DecisionIcon d="drop" size={12} />{c.drop}</b>
               <span class="of"> / {total}</span>
             </span>
           </div>
@@ -263,7 +263,7 @@ export function Review() {
       {showDetailStack && (
         <div class="stack-screen">
           <header class="console"><div class="hrow">
-            <button class="icon-btn hit" aria-label="Back to queue" onClick={closeTopOverlay}>‹</button>
+            <IconButton class="hit" label="Back to queue" onClick={closeTopOverlay}><Back size={18} stroke={1.75} aria-hidden /></IconButton>
             {/* Queue position, not the target title — the headline right below
                 already names the target, and position is what j/k triage wants. */}
             <h1 class="console-title">
@@ -668,7 +668,7 @@ function ApplyDock() {
         <br />
         <span class="dim">
           {progress ? <>Applying draft {progress.done}/{progress.total}…</> : <>
-            {c.willSend} draft{c.willSend === 1 ? "" : "s"} will be sent{c.stayPending ? ` (${c.stayPending} still hold undecided claims)` : ""}
+            {OURS.draftsWillApply(c.willSend)}{c.stayPending ? ` (${c.stayPending} still hold undecided claims)` : ""}
             {pf?.error
               ? <span class="is-drop"> · {pf.error} <Chip onClick={() => void refresh()}>Retry</Chip></span>
               : checking
@@ -701,7 +701,7 @@ function ApplyDock() {
       </div>
       <Chip disabled={!canUndo.value} onClick={undo}>Undo</Chip>
       <button class="dock-primary t-label" disabled={applying.value || checking || (c.keep > 0 && !pf) || Boolean(pf?.error)} onClick={() => void applyDecided()}>
-        {applying.value ? (progress ? `Applying ${progress.done}/${progress.total}…` : t("reviewqueue.accepting"))
+        {applying.value ? (progress ? `Applying ${progress.done}/${progress.total}…` : OURS.applying)
           : checking ? "Apply decided (…)"
           : `Apply decided (${applyCount})`}
       </button>

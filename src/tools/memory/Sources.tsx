@@ -12,7 +12,7 @@ import { useEffect, useMemo, useState } from "preact/hooks";
 import { signal } from "@preact/signals";
 import {
   NoMatches, ChevronRight, ChevronDown, ExternalLink, Confirm,
-  Alert, Cost, Info, Edit, Forward, AllClear, Pending,
+  Alert, Cost, Info, Edit, Forward, AllClear, Pending, Close, ICON_SIZE,
   SOURCE_KIND_ICON, SOURCE_STATE_ICON, type Icon,
 } from "../../ui/icons";
 import { navigate } from "../../shell/router";
@@ -556,7 +556,9 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
           </div>
         </div>
         <span class="gsp" />
-        <IconButton class="hit" label="Dismiss report" onClick={onDismiss}>×</IconButton>
+        <IconButton class="hit" label="Dismiss report" onClick={onDismiss}>
+          <Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+        </IconButton>
       </div>
 
       {bad.map((r) => (

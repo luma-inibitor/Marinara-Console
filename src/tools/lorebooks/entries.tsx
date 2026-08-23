@@ -13,6 +13,7 @@ import {
   statusOf, entryTokens,
 } from "./data";
 import { Chip } from "../../ui";
+import { Fullscreen, ICON_SIZE, Remove } from "../../ui/icons";
 
 export interface FullscreenCtx { id: string; field: "content" | "description"; }
 
@@ -82,7 +83,9 @@ export function EntryDrawer(props: {
               <span key={`${k}:${i}`} class={`kchip ${props.evHits.includes(k) ? "is-hit" : ""}`}>
                 <span class="kt">{k}</span>
                 <button class="x" aria-label={`Remove ${k}`}
-                  onClick={() => set("keys", e.keys.filter((_, j) => j !== i))}>×</button>
+                  onClick={() => set("keys", e.keys.filter((_, j) => j !== i))}>
+                  <Remove size={ICON_SIZE.xs} stroke={2} aria-hidden />
+                </button>
               </span>
             ))}
             <KeyAdd onAdd={(vals) => set("keys", [...e.keys, ...vals])} />
@@ -94,7 +97,9 @@ export function EntryDrawer(props: {
         () => (
           <>
             <div class="fieldbar">
-              <Chip onClick={() => props.onExpand("description")}>⤢ Edit in full screen</Chip>
+              <Chip onClick={() => props.onExpand("description")}>
+                <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />Edit in full screen
+              </Chip>
             </div>
             <textarea class={`ta ${isDirty("description") ? "is-dirty" : ""}`} rows={4} value={e.description}
               placeholder="Brief summary for routing."
@@ -109,7 +114,9 @@ export function EntryDrawer(props: {
         () => (
           <>
             <div class="fieldbar">
-              <Chip onClick={() => props.onExpand("content")}>⤢ Edit in full screen</Chip>
+              <Chip onClick={() => props.onExpand("content")}>
+                <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />Edit in full screen
+              </Chip>
             </div>
             <textarea class={`ta is-mono ${isDirty("content") ? "is-dirty" : ""}`} rows={7} value={e.content}
               aria-invalid={!!err("content")}

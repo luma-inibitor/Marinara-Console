@@ -7,6 +7,7 @@
 // controls, save state always visible, titles wrap, markers labelled by type
 // rather than shown as "0 tokens", and optimistic writes that roll back.
 import { Chip, EmptyState, IconButton, Loading, ErrorState, ListEmpty, NotFound } from "../../ui";
+import { Add, Back, Duplicate, Fullscreen, ICON_SIZE, SetDefault } from "../../ui/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { ComponentChildren } from "preact";
 import { navigate } from "../../shell/router";
@@ -382,17 +383,25 @@ function Editor({ presetId }: { presetId: string }) {
   );
 
   const dockButtons = [
-    <button key="dup" class="dbtn" onClick={() => { void duplicatePreset(presetId).then((p) => navigate(`presets/${p.id}`)); }}>⧉ Duplicate</button>,
+    <button key="dup" class="dbtn" onClick={() => { void duplicatePreset(presetId).then((p) => navigate(`presets/${p.id}`)); }}>
+      <Duplicate size={ICON_SIZE.md} stroke={1.75} aria-hidden />Duplicate
+    </button>,
     !full.preset.isDefault && (
       <button key="def" class="dbtn" onClick={() => {
         void setDefaultPreset(presetId)
           .then(() => fetchFull(presetId).then(setFull))
           .catch((e: Error) => toast(`Could not set default: ${e.message}`, { kind: "error" }));
-      }}>★ Set default</button>
+      }}>
+        <SetDefault size={ICON_SIZE.md} stroke={1.75} aria-hidden />Set default
+      </button>
     ),
     readOnly
-      ? <button key="copy" class="dbtn is-primary" onClick={() => { void duplicatePreset(presetId).then((p) => navigate(`presets/${p.id}`)); }}>⧉ Editable copy</button>
-      : <button key="add" class="dbtn is-primary" onClick={addSection}>＋ Add Section</button>,
+      ? <button key="copy" class="dbtn is-primary" onClick={() => { void duplicatePreset(presetId).then((p) => navigate(`presets/${p.id}`)); }}>
+          <Duplicate size={ICON_SIZE.md} stroke={1.75} aria-hidden />Editable copy
+        </button>
+      : <button key="add" class="dbtn is-primary" onClick={addSection}>
+          <Add size={ICON_SIZE.md} stroke={1.75} aria-hidden />Add Section
+        </button>,
   ].filter(Boolean) as ComponentChildren[];
 
   return (
@@ -400,7 +409,9 @@ function Editor({ presetId }: { presetId: string }) {
       <div class="audit-list" ref={listRef} onKeyDown={onListKey}>
         <header class="console">
           <div class="hrow">
-            <IconButton label="Back to presets" onClick={() => navigate("presets")}>‹</IconButton>
+            <IconButton label="Back to presets" onClick={() => navigate("presets")}>
+              <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+            </IconButton>
             <h1 class="console-title is-wrapping">{full.preset.name}</h1>
             <span class={`savepill is-${sectionDraft.dirty || presetDraft.dirty ? "dirty" : pill}`}>
               {sectionDraft.dirty || presetDraft.dirty ? "Unsaved changes"
@@ -649,7 +660,9 @@ function SectionDetail(props: {
             () => (
               <>
                 <button class="edit-content" onClick={props.onExpand}>
-                  <span class="ec-label t-label t-label-s">⤢ Edit in full screen</span>
+                  <span class="ec-label t-label t-label-s">
+                    <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />Edit in full screen
+                  </span>
                   <span class="ec-meta t-data">{s.content.length.toLocaleString()} ch raw</span>
                 </button>
                 {props.desktop && (

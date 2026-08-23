@@ -16,6 +16,7 @@ import { EntryDrawer, type FullscreenCtx } from "./entries";
 import { useDraft } from "../../shell/draft";
 import { FullscreenText } from "../../ui/FullscreenText";
 import { Chip, EmptyState, ErrorState, IconButton, ListEmpty, Loading, NotFound, useIsDesktop, useRovingFocus } from "../../ui";
+import { Add, Back, ICON_SIZE, SelectMode, Tags } from "../../ui/icons";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
 type Mode = "find" | "test";
@@ -304,9 +305,13 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       <div class="audit-list" ref={listRef} onKeyDown={onListKey}>
         <header class="console">
           <div class="hrow">
-            <IconButton label="Back to lorebooks" onClick={() => navigate("lorebooks")}>‹</IconButton>
+            <IconButton label="Back to lorebooks" onClick={() => navigate("lorebooks")}>
+              <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+            </IconButton>
             <h1 class="console-title">{book.name}</h1>
-            <IconButton class="t-data" label="Tag distribution" onClick={() => setShowTags(true)}>#</IconButton>
+            <IconButton label="Tag distribution" onClick={() => setShowTags(true)}>
+              <Tags size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+            </IconButton>
           </div>
 
           <div class="probe">
@@ -369,7 +374,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
               ? <EmptyState title="Nothing would activate"
                   body="No entry’s keys match this text, so none would be injected." />
               : entries.length === 0
-                ? <ListEmpty kind="first-run" what="entries" action={{ label: "＋ Add entry", run: addEntry }} />
+                ? <ListEmpty kind="first-run" what="entries" action={{ label: "Add entry", run: addEntry }} />
                 : <ListEmpty kind="filtered" what="entries"
                     filters={[
                       ...(query.trim() ? [{ label: `search: ${query.trim()}`, clear: () => setQuery("") }] : []),
@@ -392,9 +397,15 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
         </main>
 
         <nav class="dock-actions">
-          <button class="dbtn" onClick={() => { setSelecting(!selecting); if (selecting) setSelected(new Set()); }}>☰ Select</button>
-          <button class="dbtn" onClick={() => setShowTags(true)}># Tags</button>
-          <button class="dbtn is-primary" onClick={addEntry}>＋ Add Entry</button>
+          <button class="dbtn" onClick={() => { setSelecting(!selecting); if (selecting) setSelected(new Set()); }}>
+            <SelectMode size={ICON_SIZE.md} stroke={1.75} aria-hidden />Select
+          </button>
+          <button class="dbtn" onClick={() => setShowTags(true)}>
+            <Tags size={ICON_SIZE.md} stroke={1.75} aria-hidden />Tags
+          </button>
+          <button class="dbtn is-primary" onClick={addEntry}>
+            <Add size={ICON_SIZE.md} stroke={1.75} aria-hidden />Add Entry
+          </button>
         </nav>
       </div>
 
@@ -498,7 +509,9 @@ function TagOverlay(props: {
   return (
     <div class="tagpanel">
       <div class="hrow">
-        <IconButton label="Back to entries" onClick={props.onClose}>‹</IconButton>
+        <IconButton label="Back to entries" onClick={props.onClose}>
+          <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+        </IconButton>
         <h2 class="console-title">Tags</h2>
         <span class="meta"><span>{stats.length}</span><span>{props.entries.length} entries</span></span>
       </div>

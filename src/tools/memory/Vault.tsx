@@ -14,7 +14,7 @@ import {
 import { t, OURS } from "./strings";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
-import { NoMatches } from "../../ui/icons";
+import { Back, ICON_SIZE, NoMatches } from "../../ui/icons";
 import { Chip, DetailSection, EmptyState, ErrorState, IconButton, Loading, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
@@ -134,7 +134,9 @@ export function Vault() {
       {!desktop && open && (
         <div class="stack-screen">
           <header class="console"><div class="hrow">
-            <IconButton class="hit" label="Back to vault" onClick={closeTopOverlay}>‹</IconButton>
+            <IconButton class="hit" label="Back to vault" onClick={closeTopOverlay}>
+              <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+            </IconButton>
             <h1 class="console-title">{open.title ?? open.id}</h1>
           </div></header>
           <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />

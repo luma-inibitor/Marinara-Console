@@ -1,3 +1,4 @@
+/* @copy-strict */ // every string literal in this file is user-visible copy
 // One flags model for the whole tool (owner-approved redesign, 2026-08-21).
 //
 // A flag is a computed exception signal about a row. Rows render flags as one

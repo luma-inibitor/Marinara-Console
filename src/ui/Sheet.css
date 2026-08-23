@@ -39,7 +39,9 @@
   border-bottom: var(--hairline);
 }
 .sheet-title { flex: 1; min-width: 0; font-weight: 600; }
-.sheet-x { font-size: 18px; color: var(--text-dim); width: 38px; height: 38px; }
+/* grid/place-items so the close ICON centres in the 38px box; a bare button
+   baseline-aligns its svg and the mark sits low. Same recipe as .toast-x. */
+.sheet-x { display: grid; place-items: center; color: var(--text-dim); width: 38px; height: 38px; }
 
 /* A modal interrupts, so it sits in the middle rather than arriving from an
    edge. Above the sheet layer: a confirm raised from a sheet must sit on top

@@ -1,3 +1,4 @@
+/* @copy-strict */ // every string literal in this file is user-visible copy
 // Review state: the tri-state decision ledger.
 //
 // The model follows the operator's review workbench (ltm-review study):
@@ -15,7 +16,7 @@ import {
   flattenReview, computePressure, SECTION_CAP,
 } from "./data";
 import { vaultLines, computeDerived, type VaultLine } from "./derived";
-import { t } from "./strings";
+import { t, OURS } from "./strings";
 import { toast } from "../../shell/toast";
 
 export type Decision = "keep" | "drop";
@@ -544,7 +545,7 @@ export async function applyDecided() {
   persist();
   const failed = lastFailures.value.reduce((n, f) => n + f.n, 0);
   toast(
-    `${t("reviewqueue.applied")}: ${applied} · ${t("reviewqueue.skipped")}: ${dropped}${failed ? ` · ${failed} failed` : ""}`,
+    `${t("reviewqueue.applied")}: ${applied} · ${OURS.dropped}: ${dropped}${failed ? ` · ${failed} failed` : ""}`,
     failed ? { kind: "error" } : {},
   );
   await refresh();

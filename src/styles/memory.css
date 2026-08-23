@@ -22,6 +22,11 @@
   text-transform: none; letter-spacing: 0.02em;
   font-family: var(--font-data); font-size: 10.5px;
 }
+/* The type icon carries the categorical hue. This rule is the thing that
+   makes that true: .type-* only DECLARES --tc, and until 2026-08-23 nothing
+   consumed it on .ti, so every TypeIcon silently inherited its parent's text
+   color while DESIGN.md §5 and icons.tsx both claimed otherwise. */
+.ti { color: var(--tc, currentColor); }
 .tdot { width: 9px; height: 9px; border-radius: 50%; background: var(--tc, var(--off)); flex: 0 0 auto; }
 .chip-min { color: var(--tc); }
 
@@ -65,6 +70,11 @@
 .mbar .m-drop { background: var(--danger); opacity: 0.6; }
 .is-keep { color: var(--ok); }
 .is-drop { color: var(--danger); }
+/* The meter tally is now icon + digit, and .dec is inline-flex — inside plain
+   inline text it baselines off the icon box and sits low against the numeral.
+   Scoped to .mval: .is-keep/.is-drop are also plain inline text elsewhere
+   (dock counts, "Save FAILED"), which must stay inline. */
+.mval .is-keep, .mval .is-drop { display: inline-flex; align-items: center; gap: 2px; }
 .rail-gap { flex: 0 0 auto; width: 1px; align-self: stretch; margin: 4px 2px; background: var(--edge); }
 /* mobile three-button rail: constant width so the row scans as columns */
 .chip.ctl { flex: 0 0 108px; width: 108px; justify-content: flex-start; gap: 6px; overflow: hidden; }

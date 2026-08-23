@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import { openOverlay, closeTopOverlay } from "../shell/overlays";
+import { Close, ICON_SIZE } from "./icons";
 import "./Sheet.css";
 
 /** A layered surface: a bottom sheet on a phone, a right-hand panel on a wide
@@ -94,7 +95,7 @@ export function SheetHead(props: {
       <span class="sheet-title t-prose">{props.title}</span>
       {props.children}
       <button ref={closeRef} class="hit sheet-x" aria-label="Close" onClick={closeTopOverlay}>
-        ×
+        <Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
       </button>
     </header>
   );

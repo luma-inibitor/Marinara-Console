@@ -512,7 +512,14 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
       <div class="evq-a t-data">source: <Ref id={r.sourceNoteId} title={r.sourceTitle} type="source" /></div>
 
       <div class={`sig t-prose ${low ? "" : "sig-ok"}`} data-sev={low ? "warn" : undefined}>
-        {low ? <Flag size={13} stroke={1.75} aria-hidden /> : <DecisionIcon d="keep" size={13} />}
+        {/* Only the low branch gets a glyph. A flag marks an exception; the else
+            branch marks the *absence* of one, which by this codebase's own
+            precedent carries no mark — cf. Sources.tsx StateMark: "New carries
+            no mark — it is the majority state, and marking it would put a
+            symbol on nearly every row while the exceptions fought for
+            attention." (The circle family is reserved for decision states
+            anyway; confidence is not a decision.) */}
+        {low && <Flag size={13} stroke={1.75} aria-hidden />}
         <span>extraction confidence {conf}%{low && <> — below the 93% threshold</>}</span>
       </div>
       {diags.map((f) => (

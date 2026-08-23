@@ -12,6 +12,7 @@
 //     messages coalesce into one with a count.
 import { signal } from "@preact/signals";
 import { useEffect, useState } from "preact/hooks";
+import { Close, ICON_SIZE } from "../ui/icons";
 
 export interface Toast {
   id: number;
@@ -95,7 +96,9 @@ function ToastRow({ t }: { t: Toast }) {
       {/* No dismiss on an undoable toast: dismissing it would have to either
           commit or cancel, and a "×" reads as cancel while committing. */}
       {!undoable && (
-        <button class="toast-x" aria-label="Dismiss" onClick={() => remove(t.id, false)}>×</button>
+        <button class="toast-x" aria-label="Dismiss" onClick={() => remove(t.id, false)}>
+          <Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+        </button>
       )}
     </div>
   );

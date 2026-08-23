@@ -31,6 +31,21 @@ export const OURS = {
   keep: "keep",
   drop: "drop",
   undecided: "undecided",
+  // The commit's busy state. The catalog's reviewqueue.accepting ("Accepting...")
+  // speaks the server vocabulary, but this button commits a local keep/drop
+  // judgment and reads "Apply decided" at rest — the busy state must not switch
+  // vocabularies mid-press.
+  applying: "Applying…",
+  // Result of a commit, in the local vocabulary. The catalog's
+  // reviewqueue.skipped is "Proposals skipped" — Skip is the product's own
+  // immediate server action, while this count is the reviewer's drops the
+  // engine confirmed removed. Same number, our word for it.
+  dropped: "Dropped",
+  // Apply-dock forecast. The dock used to say drafts "will be sent", a fourth
+  // verb for the commit beside keep/drop and Apply; the catalog only reports
+  // per draft after the fact ("Applied") and has no forward-looking phrase to
+  // borrow. Counts drafts, not claims.
+  draftsWillApply: (n: number) => `${n} draft${n === 1 ? "" : "s"} will be applied`,
   // The product ships caps and a binary budget rejection, nothing for
   // approaching one; extended from its "Limits:" label.
   nearLimit: "near a limit",
@@ -78,4 +93,21 @@ export const OURS = {
   zoneEvidence: "evidence",
   zoneNewMemory: "new memory",
   zoneExtraction: "extraction",
+  // The single reviewable item in the queue. The catalog has zero occurrences
+  // of "claim" in any key or value: the product's vocabulary is a five-word
+  // lifecycle — candidate (at extraction) → proposal / mutation (in review,
+  // inside a draft) → suggestion (once rejected) — and none of those five names
+  // the thing a reviewer holds one of. The console keeps "claim" because the
+  // wire schema already does: `claimKind: "static" | "change"` on interface
+  // Mutation (data.ts:40), so an object whose kind is a claimKind is a claim.
+  // ClaimDetail.tsx is named for that field and glossary.tsx anchors the term
+  // to it. Note "claim kind" itself is domain vocabulary, not a coinage — it
+  // names the schema field verbatim. Only the bare noun is ours.
+  claim: "claim",
+  // The set of claims applied in one go, which may span drafts. Distinct from
+  // "draft", which is the container the engine returns claims in and which the
+  // catalog does have a word for. The product reports per draft; the console
+  // reports per batch, and the catalog has no word for the user's own
+  // apply-unit.
+  batch: "batch",
 };

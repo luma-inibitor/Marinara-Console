@@ -112,7 +112,9 @@
   border: var(--hairline); border-radius: var(--r-m);
   background: var(--surface-1); color: var(--text);
 }
-.edit-content .ec-label { color: var(--accent); }
+/* inline-flex + gap so the fullscreen icon sits on the label's centre line
+   rather than its baseline. Gap matches .dbtn, the console's other icon+text button. */
+.edit-content .ec-label { color: var(--accent); display: inline-flex; align-items: center; gap: 6px; }
 .edit-content .ec-meta { color: var(--text-dim); }
 .content-preview {
   margin: 0; padding: var(--s2) var(--s3);
