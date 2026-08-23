@@ -1,12 +1,10 @@
 #!/usr/bin/env node
-// Lorebook Mobile — standalone editor for Marinara Engine lorebooks.
+// Marinara Console server: serves the built client (dist/) and proxies /api/*
+// to a running Marinara Engine, stripping the `embedding` field from entry
+// payloads on the way back. Those vectors are ~85% of an entries response and
+// the console never renders them.
 //
-// Serves a static client and proxies /api/* through to a running engine,
-// stripping the `embedding` field from entry payloads on the way back. Those
-// vectors are 83% of the entries response (884 KB of 1,065 KB on a 47-entry
-// book) and the editor never renders them.
-//
-// No dependencies, no build step — `node server.mjs` is the whole thing.
+// The server itself is dependency-free — `node server.mjs` after `npm run build`.
 
 import { createServer } from "node:http";
 import { mkdir, readFile, readdir, rename, stat, unlink, writeFile } from "node:fs/promises";
@@ -14,8 +12,7 @@ import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = resolve(fileURLToPath(import.meta.url), "..");
-const PUBLIC = join(HERE, "public");   // legacy no-build app, served at /legacy/
-const DIST = join(HERE, "dist");       // built console (vite), served at /
+const DIST = join(HERE, "dist");       // built console (vite)
 
 const PORT = Number(process.env.PORT ?? 7872);
 const HOST = process.env.HOST ?? "0.0.0.0";
@@ -206,18 +203,8 @@ async function proxy(req, res, url) {
 }
 
 // ── static ────────────────────────────────────────────────────────
-// / → dist (built console); /legacy/ → public (the original no-build app,
-// kept alive until the console reaches feature parity).
 async function serveStatic(res, pathname) {
-  let root = DIST;
-  if (pathname === "/legacy") {
-    res.writeHead(302, { location: "/legacy/" }).end();
-    return;
-  }
-  if (pathname.startsWith("/legacy/")) {
-    root = PUBLIC;
-    pathname = pathname.slice("/legacy".length);
-  }
+  const root = DIST;
   const rel = normalize(pathname === "/" ? "/index.html" : pathname).replace(/^(\.\.[/\\])+/, "");
   const file = join(root, rel);
   if (!file.startsWith(root)) {
@@ -257,6 +244,6 @@ createServer(async (req, res) => {
     res.end(JSON.stringify({ error: String(err?.message ?? err) }));
   }
 }).listen(PORT, HOST, () => {
-  console.log(`lorebook-mobile  →  http://${HOST}:${PORT}`);
+  console.log(`marinara-console  →  http://${HOST}:${PORT}`);
   console.log(`engine           →  ${TARGET}`);
 });
