@@ -262,6 +262,38 @@ that re-states a margin preflight already removed; give the component a `gap`.
 something was clickable by clicking it. Accent means interactive (§2); a
 component that is not interactive should not be able to reach for it.
 
+### The inventory
+
+| Component | What it owns | Reach for instead |
+|---|---|---|
+| `Chip` / `Tag` | a small pressable / a small label | — |
+| `IconButton` | a square icon control; its name is a required prop | — |
+| `SearchBar` | a search field, its magnifier, its match tally | — |
+| `fuzzyFilter` / `fuzzyScore` | subsequence matching with a score | — |
+| `Sheet` / `Modal` | a layered surface and its dismissal contract | — |
+| `SheetHead` | a sheet's sticky title row | — |
+| `Picker` | choose one, short fixed list, bottom sheet | `SearchDisclosure` if long |
+| `SearchDisclosure` | choose one, long list, anchored popover | `Picker` on a thumb rail |
+| `FacetDrawer` | every facet in a slice, with counts, as toggles | — |
+| `ListGroup` / `CollapseButton` | collapse behaviour and its accessible name | — |
+| `DetailSection` | a §section heading and its body | — |
+| `JsonView` / `RawJson` | a JSON value, folding or literal | — |
+| `CopyableText` | a value meant to be taken elsewhere | — |
+| `ModePill` | the three chat modes, read-out or filter | — |
+| `EmptyState` | icon, title, explanation, actions | — |
+| `Edu` | one line of help text, with its icon | `Term` for a single word |
+| `Term` | a word that explains itself in place | `Edu` for a whole sentence |
+| `useIsDesktop` | the split-width query | — |
+| `collapsedGroups` | collapsed-group state, optionally persisted | — |
+
+Two rules the inventory encodes. **Split by role, not by shape**: `Chip` and
+`Tag` look alike and are separate components, because one is pressable and the
+other is not, and that had been something you found out by clicking. **Own the
+behaviour, slot the shape**: `ListGroup` owns the chevron and its accessible
+name, while the review queue and the sources list keep their own header
+layouts — one shares a grid with its rows, one does not, and forcing a single
+shape would have invented a layout neither wanted.
+
 ### Checks that belong to this layer
 
 - `node design/deadcss.mjs` — CSS classes nothing appears to use. A **candidate**
@@ -272,3 +304,8 @@ component that is not interactive should not be able to reach for it.
   element tree and its class hooks across five screens at two viewports. Any
   refactor claiming "renders identically" runs this instead of asserting it. It
   is what caught three silent regressions in the chip sweep.
+- `node design/overlaycheck.mjs` — every layered surface must close on scrim
+  tap, on Escape, and on back. The import confirm answered only one of those
+  for weeks, because each sheet registered with the overlay stack by hand and
+  one forgot. `Sheet` and `Modal` now do it, so the check guards a rule the
+  code already enforces rather than a habit.
