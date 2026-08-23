@@ -9,6 +9,17 @@ them without asking.
 > arrived. The mobile round below (2:18 PM screenshot) may reconstruct part of
 > it; Luma — if more of the lost batch surfaces, send it and it lands here.
 
+## Found during the component refactor (2026-08-22)
+
+- **The Sources badge counts the wrong thing.** `MemoryTool.tsx` sets it from
+  `s.notes.sourceNotes`, which is *imported* source notes. The Review badge
+  next to it counts what is *waiting*. Same channel, opposite meanings — and
+  it currently reads 8 beside Sources when there is nothing pending at all.
+  It read 4 before, matching pending only by coincidence. Should almost
+  certainly be the pending count. **[needs Luma's yes]**
+- **Nav badge semantics need writing down** once the above is settled, so
+  Activity does not have to guess when it is built.
+
 ## UX review 2026-08-21
 
 Five-reviewer audit consolidated at
