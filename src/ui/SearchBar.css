@@ -1,0 +1,44 @@
+.searchbar {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: var(--tap);
+  padding: 0 10px;
+  background: var(--surface-1);
+  border: var(--hairline);
+  border-radius: var(--r-m);
+  color: var(--text-dim);
+}
+/* The field is the label, not the input inside it. Ring the whole box, or the
+   match tally ends up outside the focus ring and the field reads as two. */
+.searchbar:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
+
+.searchbar input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 40px;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+}
+.searchbar input:focus-visible { box-shadow: none; }
+.searchbar input::placeholder { color: var(--text-dim); }
+/* the browser's own clear affordance duplicates the one the field already
+   implies, and it is unstyleable — drop it */
+.searchbar input::-webkit-search-cancel-button { display: none; }
+
+/* the tally sits inside the field, against the edge, and is not a target */
+.searchbar-count {
+  flex: 0 0 auto;
+  padding: 4px 6px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  color: var(--accent);
+  background: var(--accent-wash);
+}

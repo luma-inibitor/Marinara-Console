@@ -12,10 +12,11 @@
 // opening a picker should not take the keyboard from someone who came to click.
 
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { IconUser, IconMessageCircle, IconSearch, IconChevronDown, type Icon } from "@tabler/icons-preact";
+import { IconUser, IconMessageCircle, IconChevronDown, type Icon } from "@tabler/icons-preact";
 import { api } from "../../shell/api";
 import { t } from "./strings";
 import { scopeChatId, scopeCharacterId, setScope, setScopeCharacter } from "./store";
+import { SearchBar, fuzzyFilter } from "../../ui";
 
 export interface Chat { id: string; name?: string; mode?: string; characterIds?: string[] }
 export interface Character { id: string; name: string }
@@ -55,8 +56,7 @@ function Disclosure(props: {
     document.addEventListener("keydown", esc);
     return () => { document.removeEventListener("mousedown", away); document.removeEventListener("keydown", esc); };
   }, [open]);
-  const needle = q.trim().toLowerCase();
-  const shown = needle ? props.options.filter((o) => o.name.toLowerCase().includes(needle)) : props.options;
+  const shown = fuzzyFilter(props.options, q, (o) => o.name);
   const I = props.icon;
   return (
     <div class="scopelevel" ref={ref}>
@@ -68,12 +68,9 @@ function Disclosure(props: {
       </button>
       {open && (
         <div class="scopepop" role="dialog" aria-label={props.label}>
-          <label class="sinput scopesearch">
-            <IconSearch size={14} stroke={1.75} aria-hidden />
-            {/* deliberately not autofocused */}
-            <input class="t-prose" placeholder={`Search ${props.label.toLowerCase()}`} value={q}
-              onInput={(e) => setQ(e.currentTarget.value)} aria-label={`Search ${props.label.toLowerCase()}`} />
-          </label>
+          {/* deliberately not autofocused — see SearchBar */}
+          <SearchBar class="scopesearch" label={`Search ${props.label.toLowerCase()}`}
+            value={q} onInput={setQ} />
           <div class="scopelist">
             <button class={`scopeopt hit ${props.current === "" ? "is-on" : ""}`}
               onClick={() => { props.onPick(""); setOpen(false); }}>{props.allLabel}</button>

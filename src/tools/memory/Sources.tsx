@@ -31,7 +31,7 @@ import {
   buildSources, isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,
 } from "./sourceModel";
-import { collapsedGroups, Edu, EmptyState, IconButton, Modal, ModePill, MODES } from "../../ui";
+import { collapsedGroups, Edu, EmptyState, IconButton, Modal, ModePill, MODES, SearchBar, fuzzyFilter } from "../../ui";
 import { closeTopOverlay } from "../../shell/overlays";
 
 /** Above this many sources, spending model calls raises a confirm first. */
@@ -145,9 +145,10 @@ export function Sources() {
     [review]);
 
   const view = railView.value === "pending" ? pending : railView.value === "imported" ? imported : all;
-  const needle = q.trim().toLowerCase();
   const byMode = modes.size === MODES.length ? view : view.filter((r) => modes.has(r.importMode));
-  const shown = needle ? byMode.filter((r) => r.title.toLowerCase().includes(needle)) : byMode;
+  // fuzzy: source titles are long and repetitive, and "hh" should find
+  // "Harbour Household" without the reviewer typing the whole thing
+  const shown = fuzzyFilter(byMode, q, (r) => r.title);
 
   const selectedRows = rows.filter((r) => selected.has(r.sourceId));
   const toggle = (id: string) => setSelected((prev) => {
@@ -190,11 +191,7 @@ export function Sources() {
     <div class="audit"><div class="audit-list">
       <header class="console">
         <div class="sbar">
-          <label class="sinput">
-            <IconSearch size={14} stroke={1.75} aria-hidden />
-            <input class="t-prose" placeholder="Search sources" value={q}
-              onInput={(e) => setQ(e.currentTarget.value)} aria-label="Search sources" />
-          </label>
+          <SearchBar label="Search sources" value={q} onInput={setQ} count={shown.length} />
           <ModePill modes={modes} onToggle={(id) => setModes((prev) => {
             const n = new Set(prev);
             n.has(id) ? n.delete(id) : n.add(id);

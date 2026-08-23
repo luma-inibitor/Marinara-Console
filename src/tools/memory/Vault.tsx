@@ -14,7 +14,7 @@ import {
 import { t, OURS } from "./strings";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
-import { Chip, IconButton, Tag, useIsDesktop } from "../../ui";
+import { Chip, IconButton, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
 
@@ -43,9 +43,11 @@ export function Vault() {
     let list = (notes ?? []).filter((n) => (showSources ? n.type === "source" : n.type !== "source"));
     if (typeFilter) list = list.filter((n) => n.type === typeFilter);
     if (query.trim()) {
+      // Fuzzy on the title, plain substring in the body. Subsequence matching
+      // across a paragraph matches nearly everything, which is not a search.
       const q = query.toLowerCase();
       list = list.filter((n) =>
-        (n.title ?? n.id).toLowerCase().includes(q) ||
+        fuzzyScore(query, n.title ?? n.id) !== null ||
         Object.values(n.sections ?? {}).some((s) => s.text?.toLowerCase().includes(q)));
     }
     const statusRank: Record<string, number> = { active: 0, resolved: 1, archived: 2 };
@@ -84,12 +86,8 @@ export function Vault() {
       <div class="audit-list">
         <header class="console">
           <div class="probe">
-            <div class="pwrap">
-              <input value={query} placeholder={t("memoryvault.searchMemories")}
-                aria-label={t("memoryvault.searchMemories")}
-                onInput={(e) => setQuery(e.currentTarget.value)} />
-              {query.trim() !== "" && <span class="res">{visible.length} match</span>}
-            </div>
+            <SearchBar label={t("memoryvault.searchMemories")} value={query}
+              onInput={setQuery} count={visible.length} />
           </div>
           <div class="chiprail">
             <Chip pressed={!showSources} onClick={() => setShowSources(false)}>
