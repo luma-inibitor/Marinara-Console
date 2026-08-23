@@ -12,23 +12,13 @@ import {
   POS_COMPACT,
 } from "./data";
 import { EntryDrawer, FullscreenEditor, type FullscreenCtx } from "./entries";
+import { useIsDesktop } from "../../ui";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
 type Mode = "find" | "test";
 export type SavePill = "dirty" | "saved" | "err";
 
 const UNTAGGED = " untagged";
-
-function useIsDesktop(): boolean {
-  const [is, setIs] = useState(() => window.matchMedia("(min-width: 900px)").matches);
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 900px)");
-    const fn = () => setIs(mq.matches);
-    mq.addEventListener("change", fn);
-    return () => mq.removeEventListener("change", fn);
-  }, []);
-  return is;
-}
 
 export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialEntryId?: string }) {
   const desktop = useIsDesktop();

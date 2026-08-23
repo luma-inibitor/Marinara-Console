@@ -28,6 +28,7 @@ import { flagsOf, worstSeverity, contributionChars } from "./flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./NotePeek";
+import { collapsedGroups, useIsDesktop } from "../../ui";
 
 const RESTORE_POINT_THRESHOLD = 20;
 
@@ -35,25 +36,9 @@ const RESTORE_POINT_THRESHOLD = 20;
 const groupSheetOpen = signal(false);
 const sortSheetOpen = signal(false);
 
-// Collapsed groups (view state, per grouping key — resets with the session).
-const collapsedGroups = signal<Set<string>>(new Set());
-
-function toggleGroupCollapsed(id: string) {
-  const next = new Set(collapsedGroups.value);
-  next.has(id) ? next.delete(id) : next.add(id);
-  collapsedGroups.value = next;
-}
-
-function useIsDesktop(): boolean {
-  const [is, setIs] = useState(() => window.matchMedia("(min-width: 900px)").matches);
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 900px)");
-    const fn = () => setIs(mq.matches);
-    mq.addEventListener("change", fn);
-    return () => mq.removeEventListener("change", fn);
-  }, []);
-  return is;
-}
+// Collapsed groups. Not persisted: a queue you are working through should
+// start open every visit, unlike the sources inventory.
+const collapse = collapsedGroups();
 
 export function Review() {
   const desktop = useIsDesktop();
@@ -83,8 +68,8 @@ export function Review() {
   // Collapsed groups' rows leave the keyboard order too, or j/k would focus
   // rows the collapse has hidden.
   const visibleKeys = useMemo(
-    () => groups.flatMap((g) => (collapsedGroups.value.has(g.id) ? [] : g.rows.map((r) => r.key))),
-    [groups, collapsedGroups.value],
+    () => groups.flatMap((g) => (collapse.has(g.id) ? [] : g.rows.map((r) => r.key))),
+    [groups, collapse.ids.value],
   );
 
   const focusRow = (key: string) => {
@@ -449,7 +434,7 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   const dropped = g.rows.filter((r) => decisions.value.get(r.key) === "drop").length;
   const undecidedRows = g.rows.filter((r) => !decisions.value.get(r.key));
   const isNew = isTarget && !notesById.value.get(g.id) && g.rows.some((r) => r.mutation.kind === "create_note");
-  const collapsed = collapsedGroups.value.has(g.id);
+  const collapsed = collapse.has(g.id);
   // Section counts dropped from the header (Luma 2026-08-21: titles get the room).
   const chars = isTarget ? g.rows.reduce((n, r) => n + contributionChars(r), 0) : 0;
   return (
@@ -461,7 +446,7 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
       <div class={`mem-ghead ${isNew ? "is-new" : ""}`}>
         <button class="gexp hit" aria-expanded={!collapsed}
           aria-label={`${collapsed ? "Expand" : "Collapse"} ${g.label} (${g.rows.length})`}
-          onClick={() => toggleGroupCollapsed(g.id)}>
+          onClick={() => collapse.toggle(g.id)}>
           {collapsed ? <IconChevronRight size={16} stroke={1.75} aria-hidden /> : <IconChevronDown size={16} stroke={1.75} aria-hidden />}
         </button>
         {isTarget && g.meta && <TypeIcon type={g.meta} />}

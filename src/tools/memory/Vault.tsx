@@ -14,6 +14,7 @@ import {
 import { t, OURS } from "./strings";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
+import { useIsDesktop } from "../../ui";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
 
@@ -23,17 +24,6 @@ function pressureOf(n: Note): number {
     worst = Math.max(worst, (s.text?.length ?? 0) / SECTION_CAP);
   }
   return Math.max(worst, (n.keywords?.length ?? 0) / KEYWORD_CAP);
-}
-
-function useIsDesktop(): boolean {
-  const [is, setIs] = useState(() => window.matchMedia("(min-width: 900px)").matches);
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 900px)");
-    const fn = () => setIs(mq.matches);
-    mq.addEventListener("change", fn);
-    return () => mq.removeEventListener("change", fn);
-  }, []);
-  return is;
 }
 
 export function Vault() {

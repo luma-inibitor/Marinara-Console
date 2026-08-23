@@ -31,6 +31,7 @@ import {
   buildSources, isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,
 } from "./sourceModel";
+import { collapsedGroups, Edu } from "../../ui";
 
 /** Above this many sources, spending model calls raises a confirm first. */
 const CONFIRM_THRESHOLD = 10;
@@ -84,10 +85,6 @@ function Spend({ n }: { n: number }) {
   return <span class="spend"><IconSparkles size={12} stroke={1.75} aria-hidden />{n}</span>;
 }
 
-function Edu({ children }: { children: preact.ComponentChildren }) {
-  return <p class="edu t-prose dim"><IconInfoCircle size={12} stroke={1.75} aria-hidden /><span>{children}</span></p>;
-}
-
 interface Chat { id: string; name?: string; mode?: string }
 
 /** The three chat modes as a segmented pill: each segment toggles on its own,
@@ -119,16 +116,7 @@ const railView = signal<"pending" | "imported" | "all">("pending");
  *  column, and a collapsed group keeps its header and its count so the
  *  collapsed state is still informative. Persisted per view, because these
  *  groups run to ninety rows and re-collapsing them every visit is a chore. */
-const COLLAPSE_KEY = "mc-ltm-sources-collapsed";
-const collapsedGroups = signal<Set<string>>(
-  new Set(JSON.parse(localStorage.getItem(COLLAPSE_KEY) ?? "[]") as string[]),
-);
-function toggleGroupCollapsed(id: string) {
-  const next = new Set(collapsedGroups.value);
-  next.has(id) ? next.delete(id) : next.add(id);
-  collapsedGroups.value = next;
-  localStorage.setItem(COLLAPSE_KEY, JSON.stringify([...next]));
-}
+const collapse = collapsedGroups("mc-ltm-sources-collapsed");
 
 export function Sources() {
   const [previews, setPreviews] = useState<Map<SourceKind, ImportPreview>>(new Map());
@@ -268,7 +256,7 @@ export function Sources() {
           const group = gname ? inKind.filter((r) => r.group === gname) : inKind;
           const heading = gname || label();
           const gid = id + "/" + gname;
-          const collapsed = collapsedGroups.value.has(gid);
+          const collapsed = collapse.has(gid);
           const eligible = group.filter(isSelectable);
           const allPicked = eligible.length > 0 && eligible.every((r) => selected.has(r.sourceId));
           return (
@@ -276,7 +264,7 @@ export function Sources() {
               <div class="sghead">
                 <button class="gexp hit" aria-expanded={!collapsed}
                   aria-label={`${collapsed ? "Expand" : "Collapse"} ${heading} (${group.length})`}
-                  onClick={() => toggleGroupCollapsed(gid)}>
+                  onClick={() => collapse.toggle(gid)}>
                   {collapsed ? <IconChevronRight size={15} stroke={1.75} aria-hidden />
                              : <IconChevronDown size={15} stroke={1.75} aria-hidden />}
                 </button>
