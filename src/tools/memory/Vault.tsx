@@ -4,7 +4,7 @@
 // destructive default (undoable); permanent delete confirms.
 
 import { useEffect, useMemo, useState } from "preact/hooks";
-import { openOverlay, closeTopOverlay } from "./overlays";
+import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { refreshLtmStatus } from "./MemoryTool";
 import { toast } from "../../shell/toast";
 import {

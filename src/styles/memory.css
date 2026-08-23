@@ -208,21 +208,7 @@
 }
 .group-actions { display: flex; gap: var(--s2); padding: var(--s2) var(--s3); align-items: center; }
 
-/* ══ facet sheet ══ */
-.peek-scrim { position: fixed; inset: 0; z-index: 60; background: rgba(4, 6, 10, 0.55); }
-.facet-sheet, .peek { position: fixed; z-index: 61; background: var(--surface-1);
-  border-top: 1px solid var(--edge-strong); inset: auto 0 0 0; max-height: 78vh;
-  overflow-y: auto; border-radius: var(--r-l) var(--r-l) 0 0; padding: var(--s3); }
-@media (min-width: 900px) {
-  .facet-sheet, .peek { inset: 0 0 0 auto; width: 400px; max-height: none;
-    border-radius: 0; border-top: none; border-left: 1px solid var(--edge-strong); }
-}
-.peek-head { display: flex; align-items: center; gap: var(--s2); margin-bottom: var(--s2); }
-.sheet-head { position: sticky; top: calc(-1 * var(--panel-pad)); z-index: 2;
-  background: var(--surface-1); margin: calc(-1 * var(--s3)) calc(-1 * var(--s3)) var(--s2);
-  padding: var(--s2) var(--s3); border-bottom: var(--hairline); }
-.peek-title { flex: 1; min-width: 0; font-weight: 600; }
-.peek-x { font-size: 18px; color: var(--text-dim); width: 38px; height: 38px; }
+/* ══ facet sheet — the surface is <Sheet>, src/ui/Sheet.css ══ */
 .peek-meta { color: var(--text-dim); font-size: var(--fs-data-s); overflow-wrap: anywhere; }
 .peek-kw { display: flex; flex-wrap: wrap; gap: 4px; margin-top: var(--s2); }
 .peek-links { margin-top: var(--s2); font-size: var(--fs-data-s); }
@@ -253,7 +239,6 @@
 .facet-row .fc { color: var(--text-dim); font-size: var(--fs-data-s); }
 .facet-row.is-on { background: var(--surface-2); color: var(--text); }
 .facet-row.is-on::before { content: "✓"; color: var(--accent); font-size: 11px; }
-.option-sheet { max-height: 50vh; }
 
 /* ══ apply dock ══ */
 .apply-dock { position: fixed; z-index: 40; inset: auto 0 calc(53px + env(safe-area-inset-bottom)) 0;
@@ -568,9 +553,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .jobnote { display: flex; align-items: flex-start; gap: 6px; margin: 0; }
 .jobnote svg { flex: 0 0 auto; margin-top: 2px; }
 /* the confirm */
-.csheet { position: fixed; z-index: 62; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: min(460px, calc(100vw - 32px)); background: var(--surface-1); border: var(--hairline);
-  border-radius: var(--r-l); padding: var(--s3); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6); }
+/* the confirm's surface is <Modal>, src/ui/Sheet.css — these are its innards */
 .chead { display: flex; align-items: center; gap: 8px; margin-bottom: var(--s2); }
 .chead svg { color: var(--flag); flex: 0 0 auto; }
 .crow { display: flex; gap: var(--s3); padding: 6px 0; border-bottom: var(--hairline); }

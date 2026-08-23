@@ -31,7 +31,8 @@ import {
   buildSources, isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,
 } from "./sourceModel";
-import { collapsedGroups, Edu, EmptyState, IconButton } from "../../ui";
+import { collapsedGroups, Edu, EmptyState, IconButton, Modal } from "../../ui";
+import { closeTopOverlay } from "../../shell/overlays";
 
 /** Above this many sources, spending model calls raises a confirm first. */
 const CONFIRM_THRESHOLD = 10;
@@ -535,26 +536,26 @@ function ConfirmSheet({ n, chats, onCancel, onGo }: {
 }) {
   const scope = chats.find((c) => c.id === scopeChatId.value);
   return (
-    <div class="peek-scrim" onClick={onCancel}>
-      <aside class="csheet" role="dialog" aria-modal="true" aria-label="Confirm import" onClick={(e) => e.stopPropagation()}>
-        <div class="chead"><IconSparkles size={16} stroke={1.75} aria-hidden />
-          <b class="t-prose">{t("sourcesworkspace.importValue1", { value1: String(n) })}?</b></div>
-        <div class="cbody">
-          <div class="crow"><span class="ck t-label t-label-s">extraction</span>
-            <span class="t-prose">{t("sourcesworkspace.savingAndExtracting", { count: n })} one model call each</span></div>
-          <div class="crow"><span class="ck t-label t-label-s">scope</span>
-            <span class="t-prose">{scope ? (scope.name ?? scope.id) : t("sourcesworkspace.allChats")}</span></div>
-          <div class="crow"><span class="ck t-label t-label-s">after</span>
-            <span class="t-prose">{t("sourcesworkspace.importExplanation")}</span></div>
-        </div>
-        <div class="cfoot">
-          <button class="dock-primary t-label" onClick={onGo}>
-            {t("sourcesworkspace.importSelected_7fb57e8")} <Spend n={n} />
-          </button>
-          <button class="action-sec hit" onClick={onCancel}>{t("memorysettings.cancel") || "Cancel"}</button>
-        </div>
-      </aside>
-    </div>
+    <Modal label="Confirm import" onClose={onCancel}>
+      <div class="chead"><IconSparkles size={16} stroke={1.75} aria-hidden />
+        <b class="t-prose">{t("sourcesworkspace.importValue1", { value1: String(n) })}?</b></div>
+      <div class="cbody">
+        <div class="crow"><span class="ck t-label t-label-s">extraction</span>
+          <span class="t-prose">{t("sourcesworkspace.savingAndExtracting", { count: n })} one model call each</span></div>
+        <div class="crow"><span class="ck t-label t-label-s">scope</span>
+          <span class="t-prose">{scope ? (scope.name ?? scope.id) : t("sourcesworkspace.allChats")}</span></div>
+        <div class="crow"><span class="ck t-label t-label-s">after</span>
+          <span class="t-prose">{t("sourcesworkspace.importExplanation")}</span></div>
+      </div>
+      <div class="cfoot">
+        <button class="dock-primary t-label" onClick={onGo}>
+          {t("sourcesworkspace.importSelected_7fb57e8")} <Spend n={n} />
+        </button>
+        {/* Cancel goes through the stack, not straight to onCancel, so the
+            history entry Modal pushed is popped with it. */}
+        <button class="action-sec hit" onClick={closeTopOverlay}>{t("memorysettings.cancel") || "Cancel"}</button>
+      </div>
+    </Modal>
   );
 }
 

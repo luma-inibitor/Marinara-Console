@@ -1,13 +1,19 @@
 // Overlay stack: one place that owns Escape, hardware/browser back, and focus
-// restore for every layered surface (facet sheet, note peek, stacked detail,
-// option sheets). Each open pushes a history entry, so the Android back
-// gesture closes the topmost overlay instead of leaving the console, and
-// Escape works no matter where focus sits (DESIGN §3).
+// restore for every layered surface (sheets, the note peek, stacked detail
+// screens). Each open pushes a history entry, so the Android back gesture
+// closes the topmost overlay instead of leaving the console, and Escape works
+// no matter where focus sits (DESIGN §3).
 //
 // Contract: open an overlay by flipping its signal AND calling
 // `openOverlay(close)`; close it ONLY via `closeTopOverlay()` (or the user's
 // back button/Escape) — the popstate handler runs the closer, so state and
 // history never desync.
+//
+// `<Sheet>` (src/ui/Sheet.tsx) does both halves of that contract itself, so a
+// sheet's opener only flips its signal. This lives in the shell rather than
+// beside the memory tool because it is app-wide: it owns the global Escape
+// handler and the history stack, and src/ui must be able to reach it without
+// importing out of a tool.
 
 interface Entry { close: () => void; restoreFocus: HTMLElement | null }
 

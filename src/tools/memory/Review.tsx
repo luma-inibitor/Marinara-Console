@@ -19,7 +19,7 @@ import {
 } from "./store";
 import { SECTION_CAP as CAP } from "./data";
 import { refreshLtmStatus } from "./MemoryTool";
-import { openOverlay, closeTopOverlay } from "./overlays";
+import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { signal } from "@preact/signals";
 import { IconFlag, IconCircleCheck, IconCircleX, IconDotsVertical, IconWriting, IconChevronDown, IconChevronRight } from "@tabler/icons-preact";
 import { DecisionIcon, OpIcon, TypeIcon } from "./icons";
@@ -28,7 +28,7 @@ import { flagsOf, worstSeverity, contributionChars } from "./flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./NotePeek";
-import { Chip, collapsedGroups, IconButton, useIsDesktop } from "../../ui";
+import { Chip, collapsedGroups, IconButton, Sheet, SheetHead, useIsDesktop } from "../../ui";
 
 const RESTORE_POINT_THRESHOLD = 20;
 
@@ -226,10 +226,10 @@ export function Review() {
                 <Chip class="ctl" pressed={activeFacetCount() > 0} onClick={openFacetSheet}>
                   <span class="ctl-k">Filter</span><span class="ctl-v">{activeFacetCount() || "all"}</span>
                 </Chip>
-                <Chip class="ctl" onClick={() => { groupSheetOpen.value = true; openOverlay(() => { groupSheetOpen.value = false; }); }}>
+                <Chip class="ctl" onClick={() => { groupSheetOpen.value = true; }}>
                   <span class="ctl-k">Group</span><span class="ctl-v">{GROUPERS[groupBy.value].label}</span>
                 </Chip>
-                <Chip class="ctl" onClick={() => { sortSheetOpen.value = true; openOverlay(() => { sortSheetOpen.value = false; }); }}>
+                <Chip class="ctl" onClick={() => { sortSheetOpen.value = true; }}>
                   <span class="ctl-k">Sort</span><span class="ctl-v">{sortDir.value === 1 ? "↓" : "↑"} {SORTERS[sortBy.value].label}</span>
                 </Chip>
                 <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
@@ -291,8 +291,10 @@ export function Review() {
       <FacetSheet shown={shown} />
       <OptionSheet open={groupSheetOpen.value} label="Group by" current={groupBy.value}
         options={Object.entries(GROUPERS).map(([id, g]) => ({ id, label: g.label }))}
-        onPick={(id) => { groupBy.value = id as typeof groupBy.value; }} />
+        onPick={(id) => { groupBy.value = id as typeof groupBy.value; }}
+        onClose={() => { groupSheetOpen.value = false; }} />
       <OptionSheet open={sortSheetOpen.value} label="Sort by" current={sortBy.value}
+        onClose={() => { sortSheetOpen.value = false; }}
         options={Object.entries(SORTERS).map(([id, sr]) => ({
           id, label: sr.label,
           hint: sortBy.value === id ? (sortDir.value === 1 ? "↓ tap to flip" : "↑ tap to flip") : undefined,
@@ -309,7 +311,6 @@ export function Review() {
 function openFacetSheet() {
   if (facetSheetOpen.value) { closeTopOverlay(); return; }
   facetSheetOpen.value = true;
-  openOverlay(() => { facetSheetOpen.value = false; });
 }
 
 function activeFacetCount(): number {
@@ -349,13 +350,10 @@ function FacetSheet(props: { shown: Row[] }) {
   for (const f of FACETS) bySource[f.source].push(f);
   const anyValues = [...counts.values()].some((m) => m.size > 0);
   return (
-    <div class="peek-scrim" onClick={closeTopOverlay}>
-      <aside class="facet-sheet" role="dialog" aria-modal="true" aria-label="Facets" onClick={(e) => e.stopPropagation()}>
-        <header class="peek-head sheet-head">
-          <span class="t-label t-label-s">Facets</span>
-          <Chip onClick={() => { activeFacets.value = new Map(); }}>Clear</Chip>
-          <button class="hit peek-x" aria-label="Close" onClick={closeTopOverlay}>×</button>
-        </header>
+    <Sheet label="Facets" onClose={() => { facetSheetOpen.value = false; }}>
+      <SheetHead title={<span class="t-label t-label-s">Facets</span>}>
+        <Chip onClick={() => { activeFacets.value = new Map(); }}>Clear</Chip>
+      </SheetHead>
         {!anyValues && <p class="t-prose dim">No facet values in this slice.</p>}
         {(["computed", "model", "yours"] as const).map((src) => {
           const defs = bySource[src].filter((f) => (counts.get(f.id)?.size ?? 0) > 0);
@@ -385,8 +383,7 @@ function FacetSheet(props: { shown: Row[] }) {
             </div>
           );
         })}
-      </aside>
-    </div>
+    </Sheet>
   );
 }
 
@@ -396,15 +393,12 @@ function OptionSheet(props: {
   options: Array<{ id: string; label: string; hint?: string }>;
   current: string;
   onPick: (id: string) => void;
+  onClose: () => void;
 }) {
   if (!props.open) return null;
   return (
-    <div class="peek-scrim" onClick={closeTopOverlay}>
-      <aside class="facet-sheet option-sheet" role="dialog" aria-modal="true" aria-label={props.label} onClick={(e) => e.stopPropagation()}>
-        <header class="peek-head sheet-head">
-          <span class="t-label t-label-s">{props.label}</span>
-          <button class="hit peek-x" aria-label="Close" onClick={closeTopOverlay}>×</button>
-        </header>
+    <Sheet class="option-sheet" label={props.label} onClose={props.onClose}>
+      <SheetHead title={<span class="t-label t-label-s">{props.label}</span>} />
         {props.options.map((o) => (
           <button key={o.id} class={`facet-row ${props.current === o.id ? "is-on" : ""}`}
             onClick={() => { props.onPick(o.id); closeTopOverlay(); }}>
@@ -412,8 +406,7 @@ function OptionSheet(props: {
             {o.hint && <span class="fc t-data">{o.hint}</span>}
           </button>
         ))}
-      </aside>
-    </div>
+    </Sheet>
   );
 }
 

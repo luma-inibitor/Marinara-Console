@@ -10,22 +10,20 @@ import { signal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";
 import { fetchNote, type Note } from "./data";
 import { toast } from "../../shell/toast";
-import { openOverlay, closeTopOverlay } from "./overlays";
+import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { notesById } from "./store";
 import { TypeIcon } from "./icons";
 import { Term, TYPE_TIP } from "./glossary";
-import { Tag } from "../../ui";
+import { Sheet, SheetHead, Tag } from "../../ui";
 
 export const peeked = signal<Note | null>(null);
 
 export async function peekNote(id: string) {
   try {
-    const note = await fetchNote(id);
-    const wasOpen = peeked.value !== null;
-    peeked.value = note;
-    // A chained peek replaces content inside the same overlay entry; only a
-    // fresh open pushes history.
-    if (!wasOpen) openOverlay(() => { peeked.value = null; });
+    // A chained peek replaces content inside the same <Sheet>, which stays
+    // mounted, so it does not push a second history entry — one back closes
+    // the peek however deep you followed the links.
+    peeked.value = await fetchNote(id);
   } catch (error) {
     toast(`${id}: ${(error as Error).message}`, { kind: "error" });
   }
@@ -74,18 +72,14 @@ function PeekLinkTarget({ id }: { id: string }) {
 
 export function NotePeek() {
   const n = peeked.value;
-  const closeRef = useRef<HTMLButtonElement>(null);
-  // Move focus into the dialog on open (restore is handled by the overlay stack).
-  useEffect(() => { if (n) closeRef.current?.focus(); }, [n === null]);
   if (!n) return null;
   return (
-    <div class="peek-scrim" onClick={closeTopOverlay}>
-      <aside class="peek" role="dialog" aria-modal="true" aria-label={n.title ?? n.id} onClick={(e) => e.stopPropagation()}>
-        <header class="peek-head sheet-head">
-          <Term tip={TYPE_TIP[n.type] ?? n.type}><TypeIcon type={n.type} size={16} /></Term>
-          <span class="peek-title t-prose">{n.title ?? n.id}</span>
-          <button ref={closeRef} class="hit peek-x" aria-label="Close" onClick={closeTopOverlay}>×</button>
-        </header>
+    <Sheet label={n.title ?? n.id} onClose={() => { peeked.value = null; }}>
+      <SheetHead
+        autoFocus
+        icon={<Term tip={TYPE_TIP[n.type] ?? n.type}><TypeIcon type={n.type} size={16} /></Term>}
+        title={n.title ?? n.id}
+      />
         <div class="peek-meta t-data">
           <span class={`stt st-${n.status}`}>{n.status}</span>
           <ModePill modes={n.modes ?? []} />
@@ -111,8 +105,7 @@ export function NotePeek() {
             <div class="t-prose peek-text">{s.text}</div>
           </section>
         ))}
-        <div class="peek-id t-data" data-contrast-exempt>{n.id}</div>
-      </aside>
-    </div>
+      <div class="peek-id t-data" data-contrast-exempt>{n.id}</div>
+    </Sheet>
   );
 }
