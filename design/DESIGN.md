@@ -305,6 +305,19 @@ name, while the review queue and the sources list keep their own header
 layouts — one shares a grid with its rows, one does not, and forcing a single
 shape would have invented a layout neither wanted.
 
+### Reading measure
+
+`--measure: 68ch` caps prose line length. Apply it to the element that holds
+the words, never to the card around them — the zones in the claim detail keep
+their full width so a diff's added-line wash still reads as one block, while
+the sentences inside stop at a readable width.
+
+It applies to prose only. Identifiers, link targets and key/value data rows are
+deliberately left uncapped: wrapping `source_character_2cdcc172e8fe3cd6` at a
+prose measure serves nobody, and those lines have no return sweep to lose your
+place on. Measured before and after in the claim detail at a 1600px viewport:
+135–145 characters a line became 62–68.
+
 ### Checks that belong to this layer
 
 - `node design/deadcss.mjs` — CSS classes nothing appears to use. A **candidate**
