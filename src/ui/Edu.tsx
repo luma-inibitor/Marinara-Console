@@ -1,5 +1,5 @@
 import type { ComponentChildren } from "preact";
-import { IconInfoCircle } from "@tabler/icons-preact";
+import { Info } from "./icons";
 import "./Edu.css";
 
 /** A line of help text.
@@ -11,7 +11,7 @@ import "./Edu.css";
 export function Edu({ children }: { children: ComponentChildren }) {
   return (
     <p class="edu t-prose dim">
-      <IconInfoCircle size={12} stroke={1.75} aria-hidden />
+      <Info size={12} stroke={1.75} aria-hidden />
       <span>{children}</span>
     </p>
   );

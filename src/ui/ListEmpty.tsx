@@ -1,4 +1,4 @@
-import { IconInbox, IconSearch, IconCircleCheck } from "@tabler/icons-preact";
+import { FirstRun, NoMatches, AllClear } from "./icons";
 import { Chip } from "./Chip";
 import { EmptyState } from "./EmptyState";
 
@@ -26,7 +26,7 @@ export function ListEmpty(props: {
   if (props.kind === "filtered") {
     return (
       <EmptyState
-        icon={<IconSearch size={22} stroke={1.75} aria-hidden />}
+        icon={<NoMatches size={22} stroke={1.75} aria-hidden />}
         title={`No ${props.what} match these filters`}
         body={props.filters?.length ? "Remove one to widen the search:" : undefined}
         actions={
@@ -45,7 +45,7 @@ export function ListEmpty(props: {
     return (
       <EmptyState
         tone="ok"
-        icon={<IconCircleCheck size={22} stroke={1.75} aria-hidden />}
+        icon={<AllClear size={22} stroke={1.75} aria-hidden />}
         title="Nothing left"
         body={`Every ${props.what} has been handled.`}
       />
@@ -54,7 +54,7 @@ export function ListEmpty(props: {
 
   return (
     <EmptyState
-      icon={<IconInbox size={22} stroke={1.75} aria-hidden />}
+      icon={<FirstRun size={22} stroke={1.75} aria-hidden />}
       title={`No ${props.what} yet`}
       body={`This is where ${props.what} appear once you add them.`}
       actions={props.action && (

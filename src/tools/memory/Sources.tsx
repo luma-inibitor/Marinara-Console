@@ -11,11 +11,10 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { signal } from "@preact/signals";
 import {
-  IconBook2, IconMessageCircle, IconUser, IconSearch, IconFilter, IconChevronRight,
-  IconChevronDown, IconExternalLink, IconCheck, IconRefreshAlert, IconAdjustments,
-  IconAlertTriangle, IconUnlink, IconSparkles, IconInfoCircle, IconPencil, IconArrowRight,
-  IconCircleCheck, IconCircleDashed, IconMessage, IconMasksTheater, IconDeviceGamepad2,
-} from "@tabler/icons-preact";
+  NoMatches, ChevronRight, ChevronDown, ExternalLink, Confirm,
+  Alert, Cost, Info, Edit, Forward, AllClear, Pending,
+  SOURCE_KIND_ICON, SOURCE_STATE_ICON, type Icon,
+} from "../../ui/icons";
 import { navigate } from "../../shell/router";
 import { api } from "../../shell/api";
 import { toast } from "../../shell/toast";
@@ -37,11 +36,17 @@ import { closeTopOverlay } from "../../shell/overlays";
 /** Above this many sources, spending model calls raises a confirm first. */
 const CONFIRM_THRESHOLD = 10;
 
-const KINDS: Array<{ id: SourceKind; label: () => string; icon: typeof IconBook2; bulk: boolean }> = [
-  { id: "lorebooks", label: () => t("sourcesworkspace.lorebooks"), icon: IconBook2, bulk: true },
-  { id: "chats", label: () => t("sourcesworkspace.chatSummaries"), icon: IconMessageCircle, bulk: false },
-  { id: "characters", label: () => t("sourcesworkspace.characters"), icon: IconUser, bulk: true },
+// The registry keys its source kinds by the engine's singular names
+// (lorebook / chat_summary / character); this screen's SourceKind ids are the
+// plural bucket names, so the two vocabularies are bridged here, once.
+const KINDS: Array<{ id: SourceKind; label: () => string; icon: Icon; bulk: boolean }> = [
+  { id: "lorebooks", label: () => t("sourcesworkspace.lorebooks"), icon: SOURCE_KIND_ICON.lorebook, bulk: true },
+  { id: "chats", label: () => t("sourcesworkspace.chatSummaries"), icon: SOURCE_KIND_ICON.chat_summary, bulk: false },
+  { id: "characters", label: () => t("sourcesworkspace.characters"), icon: SOURCE_KIND_ICON.character, bulk: true },
 ];
+
+/** The lorebook glyph on its own, for the "no lorebooks in scope" empty state. */
+const Lorebook = SOURCE_KIND_ICON.lorebook;
 
 const STATE_LABEL: Record<SourceState, string> = {
   new: t("sourcesworkspace.new"),
@@ -64,11 +69,7 @@ const STATE_MEANING: Record<SourceState, string> = {
  *  symbol on nearly every row while the exceptions fought for attention. */
 function StateMark({ state }: { state: SourceState }) {
   if (state === "new") return <span class="s-slot" />;
-  const I = state === "current" ? IconCheck
-    : state === "source_updated" ? IconRefreshAlert
-    : state === "context_updated" ? IconAdjustments
-    : state === "extraction_incomplete" ? IconAlertTriangle
-    : IconUnlink;
+  const I = SOURCE_STATE_ICON[state];
   const tone = state === "current" ? "s-ok"
     : state === "source_missing" ? "s-danger"
     : state === "context_updated" ? "s-info" : "s-warn";
@@ -83,7 +84,7 @@ function StateMark({ state }: { state: SourceState }) {
 /** The price rides on the button: Import and extract always extracts, one
  *  model call per source, so a separate chip would repeat the count. */
 function Spend({ n }: { n: number }) {
-  return <span class="spend"><IconSparkles size={12} stroke={1.75} aria-hidden />{n}</span>;
+  return <span class="spend"><Cost size={12} stroke={1.75} aria-hidden />{n}</span>;
 }
 
 interface Chat { id: string; name?: string; mode?: string }
@@ -270,7 +271,7 @@ export function Sources() {
         })}
 
         {!loading && shown.length > 0 && (
-          <p class="trunc t-data"><IconInfoCircle size={12} stroke={1.75} aria-hidden />
+          <p class="trunc t-data"><Info size={12} stroke={1.75} aria-hidden />
             <span>{t("sourcesworkspace.selectUpTo100SourceParts")}</span></p>
         )}
       </main>
@@ -311,21 +312,21 @@ function SourceLine({ row, bulk, selected, onToggle, onReload }: {
 }) {
   const expandable = !bulk || isImported(row);
   const open = openRow.value === row.sourceId;
-  const KI = row.kind === "lorebooks" ? IconBook2 : row.kind === "chats" ? IconMessageCircle : IconUser;
+  const KI = KINDS.find((k) => k.id === row.kind)?.icon ?? SOURCE_KIND_ICON.character;
   return (
     <>
       <div class={`srow ${selected ? "is-sel" : ""} ${open ? "is-open" : ""}`}>
         {bulk && (
           <button class={`sbox hit ${selected ? "on" : ""}`} role="checkbox" aria-checked={selected}
             aria-label={`Select ${row.title}`} disabled={!isSelectable(row)} onClick={onToggle}>
-            {selected && <IconCheck size={12} stroke={2.5} aria-hidden />}
+            {selected && <Confirm size={12} stroke={2.5} aria-hidden />}
           </button>
         )}
         {expandable && (
           <button class="xchev hit" aria-expanded={open} aria-label={open ? "Collapse" : "Expand"}
             onClick={() => { openRow.value = open ? null : row.sourceId; }}>
-            {open ? <IconChevronDown size={13} stroke={1.75} aria-hidden />
-                  : <IconChevronRight size={13} stroke={1.75} aria-hidden />}
+            {open ? <ChevronDown size={13} stroke={1.75} aria-hidden />
+                  : <ChevronRight size={13} stroke={1.75} aria-hidden />}
           </button>
         )}
         <span class="ki"><KI size={14} stroke={1.75} aria-hidden /></span>
@@ -334,7 +335,7 @@ function SourceLine({ row, bulk, selected, onToggle, onReload }: {
         {row.kind === "lorebooks" && (
           <button class="jumpb hit" aria-label={`Open ${row.title} in Lorebooks`}
             onClick={() => navigate("lorebooks")}>
-            <IconExternalLink size={14} stroke={1.75} aria-hidden />
+            <ExternalLink size={14} stroke={1.75} aria-hidden />
           </button>
         )}
       </div>
@@ -364,15 +365,15 @@ function ProducedPanel({ row }: { row: SourceRow }) {
         ))}
         {row.derived.length > 3 && !showAll && (
           <button class="fold-btn t-data hit" onClick={() => setShowAll(true)}>
-            <IconChevronRight size={12} stroke={1.75} aria-hidden /> {row.derived.length - 3} more
+            <ChevronRight size={12} stroke={1.75} aria-hidden /> {row.derived.length - 3} more
           </button>
         )}
         {row.derived.length === 0 && <p class="t-prose dim">{t("sourcesworkspace.noSourcesHaveBeenImportedInThisScope")}</p>}
       </div>
       <div class={`pendrow ${row.pending ? "" : "is-quiet"}`}>
         {row.pending
-          ? <IconCircleDashed size={14} stroke={1.75} aria-hidden />
-          : <IconCircleCheck class="s-ok" size={14} stroke={1.75} aria-hidden />}
+          ? <Pending size={14} stroke={1.75} aria-hidden />
+          : <AllClear class="s-ok" size={14} stroke={1.75} aria-hidden />}
         <span class="t-prose">
           {row.pending
             ? `${row.pending} proposed memories await review`
@@ -381,7 +382,7 @@ function ProducedPanel({ row }: { row: SourceRow }) {
         <span class="gsp" />
         {row.pending > 0 && row.noteId && (
           <button class="action-sec hit" onClick={() => { focusSource(row.noteId!); navigate("memory/review"); }}>
-            {t("longtermmemorydetail.openReviewQueue")} <IconArrowRight size={12} stroke={1.75} aria-hidden />
+            {t("longtermmemorydetail.openReviewQueue")} <Forward size={12} stroke={1.75} aria-hidden />
           </button>
         )}
       </div>
@@ -429,7 +430,7 @@ function CuratePanel({ row, onImported }: { row: SourceRow; onImported: () => Pr
           <span class="z-lab">{OURS.extractionText}{editing ? " · editing" : ""}</span>
           {!editing && (
             <button class="zbtn hit" onClick={() => { setDraft(stored); setEditing(true); }}>
-              <IconPencil size={12} stroke={1.75} aria-hidden /> {t("longtermmemorydetail.reviewEdit").toLowerCase()}
+              <Edit size={12} stroke={1.75} aria-hidden /> {t("longtermmemorydetail.reviewEdit").toLowerCase()}
             </button>
           )}
         </div>
@@ -451,12 +452,12 @@ function CuratePanel({ row, onImported }: { row: SourceRow; onImported: () => Pr
         ) : (
           <>
             <button class="dbtn2 keepish hit" disabled={busy} onClick={() => void importOne()}>
-              <IconCheck size={15} stroke={1.75} aria-hidden />
+              <Confirm size={15} stroke={1.75} aria-hidden />
               {busy ? t("sourcesworkspace.savingAndExtracting", { count: 1 }) : t("sourcesworkspace.importValue1", { value1: "" }).trim()}
               {!busy && <Spend n={1} />}
             </button>
             <span class="gsp" />
-            {edited && <span class="dirty t-data"><IconPencil size={12} stroke={1.75} aria-hidden />edited</span>}
+            {edited && <span class="dirty t-data"><Edit size={12} stroke={1.75} aria-hidden />edited</span>}
             <button class="dbtn2 hit" onClick={() => { openRow.value = null; }}>Skip</button>
           </>
         )}
@@ -496,7 +497,7 @@ function JobDock({ job, onStop, onResume, rest }: {
       </div>
       <span class="jbar"><i style={`width:${Math.round((job.done / Math.max(1, job.total)) * 100)}%`} /></span>
       <p class="jobnote t-data dim">
-        <IconInfoCircle size={12} stroke={1.75} aria-hidden />
+        <Info size={12} stroke={1.75} aria-hidden />
         <span>Stop keeps the sources that have already finished and leaves the rest unprocessed.</span>
       </p>
     </div>
@@ -510,7 +511,7 @@ function ConfirmSheet({ n, chats, onCancel, onGo }: {
   const scope = chats.find((c) => c.id === scopeChatId.value);
   return (
     <Modal label="Confirm import" onClose={onCancel}>
-      <div class="chead"><IconSparkles size={16} stroke={1.75} aria-hidden />
+      <div class="chead"><Cost size={16} stroke={1.75} aria-hidden />
         <b class="t-prose">{t("sourcesworkspace.importValue1", { value1: String(n) })}?</b></div>
       <div class="cbody">
         <div class="crow"><span class="ck t-label t-label-s">extraction</span>
@@ -547,7 +548,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
   return (
     <div class="mem-card resultcard">
       <div class="reshead2">
-        <IconCircleCheck class="s-ok" size={17} stroke={1.75} aria-hidden />
+        <AllClear class="s-ok" size={17} stroke={1.75} aria-hidden />
         <div>
           <div class="restitle t-prose">{t("sourcesworkspace.sourceImportComplete")}</div>
           <div class="ressub t-prose dim">
@@ -560,7 +561,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
 
       {bad.map((r) => (
         <div key={r.title} class="failblock">
-          <div class="failhead"><IconAlertTriangle size={15} stroke={1.75} aria-hidden />
+          <div class="failhead"><Alert size={15} stroke={1.75} aria-hidden />
             <span class="failname t-prose">{r.title}</span></div>
           <p class="failwhy t-prose dim">{t("sourcesworkspace.sourceSavedExtractionFailed")}</p>
         </div>
@@ -569,7 +570,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
       {ok.length > 0 && (
         <>
           <button class="fold-btn t-data hit" aria-expanded={openDetail} onClick={() => setOpenDetail(!openDetail)}>
-            {openDetail ? <IconChevronDown size={12} stroke={1.75} aria-hidden /> : <IconChevronRight size={12} stroke={1.75} aria-hidden />}
+            {openDetail ? <ChevronDown size={12} stroke={1.75} aria-hidden /> : <ChevronRight size={12} stroke={1.75} aria-hidden />}
             Per-source detail
           </button>
           {openDetail && (
@@ -590,7 +591,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
 
       <div class="resfoot">
         <button class="dock-primary t-label" onClick={() => navigate("memory/review")}>
-          {t("longtermmemorydetail.openReviewQueue")} <IconArrowRight size={13} stroke={1.75} aria-hidden />
+          {t("longtermmemorydetail.openReviewQueue")} <Forward size={13} stroke={1.75} aria-hidden />
         </button>
       </div>
       <Edu>{t("sourcesworkspace.importExplanation")}</Edu>
@@ -608,7 +609,7 @@ function SourcesEmpty({ q, rows, view, chats }: {
   if (q.trim()) {
     return (
       <EmptyState
-        icon={<IconSearch size={22} stroke={1.75} aria-hidden />}
+        icon={<NoMatches size={22} stroke={1.75} aria-hidden />}
         title={OURS.noMatchingSources}
         body={<>
           The search <b>{q.trim()}</b> matches nothing{scoped ? <> in <b>{scopeName}</b></> : null}.
@@ -620,7 +621,7 @@ function SourcesEmpty({ q, rows, view, chats }: {
   if (rows.length === 0 && scoped) {
     return (
       <EmptyState
-        icon={<IconBook2 size={22} stroke={1.75} aria-hidden />}
+        icon={<Lorebook size={22} stroke={1.75} aria-hidden />}
         title={t("sourcesworkspace.noLorebooksAreAvailableInThisScope")}
         body="Widening the import scope will show sources from other chats."
         actions={
@@ -635,7 +636,7 @@ function SourcesEmpty({ q, rows, view, chats }: {
   return (
     <EmptyState
       tone="ok"
-      icon={<IconCircleCheck size={22} stroke={1.75} aria-hidden />}
+      icon={<AllClear size={22} stroke={1.75} aria-hidden />}
       title={view === "pending"
         ? "No sources are waiting to be imported."
         : t("sourcesworkspace.noSourcesHaveBeenImportedInThisScope")}

@@ -1,4 +1,4 @@
-import { IconSearch } from "@tabler/icons-preact";
+import { Search } from "./icons";
 import "./SearchBar.css";
 
 /** A search field. The magnifier is part of the component, not something each
@@ -21,7 +21,7 @@ export function SearchBar(props: {
   const showCount = props.count !== undefined && props.value.trim() !== "";
   return (
     <label class={`searchbar ${props.class ?? ""}`}>
-      <IconSearch size={14} stroke={1.75} aria-hidden />
+      <Search size={14} stroke={1.75} aria-hidden />
       <input
         class="t-prose"
         type="search"

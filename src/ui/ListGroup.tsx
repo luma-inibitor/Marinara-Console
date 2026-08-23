@@ -1,5 +1,5 @@
 import type { ComponentChildren } from "preact";
-import { IconChevronDown, IconChevronRight } from "@tabler/icons-preact";
+import { ChevronDown, ChevronRight } from "./icons";
 import "./ListGroup.css";
 
 /** The collapse control for a group of rows.
@@ -18,7 +18,7 @@ export function CollapseButton(props: {
   size?: number;
   class?: string;
 }) {
-  const Chevron = props.collapsed ? IconChevronRight : IconChevronDown;
+  const Chevron = props.collapsed ? ChevronRight : ChevronDown;
   return (
     <button
       type="button"

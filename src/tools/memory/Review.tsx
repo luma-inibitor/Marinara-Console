@@ -16,7 +16,7 @@ import { SECTION_CAP as CAP } from "./data";
 import { refreshLtmStatus } from "./MemoryTool";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { signal } from "@preact/signals";
-import { IconFlag, IconCircleCheck, IconCircleX, IconDotsVertical, IconSearch, IconWriting } from "@tabler/icons-preact";
+import { Flag, AllClear, NoMatches, DECISION_ICON, More, EditedMark } from "../../ui/icons";
 import { DecisionIcon, OpIcon, TypeIcon } from "./icons";
 import { Term, OP_TIP } from "./glossary";
 import { flagsOf, worstSeverity, contributionChars } from "./flags";
@@ -243,10 +243,10 @@ export function Review() {
           {shown.length === 0 && rows.value.length === 0 && !blocked.value.length && (
             // An emptied queue is the reviewer succeeding, so it reads the
             // same way the Sources screen's cleared backlog does.
-            <EmptyState tone="ok" icon={<IconCircleCheck size={22} stroke={1.75} aria-hidden />} title={OURS.queueEmpty} />
+            <EmptyState tone="ok" icon={<AllClear size={22} stroke={1.75} aria-hidden />} title={OURS.queueEmpty} />
           )}
           {shown.length === 0 && rows.value.length > 0 && (
-            <EmptyState icon={<IconSearch size={22} stroke={1.75} aria-hidden />} title="No proposals match the active facets." />
+            <EmptyState icon={<NoMatches size={22} stroke={1.75} aria-hidden />} title="No proposals match the active facets." />
           )}
           {groups.map((g) => <GroupBlock key={g.id} group={g} showTarget={groupBy.value !== "target"} onActivate={focusRow} tabbable={roving.tabbable} />)}
           <Rejections />
@@ -421,12 +421,12 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
               <button class="gib gk" title={`Keep ${undecidedRows.length} undecided`}
                 aria-label={`Keep all ${undecidedRows.length} undecided in ${g.label}`}
                 onClick={() => bulkDecide(undecidedRows, "keep", `keep ${g.label}`)}>
-                <IconCircleCheck size={15} stroke={1.75} aria-hidden />
+                <DECISION_ICON.keep size={15} stroke={1.75} aria-hidden />
               </button>
               <button class="gib gd" title={`Drop ${undecidedRows.length} undecided`}
                 aria-label={`Drop all ${undecidedRows.length} undecided in ${g.label}`}
                 onClick={() => bulkDecide(undecidedRows, "drop", `drop ${g.label}`)}>
-                <IconCircleX size={15} stroke={1.75} aria-hidden />
+                <DECISION_ICON.drop size={15} stroke={1.75} aria-hidden />
               </button>
             </span>
           )}
@@ -449,7 +449,7 @@ function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: 
     <span class="gmenu-wrap">
       <button class="gib gmenu" aria-label={`Actions for ${g.label}`} aria-expanded={open}
         onClick={() => setOpen(!open)}>
-        <IconDotsVertical size={16} stroke={1.75} aria-hidden />
+        <More size={16} stroke={1.75} aria-hidden />
       </button>
       {open && (
         <>
@@ -518,14 +518,14 @@ function ClaimRow(props: {
           <span class="row-trail t-data">
             {edited.value.has(r.key) && (
               <Term tip="edited · you replaced this claim's proposed text — your version applies with the batch">
-                <IconWriting size={14} stroke={1.75} class="edit-mark" aria-label={t("reviewqueue.editedChange")} />
+                <EditedMark size={14} stroke={1.75} class="edit-mark" aria-label={t("reviewqueue.editedChange")} />
               </Term>
             )}
             {isAuto && <span class="dep-tag">dependency</span>}
             {blockedMsg && <span class="is-drop" title={blockedMsg}>blocked</span>}
             {flags.length > 0 && (
               <span class="fq" data-sev={sev} title={flags.map((f) => f.label).join(" · ")}>
-                <IconFlag size={13} stroke={1.75} aria-hidden />{flags.length}
+                <Flag size={13} stroke={1.75} aria-hidden />{flags.length}
               </span>
             )}
             <span class="chs">{chars > 0 ? `+${chars.toLocaleString()}` : ""}</span>
@@ -552,7 +552,7 @@ function GroupPressure(props: { groupId: string; isTarget: boolean }) {
   return (
     <span class="fq gcap" data-sev={over ? "danger" : "warn"}
       title={`§${worst.key}: stored ${worst.current.toLocaleString()} ch, ${worst.projected.toLocaleString()} after this batch, cap ${CAP.toLocaleString()}`}>
-      <IconFlag size={12} stroke={1.75} aria-hidden /><span class="gcap-pct">cap {pct}%</span>
+      <Flag size={12} stroke={1.75} aria-hidden /><span class="gcap-pct">cap {pct}%</span>
     </span>
   );
 }

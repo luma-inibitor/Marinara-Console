@@ -5,7 +5,7 @@ import { useEffect } from "preact/hooks";
 import { navigate } from "../../shell/router";
 import { ltmStatus, rebuildIndexes, type LtmStatus } from "./data";
 import { signal } from "@preact/signals";
-import { IconFileImport, IconLibrary, IconListCheck, type Icon } from "@tabler/icons-preact";
+import { VIEW_ICON } from "../../ui/icons";
 import { ScopeBar, useScopeData } from "./ScopeBar";
 import { toast } from "../../shell/toast";
 import { t, OURS } from "./strings";
@@ -43,11 +43,8 @@ function consumeFocusSource(): string | null {
 // fit a phone without truncating. Sources first — material arrives there —
 // then Vault, Review, Activity. Review stays the default landing view because
 // it is the work.
-const VIEW_ICON: Record<string, Icon> = {
-  sources: IconFileImport,   // the screen's own verb
-  vault: IconLibrary,        // database is taken: it is the source-note type icon
-  review: IconListCheck,
-};
+// (VIEW_ICON now lives in the icon registry: sources = the screen's own verb,
+// vault = library because database is taken by the source-note type icon.)
 // Workflow order: material arrives in Sources, gets decided in Review, and
 // lands in the Vault. Activity comes last, when it is built.
 const VIEWS = [

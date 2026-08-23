@@ -1,5 +1,5 @@
 import type { ComponentChildren } from "preact";
-import { IconAlertTriangle } from "@tabler/icons-preact";
+import { Alert } from "./icons";
 import { ApiError } from "../shell/api";
 import { EmptyState } from "./EmptyState";
 
@@ -62,7 +62,7 @@ export function ErrorState(props: {
   return (
     <EmptyState
       tone="danger"
-      icon={<IconAlertTriangle size={22} stroke={1.75} aria-hidden />}
+      icon={<Alert size={22} stroke={1.75} aria-hidden />}
       title={title}
       body={
         <>

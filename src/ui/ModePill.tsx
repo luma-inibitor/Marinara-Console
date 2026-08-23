@@ -1,4 +1,4 @@
-import { IconMessage, IconMasksTheater, IconDeviceGamepad2 } from "@tabler/icons-preact";
+import { MODE_ICON } from "./icons";
 import "./ModePill.css";
 
 /** The three chat modes as a segmented pill. Every segment always renders, so
@@ -14,9 +14,9 @@ import "./ModePill.css";
  *  raised surface, and only the interactive one adds the accent border that
  *  Chip's toggles already use. */
 export const MODES = [
-  { id: "conversation", short: "DM", name: "conversation mode", Icon: IconMessage },
-  { id: "roleplay", short: "RP", name: "roleplay mode", Icon: IconMasksTheater },
-  { id: "game", short: "GM", name: "game mode", Icon: IconDeviceGamepad2 },
+  { id: "conversation", short: "DM", name: "conversation mode", Icon: MODE_ICON.conversation },
+  { id: "roleplay", short: "RP", name: "roleplay mode", Icon: MODE_ICON.roleplay },
+  { id: "game", short: "GM", name: "game mode", Icon: MODE_ICON.game },
 ] as const;
 
 export function ModePill(props: {

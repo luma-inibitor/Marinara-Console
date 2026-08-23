@@ -15,7 +15,8 @@
 
 import { type ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
-import { IconChevronRight, IconEye, IconFlag, IconInfoCircle, IconPencil, IconWriting, IconArrowRight, IconX, IconPlus } from "@tabler/icons-preact";
+// `Preview` is aliased: this file already has a local <Preview/> zone component.
+import { ChevronRight, Preview as PreviewIcon, Flag, Edit, EditedMark, Forward, Remove, Add } from "../../ui/icons";
 import { toast } from "../../shell/toast";
 import { type Mutation, type Row, KEYWORD_CAP, SECTION_CAP } from "./data";
 import { t, OURS } from "./strings";
@@ -46,7 +47,7 @@ function Skey(props: { k: string }) {
 function Fold(props: { label: string; children: ComponentChildren }) {
   return (
     <details class="fold">
-      <summary class="t-data"><IconChevronRight class="fold-c" size={12} stroke={1.75} aria-hidden /><span>{props.label}</span></summary>
+      <summary class="t-data"><ChevronRight class="fold-c" size={12} stroke={1.75} aria-hidden /><span>{props.label}</span></summary>
       {props.children}
     </details>
   );
@@ -176,19 +177,19 @@ export function ClaimDetail({ row }: { row: Row }) {
   const [whole, setWhole] = useState(false);
   const wholeBtn = target && (m.kind === "append_section" || m.kind === "update_section") && !editing && (
     <button class="zbtn hit" aria-pressed={whole} onClick={() => setWhole(!whole)}>
-      <IconEye size={12} stroke={1.75} aria-hidden /> whole memory
+      <PreviewIcon size={12} stroke={1.75} aria-hidden /> whole memory
     </button>
   );
   const editBtn = (editableSections.length > 0 || storedKeywords) && hasEditable && !editing && (
     <button class="zbtn hit" onClick={() => setEditing(true)}>
-      <IconPencil size={12} stroke={1.75} aria-hidden /> {t("longtermmemorydetail.reviewEdit").toLowerCase()}
+      <Edit size={12} stroke={1.75} aria-hidden /> {t("longtermmemorydetail.reviewEdit").toLowerCase()}
     </button>
   );
   const staged = edited.value.has(r.key);
   const stagedMark = staged && !editing && (
     <span class="zbtn-group">
       <Term tip="edited — this claim's text was changed by you; the edit applies with the batch">
-        <IconWriting class="edit-mark" size={13} stroke={1.75} aria-hidden />
+        <EditedMark class="edit-mark" size={13} stroke={1.75} aria-hidden />
       </Term>
       <button class="zbtn hit" onClick={() => { setEdited(r.key, null); setDrafts({}); }}>
         {t("memorysettings.discardChanges").toLowerCase()}
@@ -425,7 +426,7 @@ function Preview(props: {
       <Zone eyebrow={<span class="z-lab">{opTag}{OURS.zonePreview}</span>}>
         <div class="linkrow">
           <span class="stt t-data">{from}</span>
-          <IconArrowRight class="dim-i" size={13} stroke={1.75} aria-hidden />
+          <Forward class="dim-i" size={13} stroke={1.75} aria-hidden />
           <span class={`stt t-data st-${to}`}>{to}</span>
         </div>
         <InlineMemory id={r.targetId} />
@@ -511,12 +512,12 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
       <div class="evq-a t-data">source: <Ref id={r.sourceNoteId} title={r.sourceTitle} type="source" /></div>
 
       <div class={`sig t-prose ${low ? "" : "sig-ok"}`} data-sev={low ? "warn" : undefined}>
-        {low ? <IconFlag size={13} stroke={1.75} aria-hidden /> : <DecisionIcon d="keep" size={13} />}
+        {low ? <Flag size={13} stroke={1.75} aria-hidden /> : <DecisionIcon d="keep" size={13} />}
         <span>extraction confidence {conf}%{low && <> — below the 93% threshold</>}</span>
       </div>
       {diags.map((f) => (
         <div key={f.label} class="sig t-prose" data-sev={f.severity}>
-          <IconFlag size={13} stroke={1.75} aria-hidden />
+          <Flag size={13} stroke={1.75} aria-hidden />
           <span>{f.sentence}</span>
         </div>
       ))}
@@ -583,7 +584,7 @@ function KeywordEditor({ list, editing, onChange, allNew }: {
             {k}
             <button class="kwx hit" aria-label={`Remove keyword ${k}`}
               onClick={() => onChange(list.filter((x) => x !== k))}>
-              <IconX size={11} stroke={2} aria-hidden />
+              <Remove size={11} stroke={2} aria-hidden />
             </button>
           </span>
         ))}
@@ -594,7 +595,7 @@ function KeywordEditor({ list, editing, onChange, allNew }: {
           onInput={(e) => setEntry(e.currentTarget.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }} />
         <button class="zbtn hit" onClick={add} disabled={!entry.trim()}>
-          <IconPlus size={12} stroke={2} aria-hidden /> {t("memoryvault.addKeyword").toLowerCase()}
+          <Add size={12} stroke={2} aria-hidden /> {t("memoryvault.addKeyword").toLowerCase()}
         </button>
       </div>
     </div>

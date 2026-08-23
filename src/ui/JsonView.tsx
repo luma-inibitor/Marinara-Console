@@ -1,7 +1,7 @@
 import { useState } from "preact/hooks";
 import {
-  IconEye, IconCode, IconCopy, IconCheck, IconChevronRight, IconChevronDown,
-} from "@tabler/icons-preact";
+  Preview, Raw, Copy, Copied, ChevronRight, ChevronDown,
+} from "./icons";
 import { toast } from "../shell/toast";
 import "./JsonView.css";
 
@@ -39,17 +39,17 @@ export function JsonView(props: { value: unknown; label?: string }) {
       <div class="jsonview-tools" role="group" aria-label={props.label ?? "JSON view"}>
         <button type="button" class="jsonview-t" aria-pressed={mode === "tree"}
           aria-label="Folding view" title="Folding view" onClick={() => setMode("tree")}>
-          <IconEye size={13} stroke={1.75} aria-hidden />
+          <Preview size={13} stroke={1.75} aria-hidden />
         </button>
         <button type="button" class="jsonview-t" aria-pressed={mode === "raw"}
           aria-label="Plain text" title="Plain text" onClick={() => setMode("raw")}>
-          <IconCode size={13} stroke={1.75} aria-hidden />
+          <Raw size={13} stroke={1.75} aria-hidden />
         </button>
         <button type="button" class="jsonview-t" aria-label={copied ? "Copied" : "Copy JSON"}
           title="Copy JSON" onClick={copy}>
           {copied
-            ? <IconCheck size={13} stroke={2} aria-hidden />
-            : <IconCopy size={13} stroke={1.75} aria-hidden />}
+            ? <Copied size={13} stroke={2} aria-hidden />
+            : <Copy size={13} stroke={1.75} aria-hidden />}
         </button>
       </div>
       {mode === "raw"
@@ -83,7 +83,7 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
     : Object.entries(value as Record<string, unknown>);
   const openBrace = isArray ? "[" : "{";
   const closeBrace = isArray ? "]" : "}";
-  const Chevron = open ? IconChevronDown : IconChevronRight;
+  const Chevron = open ? ChevronDown : ChevronRight;
 
   return (
     <div class="jgroup">

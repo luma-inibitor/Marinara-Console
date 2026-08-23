@@ -14,7 +14,7 @@ import {
 import { t, OURS } from "./strings";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
-import { IconSearch } from "@tabler/icons-preact";
+import { NoMatches } from "../../ui/icons";
 import { Chip, DetailSection, EmptyState, ErrorState, IconButton, Loading, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
@@ -117,7 +117,7 @@ export function Vault() {
             // search to point at, so it gets the sentence alone.
             (query.trim() || typeFilter)
               ? <EmptyState
-                  icon={<IconSearch size={22} stroke={1.75} aria-hidden />}
+                  icon={<NoMatches size={22} stroke={1.75} aria-hidden />}
                   title={t("memoryvault.filteredEmptyDescription", { value1: query.trim() ? t("memoryvault.filteredEmptySearch", { value1: query.trim() }) : (typeFilter ?? "") })} />
               : <EmptyState title={t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")} />
           )}

@@ -12,7 +12,8 @@
 // that constant in Sources.tsx to 0, select one source, and confirm the modal
 // closes on scrim tap, Escape, back and Cancel — and that dismissing it does
 // not import. Put the constant back afterwards.
-import { chromium } from "/Users/eli/code/marinara-console/node_modules/playwright-core/index.mjs";
+import { chromium } from "playwright-core";
+const DEV_URL = (process.env.MC_DEV_URL ?? "http://127.0.0.1:5173") + "/";
 
 // `dismiss` names the routes a surface actually offers. Everything built on
 // <Sheet>/<Modal> offers all three. The tag panel is a full-screen surface with
@@ -45,7 +46,7 @@ for (const c of CASES) {
   for (const how of c.dismiss ?? ALL) {
     const p = await browser.newPage({ viewport: { width: c.w, height: 900 } });
     try {
-      await p.goto("http://127.0.0.1:5173/" + c.hash, { waitUntil: "networkidle", timeout: 60000 });
+      await p.goto(DEV_URL + c.hash, { waitUntil: "networkidle", timeout: 60000 });
       await p.waitForTimeout(1500);
       await c.open(p);
       await p.waitForTimeout(700);

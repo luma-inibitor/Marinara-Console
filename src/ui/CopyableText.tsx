@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { IconCopy, IconCheck } from "@tabler/icons-preact";
+import { Copy, Copied } from "./icons";
 import { toast } from "../shell/toast";
 import "./CopyableText.css";
 
@@ -32,8 +32,8 @@ export function CopyableText(props: { value: string; label?: string; class?: str
         onClick={copy}
       >
         {done
-          ? <IconCheck size={13} stroke={2} aria-hidden />
-          : <IconCopy size={13} stroke={1.75} aria-hidden />}
+          ? <Copied size={13} stroke={2} aria-hidden />
+          : <Copy size={13} stroke={1.75} aria-hidden />}
       </button>
     </span>
   );

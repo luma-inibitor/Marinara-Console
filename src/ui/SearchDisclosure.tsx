@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { IconChevronDown, type Icon } from "@tabler/icons-preact";
+import { ChevronDown } from "./icons";
+import type { Icon } from "./icons";
 import { SearchBar } from "./SearchBar";
 import { fuzzyFilter } from "./fuzzy";
 import "./SearchDisclosure.css";
@@ -60,7 +61,7 @@ export function SearchDisclosure(props: {
       >
         <I size={14} stroke={1.75} />
         <span class="disclosure-value">{props.value}</span>
-        <IconChevronDown size={13} stroke={1.75} aria-hidden />
+        <ChevronDown size={13} stroke={1.75} aria-hidden />
       </button>
       {open && (
         <div class="disclosure-pop" role="dialog" aria-label={props.label}>

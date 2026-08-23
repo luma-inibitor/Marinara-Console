@@ -12,7 +12,7 @@
 // opening a picker should not take the keyboard from someone who came to click.
 
 import { useEffect, useMemo, useState } from "preact/hooks";
-import { IconUser, IconMessageCircle } from "@tabler/icons-preact";
+import { SCOPE_ICON } from "../../ui/icons";
 import { api } from "../../shell/api";
 import { t } from "./strings";
 import { scopeChatId, scopeCharacterId, setScope, setScopeCharacter } from "./store";
@@ -54,13 +54,13 @@ export function ScopeBar({ chats, characters }: { chats: Chat[]; characters: Cha
   return (
     <div class="scoperow">
       <span class="scopelab t-label t-label-s">{t("sourcesworkspace.importScope")}</span>
-      <SearchDisclosure label="Character" icon={IconUser}
+      <SearchDisclosure label="Character" icon={SCOPE_ICON.character}
         value={character?.name ?? "All characters"} allLabel="All characters"
         current={charId} options={characters.map((c) => ({ id: c.id, name: c.name }))}
         emptyText={t("memoryvault.noMatchingCharacters")}
         onPick={(id) => setScopeCharacter(id)} />
       <span class="scopesep" aria-hidden="true" data-contrast-exempt>›</span>
-      <SearchDisclosure label="Chat" icon={IconMessageCircle}
+      <SearchDisclosure label="Chat" icon={SCOPE_ICON.chat}
         value={chat?.name ?? t("sourcesworkspace.allChats")} allLabel={t("sourcesworkspace.allChats")}
         current={scopeChatId.value}
         options={chatsInScope.map((c) => ({ id: c.id, name: c.name ?? c.id, hint: c.mode }))}

@@ -1,4 +1,4 @@
-import { IconQuestionMark } from "@tabler/icons-preact";
+import { Missing } from "./icons";
 import { navigate } from "../shell/router";
 import { EmptyState } from "./EmptyState";
 
@@ -13,7 +13,7 @@ import { EmptyState } from "./EmptyState";
 export function NotFound(props: { what: string; id?: string; backTo?: string; backLabel?: string }) {
   return (
     <EmptyState
-      icon={<IconQuestionMark size={22} stroke={1.75} aria-hidden />}
+      icon={<Missing size={22} stroke={1.75} aria-hidden />}
       title={`${props.what} not found`}
       body={
         <>
