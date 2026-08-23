@@ -31,7 +31,7 @@ import {
   buildSources, isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,
 } from "./sourceModel";
-import { collapsedGroups, Edu, EmptyState, IconButton, ListGroup, Modal, ModePill, MODES, SearchBar, fuzzyFilter } from "../../ui";
+import { collapsedGroups, Edu, EmptyState, IconButton, ListGroup, Loading, Modal, ModePill, MODES, SearchBar, fuzzyFilter } from "../../ui";
 import { closeTopOverlay } from "../../shell/overlays";
 
 /** Above this many sources, spending model calls raises a confirm first. */
@@ -218,7 +218,7 @@ export function Sources() {
         {job && <JobDock job={job} onStop={() => { stopRef.v = true; }}
           onResume={(rest) => void runImport(rest)} rest={selectedRows.slice(job.done)} />}
 
-        {loading && <p class="empty">{t("sourcesworkspace.loadingSourcePreview")}</p>}
+        {loading && <Loading label={t("sourcesworkspace.loadingSourcePreview")} />}
         {!loading && shown.length === 0 && <SourcesEmpty q={q} rows={rows} view={railView.value} chats={chats} />}
 
         {!loading && KINDS.flatMap(({ id, label, icon: KI, bulk }) => {

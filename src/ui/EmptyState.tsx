@@ -4,11 +4,16 @@ import "./EmptyState.css";
 /** The nothing-here state: an optional icon, a title, an optional explanation,
  *  and optional actions.
  *
- *  One component for every flavour — loading, error, filtered-to-nothing,
- *  finished, and genuinely empty — because the console had grown two separate
- *  treatments (a bare centred paragraph and a richer icon pane) and which one
- *  a screen got was down to who wrote it. The parts are optional; the
- *  typography is not.
+ *  One component for every shade of empty — filtered to nothing, finished,
+ *  nothing selected, and never had anything — because the console had grown
+ *  two separate treatments (a bare centred paragraph and a richer icon pane)
+ *  and which one a screen got was down to who wrote it. The parts are
+ *  optional; the typography is not.
+ *
+ *  Waiting and failing are `Loading` and `ErrorState` instead. They are the
+ *  same shape but different roles, and §8 splits on role: one of them must not
+ *  be allowed a title in this face, and the other must not be allowed to omit
+ *  its cause.
  *
  *  `tone` colours the icon only. It never carries meaning alone, so every
  *  toned state still says what happened in the title. */

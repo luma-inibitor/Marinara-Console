@@ -1,12 +1,24 @@
 # Memory tool UX review — navigation, cross-surface linkage, missing connections
 
+> **Status: audited 2026-08-22.** This is the report as it was written on
+> 2026-08-21, and its findings have not been edited. The codebase has moved
+> substantially since — the P0 batch shipped and a shared `src/ui/` component
+> layer was extracted — so the line numbers cited below no longer resolve and
+> some findings describe surfaces that have since been rebuilt. Every finding
+> at **[critical]** or **[high]** severity now carries an inline status marker
+> (`SHIPPED`, `OPEN`, `SUPERSEDED` or `UNVERIFIED`) naming the evidence.
+> Findings without a marker were not audited: check them against the current
+> code before acting on them. The reason this header exists is that the next
+> reader, human or agent, will otherwise re-fix a bug that is already fixed, or
+> "restore" a bug while reverting what looks like drift.
+
 Scope: `#/memory/review|vault|sources` at 1280x800 and 390x844, driven via Playwright against the shared instance (read-only), cross-checked against source in `/Users/eli/code/mc-port/src/tools/memory/`. BACKLOG-known gaps (rejected-suggestion "would have targeted" hints, Cmd-K palette entries, review query language, dupe/add_link cluster actions, tap-target sweep) are excluded.
 
 ## Findings
 
-- **[high] [bug]** — On mobile, tapping a claim row never opens the claim detail; ClaimDetail is unreachable by touch. Tried tapping `.mem-mid` on the first row at 390x844, then tapping again: only the focus highlight appears, no stacked detail. Cause: `focusRow` in `Review.tsx` only sets `detailKey` when `desktop` is true, and the only other setter is the Enter/o/e key handler — which touch users don't have. (Vault rows work fine — `NoteRow` sets `openId` directly.) Fix: in `focusRow`, set `detailKey` unconditionally (or on non-desktop, on second tap of the focused row).
+- **[high] [bug]** — On mobile, tapping a claim row never opens the claim detail; ClaimDetail is unreachable by touch. Tried tapping `.mem-mid` on the first row at 390x844, then tapping again: only the focus highlight appears, no stacked detail. Cause: `focusRow` in `Review.tsx` only sets `detailKey` when `desktop` is true, and the only other setter is the Enter/o/e key handler — which touch users don't have. (Vault rows work fine — `NoteRow` sets `openId` directly.) Fix: in `focusRow`, set `detailKey` unconditionally (or on non-desktop, on second tap of the focused row). **[SHIPPED — the roving-focus `onFocus` callback sets `detailKey` unconditionally, so a tap opens the stacked detail; verified by tapping `.mem-mid` at 486x1085 (`Review.tsx`).]**
 
-- **[high] [missing-linkage]** — A vault note has no path to the drafts/claims that target it (the review↔vault round trip is one-way). The vault editor for a note offers only: link NoteRefs, Dedupe, Save, Archive, Delete; nothing like upstream's "Review related drafts". The irony: the editor's own helper text says "pruning here is what unblocks the queue," yet offers no way to get to those blocked/pending claims. Fix: a "related claims (n)" affordance on the vault editor (and NotePeek) that navigates to review pre-filtered — the target-facet infrastructure already exists (`activeFacets` + `GROUPERS.target`).
+- **[high] [missing-linkage]** — A vault note has no path to the drafts/claims that target it (the review↔vault round trip is one-way). The vault editor for a note offers only: link NoteRefs, Dedupe, Save, Archive, Delete; nothing like upstream's "Review related drafts". The irony: the editor's own helper text says "pruning here is what unblocks the queue," yet offers no way to get to those blocked/pending claims. Fix: a "related claims (n)" affordance on the vault editor (and NotePeek) that navigates to review pre-filtered — the target-facet infrastructure already exists (`activeFacets` + `GROUPERS.target`). **[OPEN — `NoteEditor` still offers only status, links, per-section dedupe, Save, Archive and Delete; grepping the tool finds no related-claims affordance and no writer of `activeFacets` outside Review and the Sources handoff (`src/tools/memory/Vault.tsx`).]**
 
 - **[medium] [bug]** — On a `create_note` claim, the target NoteRef is a dead link: clicking "Harbour 904998" in ClaimDetail produced the error toast `world_harbour_904998: 404 Not Found — Long-term memory note not found`. The note doesn't exist yet, but the link renders identically to live links. Fix: for `create_note`, either peek the *proposed* note (the full payload is right there in `m.note`) or render a non-link "will be created" chip.
 

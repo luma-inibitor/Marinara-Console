@@ -11,6 +11,8 @@ export { DetailSection } from "./DetailSection";
 export { Edu } from "./Edu";
 export { FacetDrawer, type FacetGroup, type FacetLine, type FacetValue } from "./FacetDrawer";
 export { EmptyState } from "./EmptyState";
+export { ErrorState } from "./ErrorState";
+export { Loading } from "./Loading";
 export { IconButton } from "./IconButton";
 export { CollapseButton, ListGroup } from "./ListGroup";
 export { MODES, ModePill } from "./ModePill";

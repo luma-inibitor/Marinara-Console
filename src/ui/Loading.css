@@ -1,0 +1,9 @@
+/* The quietest of the three states. Body-size prose in the dim colour, so a
+   brief wait does not read louder than the content it is waiting for.
+   Preflight zeroes the tag margin, so the breathing room is this padding. */
+.loadingstate {
+  padding: var(--s6) var(--s4);
+  margin: 0;
+  text-align: center;
+  color: var(--text-dim);
+}

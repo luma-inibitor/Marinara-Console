@@ -14,7 +14,8 @@ import {
 import { t, OURS } from "./strings";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
-import { Chip, DetailSection, IconButton, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
+import { IconSearch } from "@tabler/icons-preact";
+import { Chip, DetailSection, EmptyState, ErrorState, IconButton, Loading, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
 
@@ -69,8 +70,8 @@ export function Vault() {
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [notes]);
 
-  if (error) return <div class="screen"><div class="empty"><p class="t-label">Could not load</p><p class="t-data">{error}</p></div></div>;
-  if (!notes) return <div class="screen"><div class="empty">{t("memoryvault.loadingMemories")}</div></div>;
+  if (error) return <div class="screen"><ErrorState title="Could not load" message={error} /></div>;
+  if (!notes) return <div class="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
 
   const stackOpen = !desktop && Boolean(openId);
   useEffect(() => {
@@ -112,11 +113,13 @@ export function Vault() {
         </header>
         <main class="rows mem-rows">
           {visible.length === 0 && (
-            <p class="empty">
-              {query.trim() || typeFilter
-                ? t("memoryvault.filteredEmptyDescription", { value1: query.trim() ? t("memoryvault.filteredEmptySearch", { value1: query.trim() }) : (typeFilter ?? "") })
-                : t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")}
-            </p>
+            // The filtered case earns the magnifier; an empty vault has no
+            // search to point at, so it gets the sentence alone.
+            (query.trim() || typeFilter)
+              ? <EmptyState
+                  icon={<IconSearch size={22} stroke={1.75} aria-hidden />}
+                  title={t("memoryvault.filteredEmptyDescription", { value1: query.trim() ? t("memoryvault.filteredEmptySearch", { value1: query.trim() }) : (typeFilter ?? "") })} />
+              : <EmptyState title={t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")} />
           )}
           {visible.map((n) => <NoteRow key={n.id} note={n} isOpen={openId === n.id} onOpen={() => setOpenId(n.id)} />)}
         </main>
@@ -125,7 +128,7 @@ export function Vault() {
         <aside class="audit-detail">
           {open
             ? <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />
-            : <div class="empty"><p class="t-label t-label-s">No memory open</p><p class="t-prose">Select a memory to edit it.</p></div>}
+            : <EmptyState title="No memory open" body="Select a memory to edit it." />}
         </aside>
       )}
       {!desktop && open && (

@@ -21,14 +21,14 @@ import { SECTION_CAP as CAP } from "./data";
 import { refreshLtmStatus } from "./MemoryTool";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { signal } from "@preact/signals";
-import { IconFlag, IconCircleCheck, IconCircleX, IconDotsVertical, IconWriting } from "@tabler/icons-preact";
+import { IconFlag, IconCircleCheck, IconCircleX, IconDotsVertical, IconSearch, IconWriting } from "@tabler/icons-preact";
 import { DecisionIcon, OpIcon, TypeIcon } from "./icons";
 import { Term, OP_TIP } from "./glossary";
 import { flagsOf, worstSeverity, contributionChars } from "./flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./NotePeek";
-import { Chip, collapsedGroups, FacetDrawer, IconButton, ListGroup, Picker, useIsDesktop, useRovingFocus } from "../../ui";
+import { Chip, collapsedGroups, EmptyState, ErrorState, FacetDrawer, IconButton, ListGroup, Loading, Picker, useIsDesktop, useRovingFocus } from "../../ui";
 
 const RESTORE_POINT_THRESHOLD = 20;
 
@@ -130,10 +130,10 @@ export function Review() {
   };
 
   if (loadError.value) {
-    return <div class="screen"><div class="empty"><p class="t-label">Could not load</p><p class="t-data">{loadError.value}</p></div></div>;
+    return <div class="screen"><ErrorState title="Could not load" message={loadError.value} /></div>;
   }
   if (loading.value) {
-    return <div class="screen"><div class="empty">{t("reviewqueue.loadingPendingReviewDrafts")}</div></div>;
+    return <div class="screen"><Loading label={t("reviewqueue.loadingPendingReviewDrafts")} /></div>;
   }
 
   // The stacked detail participates in the overlay stack (back/Escape close it).
@@ -246,10 +246,12 @@ export function Review() {
           <Obligations />
           <Failures />
           {shown.length === 0 && rows.value.length === 0 && !blocked.value.length && (
-            <p class="empty">{OURS.queueEmpty}</p>
+            // An emptied queue is the reviewer succeeding, so it reads the
+            // same way the Sources screen's cleared backlog does.
+            <EmptyState tone="ok" icon={<IconCircleCheck size={22} stroke={1.75} aria-hidden />} title={OURS.queueEmpty} />
           )}
           {shown.length === 0 && rows.value.length > 0 && (
-            <p class="empty">No proposals match the active facets.</p>
+            <EmptyState icon={<IconSearch size={22} stroke={1.75} aria-hidden />} title="No proposals match the active facets." />
           )}
           {groups.map((g) => <GroupBlock key={g.id} group={g} showTarget={groupBy.value !== "target"} onActivate={focusRow} />)}
           <Rejections />
@@ -260,7 +262,7 @@ export function Review() {
         <aside class="audit-detail">
           {detailRow
             ? <ClaimDetail key={detailRow.key} row={detailRow} />
-            : <div class="empty"><p class="t-label t-label-s">No claim open</p><p class="t-prose">j/k to move · a keep · d drop · Enter opens</p></div>}
+            : <EmptyState title="No claim open" body="j/k to move · a keep · d drop · Enter opens" />}
         </aside>
       )}
       {showDetailStack && (

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// Every layered surface must dismiss three ways: scrim tap, Escape, and back
-// (the Android gesture and the browser button are the same event). The import
-// confirm silently answered only one of them for weeks, because each sheet
-// registered with the overlay stack by hand and one forgot.
+// Every layered surface must dismiss every way it offers — scrim tap, Escape,
+// and back (the Android gesture and the browser button are the same event) —
+// and must leave the reader on the screen they were reading. The import confirm
+// silently answered only one of them for weeks, because each sheet registered
+// with the overlay stack by hand and one forgot.
 //
 //   node design/overlaycheck.mjs
 //
@@ -12,6 +13,12 @@
 // closes on scrim tap, Escape, back and Cancel — and that dismissing it does
 // not import. Put the constant back afterwards.
 import { chromium } from "/Users/eli/code/marinara-console/node_modules/playwright-core/index.mjs";
+
+// `dismiss` names the routes a surface actually offers. Everything built on
+// <Sheet>/<Modal> offers all three. The tag panel is a full-screen surface with
+// no scrim to tap, so it declares only escape and back rather than pretending
+// to pass a scrim case that never ran.
+const ALL = ["scrim", "escape", "back"];
 
 const CASES = [
   { name: "facet sheet",  hash: "#/memory/review",  w: 486, open: async (p) => {
@@ -24,12 +31,18 @@ const CASES = [
       await p.locator(".row-summary").first().click();
       await p.waitForTimeout(500);
       await p.locator(".notelink").first().click(); }, sel: ".sheet" },
+  // The lorebook tag panel. Every case above is a memory-tool surface, which is
+  // why this panel shipped unregistered: back left the book instead of closing
+  // the panel. Opened from the dock so the check exercises the phone path.
+  { name: "tag panel", hash: "#/lorebooks/JZzGg_2NjFx1hFP_G4Yeq", w: 486,
+    dismiss: ["escape", "back"], open: async (p) => {
+      await p.getByRole("button", { name: /Tags/ }).click(); }, sel: ".tagpanel" },
 ];
 
 const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH });
 let fails = 0;
 for (const c of CASES) {
-  for (const how of ["scrim", "escape", "back"]) {
+  for (const how of c.dismiss ?? ALL) {
     const p = await browser.newPage({ viewport: { width: c.w, height: 900 } });
     try {
       await p.goto("http://127.0.0.1:5173/" + c.hash, { waitUntil: "networkidle", timeout: 60000 });
@@ -43,7 +56,11 @@ for (const c of CASES) {
       if (how === "back") await p.goBack();
       await p.waitForTimeout(700);
       const still = await p.locator(c.sel).count();
+      const hash = new URL(p.url()).hash;
       if (still) { console.log(`FAIL ${c.name} / ${how}: still open`); fails++; }
+      // Closing the surface is only half of it: a dismissal that also unwinds
+      // the route has thrown the reader out of the screen they were reading.
+      else if (hash !== c.hash) { console.log(`FAIL ${c.name} / ${how}: left the screen (hash "${hash}")`); fails++; }
       else console.log(`ok   ${c.name} / ${how}`);
     } catch (e) {
       console.log(`FAIL ${c.name} / ${how}: ${String(e).split("\n")[0].slice(0, 90)}`); fails++;
@@ -52,5 +69,5 @@ for (const c of CASES) {
   }
 }
 await browser.close();
-console.log(fails === 0 ? "\nevery overlay dismisses three ways" : `\n${fails} failures`);
+console.log(fails === 0 ? "\nevery overlay dismisses every way it offers" : `\n${fails} failures`);
 process.exit(fails ? 1 : 0);

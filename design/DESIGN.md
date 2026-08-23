@@ -262,6 +262,15 @@ that re-states a margin preflight already removed; give the component a `gap`.
 something was clickable by clicking it. Accent means interactive (§2); a
 component that is not interactive should not be able to reach for it.
 
+The same split runs through `EmptyState` / `Loading` / `ErrorState`. They are
+one shape — centred text in a blank pane — and three roles, and a single
+`kind` prop would have kept the shape and lost the roles. A loading state must
+not be allowed a title in the label face, because half a second of latency
+announced in bold reads as a verdict; an error state must not be allowed to
+omit its cause, which an optional shared `body` prop permits and a required
+`message` prop does not. Seventeen hand-written `class="empty"` panes had
+drifted into four different appearances before this.
+
 ### The inventory
 
 | Component | What it owns | Reach for instead |
@@ -280,7 +289,9 @@ component that is not interactive should not be able to reach for it.
 | `JsonView` / `RawJson` | a JSON value, folding or literal | — |
 | `CopyableText` | a value meant to be taken elsewhere | — |
 | `ModePill` | the three chat modes, read-out or filter | — |
-| `EmptyState` | icon, title, explanation, actions | — |
+| `EmptyState` | icon, title, explanation, actions | `Loading` while waiting, `ErrorState` when it failed |
+| `Loading` | one dim line while a view is still arriving | — |
+| `ErrorState` | a failure and the engine's reason for it | — |
 | `Edu` | one line of help text, with its icon | `Term` for a single word |
 | `Term` | a word that explains itself in place | `Edu` for a whole sentence |
 | `useIsDesktop` | the split-width query | — |

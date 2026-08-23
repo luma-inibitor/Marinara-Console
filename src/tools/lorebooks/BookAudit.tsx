@@ -4,6 +4,7 @@
 import type { ComponentChildren } from "preact";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { navigate } from "../../shell/router";
+import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { toast } from "../../shell/toast";
 import {
   type Entry, type Lorebook, type Evaluation,
@@ -168,6 +169,14 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     } catch (err) { toast(`Failed to update the selected entries: ${(err as Error).message}`, { kind: "error" }); }
   }, [bookId, selected]);
 
+  // The tag panel is a full-screen surface, not a `<Sheet>`, so it has to hold
+  // up its own half of the overlay contract: flip the signal, then register a
+  // closer. Without this the back gesture walked past the panel and left the
+  // lorebook entirely, which on a phone is the only dismissal gesture there is.
+  useEffect(() => {
+    if (showTags) openOverlay(() => setShowTags(false));
+  }, [showTags]);
+
   // ── keyboard: j/k roving focus, Enter opens, Escape backs out ──
   // The guards live in useRovingFocus. They used to live here, in a copy that
   // had lost the modifier check, so Ctrl-J walked the cursor.
@@ -182,10 +191,13 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       ev.preventDefault();
       if (!desktop) setOpen((s) => { const n = new Set(s); n.has(focusId) ? n.delete(focusId) : n.add(focusId); return n; });
     } else if (ev.key === "Escape") {
-      if (showTags) setShowTags(false);
-      else navigate("lorebooks");
+      // Only reached when nothing is stacked: the overlay stack's own capture
+      // listener swallows Escape while the tag panel is open. Closing it here
+      // as well would pop two history entries and drop the reader out of the
+      // book — the exact bug the panel's back gesture had.
+      navigate("lorebooks");
     }
-  }, [visible, focusId, desktop, showTags]);
+  }, [visible, focusId, desktop]);
 
   if (error) return <div class="screen"><div class="empty"><p class="t-label">Could not load</p><p class="t-data">{error}</p></div></div>;
   if (!entries || !book) return <div class="screen"><div class="empty">Loading lorebook entries…</div></div>;
@@ -336,9 +348,9 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       {showTags && (
         <TagOverlay
           entries={entries}
-          onClose={() => setShowTags(false)}
-          onShow={(tag) => { setMode("find"); setQuery(tag === UNTAGGED ? "" : tag); setGroup(true); setShowTags(false); }}
-          onSelect={(ids) => { setSelecting(true); setSelected(new Set(ids)); setShowTags(false); }}
+          onClose={closeTopOverlay}
+          onShow={(tag) => { setMode("find"); setQuery(tag === UNTAGGED ? "" : tag); setGroup(true); closeTopOverlay(); }}
+          onSelect={(ids) => { setSelecting(true); setSelected(new Set(ids)); closeTopOverlay(); }}
         />
       )}
 
