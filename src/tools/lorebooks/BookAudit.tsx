@@ -12,7 +12,7 @@ import {
   POS_COMPACT,
 } from "./data";
 import { EntryDrawer, FullscreenEditor, type FullscreenCtx } from "./entries";
-import { useIsDesktop } from "../../ui";
+import { Chip, useIsDesktop } from "../../ui";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
 type Mode = "find" | "test";
@@ -279,23 +279,23 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
           {!selecting ? (
             <div class="chiprail">
               {(["tokens", "order", "keys", "name", "updated"] as SortKey[]).map((k) => (
-                <button key={k} class="chip" aria-pressed={sort === k && !group} onClick={() => { setSort(k); setGroup(false); }}>
+                <Chip key={k} pressed={sort === k && !group} onClick={() => { setSort(k); setGroup(false); }}>
                   {{ tokens: "Tokens", order: "Order", keys: "Keys", name: "Title", updated: "Edited" }[k]}
                   {sort === k && !group && <span class="ar"> ↓</span>}
-                </button>
+                </Chip>
               ))}
-              <button class="chip" aria-pressed={group} onClick={() => setGroup(!group)}>Group by tag</button>
-              <button class="chip is-flag" aria-pressed={flaggedOnly} onClick={() => setFlaggedOnly(!flaggedOnly)}>
+              <Chip pressed={group} onClick={() => setGroup(!group)}>Group by tag</Chip>
+              <Chip flag pressed={flaggedOnly} onClick={() => setFlaggedOnly(!flaggedOnly)}>
                 Flagged <b class="t-num">{flaggedN}</b>
-              </button>
+              </Chip>
             </div>
           ) : (
             <div class="chiprail">
               <span class="t-data selcount">{selected.size} selected</span>
-              <button class="chip" onClick={() => runBulk({ enabled: true })}>Enable</button>
-              <button class="chip" onClick={() => runBulk({ enabled: false })}>Disable</button>
-              <button class="chip" onClick={() => { const t = prompt("Add tag… (blank to clear)"); if (t !== null) void runBulk({ tag: t.trim() }); }}>Add tag…</button>
-              <button class="chip" onClick={() => { setSelecting(false); setSelected(new Set()); }}>Done</button>
+              <Chip onClick={() => runBulk({ enabled: true })}>Enable</Chip>
+              <Chip onClick={() => runBulk({ enabled: false })}>Disable</Chip>
+              <Chip onClick={() => { const t = prompt("Add tag… (blank to clear)"); if (t !== null) void runBulk({ tag: t.trim() }); }}>Add tag…</Chip>
+              <Chip onClick={() => { setSelecting(false); setSelected(new Set()); }}>Done</Chip>
             </div>
           )}
         </header>
@@ -310,7 +310,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
                   <div class="grouphead">
                     <span class="t-label t-label-s gn">{tag === UNTAGGED ? "untagged" : tag}</span>
                     <span class="meta"><span>{items.length}</span><span>{items.reduce((a, e) => a + entryTokens(e), 0).toLocaleString()}t</span></span>
-                    <button class="chip" onClick={() => { setSelecting(true); setSelected((s) => new Set([...s, ...items.map((e) => e.id)])); }}>Select</button>
+                    <Chip onClick={() => { setSelecting(true); setSelected((s) => new Set([...s, ...items.map((e) => e.id)])); }}>Select</Chip>
                   </div>
                   {rows(items)}
                 </div>
@@ -437,8 +437,8 @@ function TagOverlay(props: {
             </div>
           </div>
           <div class="tacts">
-            <button class="chip" onClick={() => props.onShow(s.tag)}>Show</button>
-            <button class="chip" onClick={() => props.onSelect(s.ids)}>Select</button>
+            <Chip onClick={() => props.onShow(s.tag)}>Show</Chip>
+            <Chip onClick={() => props.onSelect(s.ids)}>Select</Chip>
           </div>
           <div class="tbar"><i style={`width:${(s.n / max) * 100}%`} /></div>
         </div>

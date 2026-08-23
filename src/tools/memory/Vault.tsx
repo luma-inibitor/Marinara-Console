@@ -14,7 +14,7 @@ import {
 import { t, OURS } from "./strings";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
-import { useIsDesktop } from "../../ui";
+import { Chip, Tag, useIsDesktop } from "../../ui";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
 
@@ -92,24 +92,23 @@ export function Vault() {
             </div>
           </div>
           <div class="chiprail">
-            <button class="chip" aria-pressed={!showSources} onClick={() => setShowSources(false)}>
+            <Chip pressed={!showSources} onClick={() => setShowSources(false)}>
               Memories <b class="t-num">{memoriesN}</b>
-            </button>
-            <button class="chip" aria-pressed={showSources} onClick={() => setShowSources(true)}>
+            </Chip>
+            <Chip pressed={showSources} onClick={() => setShowSources(true)}>
               {t("memoryvault.sources")} <b class="t-num">{sourcesN}</b>
-            </button>
+            </Chip>
             <span class="rail-gap" />
             {types.map(([type, n]) => (
-              <button key={type} class="chip" aria-pressed={typeFilter === type}
-                onClick={() => setTypeFilter(typeFilter === type ? null : type)}>
+              <Chip key={type} pressed={typeFilter === type} onClick={() => setTypeFilter(typeFilter === type ? null : type)}>
                 <span class={`tdot type-${type}`} aria-hidden="true" />{type.replaceAll("_", " ")} {n}
-              </button>
+              </Chip>
             ))}
             <span class="rail-gap" />
             {(["updated", "title", "pressure", "status"] as SortKey[]).map((k) => (
-              <button key={k} class="chip" aria-pressed={sort === k} onClick={() => setSort(k)}>
+              <Chip key={k} pressed={sort === k} onClick={() => setSort(k)}>
                 ↓ {{ updated: "Edited", title: "Title", pressure: "Limits", status: "Status" }[k]}
-              </button>
+              </Chip>
             ))}
           </div>
         </header>
@@ -255,7 +254,7 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
     <div class="claim-detail">
       <div class="kvs t-data">
         <div><span class="k">id</span>{n.id}</div>
-        <div><span class="k">type</span><span class={`chip t-data type-${n.type}`}>{n.type.replaceAll("_", " ")}</span></div>
+        <div><span class="k">type</span><Tag class={`type-${n.type}`}>{n.type.replaceAll("_", " ")}</Tag></div>
         <div><span class="k">status</span>
           <span class="segset" role="group" aria-label="Status">
             {(["active", "resolved", "archived"] as const).map((st) => (
@@ -280,7 +279,7 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
             <h4 class="t-label t-label-s dsec-head">
               <span class="dsec-title">{key}</span>
               <span class="seccount t-data">{value.length.toLocaleString()}<i> / {SECTION_CAP.toLocaleString()}</i></span>
-              <button class="chip" onClick={() => dedupe(key)}>Dedupe lines</button>
+              <Chip onClick={() => dedupe(key)}>Dedupe lines</Chip>
             </h4>
             <span class="pbar"><i class={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={`width:${pct}%`} /></span>
             <textarea

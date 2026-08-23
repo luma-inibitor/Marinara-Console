@@ -13,9 +13,13 @@ import fs from "node:fs";
 
 const tag = process.argv[2] ?? "snap";
 const diff = process.argv.includes("--diff");
+// The book audit needs a real book id — it is the densest screen in the
+// console and the one most likely to break silently.
+const BOOK = process.env.MC_BOOK ?? "JZzGg_2NjFx1hFP_G4Yeq";
 const PAGES = [
   ["sources", "#/memory/sources"], ["review", "#/memory/review"],
   ["vault", "#/memory/vault"], ["lore", "#/lorebooks"],
+  ["book", `#/lorebooks/${BOOK}`],
 ];
 const VPS = [{ n: "phone", w: 486, h: 1085 }, { n: "desktop", w: 1280, h: 800 }];
 

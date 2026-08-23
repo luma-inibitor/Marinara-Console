@@ -56,14 +56,7 @@
 .chiprail { display: flex; gap: 4px; margin-top: var(--s2); overflow-x: auto;
   scrollbar-width: none; padding-bottom: var(--s2); align-items: center; }
 .chiprail::-webkit-scrollbar { display: none; }
-.chip { flex: 0 0 auto; min-height: var(--tap-2); padding: 0 10px; border-radius: var(--r-m);
-  background: var(--surface-1); border: var(--hairline); color: var(--text-dim);
-  display: inline-flex; align-items: center; gap: 5px;
-  font-family: var(--font-label); font-variation-settings: "wdth" 110; font-weight: 600;
-  font-size: 9.5px; letter-spacing: 0.09em; text-transform: uppercase; white-space: nowrap; }
-.chip[aria-pressed="true"] { background: var(--surface-2); border-color: var(--accent); color: var(--text); }
-.chip .ar { color: var(--accent); }
-.chip.is-flag[aria-pressed="true"] { border-color: var(--flag); color: var(--flag); }
+/* .chip and .tag now live with the component, src/ui/Chip.css */
 .selcount { font-weight: 700; color: var(--accent); white-space: nowrap; margin-right: 4px; }
 
 /* ══ rows ══ */

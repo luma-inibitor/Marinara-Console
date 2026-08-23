@@ -15,7 +15,7 @@
 .type-tone         { --tc: #c9b98a; }
 .type-scene, .type-source { --tc: var(--text-dim); }
 
-.chip.t-data[class*="type-"] {
+.tag[class*="type-"] {
   color: var(--tc);
   border-color: color-mix(in srgb, var(--tc) 40%, transparent);
   text-transform: none; letter-spacing: 0.02em;

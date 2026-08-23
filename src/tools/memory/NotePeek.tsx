@@ -14,6 +14,7 @@ import { openOverlay, closeTopOverlay } from "./overlays";
 import { notesById } from "./store";
 import { TypeIcon } from "./icons";
 import { Term, TYPE_TIP } from "./glossary";
+import { Tag } from "../../ui";
 
 export const peeked = signal<Note | null>(null);
 
@@ -91,7 +92,7 @@ export function NotePeek() {
         </div>
         {(n.keywords ?? []).length > 0 && (
           <div class="peek-kw">
-            {n.keywords!.map((k) => <span key={k} class="chip t-data">{k}</span>)}
+            {n.keywords!.map((k) => <Tag key={k}>{k}</Tag>)}
           </div>
         )}
         {(n.links ?? []).length > 0 && (

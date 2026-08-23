@@ -28,7 +28,7 @@ import { flagsOf, worstSeverity, contributionChars } from "./flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./NotePeek";
-import { collapsedGroups, useIsDesktop } from "../../ui";
+import { Chip, collapsedGroups, useIsDesktop } from "../../ui";
 
 const RESTORE_POINT_THRESHOLD = 20;
 
@@ -166,7 +166,7 @@ export function Review() {
             <span class="t-data mem-save" data-contrast-exempt>
               {saveState.value === "saving" ? "Autosaving…"
                 : saveState.value === "failed"
-                  ? <span class="is-drop">Save FAILED <button class="chip" onClick={retryPersist}>Retry</button></span>
+                  ? <span class="is-drop">Save FAILED <Chip onClick={retryPersist}>Retry</Chip></span>
                   : "Saved"}
             </span>
             <button class="icon-btn t-data" aria-label="Refresh queue" title="Refresh" onClick={() => void refresh()}>↻</button>
@@ -198,42 +198,40 @@ export function Review() {
           <div class="chiprail">
             {desktop ? (
               <>
-                <button class="chip" aria-pressed={facetSheetOpen.value} onClick={openFacetSheet}>
+                <Chip pressed={facetSheetOpen.value} onClick={openFacetSheet}>
                   Facets{activeFacetCount() > 0 && <b class="ar">{activeFacetCount()}</b>}
-                </button>
+                </Chip>
                 <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
                 <QuickChip facet="flags" value="restates vault" label="Restates" flag />
                 <QuickChip facet="flags" value="duplicate incoming" label="Dupes" flag />
                 <QuickChip facet="flags" value="has conflicts" label="Conflicts" flag />
                 <span class="rail-gap" />
                 {Object.entries(GROUPERS).map(([id, g]) => (
-                  <button key={id} class="chip" aria-pressed={groupBy.value === id}
-                    onClick={() => { groupBy.value = id as typeof groupBy.value; }}>
+                  <Chip key={id} pressed={groupBy.value === id} onClick={() => { groupBy.value = id as typeof groupBy.value; }}>
                     {g.label}
-                  </button>
+                  </Chip>
                 ))}
                 <span class="rail-gap" />
                 {Object.entries(SORTERS).map(([id, s]) => (
-                  <button key={id} class="chip" aria-pressed={sortBy.value === id}
-                    onClick={() => {
+                  <Chip key={id} pressed={sortBy.value === id} onClick={() => {
                       if (sortBy.value === id) sortDir.value = (sortDir.value === 1 ? -1 : 1);
                       else { sortBy.value = id as typeof sortBy.value; sortDir.value = 1; }
                     }}>
                     {sortDir.value === 1 || sortBy.value !== id ? "↓" : "↑"} {s.label}
-                  </button>
+                  </Chip>
                 ))}
               </>
             ) : (
               <>
-                <button class="chip ctl" aria-pressed={activeFacetCount() > 0} onClick={openFacetSheet}>
+                <Chip class="ctl" pressed={activeFacetCount() > 0} onClick={openFacetSheet}>
                   <span class="ctl-k">Filter</span><span class="ctl-v">{activeFacetCount() || "all"}</span>
-                </button>
-                <button class="chip ctl" onClick={() => { groupSheetOpen.value = true; openOverlay(() => { groupSheetOpen.value = false; }); }}>
+                </Chip>
+                <Chip class="ctl" onClick={() => { groupSheetOpen.value = true; openOverlay(() => { groupSheetOpen.value = false; }); }}>
                   <span class="ctl-k">Group</span><span class="ctl-v">{GROUPERS[groupBy.value].label}</span>
-                </button>
-                <button class="chip ctl" onClick={() => { sortSheetOpen.value = true; openOverlay(() => { sortSheetOpen.value = false; }); }}>
+                </Chip>
+                <Chip class="ctl" onClick={() => { sortSheetOpen.value = true; openOverlay(() => { sortSheetOpen.value = false; }); }}>
                   <span class="ctl-k">Sort</span><span class="ctl-v">{sortDir.value === 1 ? "↓" : "↑"} {SORTERS[sortBy.value].label}</span>
-                </button>
+                </Chip>
                 <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
                 <QuickChip facet="flags" value="restates vault" label="Restates" flag />
                 <QuickChip facet="flags" value="duplicate incoming" label="Dupes" flag />
@@ -245,10 +243,10 @@ export function Review() {
           {activeFacetCount() > 0 && (
             <div class="chiprail">
               <span class="t-data selcount">{shown.length} of {rows.value.length}</span>
-              <button class="chip" onClick={() => bulkDecide(shown, "keep", "keep shown")}>Keep shown</button>
-              <button class="chip" onClick={() => bulkDecide(shown, "drop", "drop shown")}>Drop shown</button>
-              <button class="chip" onClick={() => bulkDecide(shown, null, "reset shown")}>Reset</button>
-              <button class="chip" onClick={() => { activeFacets.value = new Map(); }}>Clear filters</button>
+              <Chip onClick={() => bulkDecide(shown, "keep", "keep shown")}>Keep shown</Chip>
+              <Chip onClick={() => bulkDecide(shown, "drop", "drop shown")}>Drop shown</Chip>
+              <Chip onClick={() => bulkDecide(shown, null, "reset shown")}>Reset</Chip>
+              <Chip onClick={() => { activeFacets.value = new Map(); }}>Clear filters</Chip>
             </div>
           )}
         </header>
@@ -331,10 +329,9 @@ function toggleFacet(facetId: string, value: string) {
 function QuickChip(props: { facet: string; value: string; label: string; flag?: boolean }) {
   const on = activeFacets.value.get(props.facet)?.has(props.value) ?? false;
   return (
-    <button class={`chip ${props.flag ? "is-flag" : ""}`} aria-pressed={on}
-      onClick={() => toggleFacet(props.facet, props.value)}>
+    <Chip flag={props.flag} pressed={on} onClick={() => toggleFacet(props.facet, props.value)}>
       {props.label}
-    </button>
+    </Chip>
   );
 }
 
@@ -356,7 +353,7 @@ function FacetSheet(props: { shown: Row[] }) {
       <aside class="facet-sheet" role="dialog" aria-modal="true" aria-label="Facets" onClick={(e) => e.stopPropagation()}>
         <header class="peek-head sheet-head">
           <span class="t-label t-label-s">Facets</span>
-          <button class="chip" onClick={() => { activeFacets.value = new Map(); }}>Clear</button>
+          <Chip onClick={() => { activeFacets.value = new Map(); }}>Clear</Chip>
           <button class="hit peek-x" aria-label="Close" onClick={closeTopOverlay}>×</button>
         </header>
         {!anyValues && <p class="t-prose dim">No facet values in this slice.</p>}
@@ -631,9 +628,9 @@ function Obligations() {
           </div>
           {["source_stale", "source_context_unbound"].includes(code) && (
             <>
-              <button class="chip" disabled={Boolean(extracting)} onClick={() => void reextract(items)}>
+              <Chip disabled={Boolean(extracting)} onClick={() => void reextract(items)}>
                 {extracting ? `Extracting ${extracting}…` : t("memoryvault.extractToReview")}
-              </button>
+              </Chip>
               <p class="t-prose dim reex-note">Re-extracting calls the model once per source and replaces each blocked draft with a fresh one.</p>
             </>
           )}
@@ -654,7 +651,7 @@ function Failures() {
           <details><summary class="t-data dim">raw</summary><p class="t-data dim">{f.msg.slice(0, 400)}</p></details>
         </div>
       ))}
-      <div class="group-actions"><button class="chip" onClick={() => { lastFailures.value = []; }}>Dismiss</button></div>
+      <div class="group-actions"><Chip onClick={() => { lastFailures.value = []; }}>Dismiss</Chip></div>
     </>
   );
 }
@@ -707,7 +704,7 @@ function ApplyDock() {
           {progress ? <>Applying draft {progress.done}/{progress.total}…</> : <>
             {c.willSend} draft{c.willSend === 1 ? "" : "s"} will be sent{c.stayPending ? ` (${c.stayPending} still hold undecided claims)` : ""}
             {pf?.error
-              ? <span class="is-drop"> · {pf.error} <button class="chip" onClick={() => void refresh()}>Retry</button></span>
+              ? <span class="is-drop"> · {pf.error} <Chip onClick={() => void refresh()}>Retry</Chip></span>
               : checking
                 ? <> · checking with the engine…</>
                 : pf
@@ -728,7 +725,7 @@ function ApplyDock() {
         {warnings.length > 0 && <div class="is-drop">{warnings.length} kept claim{warnings.length === 1 ? "" : "s"} depend on a dropped create — they will fail; keep the create or drop them</div>}
         {offerRestore && <><br /><a class="t-data restore-link" href={backupExportUrl()} download onClick={() => toast(OURS.restorePointDone)}>{OURS.restorePoint}</a></>}
       </div>
-      <button class="chip" disabled={!canUndo.value} onClick={undo}>Undo</button>
+      <Chip disabled={!canUndo.value} onClick={undo}>Undo</Chip>
       <button class="dock-primary t-label" disabled={applying.value || checking || (c.keep > 0 && !pf) || Boolean(pf?.error)} onClick={() => void applyDecided()}>
         {applying.value ? (progress ? `Applying ${progress.done}/${progress.total}…` : t("reviewqueue.accepting"))
           : checking ? "Apply decided (…)"
