@@ -6,7 +6,7 @@ import { navigate } from "../../shell/router";
 import { ltmStatus, rebuildIndexes, type LtmStatus } from "./data";
 import { signal } from "@preact/signals";
 import { toast } from "../../shell/toast";
-import { t } from "./strings";
+import { t, OURS } from "./strings";
 import { Review } from "./Review";
 import { Vault } from "./Vault";
 import { Sources } from "./Sources";
@@ -37,10 +37,14 @@ export function consumeFocusSource(): string | null {
   return v;
 }
 
+// Owner's order and labels (2026-08-22): one word each, so four equal targets
+// fit a phone without truncating. Sources first — material arrives there —
+// then Vault, Review, Activity. Review stays the default landing view because
+// it is the work.
 const VIEWS = [
-  { id: "review", label: () => t("longtermmemorynavigation.reviewQueue") },
-  { id: "vault", label: () => t("longtermmemorynavigation.memoryVault") },
-  { id: "sources", label: () => t("longtermmemorynavigation.sources") },
+  { id: "sources", label: () => OURS.nav.sources },
+  { id: "vault", label: () => OURS.nav.vault },
+  { id: "review", label: () => OURS.nav.review },
 ];
 
 export function MemoryTool({ rest }: { rest: string[] }) {

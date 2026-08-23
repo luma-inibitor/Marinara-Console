@@ -54,6 +54,11 @@ export const OURS = {
   // "existing"/"proposed" from reviewqueue.existingValue / proposedValue;
   // "new memory" from reviewqueue.newMemory; "extraction" from the
   // extractiondetails namespace. Lowercase because eyebrows uppercase in CSS.
+  // Navigation labels. The catalog names these views in full ("Review queue",
+  // "Memory Vault", "Sources"); the console's own nav uses one word each so the
+  // four fit as equal targets on a phone without truncating. Owner's call,
+  // 2026-08-22 — the full catalog names still head each screen.
+  nav: { sources: "Sources", vault: "Vault", review: "Review", activity: "Activity" } as Record<string, string>,
   // Sources screen. The catalog covers the states (New / Already imported /
   // Update available / Context changed / Extraction incomplete) and the verbs
   // (Import and extract / Re-extract / Select all / Refresh). These four are
