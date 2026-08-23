@@ -1,3 +1,4 @@
+import type { ComponentChildren } from "preact";
 import { IconAlertTriangle } from "@tabler/icons-preact";
 import { EmptyState } from "./EmptyState";
 
@@ -15,13 +16,14 @@ import { EmptyState } from "./EmptyState";
  *  It owns no stylesheet because it adds no rules — the layout is
  *  `EmptyState`'s and the message uses the shared mono face, since it is
  *  engine output the reader may need to quote verbatim. */
-export function ErrorState(props: { title: string; message: string }) {
+export function ErrorState(props: { title: string; message: string; actions?: ComponentChildren }) {
   return (
     <EmptyState
       tone="danger"
       icon={<IconAlertTriangle size={22} stroke={1.75} aria-hidden />}
       title={props.title}
       body={<span class="t-data">{props.message}</span>}
+      actions={props.actions}
     />
   );
 }

@@ -13,11 +13,13 @@ import {
   POS_COMPACT,
 } from "./data";
 import { EntryDrawer, type FullscreenCtx } from "./entries";
+import { useDraft } from "../../shell/draft";
 import { FullscreenText } from "../../ui/FullscreenText";
 import { Chip, IconButton, useIsDesktop, useRovingFocus } from "../../ui";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
 type Mode = "find" | "test";
+/** Retained for the bulk-edit path, which still writes directly. */
 export type SavePill = "dirty" | "saved" | "err";
 
 const UNTAGGED = " untagged";
@@ -37,12 +39,11 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
   const [focusId, setFocusId] = useState<string | null>(null);    // desktop detail target + keyboard focus
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [pills, setPills] = useState<Record<string, SavePill>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [showTags, setShowTags] = useState(false);
   const [full, setFull] = useState<FullscreenCtx | null>(null);
 
   const listRef = useRef<HTMLDivElement>(null);
-  const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
   // deep link from the palette: focus + reveal a specific entry once loaded
   useEffect(() => {
@@ -107,27 +108,64 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     return { testing, budget, pool, aTok, kTok, total: aTok + kTok, over: aTok + kTok > budget };
   }, [entries, evals, mode, query, book]);
 
-  // ── saving (field-level PATCH; debounce 700ms, flush via immediate) ──
-  const setPill = (id: string, v: SavePill) => setPills((p) => ({ ...p, [id]: v }));
+  // ── editing: one explicit-save draft at a time (P0.2/P0.3) ──
+  // Nothing is written until Save. A rejected save keeps the draft, so the UI
+  // never shows a value the engine refused; a concurrent write is detected and
+  // surfaced instead of silently clobbering the other client.
+  const editingEntry = useMemo(
+    () => (entries ?? []).find((e) => e.id === editingId) ?? null,
+    [entries, editingId],
+  );
 
-  const save = useCallback((id: string, patch: Record<string, unknown>, immediate = false) => {
-    setEntries((es) => (es ?? []).map((e) => (e.id === id ? { ...e, ...patch } as Entry : e)));
-    setPill(id, "dirty");
-    clearTimeout(timers.current.get(id));
-    const run = async () => {
-      timers.current.delete(id);
-      try {
-        const updated = await patchEntry(bookId, id, patch);
-        if (updated) setEntries((es) => (es ?? []).map((e) => (e.id === id ? { ...e, ...updated } : e)));
-        setPill(id, "saved");
-      } catch (err) {
-        setPill(id, "err");
-        toast(`Failed to save entry: ${(err as Error).message}`, { kind: "error" });
-      }
-    };
-    if (immediate) void run();
-    else timers.current.set(id, setTimeout(run, 700));
-  }, [bookId]);
+  const draft = useDraft<Entry>(editingEntry, {
+    commit: async (patch) => {
+      const updated = await patchEntry(bookId, editingId!, patch as Record<string, unknown>);
+      const merged = { ...(editingEntry as Entry), ...patch, ...(updated ?? {}) } as Entry;
+      setEntries((es) => (es ?? []).map((e) => (e.id === merged.id ? merged : e)));
+      return merged;
+    },
+    refetch: async () => {
+      const fresh = await fetchEntries(bookId);
+      const mine = fresh.find((e) => e.id === editingId);
+      if (!mine) throw new Error("Entry no longer exists");
+      setEntries(fresh);
+      return mine;
+    },
+  });
+
+  // Bind the draft to whatever drawer is actually on screen. Adopting lazily on
+  // first keystroke loses that keystroke — onBeginEdit sets state, so the draft
+  // does not exist yet in the same render and the value is dropped.
+  useEffect(() => {
+    const target = desktop ? focusId : null;
+    if (!target || target === editingId) return;
+    if (draft.dirty) return;            // keep the open draft; beginEdit reports the conflict
+    setEditingId(target);
+  }, [desktop, focusId, editingId, draft.dirty]);
+
+  /** Begin editing an entry, guarding an unsaved draft on another one. */
+  const beginEdit = useCallback((id: string) => {
+    if (id === editingId) return;
+    if (draft.dirty) {
+      toast(`Save or discard your changes to "${editingEntry?.name || "this entry"}" first.`, { kind: "error" });
+      return;
+    }
+    setEditingId(id);
+  }, [editingId, draft.dirty, editingEntry]);
+
+  const saveDraft = useCallback(async () => {
+    const ok = await draft.save();
+    if (ok) toast("Entry saved");
+    return ok;
+  }, [draft]);
+
+  // Guard a browser-level navigation away from unsaved work.
+  useEffect(() => {
+    if (!draft.dirty) return;
+    const warn = (ev: BeforeUnloadEvent) => { ev.preventDefault(); ev.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [draft.dirty]);
 
   // ── delete with undo (soft: DELETE fires when the toast expires) ──
   const removeWithUndo = useCallback((entry: Entry) => {
@@ -226,12 +264,14 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
           setFocusId(e.id);
         } else {
           setFocusId(e.id);
-          setOpen((s) => { const n = new Set(s); n.has(e.id) ? n.delete(e.id) : n.add(e.id); return n; });
+          setOpen((s) => { const n = new Set(s); n.has(e.id) ? n.delete(e.id) : (n.add(e.id), beginEdit(e.id)); return n; });
         }
       }}
       drawer={!desktop && open.has(e.id)
-        ? <EntryDrawer entry={e} pill={pills[e.id]} kp90={kp90} evHits={evals.get(e.id)?.hits ?? []}
-            save={save} onDelete={() => removeWithUndo(e)} onExpand={(field) => setFull({ id: e.id, field })} />
+        ? <EntryDrawer entry={e.id === editingId ? draft.value : e} draft={e.id === editingId ? draft : null}
+            kp90={kp90} evHits={evals.get(e.id)?.hits ?? []}
+            onBeginEdit={() => beginEdit(e.id)} onSave={saveDraft}
+            onDelete={() => removeWithUndo(e)} onExpand={(field) => setFull({ id: e.id, field })} />
         : null}
     />
   ));
@@ -336,9 +376,11 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       {desktop && (
         <aside class="audit-detail">
           {focused ? (
-            <EntryDrawer entry={focused} pill={pills[focused.id]} kp90={kp90}
+            <EntryDrawer entry={focused.id === editingId ? draft.value : focused}
+              draft={focused.id === editingId ? draft : null} kp90={kp90}
               evHits={evals.get(focused.id)?.hits ?? []}
-              save={save} onDelete={() => removeWithUndo(focused)}
+              onBeginEdit={() => beginEdit(focused.id)} onSave={saveDraft}
+              onDelete={() => removeWithUndo(focused)}
               onExpand={(field) => setFull({ id: focused.id, field })} />
           ) : (
             <div class="empty">Select an entry — <span class="t-data">j/k</span> to move, <span class="t-data">Enter</span> to edit.</div>
@@ -356,12 +398,13 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       )}
 
       {full && (() => {
-        const e = entries.find((x) => x.id === full.id);
+        const e = full.id === editingId ? draft.value : entries.find((x) => x.id === full.id);
         return e ? (
           <FullscreenText
-            title={full.field === "content" ? "Edit Content" : "Edit Description"}
+            title={full.field === "content" ? "Edit content" : "Edit description"}
             subtitle={e.name} initial={String(e[full.field] ?? "")} budget={book.tokenBudget}
-            onDone={(value) => { save(full.id, { [full.field]: value }, true); setFull(null); }}
+            onDone={(value) => { beginEdit(full.id); draft.set(full.field, value); setFull(null); }}
+            onCancel={() => setFull(null)}
           />
         ) : null;
       })()}

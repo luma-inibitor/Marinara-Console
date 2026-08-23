@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks"
 import type { ComponentChildren } from "preact";
 import { navigate } from "../../shell/router";
 import { toast } from "../../shell/toast";
+import { useDraft, type Draft } from "../../shell/draft";
 import { tokensOf } from "../../shell/api";
 import { FullscreenText } from "../../ui/FullscreenText";
 import {
@@ -151,7 +152,8 @@ function Editor({ presetId }: { presetId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState<Set<string>>(new Set());
   const [focusId, setFocusId] = useState<string | null>(null);
-  const [pill, setPill] = useState<Pill>("saved");
+  const [pill, setPill] = useState<Pill>("saved");   // reorder only — field edits use drafts
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [fs, setFs] = useState<FsTarget | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
@@ -184,46 +186,61 @@ function Editor({ presetId }: { presetId: string }) {
     return false;
   }, [readOnly]);
 
-  // ── optimistic writes WITH rollback ──
-  const saveSection = useCallback((sid: string, patch: Record<string, unknown>, immediate = false) => {
-    if (guard()) return;
-    let before: PromptSection | undefined;
-    setFull((f) => {
-      if (!f) return f;
-      before = f.sections.find((s) => s.id === sid);
-      return { ...f, sections: f.sections.map((s) => (s.id === sid ? { ...s, ...patch } as PromptSection : s)) };
-    });
-    setPill("dirty");
-    clearTimeout(timers.current.get(sid));
-    const run = async () => {
-      timers.current.delete(sid);
-      try { await patchSection(presetId, sid, patch); setPill("saved"); }
-      catch (err) {
-        setPill("err");
-        if (before) setFull((f) => f && ({ ...f, sections: f.sections.map((s) => (s.id === sid ? before! : s)) }));
-        toast(`Reverted — could not save section: ${(err as Error).message}`, { kind: "error" });
-      }
-    };
-    if (immediate) void run(); else timers.current.set(sid, setTimeout(run, 700));
-  }, [presetId, guard]);
+  // ── explicit save (owner decision, 2026-08-21) ──
+  // One section draft at a time, plus a preset-level draft. Nothing is written
+  // until Save, so a rejected write cannot leave the UI showing a value the
+  // engine refused, and a concurrent write is detected rather than clobbered.
+  const editingSection = useMemo(
+    () => sections.find((s) => s.id === editingId) ?? null, [sections, editingId]);
 
-  const savePreset = useCallback((patch: Record<string, unknown>, immediate = false) => {
-    if (guard()) return;
-    let before: PromptPreset | undefined;
-    setFull((f) => { if (!f) return f; before = f.preset; return { ...f, preset: { ...f.preset, ...patch } as PromptPreset }; });
-    setPill("dirty");
-    clearTimeout(timers.current.get("preset"));
-    const run = async () => {
-      timers.current.delete("preset");
-      try { await patchPreset(presetId, patch); setPill("saved"); }
-      catch (err) {
-        setPill("err");
-        if (before) setFull((f) => f && ({ ...f, preset: before! }));
-        toast(`Reverted — could not save preset: ${(err as Error).message}`, { kind: "error" });
-      }
-    };
-    if (immediate) void run(); else timers.current.set("preset", setTimeout(run, 700));
-  }, [presetId, guard]);
+  const sectionDraft = useDraft<PromptSection>(editingSection, {
+    commit: async (patch) => {
+      const updated = await patchSection(presetId, editingId!, patch as Record<string, unknown>);
+      const merged = { ...(editingSection as PromptSection), ...patch, ...((updated ?? {}) as object) } as PromptSection;
+      setFull((f) => f && ({ ...f, sections: f.sections.map((x) => (x.id === merged.id ? merged : x)) }));
+      return merged;
+    },
+    refetch: async () => {
+      const fresh = await fetchFull(presetId);
+      setFull(fresh);
+      const mine = fresh.sections.find((x) => x.id === editingId);
+      if (!mine) throw new Error("Section no longer exists");
+      return mine;
+    },
+  });
+
+  const presetDraft = useDraft<PromptPreset>(full?.preset ?? null, {
+    commit: async (patch) => {
+      await patchPreset(presetId, patch as Record<string, unknown>);
+      const merged = { ...(full!.preset), ...patch } as PromptPreset;
+      setFull((f) => f && ({ ...f, preset: merged }));
+      return merged;
+    },
+    refetch: async () => { const fresh = await fetchFull(presetId); setFull(fresh); return fresh.preset; },
+  });
+
+  // Same binding rule as the lorebook drawer: the visible section owns the draft.
+  useEffect(() => {
+    if (!focusId || focusId === editingId) return;
+    if (sectionDraft.dirty) return;
+    setEditingId(focusId);
+  }, [focusId, editingId, sectionDraft.dirty]);
+
+  const beginEditSection = useCallback((sid: string) => {
+    if (guard() || sid === editingId) return;
+    if (sectionDraft.dirty) {
+      toast(`Save or discard your changes to "${editingSection?.name || "this section"}" first.`, { kind: "error" });
+      return;
+    }
+    setEditingId(sid);
+  }, [editingId, sectionDraft.dirty, editingSection, guard]);
+
+  useEffect(() => {
+    if (!sectionDraft.dirty && !presetDraft.dirty) return;
+    const warn = (ev: BeforeUnloadEvent) => { ev.preventDefault(); ev.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [sectionDraft.dirty, presetDraft.dirty]);
 
   /** Move by delta, or to an absolute index when `to` is given. */
   const move = useCallback((sid: string, delta: number, to?: number) => {
@@ -335,7 +352,9 @@ function Editor({ presetId }: { presetId: string }) {
       groupName={groupName(s.groupId)} groupOff={groupOff(s.groupId)}
       index={sections.indexOf(s)} total={sections.length}
       desktop={desktop}
-      save={saveSection} onMove={move} onDelete={() => removeSection(s)}
+      draft={s.id === editingId ? sectionDraft : null} onBeginEdit={() => beginEditSection(s.id)}
+      onSave={async () => { const ok = await sectionDraft.save(); if (ok) toast("Section saved"); return ok; }}
+      onMove={move} onDelete={() => removeSection(s)}
       onExpand={() => setFs({ kind: "section", id: s.id })}
     />
   );
@@ -361,8 +380,9 @@ function Editor({ presetId }: { presetId: string }) {
           <div class="hrow">
             <button class="icon-btn" aria-label="Back to presets" onClick={() => navigate("presets")}>‹</button>
             <h1 class="console-title is-wrapping">{full.preset.name}</h1>
-            <span class={`savepill is-${pill}`}>
-              {pill === "dirty" ? "Autosaving…" : pill === "err" ? "Save failed" : "Saved"}
+            <span class={`savepill is-${sectionDraft.dirty || presetDraft.dirty ? "dirty" : pill}`}>
+              {sectionDraft.dirty || presetDraft.dirty ? "Unsaved changes"
+                : pill === "dirty" ? "Saving…" : pill === "err" ? "Save failed" : "Saved"}
             </span>
           </div>
           <div class="tagline">
@@ -389,7 +409,7 @@ function Editor({ presetId }: { presetId: string }) {
           <div class="segrow" role="group" aria-label="Wrap format">
             {(["xml", "markdown", "none"] as const).map((w) => (
               <button key={w} class="segbtn is-pos t-data" aria-pressed={full.preset.wrapFormat === w}
-                disabled={readOnly} onClick={() => savePreset({ wrapFormat: w }, true)}>{w}</button>
+                disabled={readOnly} onClick={() => { presetDraft.set("wrapFormat", w); void presetDraft.save(); }}>{w}</button>
             ))}
           </div>
           <div class="chiprail">
@@ -473,14 +493,16 @@ function Editor({ presetId }: { presetId: string }) {
           return s ? (
             <FullscreenText title="Edit Content" subtitle={s.name} initial={s.content}
               budget={budget || undefined}
-              onDone={(v) => { saveSection(s.id, { content: v }, true); setFs(null); }} />
+              onDone={(v) => { beginEditSection(s.id); sectionDraft.set("content", v); setFs(null); }}
+              onCancel={() => setFs(null)} />
           ) : null;
         }
         const titles = { conversationPrompt: "Conversation Prompt", gamePrompt: "Game Prompt", description: "Description" } as const;
         return (
           <FullscreenText title={titles[fs.field]} subtitle={full.preset.name}
             initial={String(full.preset[fs.field] ?? "")} budget={budget || undefined}
-            onDone={(v) => { savePreset({ [fs.field]: v }, true); setFs(null); }} />
+            onDone={(v) => { presetDraft.set(fs.field as keyof PromptPreset, v); setFs(null); }}
+            onCancel={() => setFs(null)} />
         );
       })()}
     </div>
@@ -500,12 +522,21 @@ function SectionDetail(props: {
   index: number;
   total: number;
   desktop: boolean;
-  save: (id: string, patch: Record<string, unknown>, immediate?: boolean) => void;
+  draft: Draft<PromptSection> | null;
+  onBeginEdit: () => void;
+  onSave: () => Promise<boolean>;
   onMove: (id: string, delta: number, to?: number) => void;
   onDelete: () => void;
   onExpand: () => void;
 }) {
-  const { section: s, save, readOnly } = props;
+  const { section: s, draft, readOnly } = props;
+  // Staging an edit adopts this section as the edit target if it isn't already.
+  const save = (_id: string, patch: Record<string, unknown>) => {
+    if (!draft) { props.onBeginEdit(); return; }
+    draft.merge(patch as Partial<PromptSection>);
+  };
+  const fErr = (f: string) => draft?.fieldErrors[f];
+  const isDirty = (f: string) => draft?.dirtyFields.includes(f) ?? false;
   const marker = isMarker(s);
   const [openSubs, setOpenSubs] = useState<Set<Sub>>(
     () => new Set<Sub>(marker ? ["section"] : ["section", "content"]));
@@ -545,12 +576,13 @@ function SectionDetail(props: {
             <input class="tin" value={s.name} placeholder="Section name" disabled={readOnly}
               data-name-input={s.id}
               onInput={(ev) => save(s.id, { name: ev.currentTarget.value })}
-              onBlur={(ev) => save(s.id, { name: ev.currentTarget.value }, true)} />
+              aria-invalid={!!fErr("name")} />
+            {fErr("name") && <p class="field-err t-data" role="alert">{fErr("name")}</p>}
 
             <div class="field">
               <span class="t-label t-label-s">Included</span>
               <button class="toggle" role="switch" aria-checked={s.enabled} disabled={readOnly}
-                onClick={() => save(s.id, { enabled: !s.enabled }, true)}>
+                onClick={() => save(s.id, { enabled: !s.enabled })}>
                 <span class="toggle-track"><span class="toggle-thumb" /></span>
                 <span class="toggle-label">{s.enabled ? "Enabled" : "Disabled"}</span>
               </button>
@@ -564,7 +596,7 @@ function SectionDetail(props: {
               <div class="segrow is-3">
                 {(["system", "user", "assistant"] as const).map((r) => (
                   <button key={r} class="segbtn is-pos t-data" aria-pressed={s.role === r} disabled={readOnly}
-                    onClick={() => save(s.id, { role: r }, true)}>{r}</button>
+                    onClick={() => save(s.id, { role: r })}>{r}</button>
                 ))}
               </div>
             </div>
@@ -603,8 +635,7 @@ function SectionDetail(props: {
                 </button>
                 {props.desktop && (
                   <textarea class="ta is-mono is-fill" value={s.content} disabled={readOnly}
-                    onInput={(ev) => save(s.id, { content: ev.currentTarget.value })}
-                    onBlur={(ev) => save(s.id, { content: ev.currentTarget.value }, true)} />
+                    onInput={(ev) => save(s.id, { content: ev.currentTarget.value })} />
                 )}
                 {!props.desktop && s.content && (
                   <p class="content-preview t-data">{s.content.slice(0, 160)}{s.content.length > 160 ? "…" : ""}</p>
@@ -629,9 +660,48 @@ function SectionDetail(props: {
             {!readOnly && !marker && (
               <button class="dangerbtn" onClick={props.onDelete}>Delete section</button>
             )}
-            {marker && <p class="hint t-data">Markers cannot be deleted — remove the feature upstream instead.</p>}
+            {marker && <p class="prose-note">Markers cannot be deleted — remove the feature upstream instead.</p>}
           </>
         ))}
+
+      {draft && !readOnly && <SectionSaveBar draft={draft} onSave={props.onSave} />}
+    </div>
+  );
+}
+
+/** Sticky commit bar for a section draft — mirrors the lorebook drawer's. */
+function SectionSaveBar(props: { draft: Draft<PromptSection>; onSave: () => Promise<boolean> }) {
+  const d = props.draft;
+  if (d.conflict) {
+    return (
+      <div class="savebar has-conflict" role="alertdialog">
+        <p class="t-label">Changed by someone else</p>
+        <p class="prose-note">
+          This section was updated elsewhere while you were editing
+          {d.conflict.fields.length > 0 && <> — the same {d.conflict.fields.length === 1 ? "field" : "fields"} you changed ({d.conflict.fields.join(", ")})</>}
+          . Saving now would overwrite that.
+        </p>
+        <div class="savebar-acts">
+          <button class="dbtn" onClick={d.takeTheirs}>Discard mine, load theirs</button>
+          <button class="dbtn is-primary" onClick={d.keepMine}>Re-apply mine over theirs</button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div class={`savebar ${d.dirty ? "is-dirty" : ""}`}>
+      <span class="savebar-state t-data">
+        {d.saving ? "Saving…"
+          : d.error ? <span class="is-err">{d.error}</span>
+          : d.dirty ? <><b>{d.dirtyFields.length}</b> unsaved {d.dirtyFields.length === 1 ? "change" : "changes"}</>
+          : "No changes"}
+      </span>
+      <div class="savebar-acts">
+        <button class="dbtn" disabled={!d.dirty || d.saving} onClick={d.cancel}>Cancel</button>
+        <button class="dbtn is-primary" disabled={!d.dirty || d.saving} onClick={() => void props.onSave()}>
+          {d.saving ? "Saving…" : "Save changes"}
+        </button>
+      </div>
     </div>
   );
 }
