@@ -101,6 +101,8 @@ export function ScopeBar({ chats, characters }: { chats: Chat[]; characters: Cha
   const character = characters.find((c) => c.id === charId);
   const chat = chats.find((c) => c.id === scopeChatId.value);
 
+  // A path, not a row of buttons: the levels read left to right with a
+  // separator between them, because scope is a location.
   return (
     <div class="scoperow">
       <span class="scopelab t-label t-label-s">{t("sourcesworkspace.importScope")}</span>
@@ -108,6 +110,7 @@ export function ScopeBar({ chats, characters }: { chats: Chat[]; characters: Cha
         value={character?.name ?? "All characters"} allLabel="All characters"
         current={charId} options={characters.map((c) => ({ id: c.id, name: c.name }))}
         onPick={(id) => setScopeCharacter(id)} />
+      <span class="scopesep" aria-hidden="true" data-contrast-exempt>›</span>
       <Disclosure label="Chat" icon={IconMessageCircle}
         value={chat?.name ?? t("sourcesworkspace.allChats")} allLabel={t("sourcesworkspace.allChats")}
         current={scopeChatId.value}
