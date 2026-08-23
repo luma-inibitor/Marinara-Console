@@ -4,6 +4,7 @@
 import type { ComponentChildren } from "preact";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { navigate } from "../../shell/router";
+import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { toast } from "../../shell/toast";
 import {
   type Entry, type Lorebook, type Evaluation,
@@ -13,23 +14,13 @@ import {
 } from "./data";
 import { EntryDrawer, type FullscreenCtx } from "./entries";
 import { FullscreenText } from "../../ui/FullscreenText";
+import { Chip, IconButton, useIsDesktop, useRovingFocus } from "../../ui";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
 type Mode = "find" | "test";
 export type SavePill = "dirty" | "saved" | "err";
 
 const UNTAGGED = " untagged";
-
-function useIsDesktop(): boolean {
-  const [is, setIs] = useState(() => window.matchMedia("(min-width: 900px)").matches);
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 900px)");
-    const fn = () => setIs(mq.matches);
-    mq.addEventListener("change", fn);
-    return () => mq.removeEventListener("change", fn);
-  }, []);
-  return is;
-}
 
 export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialEntryId?: string }) {
   const desktop = useIsDesktop();
@@ -179,29 +170,35 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     } catch (err) { toast(`Failed to update the selected entries: ${(err as Error).message}`, { kind: "error" }); }
   }, [bookId, selected]);
 
+  // The tag panel is a full-screen surface, not a `<Sheet>`, so it has to hold
+  // up its own half of the overlay contract: flip the signal, then register a
+  // closer. Without this the back gesture walked past the panel and left the
+  // lorebook entirely, which on a phone is the only dismissal gesture there is.
+  useEffect(() => {
+    if (showTags) openOverlay(() => setShowTags(false));
+  }, [showTags]);
+
   // ── keyboard: j/k roving focus, Enter opens, Escape backs out ──
+  // The guards live in useRovingFocus. They used to live here, in a copy that
+  // had lost the modifier check, so Ctrl-J walked the cursor.
+  const roving = useRovingFocus({
+    listRef, keys: visible.map((e) => e.id), current: focusId, onFocus: setFocusId,
+  });
   const onListKey = useCallback((ev: KeyboardEvent) => {
-    const tag = (ev.target as HTMLElement).tagName;
-    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-    const idx = visible.findIndex((e) => e.id === focusId);
-    const move = (d: number) => {
-      const next = visible[Math.max(0, Math.min(visible.length - 1, (idx === -1 ? (d > 0 ? -1 : 0) : idx) + d))];
-      if (next) {
-        setFocusId(next.id);
-        (listRef.current?.querySelector(`[data-row="${CSS.escape(next.id)}"]`) as HTMLElement | null)
-          ?.focus({ preventScroll: false });
-      }
-    };
-    if (ev.key === "j" || ev.key === "ArrowDown") { ev.preventDefault(); move(1); }
-    else if (ev.key === "k" || ev.key === "ArrowUp") { ev.preventDefault(); move(-1); }
+    if (roving.ignore(ev)) return;
+    if (ev.key === "j" || ev.key === "ArrowDown") { ev.preventDefault(); roving.move(1); }
+    else if (ev.key === "k" || ev.key === "ArrowUp") { ev.preventDefault(); roving.move(-1); }
     else if ((ev.key === "Enter" || ev.key === "o") && focusId) {
       ev.preventDefault();
       if (!desktop) setOpen((s) => { const n = new Set(s); n.has(focusId) ? n.delete(focusId) : n.add(focusId); return n; });
     } else if (ev.key === "Escape") {
-      if (showTags) setShowTags(false);
-      else navigate("lorebooks");
+      // Only reached when nothing is stacked: the overlay stack's own capture
+      // listener swallows Escape while the tag panel is open. Closing it here
+      // as well would pop two history entries and drop the reader out of the
+      // book — the exact bug the panel's back gesture had.
+      navigate("lorebooks");
     }
-  }, [visible, focusId, desktop, showTags]);
+  }, [visible, focusId, desktop]);
 
   if (error) return <div class="screen"><div class="empty"><p class="t-label">Could not load</p><p class="t-data">{error}</p></div></div>;
   if (!entries || !book) return <div class="screen"><div class="empty">Loading lorebook entries…</div></div>;
@@ -252,9 +249,9 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       <div class="audit-list" ref={listRef} onKeyDown={onListKey}>
         <header class="console">
           <div class="hrow">
-            <button class="icon-btn" aria-label="Back to lorebooks" onClick={() => navigate("lorebooks")}>‹</button>
+            <IconButton label="Back to lorebooks" onClick={() => navigate("lorebooks")}>‹</IconButton>
             <h1 class="console-title">{book.name}</h1>
-            <button class="icon-btn t-data" aria-label="Tag distribution" onClick={() => setShowTags(true)}>#</button>
+            <IconButton class="t-data" label="Tag distribution" onClick={() => setShowTags(true)}>#</IconButton>
           </div>
 
           <div class="probe">
@@ -290,23 +287,23 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
           {!selecting ? (
             <div class="chiprail">
               {(["tokens", "order", "keys", "name", "updated"] as SortKey[]).map((k) => (
-                <button key={k} class="chip" aria-pressed={sort === k && !group} onClick={() => { setSort(k); setGroup(false); }}>
+                <Chip key={k} pressed={sort === k && !group} onClick={() => { setSort(k); setGroup(false); }}>
                   {{ tokens: "Tokens", order: "Order", keys: "Keys", name: "Title", updated: "Edited" }[k]}
                   {sort === k && !group && <span class="ar"> ↓</span>}
-                </button>
+                </Chip>
               ))}
-              <button class="chip" aria-pressed={group} onClick={() => setGroup(!group)}>Group by tag</button>
-              <button class="chip is-flag" aria-pressed={flaggedOnly} onClick={() => setFlaggedOnly(!flaggedOnly)}>
+              <Chip pressed={group} onClick={() => setGroup(!group)}>Group by tag</Chip>
+              <Chip flag pressed={flaggedOnly} onClick={() => setFlaggedOnly(!flaggedOnly)}>
                 Flagged <b class="t-num">{flaggedN}</b>
-              </button>
+              </Chip>
             </div>
           ) : (
             <div class="chiprail">
               <span class="t-data selcount">{selected.size} selected</span>
-              <button class="chip" onClick={() => runBulk({ enabled: true })}>Enable</button>
-              <button class="chip" onClick={() => runBulk({ enabled: false })}>Disable</button>
-              <button class="chip" onClick={() => { const t = prompt("Add tag… (blank to clear)"); if (t !== null) void runBulk({ tag: t.trim() }); }}>Add tag…</button>
-              <button class="chip" onClick={() => { setSelecting(false); setSelected(new Set()); }}>Done</button>
+              <Chip onClick={() => runBulk({ enabled: true })}>Enable</Chip>
+              <Chip onClick={() => runBulk({ enabled: false })}>Disable</Chip>
+              <Chip onClick={() => { const t = prompt("Add tag… (blank to clear)"); if (t !== null) void runBulk({ tag: t.trim() }); }}>Add tag…</Chip>
+              <Chip onClick={() => { setSelecting(false); setSelected(new Set()); }}>Done</Chip>
             </div>
           )}
         </header>
@@ -321,7 +318,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
                   <div class="grouphead">
                     <span class="t-label t-label-s gn">{tag === UNTAGGED ? "untagged" : tag}</span>
                     <span class="meta"><span>{items.length}</span><span>{items.reduce((a, e) => a + entryTokens(e), 0).toLocaleString()}t</span></span>
-                    <button class="chip" onClick={() => { setSelecting(true); setSelected((s) => new Set([...s, ...items.map((e) => e.id)])); }}>Select</button>
+                    <Chip onClick={() => { setSelecting(true); setSelected((s) => new Set([...s, ...items.map((e) => e.id)])); }}>Select</Chip>
                   </div>
                   {rows(items)}
                 </div>
@@ -352,9 +349,9 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       {showTags && (
         <TagOverlay
           entries={entries}
-          onClose={() => setShowTags(false)}
-          onShow={(tag) => { setMode("find"); setQuery(tag === UNTAGGED ? "" : tag); setGroup(true); setShowTags(false); }}
-          onSelect={(ids) => { setSelecting(true); setSelected(new Set(ids)); setShowTags(false); }}
+          onClose={closeTopOverlay}
+          onShow={(tag) => { setMode("find"); setQuery(tag === UNTAGGED ? "" : tag); setGroup(true); closeTopOverlay(); }}
+          onSelect={(ids) => { setSelecting(true); setSelected(new Set(ids)); closeTopOverlay(); }}
         />
       )}
 
@@ -433,7 +430,7 @@ function TagOverlay(props: {
   return (
     <div class="tagpanel">
       <div class="hrow">
-        <button class="icon-btn" aria-label="Back to entries" onClick={props.onClose}>‹</button>
+        <IconButton label="Back to entries" onClick={props.onClose}>‹</IconButton>
         <h2 class="console-title">Tags</h2>
         <span class="meta"><span>{stats.length}</span><span>{props.entries.length} entries</span></span>
       </div>
@@ -449,8 +446,8 @@ function TagOverlay(props: {
             </div>
           </div>
           <div class="tacts">
-            <button class="chip" onClick={() => props.onShow(s.tag)}>Show</button>
-            <button class="chip" onClick={() => props.onSelect(s.ids)}>Select</button>
+            <Chip onClick={() => props.onShow(s.tag)}>Show</Chip>
+            <Chip onClick={() => props.onSelect(s.ids)}>Select</Chip>
           </div>
           <div class="tbar"><i style={`width:${(s.n / max) * 100}%`} /></div>
         </div>

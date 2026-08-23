@@ -52,6 +52,13 @@
   --fs-title: 15px;      /* row titles */
   --fs-head: 17px;       /* screen headings */
 
+  /* Reading measure. Prose past about 75 characters a line is measurably
+     harder to read, because the eye loses its place on the return sweep — and
+     a memory's text was running to 145 characters on a wide screen. In `ch` so
+     it tracks the font rather than the viewport: the cap is a number of
+     characters, which is the thing that actually matters. */
+  --measure: 68ch;
+
   /* ── space (4px grid) ── */
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px;
   --row-pad-y: 8px;

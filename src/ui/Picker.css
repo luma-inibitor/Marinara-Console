@@ -1,0 +1,21 @@
+/* Full-width rows rather than wrapped chips: the list is short, so a row per
+   option reads faster than a run, and every row is a comfortable target. */
+.picker-opt {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  width: 100%;
+  min-height: 40px;
+  padding: 2px var(--s2);
+  border: 0;
+  border-radius: var(--r-s);
+  background: none;
+  text-align: left;
+  color: var(--text-dim);
+}
+.picker-opt.is-on { background: var(--surface-2); color: var(--text); }
+/* the tick, not colour alone, says which one is current */
+.picker-opt.is-on::before { content: "✓"; color: var(--accent); font-size: 11px; }
+
+.picker-label { flex: 1; min-width: 0; text-transform: none; font-size: 12px; }
+.picker-hint { flex: 0 0 auto; color: var(--text-dim); font-size: var(--fs-data-s); }

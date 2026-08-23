@@ -1,0 +1,15 @@
+.rawjson { margin-top: var(--s3); border-top: var(--hairline); padding-top: var(--s2); }
+.rawjson summary {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  cursor: pointer;
+  min-height: 28px;
+  color: var(--text-dim);
+  list-style: none;
+}
+.rawjson summary::-webkit-details-marker { display: none; }
+.rawjson summary::before { content: "▸"; font-size: 10px; transition: transform var(--t-fast); }
+.rawjson[open] summary::before { transform: rotate(90deg); }
+.rawjson summary:hover { color: var(--text); }
+.rawjson-n { margin-left: auto; color: var(--text-faint); letter-spacing: 0; text-transform: none; }
