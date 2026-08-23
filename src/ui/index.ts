@@ -12,6 +12,8 @@ export { Edu } from "./Edu";
 export { FacetDrawer, type FacetGroup, type FacetLine, type FacetValue } from "./FacetDrawer";
 export { EmptyState } from "./EmptyState";
 export { ErrorState } from "./ErrorState";
+export { ListEmpty } from "./ListEmpty";
+export { NotFound } from "./NotFound";
 export { Loading } from "./Loading";
 export { IconButton } from "./IconButton";
 export { CollapseButton, ListGroup } from "./ListGroup";

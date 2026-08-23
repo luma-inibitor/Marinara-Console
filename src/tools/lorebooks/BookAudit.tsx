@@ -15,8 +15,7 @@ import {
 import { EntryDrawer, type FullscreenCtx } from "./entries";
 import { useDraft } from "../../shell/draft";
 import { FullscreenText } from "../../ui/FullscreenText";
-import { Loading, ErrorState, NotFound, EmptyState } from "../../ui/states";
-import { Chip, IconButton, useIsDesktop, useRovingFocus } from "../../ui";
+import { Chip, EmptyState, ErrorState, IconButton, ListEmpty, Loading, NotFound, useIsDesktop, useRovingFocus } from "../../ui";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
 type Mode = "find" | "test";
@@ -367,13 +366,11 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
         <main class="rows">
           {visible.length === 0 && (
             mode === "test"
-              ? <div class="empty">
-                  <p class="t-label">Nothing would activate</p>
-                  <p>No entry’s keys match this text, so none would be injected.</p>
-                </div>
+              ? <EmptyState title="Nothing would activate"
+                  body="No entry’s keys match this text, so none would be injected." />
               : entries.length === 0
-                ? <EmptyState kind="first-run" what="entries" action={{ label: "＋ Add entry", run: addEntry }} />
-                : <EmptyState kind="filtered" what="entries"
+                ? <ListEmpty kind="first-run" what="entries" action={{ label: "＋ Add entry", run: addEntry }} />
+                : <ListEmpty kind="filtered" what="entries"
                     filters={[
                       ...(query.trim() ? [{ label: `search: ${query.trim()}`, clear: () => setQuery("") }] : []),
                       ...(flaggedOnly ? [{ label: "flagged only", clear: () => setFlaggedOnly(false) }] : []),
@@ -411,7 +408,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
               onDelete={() => removeWithUndo(focused)}
               onExpand={(field) => setFull({ id: focused.id, field })} />
           ) : (
-            <div class="empty"><p>Select an entry to edit it.</p><p class="t-data is-dim">j / k moves between entries.</p></div>
+            <EmptyState title="Select an entry to edit it." body={<span class="t-data">j / k moves between entries.</span>} />
           )}
         </aside>
       )}

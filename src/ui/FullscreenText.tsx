@@ -9,6 +9,7 @@
 // so the back gesture closes the editor instead of leaving the record.
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { tokensOf } from "../shell/api";
+import { Chip } from "./Chip";
 
 const MD_TOKENS = ["# ", "## ", "**", "_", "- ", "> ", "`", "[]", "\n"];
 
@@ -92,7 +93,7 @@ export function FullscreenText(props: {
             {dirty && <span class="is-dirty-dot">unsaved</span>}
           </div>
         </div>
-        <button class="chip" aria-pressed={wrap} onClick={() => setWrap(!wrap)}>↵ wrap</button>
+        <Chip pressed={wrap} onClick={() => setWrap(!wrap)}>↵ wrap</Chip>
         <button class="dbtn" onClick={cancel}>Cancel</button>
         <button class="dbtn is-primary" onClick={() => props.onDone(value)}>Done</button>
       </div>

@@ -270,8 +270,25 @@ one shape — centred text in a blank pane — and three roles, and a single
 not be allowed a title in the label face, because half a second of latency
 announced in bold reads as a verdict; an error state must not be allowed to
 omit its cause, which an optional shared `body` prop permits and a required
-`message` prop does not. Seventeen hand-written `class="empty"` panes had
-drifted into four different appearances before this.
+one does not. Seventeen hand-written `class="empty"` panes had drifted into
+four different appearances before this.
+
+Waiting is the one role that changes over time. `Loading` stays a dim line for
+three seconds, admits it is slow, and at twelve seconds stops claiming to be
+loading at all — it becomes a state with a way out, because an indicator with
+no timeout is a lie once the request behind it has died. That is the single
+exception to "a loading state carries no action": by then the wait itself is
+the condition being reported.
+
+`ErrorState`, `NotFound` and `ListEmpty` are named compositions of
+`EmptyState` rather than variants of it. Each fixes the parts that are not the
+call site's to choose — the icon, the tone, and whether the cause may be
+omitted — while the primitive stays open for the states that have no name yet.
+`ErrorState` derives its heading from the failure instead of taking one on
+faith: "Cannot reach engine" was being rendered over 500s and 403s, where the
+engine answered and said no. It also names no destination of its own; the back
+button it used to hard-code sent you to the lorebook list from anywhere,
+including the presets tool.
 
 ### The inventory
 
@@ -292,8 +309,10 @@ drifted into four different appearances before this.
 | `CopyableText` | a value meant to be taken elsewhere | — |
 | `ModePill` | the three chat modes, read-out or filter | — |
 | `EmptyState` | icon, title, explanation, actions | `Loading` while waiting, `ErrorState` when it failed |
-| `Loading` | one dim line while a view is still arriving | — |
-| `ErrorState` | a failure and the engine's reason for it | — |
+| `Loading` | a view still arriving, escalating if it stalls | — |
+| `ErrorState` | a failure and the engine's reason for it | `NotFound` when the record is simply gone |
+| `NotFound` | a link to a record that isn't there, and the way back | `ErrorState` for a request that failed |
+| `ListEmpty` | an empty list, by the reason it is empty | `EmptyState` for an empty that has no list |
 | `Edu` | one line of help text, with its icon | `Term` for a single word |
 | `Term` | a word that explains itself in place | `Edu` for a whole sentence |
 | `useIsDesktop` | the split-width query | — |
