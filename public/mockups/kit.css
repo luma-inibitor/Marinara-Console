@@ -494,6 +494,49 @@ body {
     color: var(--wf-ink);
     background: #2a2a2a;
   }
+  .wf-navbar {
+    display: flex;
+    gap: 4px;
+  }
+  .wf-navbtn {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: 1px solid var(--wf-line);
+    border-radius: 3px;
+    padding: 6px 4px;
+    color: var(--wf-dim);
+    position: relative;
+  }
+  .wf-navbtn.is-on {
+    color: var(--wf-ink);
+    border-color: var(--wf-ink);
+  }
+  .wf-navlabel {
+    font-family: var(--font-data);
+    font-size: 10px;
+    letter-spacing: .02em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .wf-navbadge {
+    position: absolute;
+    top: 3px;
+    right: 5px;
+    font-family: var(--font-data);
+    font-size: 9px;
+    color: var(--wf-faint);
+    border: 1px solid var(--wf-line);
+    border-radius: 6px;
+    padding: 0 4px;
+  }
   .wf-tab {
     flex: 0 0 auto;
   }
