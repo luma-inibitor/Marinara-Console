@@ -4,6 +4,9 @@
   book.** It is built from defects that actually shipped here; the copy phase
   is mechanical (`node design/copycheck.mjs <file>`) and must pass or every
   untraced string must be justified.
+- **Start at `design/BRIEFING.md`** for orientation: what the memory tool is for,
+  what is settled, and what the memory types actually look like in the live
+  corpus. It points into the other two rather than repeating them.
 - **Read `design/DESIGN.md` before writing or changing any UI.** It is the
   authoritative framework: tokens, patterns, owner preferences, decision rules.
   If a session decision contradicts it, update DESIGN.md in the same change.
