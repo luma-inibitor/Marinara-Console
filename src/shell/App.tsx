@@ -1,6 +1,7 @@
 import type { ComponentType } from "preact";
 import { route, navigate } from "./router";
 import { LorebooksTool } from "../tools/lorebooks/LorebooksTool";
+import { MemoryTool } from "../tools/memory/MemoryTool";
 import { PlaceholderTool } from "../tools/PlaceholderTool";
 import { PresetsTool } from "../tools/presets/PresetsTool";
 import { Toaster } from "./toast";
@@ -19,7 +20,7 @@ interface ToolDef {
 const TOOLS: ToolDef[] = [
   { id: "lorebooks", label: "Lorebooks", glyph: "◫", component: LorebooksTool },
   { id: "presets", label: "Presets", glyph: "⌘", component: PresetsTool },
-  { id: "memory", label: "Memory", glyph: "◉", component: PlaceholderTool },
+  { id: "memory", label: "Memory", glyph: "◉", component: MemoryTool },
 ];
 
 setResultHook((err) => {

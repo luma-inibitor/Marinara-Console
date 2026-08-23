@@ -1,0 +1,180 @@
+/* Mockup kit — one stylesheet for every specimen book and wireframe.
+   Built with the Tailwind CLI (npm run kit) and linked by the static mockup
+   HTML in public/mockups, which Vite never sees.
+   
+   Before this existed, every generator carried its own 200-line copy of the
+   same CSS, so the books drifted from each other and from the app. The theme
+   below is the app's tokens, imported, not retyped. */
+
+@import "../src/styles/tokens.css";
+@import "../src/styles/theme.css";
+
+@source "../public/mockups";
+
+/* The kit does not import Tailwind's preflight, so the page itself is
+   unstyled by default — which is where the white letterboxing beside a
+   max-width page came from. These are the only base rules the kit owns. */
+html, body { margin: 0; background: var(--canvas); color: var(--text); }
+body { font-family: var(--font-prose); font-size: 14px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased; }
+*, *::before, *::after { box-sizing: border-box; }
+
+@layer components {
+  /* ── the page a book lives on ────────────────────────────────── */
+  .mk-page { max-width: 1100px; margin: 0 auto; padding: 22px 16px 80px;
+    background: var(--canvas); color: var(--text); font-family: var(--font-prose); }
+  .mk-h1 { font-family: var(--font-label); font-size: 19px; margin: 0 0 4px; }
+  .mk-sub { color: var(--text-dim); font-size: 13px; margin: 0; }
+  .mk-band { display: inline-block; border: 1px solid var(--edge-strong); color: var(--text-dim);
+    border-radius: 4px; padding: 2px 8px; font-family: var(--font-data); font-size: 11px; margin-top: 8px; }
+  .mk-sec { margin-top: 34px; }
+  .mk-h2 { font-family: var(--font-label); font-size: 16px; margin: 0 0 6px;
+    display: flex; align-items: baseline; gap: 10px; }
+  .mk-no { font-family: var(--font-data); font-size: 11px; color: var(--accent); letter-spacing: .08em; }
+  .mk-intro { color: var(--text-dim); font-size: 13px; max-width: 78ch; margin: 0 0 16px; }
+  .mk-intro b, .mk-note b { color: var(--text); }
+
+  /* ── the meta layer: what the book says ABOUT a specimen ──────── */
+  .mk-spec { margin: 0 0 26px; }
+  /* The meta label sits OUTSIDE the specimen box, on the page background, so
+     the two layers separate at a glance. A label inside the frame reads as
+     part of the thing being shown — the specimen-design rule this kit exists
+     to stop breaking: meta content never participates in the specimen's own
+     layout. The leading rule is the boundary. */
+  .mk-label { font-family: var(--font-data); font-size: 10.5px; letter-spacing: .09em;
+    color: var(--text-faint); text-transform: uppercase; margin: 0 0 5px;
+    display: flex; align-items: center; gap: 8px; }
+  .mk-label::before { content: ""; width: 14px; height: 1px; background: var(--edge-strong); flex: none; }
+  .mk-label b { color: var(--text-dim); font-weight: 400; }
+  .mk-stage { position: relative; }
+  .mk-body { border: 1px solid var(--edge-strong); border-radius: var(--r-m);
+    background: var(--canvas); padding: 14px; }
+  .mk-caption { margin: 8px 0 0; font-size: 12.5px; color: var(--text-dim);
+    background: var(--surface-1); border-left: 2px solid var(--accent);
+    padding: 7px 10px; max-width: 86ch; border-radius: 0 4px 4px 0; }
+  .mk-caption b { color: var(--text); }
+  .mk-note { color: var(--text-dim); font-size: 12.5px; max-width: 80ch; margin: 6px 0 0;
+    border-left: 2px solid var(--edge-strong); padding-left: 9px; }
+  .mk-list { margin: 7px 0 2px; padding: 0; list-style: none;
+    display: flex; flex-direction: column; gap: 5px; }
+  .mk-list li { display: flex; gap: 8px; align-items: baseline; line-height: 1.5; }
+  .mk-tag { flex: none; font-family: var(--font-data); font-size: 9.5px; letter-spacing: .07em;
+    text-transform: uppercase; border-radius: 3px; padding: 1px 5px; margin-top: 1px; }
+  .mk-tag-s { color: var(--ok); border: 1px solid var(--ok); }
+  .mk-tag-w { color: var(--danger); border: 1px solid var(--danger); }
+  .mk-tag-n { color: var(--text-dim); border: 1px solid var(--edge-strong); }
+  .mk-legend { list-style: none; margin: 8px 0 0; padding: 0;
+    display: flex; flex-direction: column; gap: 5px; max-width: 86ch; }
+  .mk-legend li { display: flex; gap: 8px; font-size: 12.5px; color: var(--text-dim); }
+  .mk-legend b { color: var(--text); }
+  .mk-mark { flex: none; width: 17px; height: 17px; border-radius: 50%; background: var(--accent);
+    color: var(--accent-ink); font-family: var(--font-data); font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; }
+  .mk-mark-abs { position: absolute; z-index: 5; box-shadow: 0 0 0 3px var(--canvas); }
+
+  /* ── wireframe primitives: greyscale, no product colour ───────── */
+  .wf { --wf-line: #4a4a4a; --wf-ink: #e6e6e6; --wf-dim: #9a9a9a; --wf-faint: #6a6a6a;
+    --wf-fill: #1c1c1c; }
+  .wf-frame { border: 1px solid var(--wf-line); border-radius: 3px; padding: 12px;
+    background: var(--wf-fill); margin-bottom: 8px; overflow-x: auto; }
+  .wf-title { font-family: var(--font-data); font-size: 10px; color: var(--wf-faint);
+    letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; }
+  .wf-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; min-width: max-content; }
+  .wf-row:last-child { margin-bottom: 0; }
+  .wf-box { border: 1px solid var(--wf-line); border-radius: 2px; padding: 7px 9px;
+    font-family: var(--font-data); font-size: 12px; color: var(--wf-dim);
+    white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+  .wf-box.is-on { color: var(--wf-ink); border-color: var(--wf-ink); }
+  .wf-grow { flex: 1; border: none; padding: 0; }
+  .wf-badge { font-style: normal; color: var(--wf-faint); font-size: 10px;
+    border: 1px solid var(--wf-line); border-radius: 2px; padding: 0 4px; }
+  .wf-dashed { border-style: dashed; }
+  .wf-dotted { border-style: dotted; }
+  /* A phone frame is 486px because that is the width the owner's device
+     reports. A 300px box on a desktop page proves nothing. */
+  .wf-phone { width: 486px; max-width: 100%; border: 1px solid var(--wf-line);
+    border-radius: 6px; padding: 10px; background: var(--wf-fill); overflow: hidden; }
+  .wf-phone .wf-row { flex-wrap: nowrap; min-width: 0; }
+  .wf-phone .wf-box { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .wf-scroll { overflow-x: auto; padding-bottom: 2px; }
+  .wf-scroll .wf-box { flex: 0 0 auto; }
+  .wf-col { border: 1px solid var(--wf-line); border-radius: 2px; padding: 6px; }
+  .wf-colhead { font-family: var(--font-data); font-size: 10px; color: var(--wf-faint);
+    letter-spacing: .1em; text-transform: uppercase; padding-bottom: 5px; margin-bottom: 5px;
+    border-bottom: 1px solid var(--wf-line); }
+  .wf-item { font-family: var(--font-data); font-size: 12px; color: var(--wf-dim);
+    padding: 5px 4px; border-radius: 2px; }
+  .wf-item.is-on { color: var(--wf-ink); background: #2a2a2a; }
+
+  /* Mobile view switcher: four equal icon-over-label targets, so every page
+     is one tap away and none of them hides behind a scroll. */
+  .wf-navbar { display: flex; gap: 4px; }
+  .wf-navbtn { flex: 1 1 0; min-width: 0; min-height: 52px; display: flex;
+    flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    border: 1px solid var(--wf-line); border-radius: 3px; padding: 6px 4px;
+    color: var(--wf-dim); position: relative; }
+  .wf-navbtn.is-on { color: var(--wf-ink); border-color: var(--wf-ink); }
+  .wf-navlabel { font-family: var(--font-data); font-size: 10px; letter-spacing: .02em;
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* segmented pill: fixed segments, each independently on or off */
+  .wf-pill { display: inline-flex; border: 1px solid var(--wf-line); border-radius: 4px; overflow: hidden; }
+  .wf-seg { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px;
+    font-family: var(--font-data); font-size: 11.5px; color: var(--wf-faint);
+    border-right: 1px solid var(--wf-line); min-width: 62px; justify-content: center; }
+  .wf-seg:last-child { border-right: none; }
+  .wf-seg.is-on { color: var(--wf-ink); background: #2a2a2a; }
+
+  /* the console's tool rail: left on desktop, bottom on mobile, never in the bar */
+  .wf-railed { display: flex; gap: 8px; align-items: stretch; }
+  .wf-rail { flex: 0 0 76px; display: flex; flex-direction: column; gap: 4px;
+    border-right: 1px dashed var(--wf-line); padding-right: 8px; }
+  .wf-railitem { border: 1px solid var(--wf-line); border-radius: 2px; padding: 8px 4px;
+    font-family: var(--font-data); font-size: 10px; color: var(--wf-faint); text-align: center; }
+  .wf-railitem.is-on { color: var(--wf-ink); border-color: var(--wf-ink); }
+  .wf-railmain { flex: 1 1 auto; min-width: 0; }
+
+  .wf-navbadge { position: absolute; top: 3px; right: 5px; font-family: var(--font-data);
+    font-size: 9px; color: var(--wf-faint); border: 1px solid var(--wf-line);
+    border-radius: 6px; padding: 0 4px; }
+
+  /* wireframe box modifiers — one class per role, so a book never restyles */
+  .wf-tab { flex: 0 0 auto; }
+  .wf-tab.is-on { color: var(--wf-ink); border-color: var(--wf-ink); border-bottom-width: 2px; }
+  .wf-brand { color: var(--wf-ink); font-weight: 700; letter-spacing: .08em; justify-content: center; }
+  .wf-sq { width: 34px; justify-content: center; }
+  .wf-scope { border-style: dashed; color: var(--wf-ink); }
+  .wf-scope.is-off { color: var(--wf-faint); border-color: #333; }
+  .wf-scope.is-wide { flex: 1; justify-content: flex-start; }
+  .wf-inst { border-style: dotted; }
+  .wf-counts { border: none; color: var(--wf-faint); font-size: 11px; padding-left: 0; }
+  .wf-lab { border: none; color: var(--wf-faint); font-size: 10px; letter-spacing: .1em;
+    text-transform: uppercase; padding-left: 0; }
+  .wf-btn { background: #2a2a2a; color: var(--wf-ink); }
+  .wf-chip { border-radius: 10px; font-size: 11px; }
+  .wf-search { flex: 1; border-style: dashed; color: var(--wf-faint); }
+  .wf-crumb { border: none; color: var(--wf-dim); padding: 4px 0; }
+  .wf-crumb.is-on { color: var(--wf-ink); }
+  .wf-fill { height: 120px; justify-content: center; color: var(--wf-faint); border-style: dashed; }
+  .wf-cols { display: flex; gap: 6px; margin: 6px 0; min-width: max-content; }
+  .wf-phones { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+  .wf-sp { height: 6px; }
+  .wf-ctx { border-top: 1px dashed var(--wf-line); padding-top: 8px; margin-top: 2px; }
+  .wf-bottom { border-top: 1px solid var(--wf-line); padding-top: 8px; margin-top: 8px; }
+
+  /* a labelled variant inside a section, with an optional verdict line */
+  .mk-var { margin: 0 0 20px; }
+  .mk-var > figcaption { font-family: var(--font-data); font-size: 11px; color: var(--text-dim);
+    letter-spacing: .06em; margin-bottom: 6px; }
+  .mk-verdict { color: var(--text-faint); font-size: 12px; margin-top: 6px; font-style: italic; }
+
+  /* a plain comparison table (inventories, decision matrices) */
+  .mk-table { border-collapse: collapse; width: 100%; font-size: 13px; display: block; overflow-x: auto; }
+  .mk-table th { text-align: left; font-family: var(--font-data); font-size: 10px;
+    color: var(--text-faint); letter-spacing: .1em; text-transform: uppercase;
+    border-bottom: 1px solid var(--edge-strong); padding: 6px 8px; }
+  .mk-table td { padding: 7px 8px; border-bottom: 1px solid var(--surface-2);
+    color: var(--text-dim); vertical-align: top; }
+  .mk-table td:first-child { color: var(--text); white-space: nowrap; }
+  .mk-table td.is-add { color: var(--text); }
+  .mk-table td.is-cut { color: var(--text-faint); }
+}

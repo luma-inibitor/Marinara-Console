@@ -1,0 +1,27 @@
+.emptystate {
+  padding: var(--s5) var(--s4);
+  text-align: center;
+  color: var(--text-dim);
+}
+.es-icon { display: inline-flex; color: var(--text-faint); margin-bottom: 9px; }
+.es-icon.es-ok { color: var(--ok); }
+.es-icon.es-danger { color: var(--danger); }
+
+.es-title {
+  font-family: var(--font-label);
+  font-weight: 650;
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+/* a measure, so an explanation on a 1280px pane does not run the full width */
+.es-body { font-size: 12.5px; max-width: 52ch; margin: 0 auto; }
+.es-body b { color: var(--text); }
+
+.es-acts {
+  display: flex;
+  gap: var(--s2);
+  justify-content: center;
+  margin-top: var(--s3);
+  flex-wrap: wrap;
+}
