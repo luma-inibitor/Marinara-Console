@@ -271,6 +271,19 @@ owner decision after explanation.
   Semantics: script = whole note, file = one section; shared + = the two
   additive ops; pencil = the one op that replaces. Note types: `movie` for
   scene, masks-theater stays RP-mode only. Use `@tabler/icons-preact`.
+- **[Luma] Decision + state icons — DECIDED 2026-08-23.** `undecided` moves
+  `circle-dashed` → `circle-dotted`: dashed is 8 arc segments and `progress-*`
+  is 5, the same visual vocabulary, so the decision family and the progress
+  family were colliding; 12 dots is a different vocabulary. `keep`
+  (`circle-check`) and `drop` (`circle-x`) unchanged, and `circle-dashed` plus
+  the whole `progress-*` family are thereby released. States: error
+  `alert-circle` · partial `progress-x` · degraded `progress-alert` · waiting
+  on the user `list-check` (the Review-queue glyph, reused not re-bound, so it
+  names where to go) · info `info-circle` · loading no icon. Empty-state
+  all-clear is `checks` (double tick = "all of them"), distinct from the
+  single `check` checkbox tick. Claim-detail high-confidence row gets
+  `zoom-check` (validation passed). `alert-triangle` narrows to
+  `extraction_incomplete` only.
 - **[Luma] Review redesign specimens APPROVED (2026-08-21 evening) — "let's
   rock". SHIPPED in 3d57d32** (row v2, header v4, detail zones, icon system,
   education pattern, unified flags; verify green at 390/768/1280).

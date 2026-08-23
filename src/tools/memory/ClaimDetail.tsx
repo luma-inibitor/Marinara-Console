@@ -16,7 +16,7 @@
 import { type ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
 // `Preview` is aliased: this file already has a local <Preview/> zone component.
-import { ChevronRight, Preview as PreviewIcon, Flag, Edit, EditedMark, Forward, Remove, Add } from "../../ui/icons";
+import { ChevronRight, Preview as PreviewIcon, Flag, ValidationOk, Edit, EditedMark, Forward, Remove, Add } from "../../ui/icons";
 import { toast } from "../../shell/toast";
 import { type Mutation, type Row, KEYWORD_CAP, SECTION_CAP } from "./data";
 import { t, OURS } from "./strings";
@@ -512,14 +512,16 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
       <div className="evq-a t-data">source: <Ref id={r.sourceNoteId} title={r.sourceTitle} type="source" /></div>
 
       <div className={`sig t-prose ${low ? "" : "sig-ok"}`} data-sev={low ? "warn" : undefined}>
-        {/* Only the low branch gets a glyph. A flag marks an exception; the else
-            branch marks the *absence* of one, which by this codebase's own
-            precedent carries no mark — cf. Sources.tsx StateMark: "New carries
-            no mark — it is the majority state, and marking it would put a
-            symbol on nearly every row while the exceptions fought for
-            attention." (A tick/cross/dash inside a circle is reserved for
-            decision states anyway; confidence is not a decision.) */}
-        {low && <Flag size={13} stroke={1.75} aria-hidden />}
+        {/* Both branches carry a glyph, and they say different things. The low
+            branch flags an exception. The high branch is not "no exception" —
+            it is a positive report that the extraction was checked against the
+            threshold and passed, so it gets `ValidationOk` (zoom-check: the
+            *inspection* succeeded). Not a ticked circle: that interior is
+            reserved for decision states, and confidence is not a decision
+            (owner-decided 2026-08-23). */}
+        {low
+          ? <Flag size={13} stroke={1.75} aria-hidden />
+          : <ValidationOk size={13} stroke={1.75} aria-hidden />}
         <span>extraction confidence {conf}%{low && <> — below the 93% threshold</>}</span>
       </div>
       {diags.map((f) => (

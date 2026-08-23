@@ -8,25 +8,31 @@
 // ── The silhouette families (DESIGN.md §5, owner-decided; do not re-litigate)
 //
 //   decision     decision states ONLY — keep / drop / undecided. What is
-//                reserved is the INTERIOR MARK, not the round outline: a round
-//                outline holding a tick, a cross, or a dashed edge is this
-//                family. A round outline holding anything else (an `i`, an
-//                `!`, an arc, a speech tail) is a different object and is free
-//                — info-circle, message-circle, alert-circle and progress-alert
-//                are all fine. `progress-x` is NOT: `✗` is a reserved interior,
-//                and the segmented arc puts it visually between circle-dashed
-//                (undecided) and circle-x (drop). Only the reserved interiors
-//                can be misread as a decision, which is the whole point of the
-//                rule — owner-decided 2026-08-23.
+//                reserved is the INTERIOR MARK on a SOLID round outline: a
+//                solid circle holding a tick or a cross, plus the 12-dot
+//                dotted circle that means undecided. A round outline holding
+//                anything else (an `i`, an `!`, an arc, a speech tail) is a
+//                different object and is free — info-circle, message-circle
+//                and alert-circle are all fine. So is the whole `progress-*`
+//                family: its 5-segment arc is a different visual vocabulary
+//                from the dotted circle, so `progress-x` and `progress-alert`
+//                no longer read as neighbours of undecided and drop. A DASHED
+//                circle is likewise free — the decision family left it when
+//                `undecided` moved to `circle-dotted`, precisely because
+//                circle-dashed's 8 arc segments and progress-*'s 5 arc
+//                segments are the same vocabulary and the two families were
+//                colliding. Only the reserved interiors can be misread as a
+//                decision, which is the whole point of the rule
+//                — owner-decided 2026-08-23.
 //   flag         exception flags ONLY
 //   files+script content ops — script = the whole note, file = one section;
 //                the shared + marks the two additive ops, the pencil marks the
 //                one op that replaces instead of adds
 //
 // No icon may borrow another family's silhouette. That rule killed `flag-2`
-// for status and a bare pencil for the edited mark. If you reach for a round
-// glyph whose interior is a tick, a cross, or a dashed edge and you are not
-// naming a decision, you have the wrong icon.
+// for status and a bare pencil for the edited mark. If you reach for a solid
+// round glyph whose interior is a tick or a cross, or for the dotted circle,
+// and you are not naming a decision, you have the wrong icon.
 //
 // Domain mappings that are *taxonomies* (note types, mutation ops, source
 // kinds) live next to their meaning in this file too, keyed by the domain
@@ -41,11 +47,12 @@ import {
   IconCopy, IconCheck, IconPencil, IconWriting, IconPlus, IconX,
   IconDotsVertical, IconEye, IconCode,
   // signals
-  IconInfoCircle, IconFlag, IconAlertTriangle, IconSparkles,
-  // the decision family — reserved interiors: tick / cross / dashed edge
-  IconCircleCheck, IconCircleX, IconCircleDashed,
+  IconInfoCircle, IconFlag, IconAlertCircle, IconAlertTriangle, IconSparkles,
+  IconProgressX, IconProgressAlert, IconZoomCheck,
+  // the decision family — reserved interiors: tick / cross / dotted edge
+  IconCircleCheck, IconCircleX, IconCircleDotted,
   // empty states
-  IconInbox, IconQuestionMark,
+  IconInbox, IconQuestionMark, IconChecks,
   // memory tool views
   IconFileImport, IconLibrary, IconListCheck,
   // chat modes
@@ -166,29 +173,63 @@ export const Tags = IconHash;                   // the tag DISTRIBUTION panel.
 // signals
 export const Info = IconInfoCircle;             // help text, always this one
 export const Flag = IconFlag;                   // exception flags + computed outliers
-export const Alert = IconAlertTriangle;         // failure
 export const Cost = IconSparkles;               // spends model calls
+
+// ── the state signals (owner-decided 2026-08-23) ────────────────────
+// One glyph per state, so a banner, a row mark and an empty state that all
+// report the same condition look like the same condition.
+//
+// `Failure` and `Incomplete` were one name (`Alert`, alert-triangle) doing two
+// jobs: generic "this failed" and the source-freshness state
+// `extraction_incomplete`. They are different concepts, so they are now
+// different names — a failure is a circle, an incomplete extraction keeps the
+// triangle. Splitting the names makes the split explicit at the call site.
+export const Failure = IconAlertCircle;         // error: the thing did not work
+export const Incomplete = IconAlertTriangle;    // an extraction that stopped
+                                                // short — not a failure, a
+                                                // partial harvest that needs
+                                                // re-running
+export const PartialResult = IconProgressX;     // partial: some of the batch
+                                                // landed, some did not. The
+                                                // progress arc is its own
+                                                // vocabulary and no longer
+                                                // collides with the decision
+                                                // family (see header).
+export const Degraded = IconProgressAlert;      // degraded: it ran, but on a
+                                                // fallback path or with a
+                                                // reduced guarantee
+export const ValidationOk = IconZoomCheck;      // a check was performed and it
+                                                // passed — the *inspection*
+                                                // succeeded, which is not the
+                                                // same as `Confirm`'s "you
+                                                // ticked this" or `AllClear`'s
+                                                // "there is nothing left"
+// info    → `Info` above (info-circle), unchanged
+// loading → no icon. Loading.tsx deliberately carries none: a spinner that is
+//           also a glyph reads as a state you can act on, and you cannot.
 
 // the decision family — the reserved interiors (see header)
 export const DECISION_ICON: Record<"keep" | "drop" | "undecided", Icon> = {
   keep: IconCircleCheck,
   drop: IconCircleX,
-  undecided: IconCircleDashed,
+  // circle-dotted, not circle-dashed: dashed is 8 arc segments and the
+  // `progress-*` family is 5 arc segments — one vocabulary, so the decision
+  // family and the progress family were colliding. 12 dots is a different
+  // vocabulary and the collision is gone (owner-decided 2026-08-23).
+  undecided: IconCircleDotted,
 };
 
 // empty states
 export const FirstRun = IconInbox;              // nothing added yet
 export const Missing = IconQuestionMark;        // record does not exist
-export const AllClear = IconCircleCheck;        // empty state: everything handled.
-                                                // A reserved interior (the tick)
-                                                // on a non-decision — exactly the
-                                                // confusion the rule exists to
-                                                // prevent, and still a violation
-                                                // under the loosened 2026-08-23
-                                                // wording. Known DESIGN.md
-                                                // tension, flagged for the
-                                                // owner. Glyph unchanged for
-                                                // now so the refactor stays pure.
+export const AllClear = IconChecks;             // "all of them are handled" —
+                                                // nothing is left in this set.
+                                                // The double tick is the point:
+                                                // it counts a whole set, where
+                                                // `Confirm` (single check) ticks
+                                                // one thing. No circle, so it
+                                                // never reads as a decision
+                                                // (owner-decided 2026-08-23).
 
 // memory tool views. `database` is taken — it is the source-note type icon.
 export const VIEW_ICON: Record<string, Icon> = {
@@ -223,7 +264,8 @@ export const SOURCE_STATE_ICON: Record<string, Icon> = {
   current: IconCheck,
   source_updated: IconRefreshAlert,
   context_updated: IconAdjustments,
-  extraction_incomplete: IconAlertTriangle,
+  extraction_incomplete: Incomplete,   // the triangle, kept: an extraction
+                                       // that stopped short is not a failure
   source_missing: IconUnlink,
 };
 
@@ -272,13 +314,12 @@ export function Glyph(props: {
   );
 }
 
-export const Pending = IconCircleDashed;        // "work still waiting on you".
-                                                // Like `AllClear`, this wears a
-                                                // reserved interior (the dashed
-                                                // edge = undecided) on a
-                                                // non-decision, so the loosened
-                                                // 2026-08-23 rule still catches
-                                                // it — known DESIGN.md
-                                                // tension, flagged for the
-                                                // owner. Glyph unchanged for
-                                                // now so the refactor stays pure.
+export const Pending = VIEW_ICON.review;        // "work still waiting on you".
+                                                // Deliberately the same binding
+                                                // as the Review nav tab, not a
+                                                // second one: this glyph means
+                                                // "the review queue" in both
+                                                // places, so a pending count
+                                                // names the destination the
+                                                // user should go to
+                                                // (owner-decided 2026-08-23).

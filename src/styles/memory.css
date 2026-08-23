@@ -128,7 +128,14 @@
 .dec { display: inline-flex; }
 .dec-keep { color: var(--ok); }
 .dec-drop { color: var(--danger); }
-.dec-undecided { color: var(--text-faint); }
+/* Undecided is circle-dotted (12 dots), not circle-dashed (8 arcs) — the swap
+   that stopped the decision family colliding with progress-* (DESIGN.md §5,
+   2026-08-23). Twelve 1.75px dots carry far less ink than eight arcs, so at
+   --text-faint the rail mark all but vanished: lift it to --text-dim and
+   thicken the stroke so the ring still reads at 12px. Keep/drop keep their
+   own hues and the default stroke. */
+.dec-undecided { color: var(--text-dim); }
+.dec-undecided svg { stroke-width: 2.25; }
 [data-d="drop"] .claim-text { opacity: 0.5; text-decoration: line-through;
   text-decoration-color: color-mix(in srgb, var(--danger) 55%, transparent); }
 .claim-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden;
@@ -424,6 +431,10 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 
 .sig { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; font-size: 13px; }
 .sig svg { flex: 0 0 auto; margin-top: 2px; }
+/* The passed-validation branch of the confidence row. Only the glyph takes the
+   colour: the sentence stays body text, so a reassuring row never shouts as
+   loudly as the warn/danger rows below it. */
+.sig-ok svg { color: var(--ok); }
 .sig[data-sev="warn"] { color: var(--warn); }
 .sig[data-sev="danger"] { color: var(--danger); }
 .edit-mark { color: var(--ok); }

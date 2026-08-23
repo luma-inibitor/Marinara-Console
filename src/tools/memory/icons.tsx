@@ -11,11 +11,14 @@
 // section; the shared + marks the two additive ops; the pencil marks the one
 // op that replaces instead of adds. The decision family is reserved, as is
 // the flag (exception flags only) — no op or type icon may take either.
-// What the decision family reserves is the INTERIOR MARK, not the round
-// outline: a round glyph holding a tick, a cross, or a dashed edge is a
-// decision state. A round glyph holding anything else — the chat_summary
-// speech tail, an `i`, an `!`, an arc — is a different object and is free
-// (owner-decided 2026-08-23).
+// What the decision family reserves is the INTERIOR MARK on a solid round
+// outline — a tick or a cross — plus the 12-dot dotted circle that means
+// undecided. A round glyph holding anything else — the chat_summary speech
+// tail, an `i`, an `!`, a segmented arc — is a different object and is free.
+// That includes circle-dashed and the whole `progress-*` family: `undecided`
+// moved off circle-dashed onto circle-dotted precisely so the 8-segment and
+// 5-segment arcs stop reading as decision neighbours (owner-decided
+// 2026-08-23).
 
 import { TYPE_ICON, OP_ICON, DECISION_ICON, type Icon as IconC } from "../../ui/icons";
 import type { Mutation } from "./data";

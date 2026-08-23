@@ -12,7 +12,7 @@ import { useEffect, useMemo, useState } from "preact/hooks";
 import { signal } from "@preact/signals";
 import {
   NoMatches, ChevronRight, ChevronDown, ExternalLink, Confirm,
-  Alert, Cost, Info, Edit, Forward, AllClear, Pending, Close, ICON_SIZE,
+  Failure, Cost, Info, Edit, Forward, AllClear, Pending, Close, ICON_SIZE,
   SOURCE_KIND_ICON, SOURCE_STATE_ICON, type Icon,
 } from "../../ui/icons";
 import { navigate } from "../../shell/router";
@@ -563,7 +563,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
 
       {bad.map((r) => (
         <div key={r.title} className="failblock">
-          <div className="failhead"><Alert size={15} stroke={1.75} aria-hidden />
+          <div className="failhead"><Failure size={15} stroke={1.75} aria-hidden />
             <span className="failname t-prose">{r.title}</span></div>
           <p className="failwhy t-prose dim">{t("sourcesworkspace.sourceSavedExtractionFailed")}</p>
         </div>

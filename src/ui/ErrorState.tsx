@@ -1,5 +1,5 @@
 import type { ComponentChildren } from "preact";
-import { Alert } from "./icons";
+import { Failure } from "./icons";
 import { ApiError } from "../shell/api";
 import { EmptyState } from "./EmptyState";
 
@@ -62,7 +62,7 @@ export function ErrorState(props: {
   return (
     <EmptyState
       tone="danger"
-      icon={<Alert size={22} stroke={1.75} aria-hidden />}
+      icon={<Failure size={22} stroke={1.75} aria-hidden />}
       title={title}
       body={
         <>
