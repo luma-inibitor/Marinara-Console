@@ -53,17 +53,26 @@ export function useRovingFocus(opts: {
    *  lorebook audit's rows are buttons, so focus moves and the browser scrolls
    *  for us; the review queue's rows are divs, so focus() is a no-op and the
    *  explicit scroll is what keeps the cursor on screen. Doing both means the
-   *  hook does not need to know which kind of list it is driving. */
+   *  hook does not need to know which kind of list it is driving.
+   *
+   *  Synchronous when the row is already in the DOM, deferred only when it is
+   *  not. The deferral exists because the row may not be rendered until the
+   *  state change this call just made has flushed. Deferring unconditionally
+   *  put focus a frame behind every keypress, which made the keyboard walk in
+   *  verify.mjs fail intermittently — and an intermittent check is one people
+   *  learn to ignore. */
   const reveal = (key: string) => {
     opts.onFocus(key);
-    requestAnimationFrame(() => {
+    const land = () => {
       const el = opts.listRef.current?.querySelector(
         `[data-row="${CSS.escape(key)}"]`,
       ) as HTMLElement | null;
-      if (!el) return;
+      if (!el) return false;
       el.scrollIntoView({ block: "nearest" });
       el.focus?.({ preventScroll: true });
-    });
+      return true;
+    };
+    if (!land()) requestAnimationFrame(land);
   };
 
   /** Step the cursor. From nowhere, a step down starts at the top and a step
@@ -78,5 +87,18 @@ export function useRovingFocus(opts: {
     reveal(opts.keys[next]!);
   };
 
-  return { ignore, move, reveal };
+  /** Roving tabindex: exactly one item in the composite is in the tab order.
+   *
+   *  Without this a list is as many tab stops as it has controls — the review
+   *  queue measured 279, three per row across 42 rows, so reaching the apply
+   *  dock by keyboard cost 279 presses. The composite pattern is one stop to
+   *  enter, arrows to move within, one stop to leave.
+   *
+   *  The cursor row holds the stop; with no cursor it falls to the first row,
+   *  so the list is always enterable. Never nothing — a composite with no
+   *  tabbable item is a composite you cannot reach at all. */
+  const tabbable = (key: string): boolean =>
+    key === (opts.current ?? opts.keys[0] ?? null);
+
+  return { ignore, move, reveal, tabbable };
 }

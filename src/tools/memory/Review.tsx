@@ -10,12 +10,7 @@ import { toast } from "../../shell/toast";
 import { type Row, backupExportUrl, extractNote } from "./data";
 import { t, OURS } from "./strings";
 import {
-  rows, blocked, rejections, loading, loadError, review,
-  decisions, edited, cursor, detailKey, facetSheetOpen, saveState,
-  activeFacets, groupBy, sortBy, sortDir, tally, preflight, preflightPending,
-  preflightRowState, applying, applyProgress, lastFailures,
-  droppedDependencyWarnings, canUndo, notesById, pressure,
-  refresh, retryPersist, setDecision, cycleDecision, bulkDecide, undo, applyDecided,
+  activeFacets, applyDecided, applying, applyProgress, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, droppedDependencyWarnings, edited, facetSheetOpen, groupBy, lastFailures, loadError, loading, notesById, preflight, preflightPending, preflightRowState, pressure, readyToSend, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, tally, undo,
 } from "./store";
 import { SECTION_CAP as CAP } from "./data";
 import { refreshLtmStatus } from "./MemoryTool";
@@ -253,7 +248,7 @@ export function Review() {
           {shown.length === 0 && rows.value.length > 0 && (
             <EmptyState icon={<IconSearch size={22} stroke={1.75} aria-hidden />} title="No proposals match the active facets." />
           )}
-          {groups.map((g) => <GroupBlock key={g.id} group={g} showTarget={groupBy.value !== "target"} onActivate={focusRow} />)}
+          {groups.map((g) => <GroupBlock key={g.id} group={g} showTarget={groupBy.value !== "target"} onActivate={focusRow} tabbable={roving.tabbable} />)}
           <Rejections />
         </main>
       </div>
@@ -389,7 +384,7 @@ function FacetSheet() {
 // pressure, open-note) exist only when the group key IS an object; enum lanes
 // get label + count + tally + bulk and nothing else. At narrow width the
 // header wraps to two lines and the aggregates drop (priority order, CSS).
-function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key: string) => void }) {
+function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key: string) => void; tabbable: (key: string) => boolean }) {
   const g = props.group;
   const isTarget = groupBy.value === "target";
   const kept = g.rows.filter((r) => decisions.value.get(r.key) === "keep").length;
@@ -439,7 +434,7 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
         </span>
         </div>
       </>}>
-      {g.rows.map((r) => <ClaimRow key={r.key} row={r} showTarget={props.showTarget} onActivate={props.onActivate} />)}
+      {g.rows.map((r) => <ClaimRow key={r.key} row={r} showTarget={props.showTarget} onActivate={props.onActivate} tabbable={props.tabbable(r.key)} />)}
     </ListGroup>
   );
 }
@@ -479,7 +474,11 @@ function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: 
 // op-icon slot · one-line claim · quiet flags chip (worst severity tints it) ·
 // contribution chars. No secondary line, no per-row confidence — the enums
 // live in the detail card, their exceptions live in the flags.
-function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: string) => void }) {
+function ClaimRow(props: {
+  row: Row; showTarget: boolean; onActivate: (key: string) => void;
+  /** True for the one row that holds the list's tab stop. */
+  tabbable: boolean;
+}) {
   const r = props.row;
   const d = decisions.value.get(r.key);
   const pfState = preflightRowState.value;
@@ -491,20 +490,23 @@ function ClaimRow(props: { row: Row; showTarget: boolean; onActivate: (key: stri
   const sev = worstSeverity(flags);
   const chars = contributionChars(r);
   const isNew = r.mutation.kind === "create_note";
+  // Roving tabindex: only the cursor row is in the tab order (src/ui/useRovingFocus).
+  const tab = props.tabbable ? 0 : -1;
   return (
     <div class={`mem-row ${isOpen ? "is-open" : ""} ${isFocused ? "is-focused" : ""}`} data-row={r.key} data-d={d ?? "undecided"}>
       <div class="mem-summary">
         <button
           class="mem-dec hit"
+          tabIndex={tab}
           aria-label={`Decision: ${d ?? OURS.undecided}. Tap to cycle.`}
           onClick={(e) => { e.stopPropagation(); cycleDecision(r); }}
         >
           <DecisionIcon d={d} />
         </button>
         <span class="kslot">
-          <Term tip={OP_TIP[r.mutation.kind]}><OpIcon kind={r.mutation.kind} /></Term>
+          <Term tip={OP_TIP[r.mutation.kind]} tabIndex={tab}><OpIcon kind={r.mutation.kind} /></Term>
         </span>
-        <button class="mem-mid" onClick={() => props.onActivate(r.key)}>
+        <button class="mem-mid" tabIndex={tab} onClick={() => props.onActivate(r.key)}>
           {props.showTarget && (
             <span class="a1-tgt t-data">
               <TypeIcon type={r.targetType} size={13} />
@@ -647,7 +649,9 @@ function ApplyDock() {
   const checking = preflightPending.value;
   const progress = applyProgress.value;
   const warnings = droppedDependencyWarnings.value;
-  const applyCount = (pf?.ready ?? 0) + c.drop;
+  // ready-after-drops, not the raw engine count, or a dropped dependency
+  // preflight auto-included is counted twice (store.ts readyToSend)
+  const applyCount = readyToSend.value + c.drop;
   const offerRestore = c.keep + c.drop >= RESTORE_POINT_THRESHOLD;
   const rowByKey = new Map(rows.value.map((row) => [row.key, row]));
   const pfState = preflightRowState.value;
@@ -670,7 +674,7 @@ function ApplyDock() {
               : checking
                 ? <> · checking with the engine…</>
                 : pf
-                  ? <> · {pf.ready} ready{pf.blockedN ? <span class="is-drop"> · {pf.blockedN} blocked</span> : null}</>
+                  ? <> · {readyToSend.value} ready{pf.blockedN ? <span class="is-drop"> · {pf.blockedN} blocked</span> : null}</>
                   : null}
           </>}
         </span>
@@ -684,7 +688,15 @@ function ApplyDock() {
             {blockedRows.map(({ row, why }) => <div key={row.key} class="dim dock-detail-row">→ {row.targetTitle}: {why}</div>)}
           </details>
         )}
-        {warnings.length > 0 && <div class="is-drop">{warnings.length} kept claim{warnings.length === 1 ? "" : "s"} depend on a dropped create — they will fail; keep the create or drop them</div>}
+        {/* The whole sentence branches, not just the noun: pluralising "claim"
+            alone left "1 kept claim depend ... they will fail ... drop them". */}
+        {warnings.length > 0 && (
+          <div class="is-drop">
+            {warnings.length === 1
+              ? "1 kept claim depends on a dropped create — it will fail; keep the create or drop it"
+              : `${warnings.length} kept claims depend on a dropped create — they will fail; keep the create or drop them`}
+          </div>
+        )}
         {offerRestore && <><br /><a class="t-data restore-link" href={backupExportUrl()} download onClick={() => toast(OURS.restorePointDone)}>{OURS.restorePoint}</a></>}
       </div>
       <Chip disabled={!canUndo.value} onClick={undo}>Undo</Chip>

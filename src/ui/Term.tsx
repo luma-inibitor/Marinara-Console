@@ -12,12 +12,18 @@ import "./Term.css";
  *  — …"), so a bare word is never floating free. Interactive controls carry no
  *  Term: a help cursor on something you are meant to click is a contradiction
  *  (owner feedback, 2026-08-21). Their teaching goes in a first-use hint. */
-export function Term(props: { tip: string; children: ComponentChildren; chip?: boolean }) {
+export function Term(props: {
+  tip: string;
+  children: ComponentChildren;
+  chip?: boolean;
+  /** -1 takes it out of the tab order, for a Term inside a roving composite. */
+  tabIndex?: number;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <span
       class={`term ${props.chip ? "term-chip" : ""} ${open ? "tip-open" : ""}`}
-      tabIndex={0}
+      tabIndex={props.tabIndex ?? 0}
       data-tip={props.tip}
       onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
       onBlur={() => setOpen(false)}
