@@ -48,10 +48,12 @@ const VIEW_ICON: Record<string, Icon> = {
   vault: IconLibrary,        // database is taken: it is the source-note type icon
   review: IconListCheck,
 };
+// Workflow order: material arrives in Sources, gets decided in Review, and
+// lands in the Vault. Activity comes last, when it is built.
 const VIEWS = [
   { id: "sources", label: () => OURS.nav.sources },
-  { id: "vault", label: () => OURS.nav.vault },
   { id: "review", label: () => OURS.nav.review },
+  { id: "vault", label: () => OURS.nav.vault },
 ];
 
 export function MemoryTool({ rest }: { rest: string[] }) {
