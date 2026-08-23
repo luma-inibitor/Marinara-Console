@@ -14,7 +14,7 @@ import {
 import { t, OURS } from "./strings";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
-import { Chip, IconButton, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
+import { Chip, DetailSection, IconButton, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
 
@@ -273,20 +273,19 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
         const value = drafts[key] ?? s.text ?? "";
         const pct = Math.min(100, Math.round((value.length / SECTION_CAP) * 100));
         return (
-          <section key={key} class="dsec">
-            <h4 class="t-label t-label-s dsec-head">
-              <span class="dsec-title">{key}</span>
+          <DetailSection key={key} sectionKey={key}
+            meta={<>
               <span class="seccount t-data">{value.length.toLocaleString()}<i> / {SECTION_CAP.toLocaleString()}</i></span>
               <Chip onClick={() => dedupe(key)}>Dedupe lines</Chip>
-            </h4>
-            <span class="pbar"><i class={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={`width:${pct}%`} /></span>
+            </>}
+            meter={<span class="pbar"><i class={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={`width:${pct}%`} /></span>}>
             <textarea
               class="t-prose edit-area"
               rows={Math.min(14, Math.max(3, Math.ceil(value.length / 60)))}
               value={value}
               onInput={(e) => setDrafts((prev) => ({ ...prev, [key]: e.currentTarget.value }))}
             />
-          </section>
+          </DetailSection>
         );
       })}
 

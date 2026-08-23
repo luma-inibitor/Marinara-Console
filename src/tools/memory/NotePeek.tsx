@@ -14,7 +14,7 @@ import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { notesById } from "./store";
 import { TypeIcon } from "./icons";
 import { Term, TYPE_TIP } from "./glossary";
-import { CopyableText, ModePill, RawJson, Sheet, SheetHead, Tag } from "../../ui";
+import { CopyableText, DetailSection, ModePill, RawJson, Sheet, SheetHead, Tag } from "../../ui";
 
 export const peeked = signal<Note | null>(null);
 
@@ -82,10 +82,9 @@ export function NotePeek() {
           </div>
         )}
         {Object.entries(n.sections ?? {}).map(([key, s]) => (
-          <section key={key} class="peek-section">
-            <h4 class="t-label t-label-s"><span class="skey">§{key}</span></h4>
+          <DetailSection key={key} sectionKey={key}>
             <div class="t-prose peek-text">{s.text}</div>
-          </section>
+          </DetailSection>
         ))}
       <div class="peek-id t-data">
         <CopyableText value={n.id} label="the memory id" />

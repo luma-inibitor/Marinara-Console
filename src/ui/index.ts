@@ -7,6 +7,7 @@
 // said so.
 export { Chip, Tag } from "./Chip";
 export { CopyableText } from "./CopyableText";
+export { DetailSection } from "./DetailSection";
 export { Edu } from "./Edu";
 export { FacetDrawer, type FacetGroup, type FacetLine, type FacetValue } from "./FacetDrawer";
 export { EmptyState } from "./EmptyState";
@@ -14,6 +15,7 @@ export { IconButton } from "./IconButton";
 export { CollapseButton, ListGroup } from "./ListGroup";
 export { MODES, ModePill } from "./ModePill";
 export { Picker, type PickerOption } from "./Picker";
+export { JsonView } from "./JsonView";
 export { RawJson } from "./RawJson";
 export { SearchBar } from "./SearchBar";
 export { SearchDisclosure, type DisclosureOption } from "./SearchDisclosure";

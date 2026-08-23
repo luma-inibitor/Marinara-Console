@@ -211,7 +211,6 @@
 .peek-meta { color: var(--text-dim); font-size: var(--fs-data-s); overflow-wrap: anywhere; }
 .peek-kw { display: flex; flex-wrap: wrap; gap: 4px; margin-top: var(--s2); }
 .peek-links { margin-top: var(--s2); font-size: var(--fs-data-s); }
-.peek-section { margin-top: var(--s3); }
 .peek-text { white-space: pre-line; font-size: 13.5px; }
 
 /* the filter drawer is <FacetDrawer>, src/ui/FacetDrawer.css;
@@ -353,8 +352,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .kvs > div { display: flex; gap: var(--s2); align-items: baseline; padding: 5px 0;
   border-bottom: var(--hairline); font-size: var(--fs-data); overflow-wrap: anywhere; }
 .kvs .k { color: var(--text-dim); min-width: 92px; flex: 0 0 auto; font-size: var(--fs-data-s); }
-.dsec { margin-top: var(--s3); }
-.dsec h4 { margin: 0 0 4px; display: flex; align-items: center; gap: var(--s2); }
+/* the section shell is <DetailSection>, src/ui/DetailSection.css */
 .dsec p { margin: 0; }
 .edit-area { width: 100%; background: var(--surface-2); border: var(--hairline);
   border-radius: var(--r-s); color: var(--text); padding: var(--s2);
@@ -387,8 +385,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .seg.st-archived[aria-pressed="true"] { color: var(--text-dim); background: var(--surface-3); }
 
 /* section head: title carries the hierarchy, the count is a quiet gutter */
-.dsec-head { display: flex; align-items: center; gap: var(--s2); }
-.dsec-title { flex: 0 0 auto; }
 .seccount { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--text); letter-spacing: 0; }
 .seccount i { font-style: normal; font-weight: 400; color: var(--text-dim); font-size: 10px; }
 
@@ -411,7 +407,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 
 /* Section keys are addresses (§ + text tone) and never accent: accent means
    interactive, and a §key is not a link (owner, 2026-08-22). */
-.skey { font-family: var(--font-data); font-size: 11.5px; color: var(--text); }
 
 .sig { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; font-size: 13px; }
 .sig svg { flex: 0 0 auto; margin-top: 2px; }
