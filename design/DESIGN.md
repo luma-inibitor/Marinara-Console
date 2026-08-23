@@ -60,15 +60,16 @@ columns. Ligatures OFF wherever literal characters matter (keys, code, IDs).
   2026-08-23: they had been the last hardcoded palette outside the token file,
   which is what let `--type-character` drift into being byte-identical to
   `--accent` without anything noticing. One palette, one place to check.
-  **Known violation, open:** `--type-character` IS `--accent` (`#7d9bf0`, ΔE
-  0.00) and needs a replacement hue — ≥20 ΔE from both `--accent` and
-  `--type-thread`, and lower chroma than the status hues. The bar is in tension
-  with itself: `--type-thread` is only 14.85 ΔE (CIEDE2000) from `--accent`, so
-  that sibling pair already sits below 20. The symptom is low-frequency —
-  `character` is 3 of 31 notes (BRIEFING.md §7), joint fourth — but concrete:
-  `Chip.css:26` gives a pressed chip `border-color: var(--accent)`, and every
-  type filter chip in `Vault.tsx:101-105` carries a `.tdot`, so the *selected*
-  chip and the *character* chip are the same blue within one control.
+  **Resolved 2026-08-23:** `--type-character` had been `--accent` exactly
+  (`#7d9bf0`, ΔE 0.00) — so a *selected* chip and the *character* chip were the
+  same blue inside one control (`Chip.css:26` pressed border vs the `.tdot` on
+  every type filter chip). It is now `#00b8d4`, picked from a computed candidate
+  set as the only value clearing 20 ΔE2000 on all twelve pairwise distances:
+  23.6 vs `--accent`, 34.9 vs `--type-thread`, worst pair 20.5 (vs
+  `--type-neutral`); contrast 8.15:1 on `--canvas`, 7.60:1 on `--surface-1`;
+  chroma 38.1, inside the type band. The bar remains in tension with itself:
+  `--type-thread` is only 14.85 ΔE (CIEDE2000) from `--accent`, so that sibling
+  pair still sits below 20 — open, and untouched by this fix.
 - Surface ladder `--canvas → --surface-1..3` for depth; hairline `--edge` between
   regions. One subtle separator, never full grids of lines.
 - **Contrast floors are enforced by `verify.mjs`**: body/data text ≥4.5:1, large text

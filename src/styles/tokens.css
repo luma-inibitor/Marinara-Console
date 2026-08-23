@@ -36,23 +36,20 @@
      with the type name in text, lower in chroma than the status hues and never
      reusing them. Consumed as `--tc` by the .type-* classes.
 
-     ⚠ --type-character is byte-identical to --accent (ΔE 0.00), which
-     DESIGN.md §1 forbids ("never reuse the status hues or --accent"). It is
-     carried over unchanged here so this refactor stays render-neutral; picking
-     the real hue is an owner decision. Constraints for whoever picks it: ≥20 ΔE
-     from both --accent and --type-thread, and lower chroma than the status hues.
+     --type-character was byte-identical to --accent (ΔE 0.00), which DESIGN.md
+     §1 forbids ("never reuse the status hues or --accent"). Resolved 2026-08-23
+     (owner decision) to #00b8d4. Do not re-pick this by eye: it came out of a
+     computed candidate set as the only value clearing 20 ΔE2000 on all twelve
+     pairwise distances — 23.6 vs --accent, 34.9 vs --type-thread, worst pair
+     20.5 (vs --type-neutral), 21.8 vs --type-world. Contrast 8.15:1 on --canvas
+     and 7.60:1 on --surface-1, over the 4.5:1 text floor it needs as 10.5px chip
+     text and 12.5px .chip-min. Chroma 38.1 — inside the type band (8.6–48.9),
+     well under status (56.4–74.4). It sits in the one free hue region, 175–265°.
 
-     Note the tension in that bar: --type-thread is itself only 14.85 ΔE
-     (CIEDE2000) from --accent, so the existing sibling pair already sits below
-     the 20 ΔE a replacement is being held to.
-
-     Frequency: `character` is 3 of 31 notes in the live corpus (BRIEFING.md §7)
-     — joint fourth, not the highest-volume type. The defect is low-frequency
-     but concrete: Chip.css:26 sets .chip[aria-pressed="true"] border-color to
-     --accent, and each type filter chip in Vault.tsx:101-105 carries a .tdot.
-     So a *selected* chip and the *character* chip render the same blue on two
-     elements of the same control. */
-  --type-character: #7d9bf0;      /* ⚠ === --accent, see above */
+     The 20 ΔE bar is still in tension with itself: --type-thread is only 14.85
+     ΔE (CIEDE2000) from --accent, so that sibling pair sits below the bar this
+     hue was held to. Open, and not fixed by this change. */
+  --type-character: #00b8d4;
   --type-relationship: #e08fc7;
   --type-timeline-event: #e0b35f;
   --type-thread: #b08fe0;
