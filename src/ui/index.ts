@@ -8,11 +8,14 @@
 export { Chip, Tag } from "./Chip";
 export { CopyableText } from "./CopyableText";
 export { Edu } from "./Edu";
+export { FacetDrawer, type FacetGroup, type FacetLine, type FacetValue } from "./FacetDrawer";
 export { EmptyState } from "./EmptyState";
 export { IconButton } from "./IconButton";
 export { MODES, ModePill } from "./ModePill";
+export { Picker, type PickerOption } from "./Picker";
 export { RawJson } from "./RawJson";
 export { SearchBar } from "./SearchBar";
+export { SearchDisclosure, type DisclosureOption } from "./SearchDisclosure";
 export { Term } from "./Term";
 export { fuzzyFilter, fuzzyScore } from "./fuzzy";
 export { Modal, Sheet, SheetHead } from "./Sheet";

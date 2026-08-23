@@ -28,7 +28,7 @@ import { flagsOf, worstSeverity, contributionChars } from "./flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./NotePeek";
-import { Chip, collapsedGroups, IconButton, Sheet, SheetHead, useIsDesktop } from "../../ui";
+import { Chip, collapsedGroups, FacetDrawer, IconButton, Picker, useIsDesktop } from "../../ui";
 
 const RESTORE_POINT_THRESHOLD = 20;
 
@@ -288,12 +288,12 @@ export function Review() {
         </div>
       )}
 
-      <FacetSheet shown={shown} />
-      <OptionSheet open={groupSheetOpen.value} label="Group by" current={groupBy.value}
+      <FacetSheet />
+      <Picker open={groupSheetOpen.value} label="Group by" current={groupBy.value}
         options={Object.entries(GROUPERS).map(([id, g]) => ({ id, label: g.label }))}
         onPick={(id) => { groupBy.value = id as typeof groupBy.value; }}
         onClose={() => { groupSheetOpen.value = false; }} />
-      <OptionSheet open={sortSheetOpen.value} label="Sort by" current={sortBy.value}
+      <Picker open={sortSheetOpen.value} label="Sort by" current={sortBy.value}
         onClose={() => { sortSheetOpen.value = false; }}
         options={Object.entries(SORTERS).map(([id, sr]) => ({
           id, label: sr.label,
@@ -336,79 +336,58 @@ function QuickChip(props: { facet: string; value: string; label: string; flag?: 
   );
 }
 
-function FacetSheet(props: { shown: Row[] }) {
+/** "Lorebook - Ashgate — Harbour Canon: The Tidewatch Compact" → "The
+ *  Tidewatch Compact". Anything without that shape is left alone. */
+function sourceFacetLabel(title: string): string {
+  const t = title.replace(/^Lorebook\s*-\s*/i, "");
+  const i = t.indexOf(":");
+  return i > 0 ? t.slice(i + 1).trim() : t;
+}
+
+/** The review queue's facets, shaped for <FacetDrawer>. Provenance grouping is
+ *  the review study's: what the console computed, what the model asserted, and
+ *  what the reviewer decided. */
+function FacetSheet() {
   if (!facetSheetOpen.value) return null;
   const counts = facetCounts(rows.value, activeFacets.value);
-  // Actively-selected values must stay listed even at count 0, or they become
-  // un-clearable and the sheet can render blank.
+  // A selected value must stay listed even at count 0, or the selection
+  // becomes un-clearable and the drawer can render blank.
   for (const [facetId, set] of activeFacets.value) {
     const m = counts.get(facetId);
     if (!m) continue;
     for (const v of set) if (!m.has(v)) m.set(v, 0);
   }
-  const bySource: Record<string, typeof FACETS> = { computed: [], model: [], yours: [] };
-  for (const f of FACETS) bySource[f.source].push(f);
-  const anyValues = [...counts.values()].some((m) => m.size > 0);
+  const label = { computed: OURS.facetsComputed, model: OURS.facetsFromModel, yours: OURS.facetsYours };
+  const groups = (["computed", "model", "yours"] as const).map((key) => ({
+    key,
+    label: label[key],
+    facets: FACETS.filter((f) => f.source === key).map((f) => ({
+      id: f.id,
+      label: f.label,
+      values: [...(counts.get(f.id) ?? new Map()).entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([value, count]) => ({
+          value,
+          // Source titles arrive as "Lorebook - <book>: <entry>". Four chips
+          // reading "Lorebook - Ashgate — …" name nothing, so the chip shows
+          // the entry and keeps the whole title in its tooltip.
+          label: f.id === "source" ? sourceFacetLabel(value) : undefined,
+          count,
+          on: activeFacets.value.get(f.id)?.has(value) ?? false,
+        })),
+    })),
+  }));
   return (
-    <Sheet label="Facets" onClose={() => { facetSheetOpen.value = false; }}>
-      <SheetHead title={<span class="t-label t-label-s">Facets</span>}>
-        <Chip onClick={() => { activeFacets.value = new Map(); }}>Clear</Chip>
-      </SheetHead>
-        {!anyValues && <p class="t-prose dim">No facet values in this slice.</p>}
-        {(["computed", "model", "yours"] as const).map((src) => {
-          const defs = bySource[src].filter((f) => (counts.get(f.id)?.size ?? 0) > 0);
-          if (!defs.length) return null;
-          return (
-            <div key={src} class="facet-block">
-              <h3 class="t-label t-label-s facet-src">{OURS[src === "computed" ? "facetsComputed" : src === "model" ? "facetsFromModel" : "facetsYours"]}</h3>
-              {defs.map((f) => (
-                <div key={f.id} class="facet-line">
-                  <span class="flabel t-label t-label-s">{f.label}</span>
-                  {/* chips live in their own wrapping column so a second row
-                      aligns under the first chip, never under the label */}
-                  <span class="fchips">
-                    {[...counts.get(f.id)!.entries()].sort((a, b) => b[1] - a[1]).map(([value, n]) => {
-                      const on = activeFacets.value.get(f.id)?.has(value) ?? false;
-                      return (
-                        <button key={value} class="facet-chip t-data" aria-pressed={on}
-                          onClick={() => toggleFacet(f.id, value)}>
-                          <span class="fv">{value}</span>
-                          <span class="fc">{n}</span>
-                        </button>
-                      );
-                    })}
-                  </span>
-                </div>
-              ))}
-            </div>
-          );
-        })}
-    </Sheet>
+    <FacetDrawer
+      groups={groups}
+      onToggle={toggleFacet}
+      onClear={() => { activeFacets.value = new Map(); }}
+      onClose={() => { facetSheetOpen.value = false; }}
+      emptyText="No facet values in this slice."
+    />
   );
 }
 
-/** Bottom-sheet chooser for the mobile three-button rail. */
-function OptionSheet(props: {
-  open: boolean; label: string;
-  options: Array<{ id: string; label: string; hint?: string }>;
-  current: string;
-  onPick: (id: string) => void;
-  onClose: () => void;
-}) {
-  if (!props.open) return null;
-  return (
-    <Sheet class="option-sheet" label={props.label} onClose={props.onClose}>
-      <SheetHead title={<span class="t-label t-label-s">{props.label}</span>} />
-        {props.options.map((o) => (
-          <button key={o.id} class={`facet-row ${props.current === o.id ? "is-on" : ""}`}
-            onClick={() => { props.onPick(o.id); closeTopOverlay(); }}>
-            <span class="fv t-data">{o.label}</span>
-            {o.hint && <span class="fc t-data">{o.hint}</span>}
-          </button>
-        ))}
-    </Sheet>
-  );
-}
 
 // Group header v4 (owner-approved 2026-08-21): one line — identity · honest
 // aggregates (sections touched, chars added) · cap flag only when real · bar
