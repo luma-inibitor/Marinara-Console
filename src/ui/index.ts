@@ -6,11 +6,14 @@
 // twenty rules whose last consumer had been gone for weeks, and nothing had
 // said so.
 export { Chip, Tag } from "./Chip";
+export { CopyableText } from "./CopyableText";
 export { Edu } from "./Edu";
 export { EmptyState } from "./EmptyState";
 export { IconButton } from "./IconButton";
 export { MODES, ModePill } from "./ModePill";
+export { RawJson } from "./RawJson";
 export { SearchBar } from "./SearchBar";
+export { Term } from "./Term";
 export { fuzzyFilter, fuzzyScore } from "./fuzzy";
 export { Modal, Sheet, SheetHead } from "./Sheet";
 export { collapsedGroups } from "./useCollapsedGroups";

@@ -1,0 +1,34 @@
+.rawjson { margin-top: var(--s3); border-top: var(--hairline); padding-top: var(--s2); }
+.rawjson summary {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  cursor: pointer;
+  min-height: 28px;
+  color: var(--text-dim);
+  list-style: none;
+}
+.rawjson summary::-webkit-details-marker { display: none; }
+.rawjson summary::before { content: "▸"; font-size: 10px; transition: transform var(--t-fast); }
+.rawjson[open] summary::before { transform: rotate(90deg); }
+.rawjson summary:hover { color: var(--text); }
+.rawjson-n { margin-left: auto; color: var(--text-faint); letter-spacing: 0; text-transform: none; }
+
+.rawjson-act { display: flex; justify-content: flex-end; margin: var(--s2) 0 4px; }
+/* the copy control here stands for the whole blob — showing the blob twice
+   would be absurd, so the value itself is hidden and only the button shows */
+.rawjson-copy .copyable-v { display: none; }
+
+.rawjson-body {
+  margin: 0;
+  max-height: 40vh;
+  overflow: auto;
+  padding: var(--s2);
+  background: var(--canvas);
+  border: var(--hairline);
+  border-radius: var(--r-s);
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre;
+}
