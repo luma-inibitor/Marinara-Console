@@ -112,11 +112,6 @@
 .mem-mid { grid-column: 3; display: flex; align-items: center; gap: 8px;
   min-width: 0; text-align: left;
   padding: var(--row-pad-y) var(--row-pad-x) var(--row-pad-y) 0; }
-.mem-mid.span-kind { grid-column: 2 / -1; }
-.mem-mid.stacked { flex-direction: column; align-items: flex-start; gap: 2px; }
-.src-title { display: block; font-weight: 600; font-size: var(--fs-prose); }
-.src-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  font-family: var(--font-data); font-size: var(--fs-data-s); color: var(--text-dim); }
 .dec { display: inline-flex; }
 .dec-keep { color: var(--ok); }
 .dec-drop { color: var(--danger); }
@@ -137,10 +132,6 @@
 .chs { font-family: var(--font-data); font-size: 11px; color: var(--text-dim);
   min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
 .ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); flex: 0 0 auto; }
-.disp { font-weight: 700; }
-.disp-new { color: var(--accent); }
-.disp-merge { color: var(--ok); }
-.disp-rewrite { color: var(--warn); }
 
 /* ══ cards (obligations, failures, rejections, import results) ══ */
 .mem-card { margin: var(--s2) var(--s3); padding: var(--panel-pad);
@@ -150,11 +141,6 @@
 .mem-card details p { margin: 4px 0 0; overflow-wrap: anywhere; }
 .mem-rejections { margin-top: var(--s4); }
 .rej-snippet { margin: 6px 0 0; padding-top: 6px; border-top: var(--hairline); }
-.import-item { padding: var(--s2) 0; border-top: var(--hairline); }
-.import-item .chip { margin-top: 6px; }
-.empty-why { margin: var(--s2) var(--s3); }
-.snippet { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
-  overflow: hidden; font-size: 12.5px; margin-top: 2px; }
 
 /* Seam guards: opaque canvas above each sticky layer, covering the few-px
    gap Android's sticky repaint lag opens during fast scroll. 3px, not more:
@@ -452,12 +438,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
   font-weight: 700; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
 .action-sec.is-danger-act { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
 
-.scope-sel { background: var(--surface-1); border: var(--hairline);
-  border-radius: var(--r-s); color: var(--text); padding: 6px var(--s2); min-height: 34px; }
-.scope-sel { width: 100%; min-height: var(--tap); }
-.scope-label { align-self: center; flex: 0 0 auto; }
-.scope-hint { margin: var(--s2) 0; }
-.vault-note { margin-top: var(--s3); font-size: 12.5px; }
 .dim { color: var(--text-dim); }
 
 /* ══ education pattern (2026-08-21) ══
@@ -480,10 +460,8 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); }
 .mem-row .term:hover::after, .mem-row .term.tip-open::after { left: auto; }
 
-/* enum values are vocabulary (mono, dim); section keys are addresses (§ + text
-   tone, brighter than enums) — never alike (owner feedback on A2), and never
-   accent: accent means interactive, and a §key is not a link (owner, 2026-08-22). */
-.enum { font-family: var(--font-data); font-size: 11.5px; color: var(--text-dim); }
+/* Section keys are addresses (§ + text tone) and never accent: accent means
+   interactive, and a §key is not a link (owner, 2026-08-22). */
 .skey { font-family: var(--font-data); font-size: 11.5px; color: var(--text); }
 
 .sig { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; font-size: 13px; }
@@ -502,12 +480,9 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
    summaries to their extraction text, imported sources to what they made —
    so the list is never replaced by a detail screen. */
 .gsp { flex: 1 1 auto; }
-.scopebar { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap;
-  padding-bottom: var(--s2); margin-bottom: var(--s2); border-bottom: var(--hairline); }
 .scopelab { color: var(--text-dim); }
 .scopesel { background: var(--surface-2); border: var(--hairline); border-radius: var(--r-s);
   color: var(--text); padding: 5px var(--s2); min-height: 32px; max-width: 220px; }
-.scopehint { display: inline-flex; align-items: center; gap: 5px; }
 .sbar { display: flex; gap: var(--s2); margin-bottom: var(--s2); }
 .sinput { flex: 1 1 auto; display: flex; align-items: center; gap: 7px; min-height: var(--tap);
   border: var(--hairline); border-radius: var(--r-m); padding: 0 var(--s2); color: var(--text-faint); }
@@ -552,7 +527,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .s-slot { width: 0; flex: 0 0 auto; }
 .s-ok { color: var(--ok); } .s-warn { color: var(--flag); }
 .s-danger { color: var(--danger); } .s-info { color: var(--accent); }
-.prod { color: var(--text-dim); flex: 0 0 auto; font-variant-numeric: tabular-nums; }
 .jumpb { flex: 0 0 auto; width: 30px; height: 30px; border-radius: var(--r-s); background: none;
   border: none; color: var(--text-faint); display: inline-flex; align-items: center; justify-content: center; }
 .jumpb:hover { color: var(--accent); background: var(--surface-3); }
