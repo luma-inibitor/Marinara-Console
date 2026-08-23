@@ -7,6 +7,9 @@
 - **Start at `design/BRIEFING.md`** for orientation: what the memory tool is for,
   what is settled, and what the memory types actually look like in the live
   corpus. It points into the other two rather than repeating them.
+- **`design/MEMORY-SCHEMA.md`** is the note shape: the eight types, which fields
+  are universal, which are restricted by type, and what a section carries beyond
+  its text. Check it before designing around a field.
 - **Read `design/DESIGN.md` before writing or changing any UI.** It is the
   authoritative framework: tokens, patterns, owner preferences, decision rules.
   If a session decision contradicts it, update DESIGN.md in the same change.

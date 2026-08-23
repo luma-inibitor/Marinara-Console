@@ -127,14 +127,31 @@ it. `CHECKLIST.md` holds the full list with incidents attached.
 Measured from the live corpus on 2026-08-23 (31 notes). **This is the evidence
 base for any per-type design work**, and it is not what you would guess.
 
+Full field-by-field reference in [MEMORY-SCHEMA.md](MEMORY-SCHEMA.md). The
+summary that matters for design work:
+
 ### Every memory carries
 
-`id` · `title` · `type` · `status` · `modes` · `scope` · `tags` · `keywords` ·
-`manualKeywords` · `suppressedKeywords` · `createdAt` · `updatedAt` · `links` ·
-`sections` · `version`
+`id` · `type` · `status` · `modes` · `scope` · `tags` · `keywords` ·
+`createdAt` · `updatedAt` · `links` · `sections` · `version`
 
-Present on some only: `provenance` (source notes), `subjects` and
-`extractionFingerprint` (4 of 31).
+Optional on any type: `title`, `manualKeywords`, `suppressedKeywords`,
+`conflicts`. Restricted by type: `provenance` (required on `source`, forbidden
+elsewhere), `subjects` (exactly 1 on `character`, 2 on `relationship`, forbidden
+elsewhere), `extractionFingerprint` (`source` only).
+
+### A section is more than its text
+
+Every section carries structured fields alongside `text`, and they are
+populated: `evidence[]` and `confidence` on all 38 sections in the corpus,
+`salience` on 30, `contributions[]` on 30, `importance` on 24. `dimensions` and
+`dimensionChanges` carry ten relationship axes and appear on one. These are
+structured by design and are not to be parsed out of the prose.
+
+### The eight types
+
+`source` · `timeline_event` · `character` · `relationship` · `scene` ·
+`thread` · `world` · `tone`. The corpus holds all but `scene`.
 
 ### Types differ mainly in their sections
 
@@ -147,6 +164,7 @@ Present on some only: `provenance` (source notes), `subjects` and
 | **tone** | 3 | `observations` **and** `profile` — both, always | 83 / 96 / 96 | `extracted_from` |
 | **world** | 3 | `canon` | 169 / 174 / 252 | `extracted_from` |
 | **source** | 8 | `source` | 66 / 781 / **2818** | — |
+| **scene** | 0 | — | — | — |
 
 ### What this means for design
 
