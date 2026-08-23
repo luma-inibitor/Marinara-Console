@@ -68,6 +68,11 @@ export const OURS = {
   sourcesBlocked: "Blocked", // drafts held before review; the catalog says "blocked" only inside sentences
   sourcesReviewEach: "Review each", // the per-kind affordance for sources that must be curated, not bulk-imported
   extractionText: "Extraction text", // the editable text extraction reads; the override is new to this console
+  // The catalog has the whole family — "No matching chats/characters/branches/
+  // personas/places" — but not sources, and the Sources search was borrowing
+  // the chats one while its own body text said "sources". Same sentence shape,
+  // right noun.
+  noMatchingSources: "No matching sources.",
   zonePreview: "preview",
   zoneDiff: "existing → proposed",
   zoneEvidence: "evidence",

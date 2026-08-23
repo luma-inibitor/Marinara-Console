@@ -12,7 +12,7 @@ import {
   POS_COMPACT,
 } from "./data";
 import { EntryDrawer, FullscreenEditor, type FullscreenCtx } from "./entries";
-import { Chip, useIsDesktop } from "../../ui";
+import { Chip, IconButton, useIsDesktop } from "../../ui";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
 type Mode = "find" | "test";
@@ -241,9 +241,9 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       <div class="audit-list" ref={listRef} onKeyDown={onListKey}>
         <header class="console">
           <div class="hrow">
-            <button class="icon-btn" aria-label="Back to lorebooks" onClick={() => navigate("lorebooks")}>‹</button>
+            <IconButton label="Back to lorebooks" onClick={() => navigate("lorebooks")}>‹</IconButton>
             <h1 class="console-title">{book.name}</h1>
-            <button class="icon-btn t-data" aria-label="Tag distribution" onClick={() => setShowTags(true)}>#</button>
+            <IconButton class="t-data" label="Tag distribution" onClick={() => setShowTags(true)}>#</IconButton>
           </div>
 
           <div class="probe">
@@ -421,7 +421,7 @@ function TagOverlay(props: {
   return (
     <div class="tagpanel">
       <div class="hrow">
-        <button class="icon-btn" aria-label="Back to entries" onClick={props.onClose}>‹</button>
+        <IconButton label="Back to entries" onClick={props.onClose}>‹</IconButton>
         <h2 class="console-title">Tags</h2>
         <span class="meta"><span>{stats.length}</span><span>{props.entries.length} entries</span></span>
       </div>

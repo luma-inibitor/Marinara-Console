@@ -14,7 +14,7 @@ import {
 import { t, OURS } from "./strings";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
-import { Chip, Tag, useIsDesktop } from "../../ui";
+import { Chip, IconButton, Tag, useIsDesktop } from "../../ui";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
 
@@ -133,7 +133,7 @@ export function Vault() {
       {!desktop && open && (
         <div class="stack-screen">
           <header class="console"><div class="hrow">
-            <button class="icon-btn hit" aria-label="Back to vault" onClick={closeTopOverlay}>‹</button>
+            <IconButton class="hit" label="Back to vault" onClick={closeTopOverlay}>‹</IconButton>
             <h1 class="console-title">{open.title ?? open.id}</h1>
           </div></header>
           <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />

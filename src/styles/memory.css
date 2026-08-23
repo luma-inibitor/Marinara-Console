@@ -601,14 +601,8 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .resfoot { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s2); flex-wrap: wrap; }
 .resfoot .dock-primary { margin-left: 0; }
 /* empty states */
-.emptypane { text-align: center; padding: var(--s5) var(--s4); }
-.emptyi { display: inline-flex; color: var(--text-faint); margin-bottom: 9px; }
-.emptyi.s-ok { color: var(--ok); }
-.emptytitle { font-family: var(--font-label); font-weight: 650; font-size: 14px; margin-bottom: 5px; }
-.emptybody { font-size: 12.5px; max-width: 52ch; margin: 0 auto; }
-.emptybody b { color: var(--text); }
-.emptyact { display: flex; gap: var(--s2); justify-content: center; margin-top: var(--s3); flex-wrap: wrap; }
-.emptyact .dock-primary { margin-left: 0; }
+/* the empty pane now lives with the component, src/ui/EmptyState.css */
+.es-acts .dock-primary { margin-left: 0; }
 
 /* keyword editing in the claim editor: chips become removable, and a field
    adds to the list. The cap is the product's own (30). */

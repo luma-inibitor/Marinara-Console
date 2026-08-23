@@ -31,7 +31,7 @@ import {
   buildSources, isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,
 } from "./sourceModel";
-import { collapsedGroups, Edu } from "../../ui";
+import { collapsedGroups, Edu, EmptyState, IconButton } from "../../ui";
 
 /** Above this many sources, spending model calls raises a confirm first. */
 const CONFIRM_THRESHOLD = 10;
@@ -241,7 +241,7 @@ export function Sources() {
           onResume={(rest) => void runImport(rest)} rest={selectedRows.slice(job.done)} />}
 
         {loading && <p class="empty">{t("sourcesworkspace.loadingSourcePreview")}</p>}
-        {!loading && shown.length === 0 && <EmptyState q={q} rows={rows} view={railView.value} chats={chats} />}
+        {!loading && shown.length === 0 && <SourcesEmpty q={q} rows={rows} view={railView.value} chats={chats} />}
 
         {!loading && KINDS.flatMap(({ id, label, icon: KI, bulk }) => {
           const inKind = shown.filter((r) => r.kind === id);
@@ -581,7 +581,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
           </div>
         </div>
         <span class="gsp" />
-        <button class="icon-btn hit" aria-label="Dismiss report" onClick={onDismiss}>×</button>
+        <IconButton class="hit" label="Dismiss report" onClick={onDismiss}>×</IconButton>
       </div>
 
       {bad.map((r) => (
@@ -625,7 +625,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
 }
 
 // ── nothing to show, and why ────────────────────────────────────────
-function EmptyState({ q, rows, view, chats }: {
+function SourcesEmpty({ q, rows, view, chats }: {
   q: string; rows: SourceRow[]; view: "pending" | "imported" | "all"; chats: Chat[];
 }) {
   const scoped = Boolean(scopeChatId.value);
@@ -633,46 +633,46 @@ function EmptyState({ q, rows, view, chats }: {
 
   if (q.trim()) {
     return (
-      <div class="emptypane">
-        <span class="emptyi"><IconSearch size={22} stroke={1.75} aria-hidden /></span>
-        <div class="emptytitle t-prose">{t("memoryvault.noMatchingChats")}</div>
-        <p class="emptybody t-prose dim">
+      <EmptyState
+        icon={<IconSearch size={22} stroke={1.75} aria-hidden />}
+        title={OURS.noMatchingSources}
+        body={<>
           The search <b>{q.trim()}</b> matches nothing{scoped ? <> in <b>{scopeName}</b></> : null}.
           {" "}Clearing it would show {rows.length} sources.
-        </p>
-      </div>
+        </>}
+      />
     );
   }
   if (rows.length === 0 && scoped) {
     return (
-      <div class="emptypane">
-        <span class="emptyi"><IconBook2 size={22} stroke={1.75} aria-hidden /></span>
-        <div class="emptytitle t-prose">{t("sourcesworkspace.noLorebooksAreAvailableInThisScope")}</div>
-        <p class="emptybody t-prose dim">Widening the import scope will show sources from other chats.</p>
-        <div class="emptyact"><button class="action-sec hit" onClick={() => setScope("")}>
-          {t("sourcesworkspace.importScope")}: {t("sourcesworkspace.allChats")}</button></div>
-      </div>
+      <EmptyState
+        icon={<IconBook2 size={22} stroke={1.75} aria-hidden />}
+        title={t("sourcesworkspace.noLorebooksAreAvailableInThisScope")}
+        body="Widening the import scope will show sources from other chats."
+        actions={
+          <button class="action-sec hit" onClick={() => setScope("")}>
+            {t("sourcesworkspace.importScope")}: {t("sourcesworkspace.allChats")}
+          </button>
+        }
+      />
     );
   }
   // the default view is a filter that empties as the reviewer succeeds
   return (
-    <div class="emptypane">
-      <span class="emptyi s-ok"><IconCircleCheck size={22} stroke={1.75} aria-hidden /></span>
-      <div class="emptytitle t-prose">
-        {view === "pending" ? "No sources are waiting to be imported." : t("sourcesworkspace.noSourcesHaveBeenImportedInThisScope")}
-      </div>
-      <p class="emptybody t-prose dim">
-        {view === "pending"
-          ? "New chat summaries will appear here as they are written."
-          : "Import a source to see it here."}
-      </p>
-      {view === "pending" && (
-        <div class="emptyact">
-          <button class="dock-primary t-label" onClick={() => navigate("memory/review")}>
-            {t("longtermmemorydetail.openReviewQueue")}
-          </button>
-        </div>
+    <EmptyState
+      tone="ok"
+      icon={<IconCircleCheck size={22} stroke={1.75} aria-hidden />}
+      title={view === "pending"
+        ? "No sources are waiting to be imported."
+        : t("sourcesworkspace.noSourcesHaveBeenImportedInThisScope")}
+      body={view === "pending"
+        ? "New chat summaries will appear here as they are written."
+        : "Import a source to see it here."}
+      actions={view === "pending" && (
+        <button class="dock-primary t-label" onClick={() => navigate("memory/review")}>
+          {t("longtermmemorydetail.openReviewQueue")}
+        </button>
       )}
-    </div>
+    />
   );
 }

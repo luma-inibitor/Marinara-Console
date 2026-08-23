@@ -28,7 +28,7 @@ import { flagsOf, worstSeverity, contributionChars } from "./flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./NotePeek";
-import { Chip, collapsedGroups, useIsDesktop } from "../../ui";
+import { Chip, collapsedGroups, IconButton, useIsDesktop } from "../../ui";
 
 const RESTORE_POINT_THRESHOLD = 20;
 
@@ -170,9 +170,9 @@ export function Review() {
                   : "Saved"}
             </span>
             <button class="icon-btn t-data" aria-label="Refresh queue" title="Refresh" onClick={() => void refresh()}>↻</button>
-            <a class="icon-btn" href={backupExportUrl()} download title={OURS.restorePoint} aria-label="Export backup">
+            <IconButton href={backupExportUrl()} download label={OURS.restorePoint}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 12.5V14h12v-1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </a>
+            </IconButton>
           </div>
 
           {review.value && (
