@@ -144,7 +144,7 @@ export function ClaimDetail({ row }: { row: Row }) {
     let changed = false;
     if (kwDraft && storedKeywords) {
       if (kwDraft.length > KEYWORD_CAP) {
-        toast(t("memorysettings.manualKeywordLimit"), { kind: "error" });
+        toast(t("memoryvault.manualKeywordLimit"), { kind: "error" });
         return;
       }
       if (next.kind === "create_note" && next.note) next.note.keywords = kwDraft;
@@ -563,9 +563,9 @@ function KeywordEditor({ list, editing, onChange, allNew }: {
   const add = () => {
     const v = entry.trim();
     if (!v) return;
-    if (v.length > 80) { toast(t("memorysettings.manualKeywordTooLong"), { kind: "error" }); return; }
+    if (v.length > 80) { toast(t("memoryvault.manualKeywordTooLong"), { kind: "error" }); return; }
     if (list.includes(v)) { setEntry(""); return; }
-    if (list.length >= KEYWORD_CAP) { toast(t("memorysettings.manualKeywordLimit"), { kind: "error" }); return; }
+    if (list.length >= KEYWORD_CAP) { toast(t("memoryvault.manualKeywordLimit"), { kind: "error" }); return; }
     onChange([...list, v]);
     setEntry("");
   };

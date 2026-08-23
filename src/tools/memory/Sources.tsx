@@ -527,7 +527,7 @@ function ConfirmSheet({ n, chats, onCancel, onGo }: {
         </button>
         {/* Cancel goes through the stack, not straight to onCancel, so the
             history entry Modal pushed is popped with it. */}
-        <button class="action-sec hit" onClick={closeTopOverlay}>{t("memorysettings.cancel") || "Cancel"}</button>
+        <button class="action-sec hit" onClick={closeTopOverlay}>{t("memoryvault.cancel")}</button>
       </div>
     </Modal>
   );
