@@ -39,6 +39,15 @@ Never set data in the prose face. Never set prose in mono. Labels are 9.5–11px
 with letter-spacing; data 11–14px; prose 13.5–15px. Tabular numerals for numeric
 columns. Ligatures OFF wherever literal characters matter (keys, code, IDs).
 
+The `.t-label` / `.t-data` / `.t-prose` utilities in `base.css` set the **face
+only** — never size or weight, which belong to the component rule. `.t-prose`
+exists solely to restore prose inside a label or data context; the body default
+is already prose, so applying it anywhere else is noise. Never put a type
+utility on an element whose component class sets a different face: the two
+rules have equal specificity and the winner is decided by stylesheet order,
+which means the markup asserts one face and the page renders another.
+`node design/faceprobe.mjs` reports the face every utility actually gets.
+
 ### Color — semantic first, chrome second
 
 - Status vocabulary mirrors the engine and is **reserved**: `--ok` (emerald) /
