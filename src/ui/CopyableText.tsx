@@ -1,17 +1,16 @@
 import { useState } from "preact/hooks";
-import { IconCopy, IconCheck } from "@tabler/icons-preact";
+import { Copy, Copied } from "./icons";
 import { toast } from "../shell/toast";
+import { t } from "../copy";
 import "./CopyableText.css";
 
 /** A value you are meant to be able to take somewhere else — an id, a hash, a
  *  path. Renders as monospace text with a copy control beside it.
  *
- *  Confirmation is inline and brief: the icon becomes a tick for a moment. A
- *  toast for something this small would be louder than the action. The toast
- *  is reserved for the failure, which is the case you actually need to know
- *  about — clipboard writes are refused outside a secure context, and silently
- *  doing nothing would look like a broken button. */
-export function CopyableText(props: { value: string; label?: string; class?: string }) {
+ *  Success is confirmed inline (the icon becomes a tick); the toast is reserved
+ *  for failure. Clipboard writes are refused outside a secure context, and
+ *  silently doing nothing there would look like a broken button. */
+export function CopyableText(props: { value: string; label?: string; className?: string }) {
   const [done, setDone] = useState(false);
   const copy = async () => {
     try {
@@ -19,21 +18,21 @@ export function CopyableText(props: { value: string; label?: string; class?: str
       setDone(true);
       setTimeout(() => setDone(false), 1200);
     } catch {
-      toast("Could not copy — the clipboard is unavailable here", { kind: "error" });
+      toast(t("ui.copy.failed"), { kind: "error" });
     }
   };
   return (
-    <span class={`copyable ${props.class ?? ""}`}>
-      <span class="copyable-v t-data">{props.value}</span>
+    <span className={`copyable ${props.className ?? ""}`}>
+      <span className="copyable-v t-data">{props.value}</span>
       <button
         type="button"
-        class="copyable-b hit"
-        aria-label={done ? "Copied" : `Copy ${props.label ?? props.value}`}
+        className="copyable-b hit"
+        aria-label={done ? t("ui.copy.copied") : t("ui.copy.value", { what: props.label ?? props.value })}
         onClick={copy}
       >
         {done
-          ? <IconCheck size={13} stroke={2} aria-hidden />
-          : <IconCopy size={13} stroke={1.75} aria-hidden />}
+          ? <Copied size={13} stroke={2} aria-hidden />
+          : <Copy size={13} stroke={1.75} aria-hidden />}
       </button>
     </span>
   );

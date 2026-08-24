@@ -8,7 +8,8 @@
 // looks fine in a 300px box on a desktop page has proved nothing — the box
 // was not a phone. Render at the real viewport or do not claim the result.
 
-import { chromium } from "/Users/eli/code/marinara-console/node_modules/playwright-core/index.mjs";
+import { chromium } from "playwright-core";
+const DEV_URL = (process.env.MC_DEV_URL ?? "http://127.0.0.1:5173") + "/";
 import { mkdirSync } from "node:fs";
 
 export const VIEWPORTS = [

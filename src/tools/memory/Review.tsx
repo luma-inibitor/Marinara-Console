@@ -1,4 +1,4 @@
-// Review Queue — the curation loop's triage surface (ltm-review J3).
+// Review Queue — the curation loop's triage surface.
 //
 // Console header (tally meter, quick chips, facet sheet) · audit rows grouped
 // by target memory · tri-state decision rail · master-detail on desktop,
@@ -8,7 +8,8 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { toast } from "../../shell/toast";
 import { type Row, backupExportUrl, extractNote } from "./data";
-import { t, OURS } from "./strings";
+import { t, tAny } from "../../copy";
+import { Copy } from "./Copy";
 import {
   activeFacets, applyDecided, applying, applyProgress, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, droppedDependencyWarnings, edited, facetSheetOpen, groupBy, lastFailures, loadError, loading, notesById, preflight, preflightPending, preflightRowState, pressure, readyToSend, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, tally, undo,
 } from "./store";
@@ -16,10 +17,10 @@ import { SECTION_CAP as CAP } from "./data";
 import { refreshLtmStatus } from "./MemoryTool";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { signal } from "@preact/signals";
-import { IconFlag, IconCircleCheck, IconCircleX, IconDotsVertical, IconSearch, IconWriting } from "@tabler/icons-preact";
+import { Flag, AllClear, NoMatches, DECISION_ICON, More, EditedMark, Back, Refresh, Download } from "../../ui/icons";
 import { DecisionIcon, OpIcon, TypeIcon } from "./icons";
 import { Term, OP_TIP } from "./glossary";
-import { flagsOf, worstSeverity, contributionChars } from "./flags";
+import { flagsOf, worstSeverity, contributionChars, FLAG } from "./flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./NotePeek";
@@ -125,10 +126,10 @@ export function Review() {
   };
 
   if (loadError.value) {
-    return <div class="screen"><ErrorState title="Could not load" message={loadError.value} /></div>;
+    return <div className="screen"><ErrorState title={t("reviewqueue.pendingReviewDraftsCouldNotLoad")} message={loadError.value} /></div>;
   }
   if (loading.value) {
-    return <div class="screen"><Loading label={t("reviewqueue.loadingPendingReviewDrafts")} /></div>;
+    return <div className="screen"><Loading label={t("reviewqueue.loadingPendingReviewDrafts")} /></div>;
   }
 
   // The stacked detail participates in the overlay stack (back/Escape close it).
@@ -144,60 +145,60 @@ export function Review() {
   const showDetailStack = !desktop && detailRow;
 
   return (
-    <div class={`audit ${desktop ? "is-desktop" : ""}`}>
-      <div class="audit-list" ref={listRef} tabIndex={0} onKeyDown={onListKey}>
-        <header class="console">
-          <div class="hrow">
-            <h1 class="console-title">{t("reviewqueue.reviewQueue")}</h1>
-            <span class="t-data mem-save" data-contrast-exempt>
-              {saveState.value === "saving" ? "Autosaving…"
+    <div className={`audit ${desktop ? "is-desktop" : ""}`}>
+      <div className="audit-list" ref={listRef} tabIndex={0} onKeyDown={onListKey}>
+        <header className="console">
+          <div className="hrow">
+            <h1 className="console-title">{t("reviewqueue.reviewQueue")}</h1>
+            <span className="t-data mem-save" data-contrast-exempt>
+              {saveState.value === "saving" ? t("memory.save.autosaving")
                 : saveState.value === "failed"
-                  ? <span class="is-drop">Save FAILED <Chip onClick={retryPersist}>Retry</Chip></span>
-                  : "Saved"}
+                  ? <span className="is-drop">{t("activityview.failed")} <Chip onClick={retryPersist}>{t("activityview.retry")}</Chip></span>
+                  : t("memoryvault.saved")}
             </span>
-            <button class="icon-btn t-data" aria-label="Refresh queue" title="Refresh" onClick={() => void refresh()}>↻</button>
-            <IconButton href={backupExportUrl()} download label={OURS.restorePoint}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 12.5V14h12v-1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <IconButton label={t("memory.review.refreshQueue")} onClick={() => void refresh()}><Refresh size={15} stroke={1.75} aria-hidden /></IconButton>
+            <IconButton href={backupExportUrl()} download label={t("memory.restorePoint")}>
+              <Download size={16} stroke={1.5} aria-hidden />
             </IconButton>
           </div>
 
           {review.value && (
-            <div class="gen-line t-data" data-contrast-exempt>
-              generated {new Date(review.value.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              {review.value.counts.deduplications > 0 && <> · {review.value.counts.deduplications} deduped upstream</>}
+            <div className="gen-line t-data" data-contrast-exempt>
+              {t("memory.review.generatedAt", { time: new Date(review.value.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })}
+              {review.value.counts.deduplications > 0 && <> · {t("memory.review.dedupedUpstream", { count: review.value.counts.deduplications })}</>}
             </div>
           )}
 
           {/* decision meter: tally as data, one line */}
-          <div class="meter">
-            <span class="t-label t-label-s">Decided</span>
-            <span class="mbar">
-              <span class="m-keep" style={`width:${total ? (c.keep / total) * 100 : 0}%`} />
-              <span class="m-drop" style={`width:${total ? (c.drop / total) * 100 : 0}%`} />
+          <div className="meter">
+            <span className="t-label t-label-s">{t("memory.review.decided")}</span>
+            <span className="mbar">
+              <span className="m-keep" style={`width:${total ? (c.keep / total) * 100 : 0}%`} />
+              <span className="m-drop" style={`width:${total ? (c.drop / total) * 100 : 0}%`} />
             </span>
-            <span class="t-data mval">
-              <b class="is-keep">✓{c.keep}</b> · <b class="is-drop">✗{c.drop}</b>
-              <span class="of"> / {total}</span>
+            <span className="t-data mval">
+              <b className="is-keep"><DecisionIcon d="keep" size={12} />{c.keep}</b> · <b className="is-drop"><DecisionIcon d="drop" size={12} />{c.drop}</b>
+              <span className="of"> / {total}</span>
             </span>
           </div>
 
-          <div class="chiprail">
+          <div className="chiprail">
             {desktop ? (
               <>
                 <Chip pressed={facetSheetOpen.value} onClick={openFacetSheet}>
-                  Facets{activeFacetCount() > 0 && <b class="ar">{activeFacetCount()}</b>}
+                  {t("ui.facets.title")}{activeFacetCount() > 0 && <b className="ar">{activeFacetCount()}</b>}
                 </Chip>
-                <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
-                <QuickChip facet="flags" value="restates vault" label="Restates" flag />
-                <QuickChip facet="flags" value="duplicate incoming" label="Dupes" flag />
-                <QuickChip facet="flags" value="has conflicts" label="Conflicts" flag />
-                <span class="rail-gap" />
+                <QuickChip facet="status" value={t("memory.undecided")} label={t("memory.undecided")} />
+                <QuickChip facet="flags" value={FLAG.restates} label={t("memory.restates")} flag />
+                <QuickChip facet="flags" value={FLAG.duplicate} label={t("memory.review.chipDupes")} flag />
+                <QuickChip facet="flags" value={FLAG.conflicts} label={t("memoryvault.conflicts")} flag />
+                <span className="rail-gap" />
                 {Object.entries(GROUPERS).map(([id, g]) => (
                   <Chip key={id} pressed={groupBy.value === id} onClick={() => { groupBy.value = id as typeof groupBy.value; }}>
                     {g.label}
                   </Chip>
                 ))}
-                <span class="rail-gap" />
+                <span className="rail-gap" />
                 {Object.entries(SORTERS).map(([id, s]) => (
                   <Chip key={id} pressed={sortBy.value === id} onClick={() => {
                       if (sortBy.value === id) sortDir.value = (sortDir.value === 1 ? -1 : 1);
@@ -209,44 +210,44 @@ export function Review() {
               </>
             ) : (
               <>
-                <Chip class="ctl" pressed={activeFacetCount() > 0} onClick={openFacetSheet}>
-                  <span class="ctl-k">Filter</span><span class="ctl-v">{activeFacetCount() || "all"}</span>
+                <Chip className="ctl" pressed={activeFacetCount() > 0} onClick={openFacetSheet}>
+                  <span className="ctl-k">{t("memory.review.filter")}</span><span className="ctl-v">{activeFacetCount() || t("sourcesworkspace.all")}</span>
                 </Chip>
-                <Chip class="ctl" onClick={() => { groupSheetOpen.value = true; }}>
-                  <span class="ctl-k">Group</span><span class="ctl-v">{GROUPERS[groupBy.value].label}</span>
+                <Chip className="ctl" onClick={() => { groupSheetOpen.value = true; }}>
+                  <span className="ctl-k">{t("memory.review.group")}</span><span className="ctl-v">{GROUPERS[groupBy.value].label}</span>
                 </Chip>
-                <Chip class="ctl" onClick={() => { sortSheetOpen.value = true; }}>
-                  <span class="ctl-k">Sort</span><span class="ctl-v">{sortDir.value === 1 ? "↓" : "↑"} {SORTERS[sortBy.value].label}</span>
+                <Chip className="ctl" onClick={() => { sortSheetOpen.value = true; }}>
+                  <span className="ctl-k">{t("memory.review.sort")}</span><span className="ctl-v">{sortDir.value === 1 ? "↓" : "↑"} {SORTERS[sortBy.value].label}</span>
                 </Chip>
-                <QuickChip facet="status" value={OURS.undecided} label="Undecided" />
-                <QuickChip facet="flags" value="restates vault" label="Restates" flag />
-                <QuickChip facet="flags" value="duplicate incoming" label="Dupes" flag />
-                <QuickChip facet="flags" value="has conflicts" label="Conflicts" flag />
+                <QuickChip facet="status" value={t("memory.undecided")} label={t("memory.undecided")} />
+                <QuickChip facet="flags" value={FLAG.restates} label={t("memory.restates")} flag />
+                <QuickChip facet="flags" value={FLAG.duplicate} label={t("memory.review.chipDupes")} flag />
+                <QuickChip facet="flags" value={FLAG.conflicts} label={t("memoryvault.conflicts")} flag />
               </>
             )}
           </div>
 
           {activeFacetCount() > 0 && (
-            <div class="chiprail">
-              <span class="t-data selcount">{shown.length} of {rows.value.length}</span>
-              <Chip onClick={() => bulkDecide(shown, "keep", "keep shown")}>Keep shown</Chip>
-              <Chip onClick={() => bulkDecide(shown, "drop", "drop shown")}>Drop shown</Chip>
-              <Chip onClick={() => bulkDecide(shown, null, "reset shown")}>Reset</Chip>
-              <Chip onClick={() => { activeFacets.value = new Map(); }}>Clear filters</Chip>
+            <div className="chiprail">
+              <span className="t-data selcount">{t("memory.review.shownOf", { shown: shown.length, total: rows.value.length })}</span>
+              <Chip onClick={() => bulkDecide(shown, "keep", t("memory.review.keepShown"))}>{t("memory.review.keepShown")}</Chip>
+              <Chip onClick={() => bulkDecide(shown, "drop", t("memory.review.dropShown"))}>{t("memory.review.dropShown")}</Chip>
+              <Chip onClick={() => bulkDecide(shown, null, t("memory.review.reset"))}>{t("memory.review.reset")}</Chip>
+              <Chip onClick={() => { activeFacets.value = new Map(); }}>{t("memoryvault.clearFilters")}</Chip>
             </div>
           )}
         </header>
 
-        <main class="rows mem-rows">
+        <main className="rows mem-rows">
           <Obligations />
           <Failures />
           {shown.length === 0 && rows.value.length === 0 && !blocked.value.length && (
             // An emptied queue is the reviewer succeeding, so it reads the
             // same way the Sources screen's cleared backlog does.
-            <EmptyState tone="ok" icon={<IconCircleCheck size={22} stroke={1.75} aria-hidden />} title={OURS.queueEmpty} />
+            <EmptyState tone="ok" icon={<AllClear size={22} stroke={1.75} aria-hidden />} title={t("memory.queueEmpty")} />
           )}
           {shown.length === 0 && rows.value.length > 0 && (
-            <EmptyState icon={<IconSearch size={22} stroke={1.75} aria-hidden />} title="No proposals match the active facets." />
+            <EmptyState icon={<NoMatches size={22} stroke={1.75} aria-hidden />} title={t("memory.review.noMatch")} />
           )}
           {groups.map((g) => <GroupBlock key={g.id} group={g} showTarget={groupBy.value !== "target"} onActivate={focusRow} tabbable={roving.tabbable} />)}
           <Rejections />
@@ -254,21 +255,21 @@ export function Review() {
       </div>
 
       {showDetailPane && (
-        <aside class="audit-detail">
+        <aside className="audit-detail">
           {detailRow
             ? <ClaimDetail key={detailRow.key} row={detailRow} />
-            : <EmptyState title="No claim open" body="j/k to move · a keep · d drop · Enter opens" />}
+            : <EmptyState title={t("memory.review.noClaimOpen")} body={t("memory.review.triageHint")} />}
         </aside>
       )}
       {showDetailStack && (
-        <div class="stack-screen">
-          <header class="console"><div class="hrow">
-            <button class="icon-btn hit" aria-label="Back to queue" onClick={closeTopOverlay}>‹</button>
+        <div className="stack-screen">
+          <header className="console"><div className="hrow">
+            <IconButton className="hit" label={t("memory.backToQueue")} onClick={closeTopOverlay}><Back size={18} stroke={1.75} aria-hidden /></IconButton>
             {/* Queue position, not the target title — the headline right below
                 already names the target, and position is what j/k triage wants. */}
-            <h1 class="console-title">
+            <h1 className="console-title">
               {visibleKeys.includes(detailRow!.key)
-                ? `claim ${visibleKeys.indexOf(detailRow!.key) + 1} of ${visibleKeys.length}`
+                ? t("memory.review.claimPosition", { index: visibleKeys.indexOf(detailRow!.key) + 1, total: visibleKeys.length })
                 : detailRow!.targetTitle}
             </h1>
           </div></header>
@@ -277,11 +278,11 @@ export function Review() {
       )}
 
       <FacetSheet />
-      <Picker open={groupSheetOpen.value} label="Group by" current={groupBy.value}
+      <Picker open={groupSheetOpen.value} label={t("memory.review.groupBy")} current={groupBy.value}
         options={Object.entries(GROUPERS).map(([id, g]) => ({ id, label: g.label }))}
         onPick={(id) => { groupBy.value = id as typeof groupBy.value; }}
         onClose={() => { groupSheetOpen.value = false; }} />
-      <Picker open={sortSheetOpen.value} label="Sort by" current={sortBy.value}
+      <Picker open={sortSheetOpen.value} label={t("memoryvault.sortBy")} current={sortBy.value}
         onClose={() => { sortSheetOpen.value = false; }}
         options={Object.entries(SORTERS).map(([id, sr]) => ({
           id, label: sr.label,
@@ -332,9 +333,9 @@ function sourceFacetLabel(title: string): string {
   return i > 0 ? t.slice(i + 1).trim() : t;
 }
 
-/** The review queue's facets, shaped for <FacetDrawer>. Provenance grouping is
- *  the review study's: what the console computed, what the model asserted, and
- *  what the reviewer decided. */
+/** The review queue's facets, shaped for <FacetDrawer>. Facets are grouped by
+ *  provenance: what the console computed, what the model asserted, and what the
+ *  reviewer decided. */
 function FacetSheet() {
   if (!facetSheetOpen.value) return null;
   const counts = facetCounts(rows.value, activeFacets.value);
@@ -345,7 +346,7 @@ function FacetSheet() {
     if (!m) continue;
     for (const v of set) if (!m.has(v)) m.set(v, 0);
   }
-  const label = { computed: OURS.facetsComputed, model: OURS.facetsFromModel, yours: OURS.facetsYours };
+  const label = { computed: t("memory.facetsComputed"), model: t("memory.facetsFromModel"), yours: t("memory.facetsYours") };
   const groups = (["computed", "model", "yours"] as const).map((key) => ({
     key,
     label: label[key],
@@ -371,19 +372,19 @@ function FacetSheet() {
       onToggle={toggleFacet}
       onClear={() => { activeFacets.value = new Map(); }}
       onClose={() => { facetSheetOpen.value = false; }}
-      emptyText="No facet values in this slice."
+      emptyText={t("memory.review.noFacetValues")}
     />
   );
 }
 
 
-// Group header v4 (owner-approved 2026-08-21): one line — identity · honest
-// aggregates (sections touched, chars added) · cap flag only when real · bar
-// tally · keep-all/drop-all as icon buttons (undecided rows only) · kebab for
-// the rare object actions. Object affordances (type icon, dot, aggregates,
-// pressure, open-note) exist only when the group key IS an object; enum lanes
-// get label + count + tally + bulk and nothing else. At narrow width the
-// header wraps to two lines and the aggregates drop (priority order, CSS).
+// Group header: one line — identity · aggregates (chars added) · cap flag only
+// when real · bar tally · keep-all/drop-all as icon buttons (undecided rows
+// only) · kebab for the rare object actions. Object affordances (type icon,
+// dot, aggregates, pressure, open-note) exist only when the group key IS an
+// object; enum lanes get label + count + tally + bulk and nothing else. At
+// narrow width the header wraps to two lines and the aggregates drop
+// (priority order, CSS).
 function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key: string) => void; tabbable: (key: string) => boolean }) {
   const g = props.group;
   const isTarget = groupBy.value === "target";
@@ -392,41 +393,40 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   const undecidedRows = g.rows.filter((r) => !decisions.value.get(r.key));
   const isNew = isTarget && !notesById.value.get(g.id) && g.rows.some((r) => r.mutation.kind === "create_note");
   const collapsed = collapse.has(g.id);
-  // Section counts dropped from the header (Luma 2026-08-21: titles get the room).
   const chars = isTarget ? g.rows.reduce((n, r) => n + contributionChars(r), 0) : 0;
   return (
     /* Same grid as the rows: chevron in the rail (the control column gets a
        control), type icon in the kind column, words in the body. The
        new-target marker is the 2a green edge (owner call, color-only tradeoff
        accepted) — an edge, so nothing in the title line shifts. */
-    <ListGroup class={`mem-ghead ${isNew ? "is-new" : ""}`}
+    <ListGroup className={`mem-ghead ${isNew ? "is-new" : ""}`}
         collapsed={collapsed} onToggle={() => collapse.toggle(g.id)}
         label={g.label} count={g.rows.length}
         head={<>
         {isTarget && g.meta && <TypeIcon type={g.meta} />}
-        <div class="ghead-body">
-        <span class="gn t-prose">{g.label}</span>
-        {chars > 0 && <span class="ghead-agg t-data">+{chars.toLocaleString()}</span>}
-        <span class="ghead-ctl">
+        <div className="ghead-body">
+        <span className="gn t-prose">{g.label}</span>
+        {chars > 0 && <span className="ghead-agg t-data">+{chars.toLocaleString()}</span>}
+        <span className="ghead-ctl">
           <GroupPressure groupId={g.id} isTarget={isTarget} />
-          <span class="tbar-w" aria-label={`${kept + dropped} of ${g.rows.length} decided`}>
-            <span class="tbar">
-              <i class="tk" style={`width:${(kept / g.rows.length) * 100}%`} />
-              <i class="td" style={`width:${(dropped / g.rows.length) * 100}%`} />
+          <span className="tbar-w" aria-label={t("memory.review.decidedOf", { done: kept + dropped, total: g.rows.length })}>
+            <span className="tbar">
+              <i className="tk" style={`width:${(kept / g.rows.length) * 100}%`} />
+              <i className="td" style={`width:${(dropped / g.rows.length) * 100}%`} />
             </span>
-            <span class="tbar-n t-data">{kept + dropped}/{g.rows.length}</span>
+            <span className="tbar-n t-data">{kept + dropped}/{g.rows.length}</span>
           </span>
           {undecidedRows.length > 0 && (
-            <span class="ghead-acts">
-              <button class="gib gk" title={`Keep ${undecidedRows.length} undecided`}
-                aria-label={`Keep all ${undecidedRows.length} undecided in ${g.label}`}
-                onClick={() => bulkDecide(undecidedRows, "keep", `keep ${g.label}`)}>
-                <IconCircleCheck size={15} stroke={1.75} aria-hidden />
+            <span className="ghead-acts">
+              <button className="gib gk" title={t("memory.review.keepUndecided", { count: undecidedRows.length })}
+                aria-label={t("memory.review.keepAllUndecidedIn", { count: undecidedRows.length, group: g.label })}
+                onClick={() => bulkDecide(undecidedRows, "keep", `${t("memory.keep")} ${g.label}`)}>
+                <DECISION_ICON.keep size={15} stroke={1.75} aria-hidden />
               </button>
-              <button class="gib gd" title={`Drop ${undecidedRows.length} undecided`}
-                aria-label={`Drop all ${undecidedRows.length} undecided in ${g.label}`}
-                onClick={() => bulkDecide(undecidedRows, "drop", `drop ${g.label}`)}>
-                <IconCircleX size={15} stroke={1.75} aria-hidden />
+              <button className="gib gd" title={t("memory.review.dropUndecided", { count: undecidedRows.length })}
+                aria-label={t("memory.review.dropAllUndecidedIn", { count: undecidedRows.length, group: g.label })}
+                onClick={() => bulkDecide(undecidedRows, "drop", `${t("memory.drop")} ${g.label}`)}>
+                <DECISION_ICON.drop size={15} stroke={1.75} aria-hidden />
               </button>
             </span>
           )}
@@ -440,27 +440,26 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
 }
 
 /** The kebab: rare object actions only — open the memory, clear this group's
- *  decisions. (Contents still under discussion; if it ends up with one item
- *  it dies and that item goes inline.) */
+ *  decisions. */
 function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: boolean }) {
   const [open, setOpen] = useState(false);
   const g = props.group;
   return (
-    <span class="gmenu-wrap">
-      <button class="gib gmenu" aria-label={`Actions for ${g.label}`} aria-expanded={open}
+    <span className="gmenu-wrap">
+      <button className="gib gmenu" aria-label={t("memoryvault.moreActionsForValue1", { value1: g.label })} aria-expanded={open}
         onClick={() => setOpen(!open)}>
-        <IconDotsVertical size={16} stroke={1.75} aria-hidden />
+        <More size={16} stroke={1.75} aria-hidden />
       </button>
       {open && (
         <>
-          <span class="gmenu-scrim" onClick={() => setOpen(false)} />
-          <div class="gmenu-pop" role="menu">
+          <span className="gmenu-scrim" onClick={() => setOpen(false)} />
+          <div className="gmenu-pop" role="menu">
             {!props.isNew && (
               <button role="menuitem" onClick={() => { setOpen(false); peekNote(g.id); }}>{t("reviewqueue.openMemory")}</button>
             )}
             {(props.kept > 0 || props.dropped > 0) && (
-              <button role="menuitem" onClick={() => { setOpen(false); bulkDecide(g.rows, null, `reset ${g.label}`); }}>
-                Clear decisions ({props.kept + props.dropped})
+              <button role="menuitem" onClick={() => { setOpen(false); bulkDecide(g.rows, null, `${t("memory.review.reset")} ${g.label}`); }}>
+                {t("memory.review.clearDecisions", { count: props.kept + props.dropped })}
               </button>
             )}
           </div>
@@ -470,10 +469,10 @@ function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: 
   );
 }
 
-// Row v2 (owner-approved 2026-08-21): status icon that cycles on tap · fixed
-// op-icon slot · one-line claim · quiet flags chip (worst severity tints it) ·
-// contribution chars. No secondary line, no per-row confidence — the enums
-// live in the detail card, their exceptions live in the flags.
+// Row: status icon that cycles on tap · fixed op-icon slot · one-line claim ·
+// quiet flags chip (worst severity tints it) · contribution chars. No secondary
+// line, no per-row confidence — the enums live in the detail card, their
+// exceptions live in the flags.
 function ClaimRow(props: {
   row: Row; showTarget: boolean; onActivate: (key: string) => void;
   /** True for the one row that holds the list's tab stop. */
@@ -493,42 +492,42 @@ function ClaimRow(props: {
   // Roving tabindex: only the cursor row is in the tab order (src/ui/useRovingFocus).
   const tab = props.tabbable ? 0 : -1;
   return (
-    <div class={`mem-row ${isOpen ? "is-open" : ""} ${isFocused ? "is-focused" : ""}`} data-row={r.key} data-d={d ?? "undecided"}>
-      <div class="mem-summary">
+    <div className={`mem-row ${isOpen ? "is-open" : ""} ${isFocused ? "is-focused" : ""}`} data-row={r.key} data-d={d ?? "undecided"}>
+      <div className="mem-summary">
         <button
-          class="mem-dec hit"
+          className="mem-dec hit"
           tabIndex={tab}
-          aria-label={`Decision: ${d ?? OURS.undecided}. Tap to cycle.`}
+          aria-label={t("memory.review.decisionCycle", { decision: d ?? t("memory.undecided") })}
           onClick={(e) => { e.stopPropagation(); cycleDecision(r); }}
         >
           <DecisionIcon d={d} />
         </button>
-        <span class="kslot">
+        <span className="kslot">
           <Term tip={OP_TIP[r.mutation.kind]} tabIndex={tab}><OpIcon kind={r.mutation.kind} /></Term>
         </span>
-        <button class="mem-mid" tabIndex={tab} onClick={() => props.onActivate(r.key)}>
+        <button className="mem-mid" tabIndex={tab} onClick={() => props.onActivate(r.key)}>
           {props.showTarget && (
-            <span class="a1-tgt t-data">
+            <span className="a1-tgt t-data">
               <TypeIcon type={r.targetType} size={13} />
-              {isNew && <span class="ndot" aria-label="will be created" />}
+              {isNew && <span className="ndot" aria-label={t("memory.review.willBeCreated")} />}
               {r.targetTitle}
             </span>
           )}
-          <span class="claim-text t-prose">{r.text}</span>
-          <span class="row-trail t-data">
+          <span className="claim-text t-prose">{r.text}</span>
+          <span className="row-trail t-data">
             {edited.value.has(r.key) && (
-              <Term tip="edited · you replaced this claim's proposed text — your version applies with the batch">
-                <IconWriting size={14} stroke={1.75} class="edit-mark" aria-label={t("reviewqueue.editedChange")} />
+              <Term tip={t("memory.editedTip")}>
+                <EditedMark size={14} stroke={1.75} className="edit-mark" aria-label={t("reviewqueue.editedChange")} />
               </Term>
             )}
-            {isAuto && <span class="dep-tag">dependency</span>}
-            {blockedMsg && <span class="is-drop" title={blockedMsg}>blocked</span>}
+            {isAuto && <span className="dep-tag">dependency</span>}
+            {blockedMsg && <span className="is-drop" title={blockedMsg}>blocked</span>}
             {flags.length > 0 && (
-              <span class="fq" data-sev={sev} title={flags.map((f) => f.label).join(" · ")}>
-                <IconFlag size={13} stroke={1.75} aria-hidden />{flags.length}
+              <span className="fq" data-sev={sev} title={flags.map((f) => f.label).join(" · ")}>
+                <Flag size={13} stroke={1.75} aria-hidden />{flags.length}
               </span>
             )}
-            <span class="chs">{chars > 0 ? `+${chars.toLocaleString()}` : ""}</span>
+            <span className="chs">{chars > 0 ? `+${chars.toLocaleString()}` : ""}</span>
           </span>
         </button>
       </div>
@@ -550,9 +549,9 @@ function GroupPressure(props: { groupId: string; isTarget: boolean }) {
   const over = worst.projected > CAP;
   const pct = Math.round((worst.projected / CAP) * 100);
   return (
-    <span class="fq gcap" data-sev={over ? "danger" : "warn"}
-      title={`§${worst.key}: stored ${worst.current.toLocaleString()} ch, ${worst.projected.toLocaleString()} after this batch, cap ${CAP.toLocaleString()}`}>
-      <IconFlag size={12} stroke={1.75} aria-hidden /><span class="gcap-pct">cap {pct}%</span>
+    <span className="fq gcap" data-sev={over ? "danger" : "warn"}
+      title={t("memory.review.capTitle", { key: worst.key, stored: worst.current.toLocaleString(), projected: worst.projected.toLocaleString(), cap: CAP.toLocaleString() })}>
+      <Flag size={12} stroke={1.75} aria-hidden /><span className="gcap-pct">{t("memory.review.capPct", { pct })}</span>
     </span>
   );
 }
@@ -580,22 +579,29 @@ function Obligations() {
   return (
     <>
       {[...byCode.entries()].map(([code, { message, items }]) => (
-        <div key={code} class="mem-card">
-          <div class="t-data"><span class="fl">{code.replaceAll("_", " ")}</span> <b>{items.length}</b> draft{items.length === 1 ? "" : "s"} blocked · {items.reduce((n, b) => n + b.mutationCount, 0)} claims held</div>
-          <p class="t-prose dim">{message}</p>
-          <div class="blocked-srcs">
+        <div key={code} className="mem-card">
+          <div className="t-data">
+            <span className="fl">{code.replaceAll("_", " ")}</span>{" "}
+            <Copy k="memory.review.blockedDrafts" params={{ count: items.length }} slots={{ n: <b>{items.length}</b> }} />
+            {" · "}
+            <Copy k="memory.review.claimsHeld"
+              params={{ count: items.reduce((n, b) => n + b.mutationCount, 0) }}
+              slots={{ n: <b>{items.reduce((n, b) => n + b.mutationCount, 0)}</b> }} />
+          </div>
+          <p className="t-prose dim">{message}</p>
+          <div className="blocked-srcs">
             {items.map((b) => (
-              <span key={b.draftId} class="t-data blocked-src">
-                <NoteRef id={b.sourceNoteId} label={b.sourceTitle} /> <span class="dim">· {b.mutationCount} claim{b.mutationCount === 1 ? "" : "s"}</span>
+              <span key={b.draftId} className="t-data blocked-src">
+                <NoteRef id={b.sourceNoteId} label={b.sourceTitle} /> <span className="dim">· {t("memory.review.claimCount", { count: b.mutationCount })}</span>
               </span>
             ))}
           </div>
           {["source_stale", "source_context_unbound"].includes(code) && (
             <>
               <Chip disabled={Boolean(extracting)} onClick={() => void reextract(items)}>
-                {extracting ? `Extracting ${extracting}…` : t("memoryvault.extractToReview")}
+                {extracting ? t("memory.review.extractingProgress", { progress: extracting }) : t("memoryvault.extractToReview")}
               </Chip>
-              <p class="t-prose dim reex-note">Re-extracting calls the model once per source and replaces each blocked draft with a fresh one.</p>
+              <p className="t-prose dim reex-note">{t("memory.review.reextractNote")}</p>
             </>
           )}
         </div>
@@ -609,13 +615,13 @@ function Failures() {
   return (
     <>
       {lastFailures.value.map((f) => (
-        <div key={f.title} class="mem-card is-danger">
-          <div class="t-data"><span class="fl">apply failed</span> <b>{f.n}</b> · {f.title}</div>
-          <p class="t-prose dim">{f.fix}</p>
-          <details><summary class="t-data dim">raw</summary><p class="t-data dim">{f.msg.slice(0, 400)}</p></details>
+        <div key={f.title} className="mem-card is-danger">
+          <div className="t-data"><span className="fl">{t("memory.error.applyFailed")}</span> <b>{f.n}</b> · {f.title}</div>
+          <p className="t-prose dim">{f.fix}</p>
+          <details><summary className="t-data dim">{t("memory.review.rawSummary")}</summary><p className="t-data dim">{f.msg.slice(0, 400)}</p></details>
         </div>
       ))}
-      <div class="group-actions"><Chip onClick={() => { lastFailures.value = []; }}>Dismiss</Chip></div>
+      <div className="group-actions"><Chip onClick={() => { lastFailures.value = []; }}>{t("shell.toast.dismiss")}</Chip></div>
     </>
   );
 }
@@ -627,13 +633,13 @@ function Rejections() {
     byReason.set(item.reason, [...(byReason.get(item.reason) ?? []), item]);
   }
   return (
-    <div class="mem-rejections">
-      <div class="mem-ghead is-plain"><span class="gn t-prose">{t("reviewqueue.suggestionsThatWerentSaved")}</span>
-        <span class="t-data dim">{rejections.value.length}</span></div>
+    <div className="mem-rejections">
+      <div className="mem-ghead is-plain"><span className="gn t-prose">{t("reviewqueue.suggestionsThatWerentSaved")}</span>
+        <span className="t-data dim">{rejections.value.length}</span></div>
       {[...byReason.entries()].map(([reason, items]) => (
-        <details key={reason} class="mem-card">
-          <summary class="t-data"><span class="fl">{reason.replaceAll("_", " ")}</span> <b>{items.length}</b> · <span class="dim">{items[0].message ?? ""}</span></summary>
-          {items.map((i, idx) => <p key={idx} class="t-prose dim rej-snippet">{i.snippet}</p>)}
+        <details key={reason} className="mem-card">
+          <summary className="t-data"><span className="fl">{reason.replaceAll("_", " ")}</span> <b>{items.length}</b> · <span className="dim">{items[0].message ?? ""}</span></summary>
+          {items.map((i, idx) => <p key={idx} className="t-prose dim rej-snippet">{i.snippet}</p>)}
         </details>
       ))}
     </div>
@@ -660,50 +666,47 @@ function ApplyDock() {
     .map(([k, why]) => ({ row: rowByKey.get(k), why }))
     .filter((x) => x.row) as Array<{ row: Row; why: string }>;
   return (
-    <div class="apply-dock">
-      <div class="dock-info t-data">
-        <b class="is-keep">{c.keep}</b> {OURS.keep} · <b class="is-drop">{c.drop}</b> {OURS.drop}
-        {c.undecided > 0 && <span class="dim"> · {c.undecided} {OURS.undecided}</span>}
-        {c.edited > 0 && <span> · {c.edited} edited</span>}
+    <div className="apply-dock">
+      <div className="dock-info t-data">
+        <b className="is-keep">{c.keep}</b> {t("memory.keep")} · <b className="is-drop">{c.drop}</b> {t("memory.drop")}
+        {c.undecided > 0 && <span className="dim"> · {c.undecided} {t("memory.undecided")}</span>}
+        {c.edited > 0 && <span> · {t("memory.dock.editedCount", { count: c.edited })}</span>}
         <br />
-        <span class="dim">
-          {progress ? <>Applying draft {progress.done}/{progress.total}…</> : <>
-            {c.willSend} draft{c.willSend === 1 ? "" : "s"} will be sent{c.stayPending ? ` (${c.stayPending} still hold undecided claims)` : ""}
+        <span className="dim">
+          {progress ? t("memory.apply.progressDraft", { done: progress.done, total: progress.total }) : <>
+            {t("memory.draftsWillApply", { count: c.willSend })}
+            {c.stayPending > 0 && <>{" "}{t("memory.dock.stayPending", { count: c.stayPending })}</>}
             {pf?.error
-              ? <span class="is-drop"> · {pf.error} <Chip onClick={() => void refresh()}>Retry</Chip></span>
+              ? <span className="is-drop"> · {pf.error} <Chip onClick={() => void refresh()}>{t("activityview.retry")}</Chip></span>
               : checking
-                ? <> · checking with the engine…</>
+                ? <> · {t("memory.dock.checking")}</>
                 : pf
-                  ? <> · {readyToSend.value} ready{pf.blockedN ? <span class="is-drop"> · {pf.blockedN} blocked</span> : null}</>
+                  ? <> · {t("memory.dock.ready", { count: readyToSend.value })}{pf.blockedN ? <span className="is-drop"> · {t("memory.dock.blocked", { count: pf.blockedN })}</span> : null}</>
                   : null}
           </>}
         </span>
         {!checking && autoRows.length > 0 && (
-          <details class="dock-detail"><summary>{OURS.autoIncluded(autoRows.length)}</summary>
-            {autoRows.map((row) => <div key={row.key} class="dim dock-detail-row">→ {row.targetTitle}: {row.text.slice(0, 80)}</div>)}
+          <details className="dock-detail"><summary>{t("memory.autoIncluded", { count: autoRows.length })}</summary>
+            {autoRows.map((row) => <div key={row.key} className="dim dock-detail-row">→ {row.targetTitle}: {row.text.slice(0, 80)}</div>)}
           </details>
         )}
         {!checking && blockedRows.length > 0 && (
-          <details class="dock-detail is-drop"><summary>{blockedRows.length} blocked — held back from Apply</summary>
-            {blockedRows.map(({ row, why }) => <div key={row.key} class="dim dock-detail-row">→ {row.targetTitle}: {why}</div>)}
+          <details className="dock-detail is-drop"><summary>{t("memory.dock.blockedHeld", { count: blockedRows.length })}</summary>
+            {blockedRows.map(({ row, why }) => <div key={row.key} className="dim dock-detail-row">→ {row.targetTitle}: {why}</div>)}
           </details>
         )}
-        {/* The whole sentence branches, not just the noun: pluralising "claim"
-            alone left "1 kept claim depend ... they will fail ... drop them". */}
+        {/* The whole sentence branches on count, not just the noun — the verb
+            and the pronouns have to agree too. */}
         {warnings.length > 0 && (
-          <div class="is-drop">
-            {warnings.length === 1
-              ? "1 kept claim depends on a dropped create — it will fail; keep the create or drop it"
-              : `${warnings.length} kept claims depend on a dropped create — they will fail; keep the create or drop them`}
-          </div>
+          <div className="is-drop">{t("memory.dock.droppedDependency", { count: warnings.length })}</div>
         )}
-        {offerRestore && <><br /><a class="t-data restore-link" href={backupExportUrl()} download onClick={() => toast(OURS.restorePointDone)}>{OURS.restorePoint}</a></>}
+        {offerRestore && <><br /><a className="t-data restore-link" href={backupExportUrl()} download onClick={() => toast(t("memory.restorePointDone"))}>{t("memory.restorePoint")}</a></>}
       </div>
-      <Chip disabled={!canUndo.value} onClick={undo}>Undo</Chip>
-      <button class="dock-primary t-label" disabled={applying.value || checking || (c.keep > 0 && !pf) || Boolean(pf?.error)} onClick={() => void applyDecided()}>
-        {applying.value ? (progress ? `Applying ${progress.done}/${progress.total}…` : t("reviewqueue.accepting"))
-          : checking ? "Apply decided (…)"
-          : `Apply decided (${applyCount})`}
+      <Chip disabled={!canUndo.value} onClick={undo}>{t("memoryvault.undo")}</Chip>
+      <button className="dock-primary t-label" disabled={applying.value || checking || (c.keep > 0 && !pf) || Boolean(pf?.error)} onClick={() => void applyDecided()}>
+        {applying.value ? (progress ? t("memory.apply.progress", { done: progress.done, total: progress.total }) : t("memory.applying"))
+          : checking ? t("memory.apply.buttonChecking")
+          : t("memory.apply.button", { count: applyCount })}
       </button>
     </div>
   );

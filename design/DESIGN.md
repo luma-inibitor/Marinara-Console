@@ -50,9 +50,26 @@ columns. Ligatures OFF wherever literal characters matter (keys, code, IDs).
 - **Categorical object-type hues** (Luma-confirmed): long-lived object taxonomies
   (e.g. memory note types) get one hue each, used consistently on every chip/dot
   that names the type, always paired with the type name in text. They are a third
-  axis — never reuse the status hues or `--accent`, and keep them dimmer than both
-  (they are identity, not state). Defined next to the tool that owns the taxonomy
-  (`memory.css` `.type-*`).
+  axis — never reuse the status hues or `--accent`, and keep them lower in
+  **chroma** than both (they are identity, not state). Chroma, not lightness:
+  measured, type hues run C\* 8.6–48.9 against status C\* 56.4–74.4, but on L\*
+  they are not dimmer at all (thread L\* 65.2 vs danger L\* 64.1), so reading the
+  rule as lightness would make it already violated five times over. The hues are defined in `tokens.css` as
+  `--type-*`; the tool that owns the taxonomy binds them to its own classes
+  (`memory.css` `.type-*` sets `--tc` from them). They moved there on
+  2026-08-23: they had been the last hardcoded palette outside the token file,
+  which is what let `--type-character` drift into being byte-identical to
+  `--accent` without anything noticing. One palette, one place to check.
+  **Resolved 2026-08-23:** `--type-character` had been `--accent` exactly
+  (`#7d9bf0`, ΔE 0.00) — so a *selected* chip and the *character* chip were the
+  same blue inside one control (`Chip.css:26` pressed border vs the `.tdot` on
+  every type filter chip). It is now `#00b8d4`, picked from a computed candidate
+  set as the only value clearing 20 ΔE2000 on all twelve pairwise distances:
+  23.6 vs `--accent`, 34.9 vs `--type-thread`, worst pair 20.5 (vs
+  `--type-neutral`); contrast 8.15:1 on `--canvas`, 7.60:1 on `--surface-1`;
+  chroma 38.1, inside the type band. The bar remains in tension with itself:
+  `--type-thread` is only 14.85 ΔE (CIEDE2000) from `--accent`, so that sibling
+  pair still sits below 20 — open, and untouched by this fix.
 - Surface ladder `--canvas → --surface-1..3` for depth; hairline `--edge` between
   regions. One subtle separator, never full grids of lines.
 - **Contrast floors are enforced by `verify.mjs`**: body/data text ≥4.5:1, large text
@@ -165,11 +182,40 @@ exists, use it; if it needs a new one, add it here in the same change.
   visual authority. Counts exclude the facet's own filter ("what would I get if I
   toggled this"). 3-5 quick chips stay inline; the sheet holds the long tail.
 - **Icon vocabulary** (`@tabler/icons-preact`; memory tool: `icons.tsx`) — icons
-  are reserved silhouette families: circles = decision states, the flag =
-  exception flags, files/scripts = content ops (script = whole note, file = one
-  section; shared + marks additive ops, pencil marks replacement). No icon may
-  borrow another family's silhouette (that rule killed `flag-2` for status and
-  a bare pencil for the edited mark). Type icons carry the categorical hue.
+  are reserved silhouette families: the decision family = decision states, the
+  flag = exception flags, files/scripts = content ops (script = whole note,
+  file = one section; shared + marks additive ops, pencil marks replacement).
+  What the decision family reserves is the **interior mark on a solid round
+  outline** — a tick or a cross — **plus the dotted circle** (`circle-dotted`,
+  12 dots) that means undecided. A round outline holding anything else (an
+  `i`, an `!`, a segmented arc, a speech tail) is a different object and is
+  free — `info-circle`, `message-circle`, `alert-circle` and the whole
+  `progress-*` family including `progress-x` are all fine, and so is
+  `circle-dashed`. `undecided` was `circle-dashed` until 2026-08-23 and moved
+  to `circle-dotted` for exactly this reason: circle-dashed is 8 arc segments
+  and `progress-*` is 5 arc segments, one shared vocabulary, so the decision
+  family and the progress family were colliding. 12 dots is a different
+  vocabulary; the collision is gone and both `circle-dashed` and the arcs are
+  released. Only the reserved interiors can be misread as a decision; that is
+  the whole point of the rule (owner-decided 2026-08-23).
+  No icon may borrow another family's silhouette (that rule killed `flag-2`
+  for status and a bare pencil for the edited mark). Type icons carry the
+  categorical hue.
+  **State signals** (owner-decided 2026-08-23), one glyph per state so a
+  banner, a row mark and an empty state reporting the same condition look
+  alike: error `alert-circle` (`Failure`) · partial `progress-x`
+  (`PartialResult`) · degraded `progress-alert` (`Degraded`) · waiting on the
+  user `list-check` (`Pending`, the same binding as the Review nav tab — the
+  glyph means "the review queue" in both places, so a pending count names
+  where the user should go) · info `info-circle` (`Info`) · loading **no
+  icon** (`Loading.tsx` deliberately carries none). Two more that are easy to
+  conflate: `AllClear` is `checks` (double tick — "all of them", nothing left
+  in the set) against `Confirm`'s single `check` (the checkbox tick); and
+  `ValidationOk` is `zoom-check` — a check was run and it passed — on the
+  high-confidence branch of the claim-detail confidence row. `alert-triangle`
+  is no longer generic failure: it is now only `Incomplete`, the
+  source-freshness state `extraction_incomplete`, which is a harvest that
+  stopped short rather than a thing that failed.
   Owner-decided mapping lives in BACKLOG.md; don't re-litigate per screen.
 - **Styling** — Tailwind v4 (`@tailwindcss/vite`) with the theme generated from
   `tokens.css`, so utilities and the hand-written stylesheets share one palette.
@@ -179,10 +225,18 @@ exists, use it; if it needs a new one, add it here in the same change.
 - **Mockups** — one shared kit, `design/MOCKUP-KIT.md`. Books never carry their
   own palette.
 - **Copy provenance** — every user-visible string traces to the vendored
-  catalog (`ltm-en.json`) or to a registered coinage in `OURS`, each with a
-  comment saying why the product has no word for it. `design/copycheck.mjs`
-  checks this mechanically against a rendered surface. Coining silently has
-  been the single most repeated defect in this tool.
+  catalog (`src/copy/vendor/ltm-en.json`) or to a registered entry in
+  `src/copy/<area>.json`, each carrying a `note` saying why the product has no
+  word for it. `design/copycheck.mjs` checks this mechanically against a
+  rendered surface. Coining silently has been the single most repeated defect
+  in this tool. (The old `OURS` object and `src/tools/memory/strings.ts` are
+  gone: `OURS` could not express a mirror, and its reasons were comments
+  rather than data.)
+  A string that appears mid-sentence around a component — a claim headline
+  with a memory reference inside it — stays ONE catalog string and renders
+  through `<Copy>` (`src/tools/memory/Copy.tsx`), which substitutes `{{slot}}`
+  with a node. Splitting such a sentence into JSX fragments puts English word
+  order in the markup and is not a fix.
 - **Detail pane zones (v5)** (`ClaimDetail.tsx`) — a claim's pane answers the
   reviewer's questions in reading order: headline sentence (what this does, to
   which memory) · preview (op-specific consequence: after-state for append,
@@ -190,7 +244,7 @@ exists, use it; if it needs a new one, add it here in the same change.
   metadata ops; stored context and unchanged runs fold behind labeled
   expanders) · evidence (source snippet + attribution, confidence as a
   sentence, diagnostics, quiet extraction line) · decide bar at the bottom in
-  the list's circle vocabulary. Editing is a mode: accent border, textarea in
+  the list's ring vocabulary. Editing is a mode: accent border, textarea in
   place of the proposed lines only, save/discard replace keep/drop. Preview
   lines speak diff: + tint = lands in the vault, − = dies on apply; the gutter
   glyph carries the meaning when color fails. Zone labels use catalog

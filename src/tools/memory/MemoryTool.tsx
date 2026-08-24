@@ -5,14 +5,15 @@ import { useEffect } from "preact/hooks";
 import { navigate } from "../../shell/router";
 import { ltmStatus, rebuildIndexes, type LtmStatus } from "./data";
 import { signal } from "@preact/signals";
-import { IconFileImport, IconLibrary, IconListCheck, type Icon } from "@tabler/icons-preact";
+import { VIEW_ICON } from "../../ui/icons";
 import { ScopeBar, useScopeData } from "./ScopeBar";
 import { toast } from "../../shell/toast";
-import { t, OURS } from "./strings";
+import { t, tAny } from "../../copy";
 import { Review } from "./Review";
 import { Vault } from "./Vault";
 import { Sources } from "./Sources";
 import { NotePeek } from "./NotePeek";
+import { Copy } from "./Copy";
 import { activeFacets, pendingSources, review } from "./store";
 
 const status = signal<LtmStatus | null>(null);
@@ -39,25 +40,13 @@ function consumeFocusSource(): string | null {
   return v;
 }
 
-// Owner's order and labels (2026-08-22): one word each, so four equal targets
-// fit a phone without truncating. Sources first — material arrives there —
-// then Vault, Review, Activity. Review stays the default landing view because
-// it is the work.
-const VIEW_ICON: Record<string, Icon> = {
-  sources: IconFileImport,   // the screen's own verb
-  vault: IconLibrary,        // database is taken: it is the source-note type icon
-  review: IconListCheck,
-};
-// Workflow order: material arrives in Sources, gets decided in Review, and
-// lands in the Vault. Activity comes last, when it is built.
-const VIEWS = [
-  { id: "sources", label: () => OURS.nav.sources },
-  { id: "review", label: () => OURS.nav.review },
-  { id: "vault", label: () => OURS.nav.vault },
-];
+// One-word labels, so the targets fit a phone without truncating. The order is
+// the workflow: material arrives in Sources, gets decided in Review, and lands
+// in the Vault. Review is the default landing view because it is the work.
+const VIEWS = ["sources", "review", "vault"] as const;
 
 export function MemoryTool({ rest }: { rest: string[] }) {
-  const view = VIEWS.some((v) => v.id === rest[0]) ? rest[0] : "review";
+  const view = (VIEWS as readonly string[]).includes(rest[0]) ? rest[0] : "review";
   const { chats, characters } = useScopeData();
 
   useEffect(() => { void refreshLtmStatus(); }, [view]);
@@ -81,45 +70,42 @@ export function MemoryTool({ rest }: { rest: string[] }) {
     try {
       await rebuildIndexes();
       await refreshLtmStatus();
-      toast("Recall index rebuilt");
+      toast(t("longtermmemorydetail.reindexComplete"));
     } catch (error) {
       toast((error as Error).message, { kind: "error" });
     }
     rebuilding.value = false;
   };
   return (
-    <div class="memory-tool">
-      {/* Scope above the views: it decides what every view shows, and this is
-          the same order the phone uses. The old status line is gone — its
-          counts are badges on the tabs, and index health is an alert below
-          rather than a word in the corner. */}
+    <div className="memory-tool">
+      {/* Scope above the views: it decides what every view shows. */}
       <ScopeBar chats={chats} characters={characters} />
-      <nav class="mem-nav" aria-label="Memory views">
-        {VIEWS.map((v) => {
-          const I = VIEW_ICON[v.id];
-          const count = v.id === "review" ? (review.value?.counts.mutations ?? s?.notes.pendingDrafts ?? 0)
-            : v.id === "vault" ? (s?.notes.savedMemories ?? 0)
+      <nav className="mem-nav" aria-label={t("longtermmemorynavigation.longTermMemorySections")}>
+        {VIEWS.map((id) => {
+          const I = VIEW_ICON[id];
+          const count = id === "review" ? (review.value?.counts.mutations ?? s?.notes.pendingDrafts ?? 0)
+            : id === "vault" ? (s?.notes.savedMemories ?? 0)
             : (pendingSources.value ?? 0);
           return (
-            <button key={v.id} class="mem-tab t-label" aria-current={view === v.id ? "page" : undefined}
-              onClick={() => { if (v.id === "review") activeFacets.value = new Map(); navigate(`memory/${v.id}`); }}>
+            <button key={id} className="mem-tab t-label" aria-current={view === id ? "page" : undefined}
+              onClick={() => { if (id === "review") activeFacets.value = new Map(); navigate(`memory/${id}`); }}>
               <I size={15} stroke={1.75} aria-hidden />
-              {v.label()}
-              {count > 0 && <b class="mem-badge t-data">{count}</b>}
+              {tAny(`memory.nav.${id}`)}
+              {count > 0 && <b className="mem-badge t-data">{count}</b>}
             </button>
           );
         })}
-        {statusFailed.value && <span class="mem-status t-data is-drop">status unavailable</span>}
+        {statusFailed.value && <span className="mem-status t-data is-drop">{t("longtermmemorydetail.statusUnavailable")}</span>}
       </nav>
       {(unhealthy || noEmbeddings) && (
-        <div class="health-banner">
-          <span class="t-prose">
-            {unhealthy && <>Recall index is <b>{health!.replaceAll("_", " ")}</b> — saved memories may not be searchable. </>}
-            {noEmbeddings && <>Semantic recall is unavailable on this engine (no embedding model) — retrieval runs on keywords and text matching only.</>}
+        <div className="health-banner">
+          <span className="t-prose">
+            {unhealthy && <><Copy k="memory.index.unhealthy" slots={{ state: <b>{health!.replaceAll("_", " ")}</b> }} />{" "}</>}
+            {noEmbeddings && t("memory.index.noEmbeddings")}
           </span>
           {unhealthy && (
-            <button class="action-sec t-label" disabled={rebuilding.value} onClick={() => void runRebuild()}>
-              {rebuilding.value ? "Rebuilding…" : "Rebuild"}
+            <button className="action-sec t-label" disabled={rebuilding.value} onClick={() => void runRebuild()}>
+              {rebuilding.value ? t("memory.index.rebuilding") : t("activityview.phaseRebuild")}
             </button>
           )}
         </div>

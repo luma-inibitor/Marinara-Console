@@ -1,0 +1,21 @@
+ltm-en.json — vendored, verbatim, never edited by hand.
+
+  package   long-term-memory 1.2.9
+  repo      Marinara-Agents @ d9b93fe
+  path      the package client's en locale bundle
+  sha256    ead6a546372bf1af688e3655ffa4960bb8827a2158219b85651f652d188f7b6e
+  entries   1171 keys (1078 distinct normalised strings)
+
+Why it is here and not under src/tools/memory/: it is the whole console's
+vocabulary, not the memory tool's. Every area's copy file resolves its
+`use` pointers into this table, so it sits beside them in src/copy/.
+
+Refreshing it is a two-step change, never one:
+  1. copy the new file in, update the version/commit/sha above
+     (`shasum -a 256 src/copy/vendor/ltm-en.json`);
+  2. run `node design/copycheck.mjs`. A `use` pointing at a key the new
+     bundle dropped is a fatal integrity failure, and a console coinage the
+     new bundle has since grown a word for is also fatal. Both are the
+     point: an upstream release is exactly when our coinages go stale.
+
+Do not reformat it. Byte-identical to upstream is what makes the sha useful.

@@ -1,0 +1,290 @@
+{
+  "_readme": "presets area copy. The vendored catalog is the long-term-memory agent's string table: it has no concept of a prompt preset, a section, a marker or an injection order, so most of this area is necessarily coined. `extractionprompttemplates.*` is the nearest upstream neighbour — read-only built-in prompt templates you copy to edit — and every entry below that could borrow from it does. Keys beginning with an underscore are metadata and are never copy.",
+
+  "presets.count": {
+    "one": "1 preset",
+    "other": "{{count}} presets",
+    "note": "How many presets the browser is showing. The catalog counts memories, conflicts and chunks but never presets, because upstream has no list of them — it references a preset only as somewhere the memory block is placed."
+  },
+  "presets.tokensTotal": {
+    "text": "tokens total",
+    "note": "Unit for the summed static cost of every preset, beside the number. The catalog has the bare unit (activityview.tokens) but never a total across records, because upstream's token counts are always per recall or per budget."
+  },
+  "presets.search": {
+    "text": "Search presets",
+    "note": "The filter input's accessible name and its placeholder. Shaped after the catalog's own 'Search {nouns}' family (searchMemories, searchChats, searchPersonas); the noun is one the product does not have a list of."
+  },
+  "presets.tokens": {
+    "use": "activityview.tokens"
+  },
+  "presets.sections": {
+    "text": "sections",
+    "note": "Unit for a preset's section count, and the label of the sort chip that orders by it. The catalog's `memorySections` is a memory's own detail list and renders as 'Memory details' — a different thing under a colliding key name."
+  },
+  "presets.name": {
+    "use": "extractionprompttemplates.name"
+  },
+  "presets.tagDefault": {
+    "text": "default",
+    "note": "Tag on the preset the engine falls back to. Lowercase because `.tg` uppercases (styles/lorebooks.css); the catalog's default vocabulary is always compound and about settings ('Global default', 'Built-in default'), never a bare marker on a record."
+  },
+  "presets.tagBuiltIn": {
+    "text": "built-in",
+    "note": "Tag on a preset the engine ships and the console cannot write to. Takes the catalog's word for the same idea (extractionprompttemplates.builtInDefault) but upstream only ever uses it bound to 'default', which is a different fact about a preset."
+  },
+  "presets.noDescription": {
+    "text": "No description",
+    "note": "Stands in for a preset that has none. The catalog's empty-field family names the field's own noun ('Enter a detail name.') and has no entry for a description, because a memory does not have one."
+  },
+  "presets.off": {
+    "text": "off",
+    "despite": "memorysettings.off",
+    "note": "Whether a section, or the group holding it, reaches the model. Declines the catalog's capitalised 'Off' because this word appears in three places here that all need it lowercase: a `.tg` and a `.toggle-label` that CSS uppercases, and a `.meta` data line that must not shout mid-sentence."
+  },
+  "presets.on": {
+    "text": "on",
+    "note": "The counterpart to presets.off, in the enabled/total summary and on the include switch. The catalog has 'Off' as a settings value but no 'On' at all — upstream's switches are described in prose ('Turn on for this chat'), never labelled."
+  },
+  "presets.runtime": {
+    "text": "runtime",
+    "note": "A marker section costs nothing statically because the engine fills it at generation time. The catalog has no word for a placeholder expanded later; upstream's memory block is assembled, never templated."
+  },
+  "presets.loadFailed": {
+    "text": "Could not load sections",
+    "note": "Shown on a preset card whose section fetch failed while the card itself loaded. In the catalog's 'Could not load X' shape (couldNotLoadActivity, memoriesCouldNotLoad); the X is a preset's sections, which upstream never fetches."
+  },
+  "presets.back": {
+    "text": "Back to presets",
+    "note": "The editor's back affordance, and the destination offered when a preset id is dead. Shaped after longtermmemorydetail.backToAgents; the destination is a console list the product does not have."
+  },
+  "presets.saveFailed": {
+    "text": "Save failed",
+    "note": "Editor save-state pill after a rejected reorder. The catalog reports failures per operation ('Rebuild failed', 'Maintenance failed.') and has no entry for a save, because upstream saves are announced only by their success."
+  },
+  "presets.readOnlyTag": {
+    "text": "read-only",
+    "note": "Tag on a preset the engine owns. The catalog states the same fact only inside a paragraph (extractionprompttemplates.promptTemplatesHelp, 'Built-in prompts are read-only.') and has no standalone marker for it."
+  },
+  "presets.modeConv": {
+    "text": "conv",
+    "note": "Abbreviated mode name in the editor's `.meta` data line, where the two totals sit side by side in tabular figures and the full word would wrap on a phone. The catalog's 'Conversation' is a mode name in prose and is never abbreviated."
+  },
+  "presets.modeGame": {
+    "text": "game",
+    "despite": "extractionprompttemplates.game",
+    "note": "The counterpart to presets.modeConv. Declines the catalog's capitalised mode name for the same reason: this is a unit in a lowercase data line, not a mode named in a sentence, and the pair must match each other."
+  },
+  "presets.ofContext": {
+    "text": "of context",
+    "note": "Names what the meter measures — the share of the model's context window this preset spends before any content arrives. The catalog's budget strings are all about recall's slice of the context, never the template's."
+  },
+  "presets.ofCount": {
+    "text": "of {{count}}",
+    "note": "The denominator half of a position or a budget: '3 of 14', '41% of 32,000'. The catalog writes ratios out per sentence and has no reusable connective, so this is ours in both places it appears."
+  },
+  "presets.costNote": {
+    "text": "Template only — excludes characters, personas, lorebooks and history.",
+    "note": "Says what the headline token number does NOT include, so a reader does not plan a budget around it. Every noun in the list is a marker the engine expands at generation time; the catalog has no concept of a static template cost to caveat."
+  },
+  "presets.wrapFormat": {
+    "text": "Wrap format",
+    "note": "Accessible name of the xml/markdown/none group, which decides how the engine fences each section. The catalog's only 'format' is about an invalid extraction response; wrapping is an assembler concern upstream never surfaces."
+  },
+  "presets.conversationPrompt": {
+    "text": "Conversation prompt",
+    "note": "The preset's system prompt for conversation mode: the chip that opens it and the editor's own title, which used to disagree about casing. Built from the catalog's mode name plus its 'Prompt template' shape, but upstream has no per-mode prompt field on a record."
+  },
+  "presets.gamePrompt": {
+    "text": "Game prompt",
+    "note": "The game-mode counterpart to presets.conversationPrompt, same construction and same reason. Kept as one key per field so the chip and the full-screen editor can never drift apart again."
+  },
+  "presets.setDefault": {
+    "text": "Set default",
+    "note": "Promotes this preset to the one the engine falls back to. The catalog's nearest is 'Reset to default', which is the opposite operation — returning a mode to the built-in prompt rather than electing a record."
+  },
+  "presets.copyToEdit": {
+    "use": "extractionprompttemplates.copyToEdit",
+    "note": "Was 'Editable copy'. Upstream's read-only built-in templates offer exactly this affordance under exactly this name, and a verb phrase beats a noun phrase on a button."
+  },
+  "presets.duplicate": {
+    "use": "extractionprompttemplates.duplicate"
+  },
+  "presets.addSection": {
+    "text": "Add section",
+    "note": "Creates an empty section at the end of the order. The catalog's key `memoryvault.addSection` renders 'Create detail' — the same key name for an unrelated noun, which is why this cannot be mirrored."
+  },
+  "presets.newSectionName": {
+    "text": "New section",
+    "note": "The name a freshly created section carries until it is renamed, selected for immediate overtyping. Upstream's 'New template' is the same idea for the object the product does have."
+  },
+  "presets.noSections": {
+    "text": "No sections",
+    "note": "Title of the desktop detail pane when the preset is empty. The catalog's empty states are per noun and terminal; it has no sections of its own to be missing."
+  },
+  "presets.noSectionsBody": {
+    "text": "Add a section to start building this prompt.",
+    "note": "The line under presets.noSections, naming the one move available. Modelled on memoryvault.openAMemoryForDetailsOrAddOne, but the object is a prompt the product does not assemble."
+  },
+  "presets.sectionContent": {
+    "text": "Section content",
+    "note": "Title of the full-screen editor for a section's body; the subtitle carries the section's name. Named after the field rather than the action so it matches the other three full-screen titles in this tool."
+  },
+  "presets.subSettings": {
+    "use": "longtermmemorynavigation.settings",
+    "note": "Heading of the drawer group holding a section's name, include switch, role and position. Was 'Section', which named the container rather than its contents and collided with the memory tool's own word for a memory's parts."
+  },
+  "presets.sectionName": {
+    "text": "Section name",
+    "note": "Placeholder in the rename field. The catalog's newSectionName renders 'New detail name' — same key name, different noun, and a prompt section is not a memory detail."
+  },
+  "presets.included": {
+    "text": "included",
+    "note": "Label for the switch deciding whether the assembler emits this section. Lowercase for `.t-label`. The catalog uses 'included' only of memories reaching the model context, which is the outcome, not the switch."
+  },
+  "presets.groupOffHint": {
+    "text": "Group “{{group}}” is disabled — this section will not be injected regardless.",
+    "note": "Warns that the section's own switch is overruled: the assembler drops a whole group before it looks at members. Groups of sections do not exist upstream, so neither does this precedence rule."
+  },
+  "presets.role": {
+    "text": "role",
+    "note": "Label for the system/user/assistant selector. Lowercase for `.t-label`. The catalog's 'Roleplay' is a chat mode and its 'role' sense does not appear at all — message roles are the assembler's business, not the memory agent's."
+  },
+  "presets.position": {
+    "text": "position",
+    "note": "Label for the reorder control. Lowercase for `.t-label`. Order is the defining attribute of a prompt section; the catalog talks about placement only as prose advice about where to put the memory block."
+  },
+  "presets.moveUp": {
+    "text": "up",
+    "note": "Verb under the ↑ button, moving a section one place earlier. Lowercase for `.t-label`. The catalog's sourceoperation.move is transitive and takes a destination; a one-step nudge has no upstream equivalent."
+  },
+  "presets.moveDown": {
+    "text": "down",
+    "note": "The counterpart to presets.moveUp, same control and same reason. Kept as its own key rather than derived, so the pair is legible in the catalog as a pair."
+  },
+  "presets.reorderHint": {
+    "text": "Shift+J / Shift+K reorders from the list.",
+    "note": "Desktop-only hint naming the keyboard path to the same reorder. The product binds no keys at all, so no key hint in this console can trace upstream."
+  },
+  "presets.injectedAtRuntime": {
+    "text": "injected at runtime",
+    "note": "Summary of a marker section's content group: there is nothing to show because the engine substitutes it at generation time. The catalog describes injection only as memories reaching model context, never as a template hole."
+  },
+  "presets.markerNote": {
+    "text": "This is a {{marker}} marker. The engine replaces it at generation time with live {{marker}} content, so it has no fixed token cost here.",
+    "note": "Explains why a marker section shows no token count. 'Marker' is the engine's own term (packages/server/src/services/prompt/marker-expander.ts) and appears nowhere in the catalog, which knows the engine only as the thing that places its memory block."
+  },
+  "presets.chRaw": {
+    "text": "ch raw",
+    "note": "The same unit qualified as pre-expansion, so a section whose macros expand can show both lengths without the reader guessing which is which. Macro expansion is a preset feature the product has no counterpart to."
+  },
+  "presets.expanded": {
+    "text": "(expanded)",
+    "note": "Marks a content length as the post-macro figure. Parenthesised because it qualifies the number beside it rather than standing alone; the catalog has no macro layer and so no way to say this."
+  },
+  "presets.macroHint": {
+    "text": "Macros expand to {{expanded}} ch (+{{delta}}) — token count reflects the expansion.",
+    "note": "Says why the token figure is larger than the raw text implies. {{macros}} in a section body are resolved from the preset's saved choices, a mechanism with no upstream equivalent."
+  },
+  "presets.advSet": {
+    "text": "{{count}} set",
+    "note": "Summary of the advanced group: how many injection fields differ from their defaults. The catalog counts records under review, never fields carrying a non-default value."
+  },
+  "presets.noOverrides": {
+    "text": "no overrides",
+    "note": "Names the forbidOverrides flag in the advanced summary: a character card may not replace this section's content. Card-level overrides are an engine feature the memory agent never sees."
+  },
+  "presets.orderN": {
+    "text": "order {{order}}",
+    "note": "Names a non-default injectionOrder in the advanced summary. The catalog's only ordering is the ranking recall applies to memories, which is computed rather than authored."
+  },
+  "presets.groupNamed": {
+    "text": "group {{group}}",
+    "note": "Names the section's group in the advanced summary. The catalog's `groups` renders 'Chats' — the same key name for the places a memory applies to, not a wrapper around consecutive sections."
+  },
+  "presets.deleteSection": {
+    "text": "Delete section",
+    "note": "The destructive action in the advanced group. Upstream's 'Delete detail' is the same verb on a memory's part, which is not the same object and would read as the wrong noun here."
+  },
+  "presets.markerDeleteBlocked": {
+    "text": "Markers inject content at runtime and cannot be deleted.",
+    "note": "Refuses a delete on a marker section, giving the reason rather than just declining. Markers are an assembler concept the catalog has no vocabulary for."
+  },
+  "presets.markerUndeletable": {
+    "text": "Markers cannot be deleted — remove the feature upstream instead.",
+    "note": "The standing note in a marker's advanced group, pointing at the only place the decision can actually be made. Same reason as presets.markerDeleteBlocked: nothing upstream models a marker."
+  },
+  "presets.readOnlyToast": {
+    "text": "This preset is built-in and read-only. Copy it to edit.",
+    "note": "Refuses every write on an engine-owned preset and names the way forward, reusing the catalog's own 'Copy to edit' verb. Upstream states the rule only inside a help paragraph about templates."
+  },
+  "presets.reorderFailed": {
+    "text": "Reverted — could not reorder: {{message}}",
+    "note": "A reorder is written optimistically and rolled back if the engine rejects it; this says both halves. The catalog has no optimistic write anywhere, so it has nothing that reports one being undone."
+  },
+  "presets.deleted": {
+    "text": "Deleted section “{{name}}”.",
+    "note": "Undoable delete confirmation. Names the noun explicitly rather than only the title, because the lorebook tool raises the same toast for entries and the two must be distinguishable in a log."
+  },
+  "presets.deleteFailed": {
+    "text": "Could not delete the section: {{message}}",
+    "note": "The delete was deferred behind an undo window and then rejected, so the row comes back. In the catalog's 'Could not X' shape; upstream's sourceCouldNotBeDeleted carries no reason and has no undo behind it."
+  },
+  "presets.addFailed": {
+    "text": "Could not add a section: {{message}}",
+    "note": "Section creation is the one write here that cannot be staged as a draft, so its failure is a toast. The catalog creates memories and templates, never sections of a prompt."
+  },
+  "presets.defaultFailed": {
+    "text": "Could not set the default preset: {{message}}",
+    "note": "Promotion to default is a server-side flag flip and can be refused. Upstream has no elected record of any kind — its defaults are built-in and not chosen."
+  },
+  "presets.sectionSaved": {
+    "text": "Section saved",
+    "note": "Confirms an explicit commit of a section draft. The catalog confirms saves per noun ('Detail renamed.', 'Memory saved.') and has no noun for this one."
+  },
+  "presets.sectionGone": {
+    "text": "This section no longer exists.",
+    "note": "Raised when a conflict refetch finds the section deleted underneath the draft, so the save bar can say so instead of failing silently. Concurrent deletion of a record being edited is not a state the product models."
+  },
+  "presets.saving": {
+    "use": "memoryvault.saving",
+    "note": "Was 'Saving…'. The ellipsis was the console's own addition; the pill's own transience already carries the progress, and the catalog's bare word is what the rest of the product shows."
+  },
+  "presets.saved": {
+    "use": "memoryvault.saved"
+  },
+  "presets.unsavedChanges": {
+    "use": "memoryvault.unsavedNavigationTitle"
+  },
+  "presets.undo": {
+    "use": "memoryvault.undo"
+  },
+
+  "presets.marker.character": {
+    "use": "memoryvault.characters"
+  },
+  "presets.marker.persona": {
+    "use": "memoryvault.persona"
+  },
+  "presets.marker.lorebook": {
+    "use": "memoryvault.lorebook"
+  },
+  "presets.marker.chat_summary": {
+    "use": "longtermmemorydetail.sourceChats"
+  },
+  "presets.marker.chat_history": {
+    "text": "Chat history",
+    "note": "Marker whose content the engine replaces with recent chat messages. The catalog counts recent messages when building a recall query but never names the transcript as a block that can be placed."
+  },
+  "presets.marker.dialogue_examples": {
+    "text": "Dialogue examples",
+    "note": "Marker replaced with the character card's sample exchanges. Example dialogue is a card field the memory agent never reads, so the catalog has no name for it."
+  },
+  "presets.marker.agent_data": {
+    "text": "Agent data",
+    "note": "Marker replaced with the output of whichever agents are attached, Long-Term Memory among them. Upstream sits inside this block and describes where to place it, but has no name for the slot itself."
+  },
+  "presets.marker.id_macro_cards": {
+    "text": "ID macro cards",
+    "note": "Marker replaced with the cards addressed by {{id}} macros elsewhere in the prompt. Both the macro layer and the card registry are engine features with no upstream counterpart."
+  }
+}

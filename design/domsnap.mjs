@@ -8,7 +8,8 @@
 // Deliberately ignores text content and attribute values: this answers "did
 // the element tree and its styling hooks change", which is the question a
 // component extraction actually raises.
-import { chromium } from "/Users/eli/code/marinara-console/node_modules/playwright-core/index.mjs";
+import { chromium } from "playwright-core";
+const DEV_URL = (process.env.MC_DEV_URL ?? "http://127.0.0.1:5173") + "/";
 import fs from "node:fs";
 
 const tag = process.argv[2] ?? "snap";
@@ -27,7 +28,7 @@ const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_C
 const out = {};
 for (const [name, hash] of PAGES) for (const vp of VPS) {
   const p = await browser.newPage({ viewport: { width: vp.w, height: vp.h } });
-  await p.goto("http://127.0.0.1:5173/" + hash, { waitUntil: "networkidle", timeout: 60000 });
+  await p.goto(DEV_URL + hash, { waitUntil: "networkidle", timeout: 60000 });
   await p.waitForTimeout(1400);
   out[`${name}/${vp.n}`] = await p.evaluate(() =>
     [...document.querySelectorAll("#app *")].map((el) => {

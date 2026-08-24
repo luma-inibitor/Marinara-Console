@@ -4,10 +4,8 @@
 //   node design/deadcss.mjs
 //
 // This is a CANDIDATE list, not a delete list. Read every hit before removing
-// anything — a first version of this script substring-matched and reported 36
-// dead classes, of which 20 were live and 3 (.is-dirty/.is-saved/.is-err)
-// would have broken the lorebook save pill. Class names reach the DOM three
-// ways here and all three have to be modelled:
+// anything. Class names reach the DOM three ways here and all three have to be
+// modelled:
 //
 //   1. literal            class="chip"
 //   2. composed prefix    class={`type-${n.type}`}      — DOMAINS below
@@ -20,11 +18,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
-// Every stylesheet under src/, found rather than listed. The hardcoded list
-// this replaced named four sheets and so never scanned src/ui/*.css — which
-// is precisely where the rules that go stale now live, since §8 gives each
-// component its own sheet. It also missed presets.css entirely, and with it
-// four dead rules left behind when the duplicate state components merged.
+// Every stylesheet under src/, found rather than listed. §8 gives each
+// component its own sheet, so any hardcoded list goes stale the moment a
+// component is added and silently stops scanning where the dead rules are.
 
 // Composed prefixes and their value domains, read off the types in source.
 // Add an entry here whenever a new `prefix-${...}` appears in the JSX.
@@ -33,7 +29,9 @@ const DOMAINS = {
   "dec-": ["keep", "drop", "undecided"],
   "ln-": ["add", "del", "ctx"],
   "st-": ["active", "resolved", "archived"],
-  "is-": ["dirty", "saved", "err"],       // SavePill
+  // SavePill (dirty/saved/err) plus the group-run boundaries the presets audit
+  // composes as `is-${run}` — see groupRunBoundaries in src/tools/presets/data.ts.
+  "is-": ["dirty", "saved", "err", "start", "mid", "end", "solo"],
   "kw-": ["add", "del"],
   "es-": ["ok", "danger"],          // EmptyState tone
 };

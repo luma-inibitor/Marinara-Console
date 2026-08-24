@@ -21,8 +21,8 @@ const VIEWPORTS = [
 mkdirSync("shots/verify", { recursive: true });
 
 // ── in-page audits ─────────────────────────────────────────────────
-const AUDITS = `(() => {
-  const out = { taps: [], contrast: [], rows: 0 };
+const AUDITS = `((rowSel) => {
+  const out = { taps: [], contrast: [], rows: 0, rowsMatched: 0, empty: false };
   const vis = (el) => {
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) return false;
@@ -85,13 +85,25 @@ const AUDITS = `(() => {
     }
   }
 
-  // density: fully-visible collapsed rows
-  for (const el of document.querySelectorAll(".row, .card")) {
-    const r = el.getBoundingClientRect();
-    if (r.top >= 0 && r.bottom <= innerHeight) out.rows++;
+  // density: fully-visible collapsed rows, per the screen's own row selector.
+  // rowsMatched counts every visible row anywhere in the document, so a screen
+  // whose selector matches nothing at all can be told apart from one whose rows
+  // are simply taller than the viewport.
+  if (rowSel) {
+    for (const el of document.querySelectorAll(rowSel)) {
+      if (!vis(el)) continue;
+      if (el.parentElement?.closest(rowSel)) continue; // never count a nested row twice
+      out.rowsMatched++;
+      const r = el.getBoundingClientRect();
+      if (r.top >= 0 && r.bottom <= innerHeight) out.rows++;
+    }
+    // "legitimately empty" means the list itself is empty — not the detail pane,
+    // which shows its own empty state beside a full list on desktop.
+    const list = document.querySelector(".rows");
+    out.empty = !!(list ? list.querySelector(".emptystate") : document.querySelector(".emptystate"));
   }
   return out;
-})()`;
+})`;
 
 // ── run ────────────────────────────────────────────────────────────
 const browser = await chromium.launch();
@@ -107,17 +119,22 @@ const presetId = await (async () => {
   return presets[0]?.id;
 })();
 
+// rows: the collapsed list row each screen actually renders, one entry per item.
+// Screens genuinely differ — lorebooks/vault use .row, the review queue uses
+// .mem-row, sources uses .srow — so density is measured per screen rather than
+// with one global union that would miss rows or double-count nested ones.
+// A screen with no rows list (presets) omits `rows` and reports no density.
 const SCREENS = [
-  { name: "picker", path: "/#/lorebooks", waitFor: ".card" },
-  { name: "audit", path: `/#/lorebooks/${bookId}`, waitFor: ".row" },
+  { name: "picker", path: "/#/lorebooks", waitFor: ".card", rows: ".card" },
+  { name: "audit", path: `/#/lorebooks/${bookId}`, waitFor: ".row", rows: ".row" },
   { name: "presets", path: "/#/presets", waitFor: ".card" },
-  ...(presetId ? [{ name: "preset-editor", path: `/#/presets/${presetId}`, waitFor: ".row" }] : []),
-  { name: "memory-review", path: "/#/memory/review", waitFor: ".mem-rows" },
-  { name: "memory-vault", path: "/#/memory/vault", waitFor: ".mem-rows" },
-  { name: "memory-sources", path: "/#/memory/sources", waitFor: ".mem-rows" },
+  ...(presetId ? [{ name: "preset-editor", path: `/#/presets/${presetId}`, waitFor: ".row", rows: ".row" }] : []),
+  { name: "memory-review", path: "/#/memory/review", waitFor: ".mem-rows", rows: ".mem-row" },
+  { name: "memory-vault", path: "/#/memory/vault", waitFor: ".mem-rows", rows: ".row" },
+  { name: "memory-sources", path: "/#/memory/sources", waitFor: ".mem-rows", rows: ".srow" },
 ];
 
-let failures = 0, warnings = 0;
+let failures = 0, warnings = 0, blind = 0;
 for (const vp of VIEWPORTS) {
   const ctx = await browser.newContext({
     viewport: { width: vp.width, height: vp.height },
@@ -134,7 +151,7 @@ for (const vp of VIEWPORTS) {
     await page.waitForTimeout(400);
     await page.screenshot({ path: `shots/verify/${vp.name}-${screen.name}.png` });
 
-    const audit = await page.evaluate(AUDITS);
+    const audit = await page.evaluate(`${AUDITS}(${JSON.stringify(screen.rows ?? null)})`);
     const hardTaps = audit.taps.filter((t) => t.min < 24);
     const softTaps = audit.taps.filter((t) => t.min >= 24);
     const tag = `${vp.name}/${screen.name}`;
@@ -150,7 +167,20 @@ for (const vp of VIEWPORTS) {
       console.log(`FAIL ${tag} — targets under 24px: ${hardTaps.map((t) => `"${t.label}" ${t.min}px`).join(", ")}`);
     }
     if (softTaps.length) { warnings += softTaps.length; }
-    const density = screen.name !== "presets" ? ` · ${audit.rows} rows visible` : "";
+    // A metric that cannot fail is not a metric: if the screen rendered but its
+    // row selector matched nothing anywhere, the density number is blind, not 0.
+    let density = "";
+    if (screen.rows) {
+      if (audit.rowsMatched === 0 && !audit.empty) {
+        blind++;
+        console.log(`WARN ${tag} — density is blind: "${screen.rows}" matched no rows (selector stale?)`);
+        density = ` · density unmeasured ("${screen.rows}" matched 0)`;
+      } else if (audit.rowsMatched === 0) {
+        density = ` · 0 rows visible (empty state)`;
+      } else {
+        density = ` · ${audit.rows} rows visible (of ${audit.rowsMatched})`;
+      }
+    }
     console.log(`ok   ${tag}${density}${softTaps.length ? ` · ${softTaps.length} targets 24–39px (warn)` : ""}`);
   }
 
@@ -195,5 +225,5 @@ for (const vp of VIEWPORTS) {
 }
 
 await browser.close();
-console.log(`\n${failures ? `${failures} FAILURES` : "all checks pass"}${warnings ? ` · ${warnings} soft-target warnings` : ""}`);
+console.log(`\n${failures ? `${failures} FAILURES` : "all checks pass"}${warnings ? ` · ${warnings} soft-target warnings` : ""}${blind ? ` · ${blind} density selectors matched nothing (WARN — density unmeasured there)` : ""}`);
 process.exit(failures ? 1 : 0);

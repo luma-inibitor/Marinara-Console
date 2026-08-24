@@ -1,3 +1,4 @@
+/* @copy-strict */
 // Prompt presets: types, wire normalization, and derived cost.
 //
 // WIRE FORMAT WARNING — the engine stores booleans and nested objects as TEXT
@@ -9,6 +10,7 @@
 // "true" || enabled === true`). Everything here is normalized at the fetch
 // boundary; components only ever see real booleans and parsed objects.
 import { api, tokensOf } from "../../shell/api";
+import { tAny } from "../../copy";
 
 export const bool = (v: unknown): boolean => v === true || v === "true";
 const parseJson = <T,>(v: unknown, fallback: T): T => {
@@ -24,18 +26,20 @@ export type MarkerType =
 export interface MarkerConfig { type: MarkerType; [extra: string]: unknown; }
 
 // Marker types the engine's assembler actually handles (packages/server/src/
-// services/prompt/{assembler,marker-expander}.ts). Verified against that source
-// AND against live preset data — do not invent entries here: an unmapped type
-// falls through to its raw identifier, which is the honest failure mode.
-export const MARKER_LABELS: Record<string, string> = {
-  character: "Characters",
-  persona: "Persona",
-  lorebook: "Lorebook",
-  chat_history: "Chat History",
-  chat_summary: "Chat Summary",
-  dialogue_examples: "Dialogue Examples",
-  agent_data: "Agent Data",
-  id_macro_cards: "ID Macro Cards",
+// services/prompt/{assembler,marker-expander}.ts). Do not invent entries here:
+// an unmapped type falls through to its raw identifier, which is the honest
+// failure mode.
+//
+// The values are copy KEYS, not labels; the labels live in src/copy/presets.json.
+export const MARKER_LABEL_KEYS: Record<string, string> = {
+  character: "presets.marker.character",
+  persona: "presets.marker.persona",
+  lorebook: "presets.marker.lorebook",
+  chat_history: "presets.marker.chat_history",
+  chat_summary: "presets.marker.chat_summary",
+  dialogue_examples: "presets.marker.dialogue_examples",
+  agent_data: "presets.marker.agent_data",
+  id_macro_cards: "presets.marker.id_macro_cards",
 };
 
 export interface PromptPreset {
@@ -129,8 +133,14 @@ const normChoice = (raw: Record<string, unknown>): ChoiceBlock => ({
  */
 export const isMarker = (s: PromptSection): boolean => s.isMarker && s.markerConfig != null;
 
-export const markerLabel = (s: PromptSection): string | null =>
-  isMarker(s) ? (MARKER_LABELS[s.markerConfig!.type] ?? s.markerConfig!.type) : null;
+export const markerLabel = (s: PromptSection): string | null => {
+  if (!isMarker(s)) return null;
+  const type = s.markerConfig!.type;
+  const key = MARKER_LABEL_KEYS[type];
+  // An unmapped type still falls through to its raw identifier: better a
+  // reader sees `custom_thing` than a label we invented for it.
+  return key ? tAny(key) : type;
+};
 
 /**
  * The assembler drops a section whose GROUP is disabled, regardless of the

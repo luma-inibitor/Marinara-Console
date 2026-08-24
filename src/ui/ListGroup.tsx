@@ -1,13 +1,13 @@
 import type { ComponentChildren } from "preact";
-import { IconChevronDown, IconChevronRight } from "@tabler/icons-preact";
+import { t } from "../copy";
+import { ChevronDown, ChevronRight } from "./icons";
 import "./ListGroup.css";
 
 /** The collapse control for a group of rows.
  *
- *  Small, and worth its own component entirely for the accessible name. Two
- *  lists had written this by hand and both had to remember that the label must
- *  say what will happen, to what, and how much is hidden — "Expand Sherlock
- *  Holmes (4)". Get that wrong and a screen reader announces a bare "button". */
+ *  Its own component for the accessible name: the label must say what will
+ *  happen, to what, and how much is hidden — "Expand Sherlock Holmes (4)".
+ *  Without it a screen reader announces a bare "button". */
 export function CollapseButton(props: {
   collapsed: boolean;
   onToggle: () => void;
@@ -16,15 +16,16 @@ export function CollapseButton(props: {
   /** How many rows it holds. */
   count: number;
   size?: number;
-  class?: string;
+  className?: string;
 }) {
-  const Chevron = props.collapsed ? IconChevronRight : IconChevronDown;
+  const Chevron = props.collapsed ? ChevronRight : ChevronDown;
   return (
     <button
       type="button"
-      class={`gexp hit ${props.class ?? ""}`}
+      className={`gexp hit ${props.className ?? ""}`}
       aria-expanded={!props.collapsed}
-      aria-label={`${props.collapsed ? "Expand" : "Collapse"} ${props.label} (${props.count})`}
+      aria-label={t(props.collapsed ? "ui.group.expand" : "ui.group.collapse", {
+        label: props.label, count: props.count })}
       onClick={props.onToggle}
     >
       <Chevron size={props.size ?? 16} stroke={1.75} aria-hidden />
@@ -34,12 +35,9 @@ export function CollapseButton(props: {
 
 /** A collapsible group of rows: a header, and the rows when it is open.
  *
- *  The header's shape is the caller's — pass `class` to pick it. The review
- *  queue's header shares a grid with its rows so the columns line up by
- *  construction; the sources list is a plain flex row. Those are genuinely
- *  different headers over the same behaviour, and this component owns the
- *  behaviour: the chevron, its accessible name, and not rendering children
- *  while collapsed. */
+ *  The header's shape is the caller's — pass `className` to pick it. This owns
+ *  the behaviour only: the chevron, its accessible name, and not rendering
+ *  children while collapsed. */
 export function ListGroup(props: {
   collapsed: boolean;
   onToggle: () => void;
@@ -48,12 +46,12 @@ export function ListGroup(props: {
   /** Everything in the header after the chevron — icon, title, controls. */
   head: ComponentChildren;
   children: ComponentChildren;
-  class?: string;
+  className?: string;
   chevronSize?: number;
 }) {
   return (
-    <div class="listgroup">
-      <div class={props.class}>
+    <div className="listgroup">
+      <div className={props.className}>
         <CollapseButton
           collapsed={props.collapsed}
           onToggle={props.onToggle}

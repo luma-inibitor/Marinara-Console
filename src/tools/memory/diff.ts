@@ -1,4 +1,4 @@
-// Line diff for the detail pane's preview zone (owner-approved v5). Update is
+// Line diff for the detail pane's preview zone. Update is
 // the one destructive op, so its preview shows what dies: an LCS line diff,
 // with word-level emphasis when a changed line keeps enough common context.
 // Sections are capped at 20k chars, so the quadratic DP is comfortably small.

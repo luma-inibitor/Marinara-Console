@@ -1,5 +1,6 @@
-import { Loading, ErrorState, EmptyState, ListEmpty } from "../../ui";
+import { Loading, ErrorState, ListEmpty } from "../../ui";
 import { useEffect, useState } from "preact/hooks";
+import { t } from "../../copy";
 import { navigate } from "../../shell/router";
 import { fetchBooks, fetchEntries, entryTokens, type Lorebook } from "./data";
 
@@ -39,14 +40,14 @@ export function Picker() {
 
   const retry = () => { setError(null); setBooks(null); loadAll(setBooks, setError, loadStats); };
 
-  if (error) return <div class="screen"><ErrorState error={error} onRetry={retry} /></div>;
-  if (!books) return <div class="screen"><Loading what="lorebooks" onRetry={retry} /></div>;
+  if (error) return <div className="screen"><ErrorState error={error} onRetry={retry} /></div>;
+  if (!books) return <div className="screen"><Loading what="lorebooks" onRetry={retry} /></div>;
 
   return (
-    <div class="screen">
-      <div class="screen-head">
-        <h1 class="screen-title">Lorebooks</h1>
-        <span class="meta"><span>{books.length} {books.length === 1 ? "book" : "books"}</span></span>
+    <div className="screen">
+      <div className="screen-head">
+        <h1 className="screen-title">{t("lorebooks.title")}</h1>
+        <span className="meta"><span>{t("lorebooks.bookCount", { count: books.length })}</span></span>
       </div>
       {books.length === 0 && <ListEmpty kind="first-run" what="lorebooks" />}
       {books.map((b) => {
@@ -56,39 +57,39 @@ export function Picker() {
         const over = ok ? ok.sum > b.tokenBudget : false;
         const pct = ok ? Math.min(100, (ok.sum / b.tokenBudget) * 100) : 0;
         return (
-          <button key={b.id} class="card" onClick={() => navigate(`lorebooks/${b.id}`)}>
-            <div class="card-title">{b.name}</div>
+          <button key={b.id} className="card" onClick={() => navigate(`lorebooks/${b.id}`)}>
+            <div className="card-title">{b.name}</div>
             {failed ? (
               // Say the number is missing, and let the user get it back without
               // reloading the whole screen. Never invent a value.
-              <div class="meta">
-                <span class="is-flag" title={failed.message}>Stats unavailable</span>
+              <div className="meta">
+                <span className="is-flag" title={failed.message}>{t("lorebooks.picker.statsUnavailable")}</span>
                 <span
                   role="button"
                   tabIndex={0}
-                  class="linkish"
+                  className="linkish"
                   onClick={(ev) => { ev.stopPropagation(); loadStats(b.id); }}
                   onKeyDown={(ev) => {
                     if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.stopPropagation(); loadStats(b.id); }
                   }}
-                >Retry</span>
-                {!b.enabled && <span style="color: var(--danger)">disabled</span>}
+                >{t("lorebooks.retry")}</span>
+                {!b.enabled && <span style={{ color: "var(--danger)" }}>{t("lorebooks.picker.bookDisabled")}</span>}
               </div>
             ) : (
-              <div class="meta">
-                <span><b class="t-num">{ok ? ok.n : "—"}</b> {ok?.n === 1 ? "entry" : "entries"}</span>
-                <span><b class="t-num">{ok ? ok.constant : "—"}</b> constant</span>
+              <div className="meta">
+                <span className="t-num">{t("lorebooks.entryCount", { count: ok ? ok.n : "—" })}</span>
+                <span className="t-num">{t("lorebooks.tag.constantCount", { count: ok ? ok.constant : "—" })}</span>
                 <span>
-                  <b class="t-num" style={over ? "color: var(--flag)" : undefined}>
+                  <b className="t-num" style={over ? { color: "var(--flag)" } : undefined}>
                     {ok ? ok.sum.toLocaleString() : "—"}
                   </b>
-                  {" "}/ {b.tokenBudget.toLocaleString()} tokens (est.)
+                  {" / "}{b.tokenBudget.toLocaleString()} {t("ui.editor.tokensEst")}
                 </span>
-                {!b.enabled && <span style="color: var(--danger)">disabled</span>}
+                {!b.enabled && <span style={{ color: "var(--danger)" }}>{t("lorebooks.picker.bookDisabled")}</span>}
               </div>
             )}
             {/* no bar until there is a real number to draw — a 0% bar is a claim */}
-            {ok && <div class="bar"><i class={over ? "is-over" : ""} style={`width:${pct}%`} /></div>}
+            {ok && <div className="bar"><i className={over ? "is-over" : ""} style={{ width: `${pct}%` }} /></div>}
           </button>
         );
       })}

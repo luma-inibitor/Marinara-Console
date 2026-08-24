@@ -3,10 +3,8 @@ import "./IconButton.css";
 
 /** A square button holding one icon.
  *
- *  `label` is required and is not optional-in-practice: an icon-only control
- *  with no accessible name is invisible to a screen reader and unnameable by
- *  voice control. Making it a required prop is cheaper than catching it in an
- *  audit later.
+ *  `label` is required: an icon-only control with no accessible name is
+ *  invisible to a screen reader and unnameable by voice control.
  *
  *  Pass `href` to render an anchor instead — a download link that looks like a
  *  button is still a link, and should keep a link's behaviours. */
@@ -17,10 +15,10 @@ export function IconButton(props: {
   href?: string;
   download?: boolean;
   disabled?: boolean;
-  class?: string;
+  className?: string;
 }) {
   const shared = {
-    class: `icon-btn ${props.class ?? ""}`,
+    className: `icon-btn ${props.className ?? ""}`,
     "aria-label": props.label,
     title: props.label,
   };

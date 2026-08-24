@@ -1,36 +1,37 @@
-import { IconSearch } from "@tabler/icons-preact";
+import { Search } from "./icons";
+import { t } from "../copy";
 import "./SearchBar.css";
 
 /** A search field. The magnifier is part of the component, not something each
- *  screen remembers — one of the three copies this replaces had no icon at all.
+ *  screen remembers.
  *
  *  `count` renders the match tally inside the field, and only while there is a
  *  query: a count of everything is not information. Pair it with `fuzzyFilter`
  *  from ./fuzzy so the number and the list cannot disagree.
  *
- *  Never autofocused. A search box that grabs the caret on open steals the
- *  keyboard from the list behind it (owner's call, 2026-08-22). */
+ *  Never autofocused: a search box that grabs the caret on open steals the
+ *  keyboard from the list behind it. */
 export function SearchBar(props: {
   value: string;
   onInput: (v: string) => void;
   /** Placeholder and accessible name — the field has no visible label. */
   label: string;
   count?: number;
-  class?: string;
+  className?: string;
 }) {
   const showCount = props.count !== undefined && props.value.trim() !== "";
   return (
-    <label class={`searchbar ${props.class ?? ""}`}>
-      <IconSearch size={14} stroke={1.75} aria-hidden />
+    <label className={`searchbar ${props.className ?? ""}`}>
+      <Search size={14} stroke={1.75} aria-hidden />
       <input
-        class="t-prose"
+        className="t-prose"
         type="search"
         placeholder={props.label}
         aria-label={props.label}
         value={props.value}
         onInput={(e) => props.onInput(e.currentTarget.value)}
       />
-      {showCount && <span class="searchbar-count t-data">{props.count} match</span>}
+      {showCount && <span className="searchbar-count t-data">{t("ui.search.matches", { count: props.count! })}</span>}
     </label>
   );
 }

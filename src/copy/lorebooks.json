@@ -1,0 +1,444 @@
+{
+  "_readme": "lorebooks area copy. The vendored catalog is the long-term-memory agent's own strings: it knows a lorebook only as a SOURCE it can import from (sourcesworkspace.lorebooks, longtermmemorydetail.sourceLorebooks) and never reaches inside one. So it has no vocabulary for entries, keys, positions, trigger settings or token budgets per book, and most of this file is necessarily coined. Where the catalog does have the word — the lorebook-as-source nouns, and the ordinary verbs of a list — it is mirrored. See src/copy/index.ts for the entry shapes and design/copycheck.mjs for what is enforced. Keys beginning with an underscore are metadata and are never copy.",
+  "_shared": "Keys under lorebooks.record.* are the draft/commit vocabulary of an editable record. src/tools/presets renders the same sentences byte-for-byte over a prompt section; they are parked here so exactly one key owns each string, and presets should point at these rather than coin a second copy. See the migration report.",
+  "lorebooks.title": {
+    "use": "sourcesworkspace.lorebooks"
+  },
+  "lorebooks.bookCount": {
+    "one": "{{count}} book",
+    "other": "{{count}} books",
+    "note": "How many lorebooks the picker is listing. The catalog counts lorebooks only inside an import receipt (sourcesworkspace.value1LorebooksValue2EntriesValue3Imported) and has no standalone tally, because upstream never owns the collection — it only reads whatever the host offers."
+  },
+  "lorebooks.entryCount": {
+    "one": "{{count}} entry",
+    "other": "{{count}} entries",
+    "note": "How many entries a lorebook or a tag group holds. Carries the figure itself because the bare plural is already spoken for by the palette's result-group heading (shell.palette.groupEntries) and one string may have only one key. The catalog's only 'entries' is sourcesworkspace.entries, the fragment 'entries ·' welded to a separator inside a source row."
+  },
+  "lorebooks.unitTokens": {
+    "use": "activityview.tokens"
+  },
+  "lorebooks.retry": {
+    "use": "activityview.retry"
+  },
+  "lorebooks.valueYes": {
+    "text": "yes",
+    "note": "The advanced pane prints engine booleans as words, and this is the true half — the vector row, meaning an embedding is stored for this entry. The product renders booleans as switches that announce themselves and never prints one as a word."
+  },
+  "lorebooks.valueNo": {
+    "text": "no",
+    "note": "The false half of lorebooks.valueYes. Written 'no' rather than 'none' because the shared mode pill already owns the bare 'none' (ui.mode.none) and one string may have only one key; 'no' is also the truer answer to a yes/no field."
+  },
+  "lorebooks.untagged": {
+    "text": "untagged",
+    "note": "Stands in for the tag on an entry that has none, in the row's tag slot and as a group heading. Lorebook entry tags are an engine field the memory agent never reads, so the catalog has no name for an entry that lacks one; its own 'tags' (memoryvault.tags) are System labels on a memory."
+  },
+  "lorebooks.tags": {
+    "text": "Tags",
+    "note": "The tag distribution panel's heading and its dock button. Deliberately not the catalog's memoryvault.tags, which renders 'System labels' — those are a fixed vocabulary the engine attaches to a memory, while these are free text the author typed on a lorebook entry, so borrowing the word would name the wrong thing."
+  },
+  "lorebooks.status.normal": {
+    "text": "Normal",
+    "note": "Engine vocabulary: an entry that fires when its primary keys match. Mirrors deriveStatus()/STATUS_LABEL in the engine's own LorebookEntryRow, which is not part of the long-term-memory bundle, so the console's catalog has no key for it."
+  },
+  "lorebooks.status.constant": {
+    "text": "Constant",
+    "note": "Engine vocabulary: an entry injected on every activation regardless of keys. The word appears nowhere in the vendored catalog — the memory agent has no always-on record, because recall is by definition conditional on the message."
+  },
+  "lorebooks.status.selective": {
+    "text": "Selective",
+    "note": "Engine vocabulary: an entry whose primary keys must also satisfy the secondary-key logic. Same absence as lorebooks.status.constant — the catalog's matching lanes are scored and fused, never gated by a second key set the author wrote."
+  },
+  "lorebooks.status.disabled": {
+    "text": "Disabled",
+    "note": "Engine vocabulary: an entry switched off and never injected. The catalog uses 'disabling' once, about chat modes (memoryvault.lastModeRequired), and has no state noun for a record that is present but inert."
+  },
+  "lorebooks.statusHint.normal": {
+    "text": "Triggers when primary keys match the scanned text.",
+    "note": "Explains the Normal status under the segmented control. Describes lorebook keyword scanning, which the catalog only ever describes for memories ('Keyword matching checks the compact keywords saved with each memory') — a different mechanism over different data."
+  },
+  "lorebooks.statusHint.constant": {
+    "text": "Injects every time this lorebook is active.",
+    "note": "Explains the Constant status. The catalog's injection strings are all retrospective reports about one recall (lastinjectionsummary.*); it has no forward statement of an unconditional rule, because it has no unconditional records."
+  },
+  "lorebooks.statusHint.selective": {
+    "text": "Primary keys must match with the secondary-key logic.",
+    "note": "Explains the Selective status. Primary and secondary keys are lorebook engine fields; the catalog has one flat keyword list per memory and therefore no vocabulary for a two-tier key test."
+  },
+  "lorebooks.statusHint.disabled": {
+    "text": "Never injected while disabled.",
+    "note": "Explains the Disabled status. Same absence as lorebooks.status.disabled: nothing upstream can be present in the store and excluded from every recall by an author's switch."
+  },
+  "lorebooks.pos.beforeChar.compact": {
+    "text": "↑Char",
+    "note": "Compact label for position 0, before the character definitions, on a four-across segmented control where the full sentence does not fit. Prompt-assembly positions are an engine concept the long-term-memory catalog never touches; its own placement copy is about one block in the chat template."
+  },
+  "lorebooks.pos.beforeChar.full": {
+    "text": "Before character definitions",
+    "note": "The same position spelled out under the order stepper, where there is room. See lorebooks.pos.beforeChar.compact for why the catalog has no equivalent."
+  },
+  "lorebooks.pos.afterChar.compact": {
+    "text": "↓Char",
+    "note": "Compact label for position 1, after the character definitions. Paired with lorebooks.pos.beforeChar.compact and using the same arrow convention, which the product has no instance of because it has no positional prompt slots."
+  },
+  "lorebooks.pos.afterChar.full": {
+    "text": "After character definitions",
+    "note": "The spelled-out counterpart to lorebooks.pos.afterChar.compact, under the order stepper. Same absence upstream."
+  },
+  "lorebooks.pos.depth.compact": {
+    "text": "@Depth",
+    "note": "Compact label for position 2, injected at a numeric depth from the end of the conversation. The catalog says 'depth' once, in promptBlockPlacementFallback ('agents at depth 0'), as prose about one default — never as a placement mode a reader selects."
+  },
+  "lorebooks.pos.depth.full": {
+    "text": "@ Depth",
+    "note": "The same mode under the order stepper, where the depth value is printed after it and the space keeps the glyph from running into the number. Same absence upstream as lorebooks.pos.depth.compact."
+  },
+  "lorebooks.pos.outlet.compact": {
+    "text": "Outlet",
+    "note": "Position 7: injected into a named outlet declared by the prompt template. One label serves both the compact control and the full readout, because the word is already short and a second key holding the same text is what design/copycheck.mjs refuses. Outlets are a template feature the memory agent has no access to and no word for."
+  },
+  "lorebooks.field.order": {
+    "text": "Order",
+    "note": "The engine's insertion-order field: the sort chip, the stepper's accessible name, and the entry summary all name the same number. The catalog sorts by created date and title (memoryvault.sortCreated, sortTitle) and has no author-assigned ordering to name."
+  },
+  "lorebooks.field.keys": {
+    "text": "keys",
+    "note": "The primary-key count as a unit under a figure, and as a sort chip (the chip's stylesheet uppercases it). Not the catalog's memoryvault.keywords: those are keywords extracted for recall scoring, while these are literal trigger strings the author wrote, and the engine calls them keys."
+  },
+  "lorebooks.sort.edited": {
+    "text": "Edited",
+    "note": "Sort chip for the entry's updatedAt. The catalog's 'edited' is always about a proposal a reviewer changed (reviewqueue.editedChange) and never about a modification time, because nothing upstream is sorted by when it was last touched."
+  },
+  "lorebooks.sort.title": {
+    "use": "memoryvault.sortTitle"
+  },
+  "lorebooks.picker.statsUnavailable": {
+    "text": "Stats unavailable",
+    "note": "Shown on a book card when its per-book entry fetch failed, in place of counts that would otherwise read as zeros. Deliberately not longtermmemorydetail.statusUnavailable ('Status unavailable'), which reports the whole feature's health; this is one card's numbers missing while the rest of the list is fine."
+  },
+  "lorebooks.picker.bookDisabled": {
+    "text": "book disabled",
+    "note": "Flags a lorebook the engine will not consult at all. Says 'book' because the same card also counts disabled entries, and a bare 'disabled' beside those counts would read as a number of entries rather than a fact about the book. The catalog has no switched-off source state."
+  },
+  "lorebooks.probe.findPlaceholder": {
+    "text": "Search entries…",
+    "note": "Placeholder of the console header's probe in Find mode. Shaped after the catalog's 'Search {nouns}' family (searchMemories, searchChats), but the noun is a lorebook entry, which upstream never searches — sourcesworkspace searches for lorebooks, not within one."
+  },
+  "lorebooks.probe.findLabel": {
+    "text": "Find entries",
+    "note": "Accessible name of the same field, kept distinct from the placeholder so the announced name has no trailing ellipsis. Uses the mode's own verb (the Find/Test control) so the name matches the control the reader just pressed."
+  },
+  "lorebooks.probe.testPlaceholder": {
+    "text": "Paste a paragraph or sample messages here…",
+    "note": "Placeholder in Test mode, where the field takes sample chat text and every entry is evaluated against it. The catalog has no dry-run of recall at all — longtermmemorydetail.inactiveChatVerification tells you to go and send a real message instead."
+  },
+  "lorebooks.probe.testLabel": {
+    "text": "Keyword test text",
+    "note": "Accessible name of the field in Test mode, naming what the text is for rather than what to do with it. Same absence as lorebooks.probe.testPlaceholder: nothing upstream accepts a specimen to match against."
+  },
+  "lorebooks.probe.modeGroup": {
+    "text": "Search mode",
+    "note": "Accessible name of the Find/Test segmented control. The catalog names recall styles (chatsettings.recallStyle*) but has no control that switches one field between searching a list and simulating a match."
+  },
+  "lorebooks.probe.find": {
+    "text": "Find",
+    "note": "First segment: filter the entry list by text. The catalog's search affordances are all labelled 'Search {noun}'; the bare verb is needed here because the segment sits beside 'Test' and the pair has to read as two modes of one field."
+  },
+  "lorebooks.probe.test": {
+    "text": "Test",
+    "note": "Second segment: evaluate every entry against the pasted text using the vendored matcher. The catalog uses 'test' once, as a verb in prose about switching a chat on, and has no simulation mode to name."
+  },
+  "lorebooks.meter.wouldActivate": {
+    "text": "Would activate",
+    "note": "Labels the budget meter while testing, and marks a row the matcher says would fire — the conditional is the point, because nothing has been sent to a model. The catalog's longtermmemorydetail.activate is the switch that turns the feature on for a chat, a different act entirely."
+  },
+  "lorebooks.meter.allActive": {
+    "text": "All active",
+    "note": "Labels the same meter when not testing: every enabled entry, whether or not it would fire. The catalog's 'active' describes a memory that recall is allowed to consider (memoryvault.statusHelp); it has no aggregate over a set of records."
+  },
+  "lorebooks.filter.group": {
+    "text": "Group by tag",
+    "note": "Chip that groups the entry list under tag headings. The catalog's 'group' is a group chat (memoryvault.branchGroup) and it never groups a list by a field, so neither the verb nor the arrangement exists upstream."
+  },
+  "lorebooks.filter.flagged": {
+    "text": "Flagged",
+    "note": "Chip that filters to computed outliers — entries above the 90th percentile for tokens or key count. Flagging here is a console heuristic over the author's own data; the catalog flags nothing, and 'flag' appears in no key and no value."
+  },
+  "lorebooks.filter.flaggedOnly": {
+    "text": "flagged only",
+    "note": "Names the flag filter as a removable chip in the filtered-empty state, in the catalog's own lowercase filter-recital shape (memoryvault.filteredEmptySort, 'sort {{value1}}'). The dimension is a console one — see lorebooks.filter.flagged."
+  },
+  "lorebooks.row.alwaysInjected": {
+    "text": "always injected — keys ignored",
+    "note": "Replaces the key list on a Constant entry, where the keys are still stored but no longer consulted. Says the consequence rather than the setting, because the row is where a reader would otherwise wonder why the keys are missing. No upstream equivalent — see lorebooks.status.constant."
+  },
+  "lorebooks.row.noKeys": {
+    "text": "no keys — never fires",
+    "note": "Replaces the key list on a keyed entry that has none, which is silently dead weight in the token budget. The catalog warns about a source with nothing to import (sourcesworkspace.thisLorebookHasNoImportableEntries) but has no per-record diagnosis of a misconfiguration."
+  },
+  "lorebooks.row.idle": {
+    "text": "idle",
+    "note": "Marks a row the matcher says would NOT fire on the test text — the quiet counterpart to lorebooks.meter.wouldActivate. The catalog has no word for a record that was considered and passed over; its nearest idea is a memory correctly absent from one recall, stated as a whole sentence."
+  },
+  "lorebooks.row.bloated": {
+    "text": "bloated",
+    "note": "Outlier flag: this entry's token count is above the book's 90th percentile. A console-computed judgement about the author's own writing, which the product has no cause to make — it measures sources against a hard limit (memorysettings.rejectsASourceWhenItsEstimatedSizeExceedsThis), never against their siblings."
+  },
+  "lorebooks.row.keyHeavy": {
+    "text": "key-heavy",
+    "note": "The other outlier flag: an unusually long primary-key list, which makes an entry fire more often than its author probably intended. Same absence as lorebooks.row.bloated, and the catalog caps keywords by count rather than describing a record that has too many."
+  },
+  "lorebooks.entry.untitled": {
+    "text": "Untitled entry",
+    "note": "Stands in for the name of an entry saved without one, and is the name field's placeholder. Shaped after the catalog's own memoryvault.untitledMemory, but the noun is a lorebook entry, which upstream never names because it never edits one."
+  },
+  "lorebooks.entry.thisEntry": {
+    "text": "this entry",
+    "note": "Stands in for the name inside lorebooks.record.saveOrDiscardFirst when the unsaved entry has none, so the warning never quotes an empty pair of quotes. The catalog has no anonymous-record fallback of any kind."
+  },
+  "lorebooks.entry.gone": {
+    "text": "This entry no longer exists",
+    "note": "Raised when a conflict refetch cannot find the entry being edited — someone deleted it elsewhere mid-edit. The catalog reports a vanished record as unavailability of a memory it owns; it has no concurrent editor to lose one to."
+  },
+  "lorebooks.entry.conflictBody": {
+    "text": "This entry was updated elsewhere while you were editing{{detail}}. Saving now would overwrite that.",
+    "note": "Body of the conflict bar, with lorebooks.record.conflictFields dropped into the hole when the two writes touched the same fields. Assembled as one sentence rather than three JSX fragments so the whole claim is one string a reader of the catalog can judge. See lorebooks.record.conflictTitle for why the product has no concurrent-write copy; src/tools/presets says the same sentence about a section."
+  },
+  "lorebooks.entry.subKeys": {
+    "text": "Primary Keys",
+    "note": "Accordion label for the trigger key list. 'Primary' distinguishes them from the secondary keys the Selective logic tests, a distinction the catalog cannot make because a memory has one flat keyword list (memoryvault.keywords)."
+  },
+  "lorebooks.entry.subDescription": {
+    "text": "Description",
+    "note": "Accordion label for the entry's short routing summary. The catalog's dozens of *Description keys are all prose ABOUT something rather than the name of a field; it never labels a description field, because a memory has no such field."
+  },
+  "lorebooks.entry.subContent": {
+    "text": "Content",
+    "note": "Accordion label for the entry text that is actually injected. The catalog's nearest nouns are bound to a phrase — memorysettings.contentToAdd, reviewqueue.proposedContent, memoryvault.importedContent — and none is the bare field name."
+  },
+  "lorebooks.entry.subTrigger": {
+    "text": "Trigger & Position",
+    "note": "Accordion label over the status control, the position control and the order stepper: when the entry fires and where it lands. Both halves are lorebook engine concepts the memory agent has no access to, so the pairing cannot be borrowed."
+  },
+  "lorebooks.entry.subAdvanced": {
+    "text": "Advanced",
+    "note": "Accordion label over the read-only dump of the twenty-odd engine fields this tool does not edit. The catalog says 'advanced' only inside sentences (extractiondetails.advancedExtractionDetails, and the placement note); it has no section named for the fields it declines to explain."
+  },
+  "lorebooks.entry.nameLabel": {
+    "use": "extractionprompttemplates.name"
+  },
+  "lorebooks.entry.hasError": {
+    "text": "has an error",
+    "note": "Accessible name of the dot badged onto a collapsed accordion header whose field failed validation, so the marker is not sighted-only. The catalog validates inline beside the field and has nothing to say about a fault hidden behind a closed section."
+  },
+  "lorebooks.entry.removeKey": {
+    "use": "pill.removeValue1",
+    "note": "Accessible name of the × on one key chip. The catalog's own chip already names what it removes, so the key chip borrows it verbatim rather than coining a second 'Remove {x}'."
+  },
+  "lorebooks.entry.addKeyLabel": {
+    "text": "Add key",
+    "note": "Accessible name of the inline key input, which replaced a window.prompt. Deliberately not memoryvault.addKeyword: a lorebook key is a literal trigger string the engine scans for, not a keyword extracted for recall scoring, and the engine's own field is called keys."
+  },
+  "lorebooks.entry.addKeyPlaceholder": {
+    "text": "+ key",
+    "note": "Visible placeholder of the same input, sized to sit in the chip row as one more chip. The catalog's add affordances are all full-size buttons with a verb phrase; it has no control shaped like the items it appends to."
+  },
+  "lorebooks.entry.keysNone": {
+    "text": "no keys",
+    "note": "The primary-key accordion's collapsed summary when the entry has none — the one condition in this pane that is always a mistake, so it is stated rather than left blank. The row-level lorebooks.row.noKeys spells out the consequence; this is the same fact in a summary slot two words wide."
+  },
+  "lorebooks.entry.descriptionPlaceholder": {
+    "text": "Brief summary for routing.",
+    "note": "Placeholder of the description textarea, saying what the field is for: the engine shows it to the model when deciding whether the entry is relevant. Upstream has no such field and so no guidance about filling one."
+  },
+  "lorebooks.entry.lowerOrder": {
+    "text": "Lower order",
+    "note": "Accessible name of the − step on the order control. The catalog has no author-assigned ordering (see lorebooks.field.order) and therefore no verbs for moving a record within one."
+  },
+  "lorebooks.entry.raiseOrder": {
+    "text": "Raise order",
+    "note": "Accessible name of the + step, paired with lorebooks.entry.lowerOrder. Same absence upstream; sourceoperation.move is a transfer between scopes, not a change of rank."
+  },
+  "lorebooks.entry.advChanged": {
+    "text": "changed",
+    "note": "Summarises the advanced pane on its collapsed header: how many of the untouched engine fields differ from their defaults. The catalog's 'changed' always names what changed (sourcesworkspace.contextChanged, reviewqueue.editedChange) and never counts fields against a default set."
+  },
+  "lorebooks.entry.advAllDefault": {
+    "text": "all default",
+    "note": "The same summary when nothing differs, which is the reassuring case and worth stating rather than leaving blank. The catalog talks about defaults as settings you may return to (memorysettings.resetMemorySettingsDescription) and never as a property a record currently has."
+  },
+  "lorebooks.entry.fieldVector": {
+    "text": "vector",
+    "note": "Row name in the advanced dump for whether the engine has an embedding stored for this entry. The catalog says 'embedding' in prose about the recall lanes and never labels the fact as a field, because a reader upstream cannot see per-record index state."
+  },
+  "lorebooks.entry.fieldUpdated": {
+    "text": "updated",
+    "despite": "memoryvault.updated",
+    "note": "Row name in the advanced dump for the entry's modification time. The catalog has the word as memoryvault.updated, but capitalised as a metadata heading; this row sits in a column of literal engine field names (selectiveLogic, groupWeight, excludeRecursion) and a capital would read as the only prose in a table of identifiers."
+  },
+  "lorebooks.entry.updatedAtUtc": {
+    "text": "{{timestamp}} UTC",
+    "note": "The modification time itself, stamped with its zone because the value comes off the engine unconverted and a local-looking time that is not local is worse than none. The catalog's one timestamp (lastinjectionsummary.recalledAt) is host-formatted and carries no zone."
+  },
+  "lorebooks.entry.delete": {
+    "text": "Delete entry",
+    "note": "The destructive action at the foot of the advanced pane. Shaped after the catalog's memoryvault.deleteDetail ('Delete detail'), but the noun is a lorebook entry — upstream deletes memories, sources and details, never anything inside a lorebook."
+  },
+  "lorebooks.entry.saved": {
+    "text": "Entry saved",
+    "note": "Toasted after a successful explicit save. The catalog confirms a save by naming what it saved and where ('Memory availability saved.', reviewqueue.acceptAndSave); it has no bare per-record confirmation, and no record type of ours to name."
+  },
+  "lorebooks.entry.addFailed": {
+    "text": "Failed to add entry: {{message}}",
+    "note": "Toasted when the create call is refused, quoting the engine's own reason. The catalog reports failures per operation it owns (sourcesworkspace.sourceCouldNotBeDeleted) and has no creation of a record inside a lorebook to fail at."
+  },
+  "lorebooks.entry.add": {
+    "text": "Add entry",
+    "note": "One key for the dock button, the first-run empty state's action, and the title of the prompt that asks for a name — three affordances that start the same act, and design/copycheck.mjs refuses a second key holding the same words. The catalog's add family is all memory-side (addMemories, addKeyword, addEvidence)."
+  },
+  "lorebooks.entry.addDefaultName": {
+    "text": "New Entry",
+    "note": "Pre-filled into the new-entry name prompt so confirming immediately still produces a named record rather than an untitled one. The catalog never proposes a value for a field; upstream records arrive from extraction with names already on them."
+  },
+  "lorebooks.bulk.select": {
+    "use": "memoryvault.select"
+  },
+  "lorebooks.bulk.done": {
+    "use": "memoryvault.done"
+  },
+  "lorebooks.bulk.selected": {
+    "text": "{{count}} selected",
+    "note": "The running tally in the selection chip rail. The catalog's memoryvault.selected is the bare word as a suffix after a figure rendered separately, and activityview.selected welds a separator to it ('selected ·'); neither is a sentence this rail can render."
+  },
+  "lorebooks.bulk.enable": {
+    "text": "Enable",
+    "note": "Bulk action switching the selected entries on. The catalog uses 'enable' once, in prose about chat modes (memoryvault.lastModeRequired), and never as a control: nothing upstream has a per-record on/off switch to flip in bulk."
+  },
+  "lorebooks.bulk.disable": {
+    "text": "Disable",
+    "note": "The counterpart to lorebooks.bulk.enable. Same absence upstream; the catalog's way of taking a record out of play is to archive it, which is a different act with different consequences."
+  },
+  "lorebooks.bulk.addTag": {
+    "text": "Add tag…",
+    "note": "Bulk action that sets one tag across the selection; the ellipsis marks that it asks for the value first. Entry tags are free text on an engine field the memory agent never reads — see lorebooks.untagged."
+  },
+  "lorebooks.bulk.addTagPrompt": {
+    "text": "Add tag… (blank to clear)",
+    "note": "The prompt's own message, which has to carry the one thing the chip cannot: submitting nothing clears the tag instead of doing nothing. Same absence upstream as lorebooks.bulk.addTag."
+  },
+  "lorebooks.bulk.nothingSelected": {
+    "text": "Nothing selected",
+    "note": "Toasted when a bulk action is pressed with an empty selection. The catalog guards bulk operations by disabling them and reports counts afterwards; it has no message for an action attempted over nothing."
+  },
+  "lorebooks.bulk.updated": {
+    "one": "Updated {{count}} entry",
+    "other": "Updated {{count}} entries",
+    "note": "Toasted after a bulk patch succeeds. Shaped after memoryvault.batchUpdatedOne ('{{updated}} memory updated.'), but that string counts memories and leads with the figure; this leads with the verb because it confirms an act the reader just ordered."
+  },
+  "lorebooks.bulk.updateFailed": {
+    "text": "Failed to update the selected entries: {{message}}",
+    "note": "Toasted when a bulk patch is refused, quoting the engine's reason. The catalog's bulk failures are per-record tallies inside a result summary (sourceoperation.resultSummary) and it has no single message for a batch that did not run."
+  },
+  "lorebooks.tag.show": {
+    "use": "memoryvault.showMemories"
+  },
+  "lorebooks.tag.distribution": {
+    "text": "Tag distribution",
+    "note": "Accessible name of the button that opens the tag panel, naming the shape of what is inside: every tag with its share of the book. The catalog has no distribution view of any field, and no tags of this kind to distribute — see lorebooks.tags."
+  },
+  "lorebooks.tag.backToEntries": {
+    "text": "Back to entries",
+    "note": "Leaves the tag panel for the list underneath, in the catalog's own 'Back to {destination}' shape (longtermmemorydetail.backToAgents). The destination is the entry list, which upstream has no equivalent of."
+  },
+  "lorebooks.tag.constantCount": {
+    "text": "{{count}} constant",
+    "note": "Per-tag count of always-on entries in the distribution panel, lowercase because it is a measurement of the group rather than the name of a status. See lorebooks.status.constant for why the word cannot come from the catalog."
+  },
+  "lorebooks.tag.disabledCount": {
+    "text": "{{count}} disabled",
+    "note": "Per-tag count of switched-off entries, the counterpart to lorebooks.tag.constantCount. Same absence upstream as lorebooks.status.disabled."
+  },
+  "lorebooks.detail.selectPrompt": {
+    "text": "Select an entry to edit it.",
+    "note": "The desktop detail pane with nothing focused. Deliberately not sourcesworkspace.selectALorebookToInspectItsEntries, which is one level up and read-only — that pane inspects a lorebook from outside, this one edits an entry inside it."
+  },
+  "lorebooks.detail.keyboardHint": {
+    "text": "j / k moves between entries.",
+    "note": "Teaches the roving-focus keys in the pane the reader is looking at while there is nothing else to say there. The product binds no keys at all, so nothing about a keyboard can trace upstream."
+  },
+  "lorebooks.empty.testTitle": {
+    "text": "Nothing would activate",
+    "note": "Empty state when the test text matches no entry — a real answer, not a missing list. The catalog's nearest sentence, lastinjectionsummary.recallFoundNoMemories, reports a recall that already happened; this reports a simulation that found nothing."
+  },
+  "lorebooks.empty.testBody": {
+    "text": "No entry’s keys match this text, so none would be injected.",
+    "note": "Says why the test came back empty, which is usually correct rather than broken. Same distinction as lorebooks.empty.testTitle: upstream explains a real recall returning nothing, and has no dry run to explain."
+  },
+  "lorebooks.record.cancel": {
+    "use": "memoryvault.cancel"
+  },
+  "lorebooks.record.saving": {
+    "use": "memoryvault.saving",
+    "note": "Was 'Saving…'. The catalog has the word bare, and an ellipsis the catalog does not use is not worth a coinage; the button is disabled while it shows, which already says the work is in flight."
+  },
+  "lorebooks.record.saveChanges": {
+    "text": "Save changes",
+    "note": "The commit button on the explicit-save bar. The catalog saves named objects (memorysettings.saveSettings, memoryvault.save) and its 'changes' strings are all about discarding them; nothing upstream commits a staged edit, because upstream writes as you type."
+  },
+  "lorebooks.record.noChanges": {
+    "text": "No changes",
+    "note": "The save bar's resting state, before anything is staged. The catalog's memoryvault.unchanged marks a record a transfer would not touch; this is the live status of an editor the reader is sitting in front of."
+  },
+  "lorebooks.record.unsavedChanges": {
+    "one": "{{count}} unsaved change",
+    "other": "{{count}} unsaved changes",
+    "note": "How many fields are staged but not written, shown in the save bar. The catalog's 'unsaved changes' is always a warning about losing them (longtermmemorydetail.discardUnsavedChanges) and is never counted, because upstream has no staging step to count."
+  },
+  "lorebooks.record.saveOrDiscardFirst": {
+    "text": "Save or discard your changes to \"{{name}}\" first.",
+    "note": "Toasted when a second record is opened while one holds an unsaved draft; the console permits exactly one draft at a time. Deliberately not memoryvault.saveBeforeRenameDescription ('Save or discard this draft before renaming a detail.'), which guards one specific operation on the record you are already in and cannot name the record you were blocked from opening."
+  },
+  "lorebooks.record.conflictTitle": {
+    "text": "Changed by someone else",
+    "note": "Heading of the conflict bar when the engine reports the record was written elsewhere during the edit. The catalog's conflicts are between proposals inside one review queue (reviewqueue.conflictsFound*); it has no concurrent writer, because it is the only client of its own store."
+  },
+  "lorebooks.record.conflictFields": {
+    "one": " — the same field you changed ({{list}})",
+    "other": " — the same fields you changed ({{list}})",
+    "note": "Appended to the conflict sentence when the other write touched fields this draft also touched, which is the difference between a merge and a clobber. Same absence as lorebooks.record.conflictTitle."
+  },
+  "lorebooks.record.takeTheirs": {
+    "text": "Discard mine, load theirs",
+    "note": "Conflict resolution: abandon the local draft and adopt the stored record. The catalog's discard strings all throw away work with nothing to adopt in its place (memorysettings.discardChanges), because it has no other version to load."
+  },
+  "lorebooks.record.keepMine": {
+    "text": "Re-apply mine over theirs",
+    "note": "The other resolution: replay the local draft on top of what was stored, knowingly overwriting it. Says 're-apply' rather than 'overwrite' because the draft is replayed field by field over the refetched record. No upstream equivalent — see lorebooks.record.conflictTitle."
+  },
+  "lorebooks.record.editContent": {
+    "text": "Edit content",
+    "note": "Title of the fullscreen editor opened over the content field. The catalog edits proposals in the review queue and memories in the vault, always naming the record rather than the field, and it has no fullscreen surface to title."
+  },
+  "lorebooks.record.editDescription": {
+    "text": "Edit description",
+    "note": "The same editor over the description field, paired with lorebooks.record.editContent. Same absence upstream, and see lorebooks.entry.subDescription for why the field name cannot be borrowed either."
+  },
+  "lorebooks.record.editFullscreen": {
+    "text": "Edit in full screen",
+    "note": "The chip above a textarea that opens that editor, naming the destination rather than the gesture so it reads the same on touch and with a keyboard. The catalog has no expanded editing surface at all."
+  },
+  "lorebooks.record.deleted": {
+    "text": "Deleted \"{{name}}\".",
+    "note": "Toasted after a soft delete, quoting the record so an undo has something to be about. The catalog confirms deletions by type ('Detail deleted.', sourceoperation.deleted) and never quotes the name, because its deletions are immediate and confirmed in advance by a dialog."
+  },
+  "lorebooks.record.deleteFailed": {
+    "text": "Delete failed: {{message}}",
+    "note": "Toasted when the deferred DELETE is refused after the undo window closes, at which point the row has to come back. The catalog states the failure without a reason (sourcesworkspace.sourceCouldNotBeDeleted); here the engine's own message is the only clue, because nobody was watching when it fired."
+  },
+  "lorebooks.record.undo": {
+    "use": "memoryvault.undo"
+  },
+  "lorebooks.record.backToBooks": {
+    "text": "Back to the lorebook list",
+    "note": "Accessible name of the audit screen's back control. Deliberately worded away from ui.notfound.back ('Back to lorebooks'), which is the recovery button on a dead link and belongs to the shared component; this is ordinary upward navigation and design/copycheck.mjs allows each string exactly one key."
+  }
+}

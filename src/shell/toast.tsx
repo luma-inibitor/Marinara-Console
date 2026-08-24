@@ -1,17 +1,10 @@
 // Toast queue with undo support (DESIGN.md: undo over confirm).
 // A toast with an action holds a pending commit: commit fires when the toast
 // expires; the action (Undo) cancels it.
-//
-// P1.5 fixes:
-//   - The dismiss "×" used to call remove(id, true), which fires onExpire —
-//     so the control that looks like "cancel this" was in fact "commit the
-//     delete now". Undoable toasts no longer offer a ×; they show the time
-//     remaining and a full-size Undo, and commit only by actually expiring.
-//   - Targets were 21px. They are now the 44px floor.
-//   - A burst of identical failures produced N stacked toasts. Identical
-//     messages coalesce into one with a count.
 import { signal } from "@preact/signals";
 import { useEffect, useState } from "preact/hooks";
+import { Close, ICON_SIZE } from "../ui/icons";
+import { t } from "../copy";
 
 export interface Toast {
   id: number;
@@ -78,24 +71,26 @@ function useCountdown(expiresAt: number): number {
   return left;
 }
 
-function ToastRow({ t }: { t: Toast }) {
-  const undoable = !!t.onExpire;
-  const left = useCountdown(t.expiresAt);
+function ToastRow({ t: item }: { t: Toast }) {
+  const undoable = !!item.onExpire;
+  const left = useCountdown(item.expiresAt);
   return (
-    <div class={`toast ${t.kind === "error" ? "is-error" : ""} ${undoable ? "is-undoable" : ""}`}>
-      <span class="toast-msg">
-        {t.message}
-        {t.count > 1 && <span class="toast-count t-data">×{t.count}</span>}
+    <div className={`toast ${item.kind === "error" ? "is-error" : ""} ${undoable ? "is-undoable" : ""}`}>
+      <span className="toast-msg">
+        {item.message}
+        {item.count > 1 && <span className="toast-count t-data">×{item.count}</span>}
       </span>
-      {t.actionLabel && (
-        <button class="toast-action" onClick={() => { t.onAction?.(); remove(t.id, false); }}>
-          {t.actionLabel}{undoable && left > 0 && <span class="toast-left t-data">{left}s</span>}
+      {item.actionLabel && (
+        <button className="toast-action" onClick={() => { item.onAction?.(); remove(item.id, false); }}>
+          {item.actionLabel}{undoable && left > 0 && <span className="toast-left t-data">{left}s</span>}
         </button>
       )}
       {/* No dismiss on an undoable toast: dismissing it would have to either
           commit or cancel, and a "×" reads as cancel while committing. */}
       {!undoable && (
-        <button class="toast-x" aria-label="Dismiss" onClick={() => remove(t.id, false)}>×</button>
+        <button className="toast-x" aria-label={t("shell.toast.dismiss")} onClick={() => remove(item.id, false)}>
+          <Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+        </button>
       )}
     </div>
   );
@@ -103,7 +98,7 @@ function ToastRow({ t }: { t: Toast }) {
 
 export function Toaster() {
   return (
-    <div class="toaster" role="status" aria-live="polite">
+    <div className="toaster" role="status" aria-live="polite">
       {toasts.value.map((t) => <ToastRow key={t.id} t={t} />)}
     </div>
   );

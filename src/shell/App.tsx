@@ -1,5 +1,6 @@
 import type { ComponentType } from "preact";
 import { route, navigate } from "./router";
+import { useStore } from "../lib/store";
 import { LorebooksTool } from "../tools/lorebooks/LorebooksTool";
 import { MemoryTool } from "../tools/memory/MemoryTool";
 import { PlaceholderTool } from "../tools/PlaceholderTool";
@@ -9,18 +10,19 @@ import { Palette } from "./palette";
 import { ConnectionBanner, noteResult, startReconnect, reach } from "./connection";
 import { setResultHook } from "./api";
 import { useHotkeys, CheatSheet } from "./hotkeys";
+import { t } from "../copy";
 
 interface ToolDef {
   id: string;
   label: string;
-  glyph: string; // single character; icon set comes later
+  glyph: string; // single character
   component: ComponentType<{ rest: string[] }>;
 }
 
 const TOOLS: ToolDef[] = [
-  { id: "lorebooks", label: "Lorebooks", glyph: "◫", component: LorebooksTool },
-  { id: "presets", label: "Presets", glyph: "⌘", component: PresetsTool },
-  { id: "memory", label: "Memory", glyph: "◉", component: MemoryTool },
+  { id: "lorebooks", label: t("shell.tool.lorebooks"), glyph: "◫", component: LorebooksTool },
+  { id: "presets", label: t("shell.tool.presets"), glyph: "⌘", component: PresetsTool },
+  { id: "memory", label: t("shell.tool.memory"), glyph: "◉", component: MemoryTool },
 ];
 
 setResultHook((err) => {
@@ -31,27 +33,29 @@ setResultHook((err) => {
 export function App() {
   useHotkeys();
 
-  const { tool, rest } = route.value;
-  const active = TOOLS.find((t) => t.id === tool) ?? TOOLS[0];
+  const { tool, rest } = useStore(route);
+  const active = TOOLS.find((d) => d.id === tool) ?? TOOLS[0];
   const Screen = active.component;
 
   return (
-    <div class="shell">
-      <nav class="rail" aria-label="Tools">
-        <div class="rail-brand t-label-s t-label" data-contrast-exempt>Marinara<br />Console</div>
-        {TOOLS.map((t) => (
+    <div className="shell">
+      <nav className="rail" aria-label={t("shell.nav.tools")}>
+        {/* data-brand: the product name is not copy and has no catalog entry.
+            copycheck skips this subtree. */}
+        <div className="rail-brand t-label-s t-label" data-brand data-contrast-exempt>Marinara<br />Console</div>
+        {TOOLS.map((d) => (
           <button
-            key={t.id}
-            class={`rail-item ${t.id === active.id ? "is-active" : ""}`}
-            aria-current={t.id === active.id ? "page" : undefined}
-            onClick={() => navigate(t.id)}
+            key={d.id}
+            className={`rail-item ${d.id === active.id ? "is-active" : ""}`}
+            aria-current={d.id === active.id ? "page" : undefined}
+            onClick={() => navigate(d.id)}
           >
-            <span class="rail-glyph" aria-hidden="true">{t.glyph}</span>
-            <span class="rail-label">{t.label}</span>
+            <span className="rail-glyph" aria-hidden="true">{d.glyph}</span>
+            <span className="rail-label">{d.label}</span>
           </button>
         ))}
       </nav>
-      <main class="stage">
+      <main className="stage">
         <Screen rest={rest} />
       </main>
       <ConnectionBanner />

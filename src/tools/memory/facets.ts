@@ -3,11 +3,10 @@
 // heuristic and a schema field never silently carry the same authority.
 //
 // Counts are computed with each facet's own filter excluded, so a count
-// answers "what would I get if I toggled this" (prior art: the operator's
-// triage tools).
+// answers "what would I get if I toggled this".
 
 import { type Row } from "./data";
-import { t, OURS } from "./strings";
+import { t } from "../../copy";
 import { decisions, edited } from "./store";
 import { flagsOf } from "./flags";
 
@@ -36,7 +35,7 @@ export const FACETS: FacetDef[] = [
   {
     id: "status", label: "decision", source: "yours",
     get: (r) => {
-      const s: string[] = [decisions.value.get(r.key) ?? OURS.undecided];
+      const s: string[] = [decisions.value.get(r.key) ?? t("memory.undecided")];
       if (edited.value.has(r.key)) s.push("edited");
       return s;
     },

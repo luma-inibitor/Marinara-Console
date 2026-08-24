@@ -2,14 +2,13 @@
 // with delta, wrap toggle, markdown symbol row. Generic: callers supply the
 // title/subtitle and receive the final value on Done.
 //
-// P0.1: this used to have exactly one exit — Done — and no key handler, so
-// Escape bubbled to the list behind it and navigated away, and the Android back
-// gesture did the same. Either one silently discarded the edit. It now owns its
-// own Escape, offers Cancel, guards a dirty discard, and pushes a history entry
-// so the back gesture closes the editor instead of leaving the record.
+// It owns its own Escape, offers Cancel, guards a dirty discard, and pushes a
+// history entry, so neither Escape nor the Android back gesture can reach the
+// list behind it and silently discard the edit.
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { tokensOf } from "../shell/api";
 import { Chip } from "./Chip";
+import { t } from "../copy";
 
 const MD_TOKENS = ["# ", "## ", "**", "_", "- ", "> ", "`", "[]", "\n"];
 
@@ -66,7 +65,7 @@ export function FullscreenText(props: {
   }, []);
 
   // A history entry of our own, so the phone's back gesture closes the editor
-  // rather than unwinding to the book list with the edit dropped.
+  // rather than unwinding to the list behind it with the edit dropped.
   useEffect(() => {
     history.pushState({ fsEditor: true }, "");
     const onPop = () => { live.current.dirty ? setConfirming(true) : props.onCancel(); };
@@ -84,52 +83,52 @@ export function FullscreenText(props: {
   };
 
   return (
-    <div class="fseditor" role="dialog" aria-modal="true" aria-label={props.title}>
-      <div class="fs-head">
-        <div class="fs-title-wrap">
-          <div class="t-label">{props.title}</div>
-          <div class="meta">
+    <div className="fseditor" role="dialog" aria-modal="true" aria-label={props.title}>
+      <div className="fs-head">
+        <div className="fs-title-wrap">
+          <div className="t-label">{props.title}</div>
+          <div className="meta">
             <span>{props.subtitle}</span>
-            {dirty && <span class="is-dirty-dot">unsaved</span>}
+            {dirty && <span className="is-dirty-dot">{t("ui.editor.unsaved")}</span>}
           </div>
         </div>
-        <Chip pressed={wrap} onClick={() => setWrap(!wrap)}>↵ wrap</Chip>
-        <button class="dbtn" onClick={cancel}>Cancel</button>
-        <button class="dbtn is-primary" onClick={() => props.onDone(value)}>Done</button>
+        <Chip pressed={wrap} onClick={() => setWrap(!wrap)}>{t("ui.editor.wrap")}</Chip>
+        <button className="dbtn" onClick={cancel}>{t("ui.editor.cancel")}</button>
+        <button className="dbtn is-primary" onClick={() => props.onDone(value)}>{t("ui.editor.done")}</button>
       </div>
-      <div class="fs-counts meta">
-        <span><b class="t-num">{ch.toLocaleString()}</b> ch</span>
-        <span><b class="t-num">{tk.toLocaleString()}</b> tokens (est.)</span>
+      <div className="fs-counts meta">
+        <span><b className="t-num">{ch.toLocaleString()}</b> {t("ui.editor.charUnit")}</span>
+        <span><b className="t-num">{tk.toLocaleString()}</b> {t("ui.editor.tokensEst")}</span>
         {props.budget !== undefined && props.budget > 0 && (
-          <span>{((tk / props.budget) * 100).toFixed(1)}% of budget</span>
+          <span>{t("ui.editor.ofBudget", { pct: ((tk / props.budget) * 100).toFixed(1) })}</span>
         )}
         {(dTk !== 0 || dCh !== 0) && (
-          <span class={`delta ${dTk > 0 ? "is-up" : dTk < 0 ? "is-down" : ""}`}>
-            {sign(dCh)} ch · {sign(dTk)} tokens
+          <span className={`delta ${dTk > 0 ? "is-up" : dTk < 0 ? "is-down" : ""}`}>
+            {sign(dCh)} {t("ui.editor.charUnit")} · {sign(dTk)} {t("ui.editor.tokenUnit")}
           </span>
         )}
       </div>
-      <div class="fs-body">
-        <textarea id="fs-ta" class={wrap ? "" : "is-nowrap"} spellcheck={false} value={value}
+      <div className="fs-body">
+        <textarea id="fs-ta" className={wrap ? "" : "is-nowrap"} spellcheck={false} value={value}
           onInput={(ev) => setValue(ev.currentTarget.value)} />
       </div>
-      <div class="fs-foot">
+      <div className="fs-foot">
         {MD_TOKENS.map((t) => (
-          <button key={t} class="mdb t-data" onClick={() => insert(t)}>{t.trim() || "↵"}</button>
+          <button key={t} className="mdb t-data" onClick={() => insert(t)}>{t.trim() || "↵"}</button>
         ))}
       </div>
 
       {confirming && (
         // Verb buttons naming the outcome — never Yes/No (forms doc §4).
-        <div class="fs-confirm" role="alertdialog" aria-label="Discard changes?">
-          <div class="fs-confirm-box">
-            <p class="t-label">Discard changes?</p>
-            <p class="prose-note">
-              {sign(dCh)} characters since you opened this editor. Discarding cannot be undone.
+        <div className="fs-confirm" role="alertdialog" aria-label={t("ui.editor.discardTitle")}>
+          <div className="fs-confirm-box">
+            <p className="t-label">{t("ui.editor.discardTitle")}</p>
+            <p className="prose-note">
+              {t("ui.editor.discardBody", { delta: sign(dCh) })}
             </p>
-            <div class="fs-confirm-acts">
-              <button class="dbtn" onClick={() => setConfirming(false)}>Keep editing</button>
-              <button class="dbtn is-danger" onClick={props.onCancel}>Discard changes</button>
+            <div className="fs-confirm-acts">
+              <button className="dbtn" onClick={() => setConfirming(false)}>{t("ui.editor.keepEditing")}</button>
+              <button className="dbtn is-danger" onClick={props.onCancel}>{t("ui.editor.discard")}</button>
             </div>
           </div>
         </div>

@@ -1,11 +1,11 @@
 // API client: everything goes through server.mjs (/api proxy → engine, with
-// embedding strip). Matches the engine's conventions: cache no-store, JSON.
+// embedding strip).
+import { t } from "../copy";
 
 /**
  * An error carrying what the engine actually said. The engine returns
- * `{error, details:[{path,message}]}` on validation failure; the old client read
- * only `.error` and rendered "400 Bad Request — Validation Error", throwing away
- * the per-field messages that make inline validation possible.
+ * `{error, details:[{path,message}]}` on validation failure; `details` carries
+ * the per-field messages that inline validation needs.
  */
 export class ApiError extends Error {
   status: number;
@@ -35,7 +35,7 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
     });
   } catch (err) {
     // fetch rejects only on network failure — the browser never reached us.
-    const e = new ApiError("No connection to the console server", { status: 0, offline: true });
+    const e = new ApiError(t("shell.api.noConnection"), { status: 0, offline: true });
     onResult?.(e);
     throw e;
   }
@@ -43,7 +43,7 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
     restorePointWarned = true;
     // Lazy import avoids a cycle (toast lives beside the shell).
     void import("./toast").then(({ toast }) =>
-      toast("Restore point FAILED — this write proceeded without a backup. Check the server log.", { kind: "error" }));
+      toast(t("shell.api.restorePointFailed"), { kind: "error" }));
   }
   if (!res.ok) {
     let payload: { error?: string; detail?: string; details?: unknown } = {};
@@ -63,8 +63,8 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
 }
 
 /**
- * Outcome hook, set once at startup. Kept as a callback rather than an import so
- * api.ts stays free of UI dependencies and remains importable in isolation.
+ * Outcome hook, set once at startup. A callback rather than an import, so
+ * api.ts stays free of UI dependencies.
  */
 let onResult: ((err: unknown | null) => void) | null = null;
 export const setResultHook = (fn: (err: unknown | null) => void) => { onResult = fn; };

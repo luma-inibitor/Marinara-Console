@@ -5,14 +5,9 @@
 
    Preflight IS imported, into layer(base). Our four stylesheets are imported
    unlayered, and unlayered CSS beats every layer, so preflight can only reach
-   properties we never set ourselves. Measured on 2026-08-22 by diffing the
-   computed style of every element on four screens: it touched border-top-style
-   (invisible, width is 0), gave 23 buttons our 14px token instead of the
-   browser's 13.33px default, gave 55 form controls and inline spans our 1.5
-   leading instead of `normal`, removed the baseline gap under icons, and
-   zeroed three paragraph margins that we now set explicitly. Nothing else.
-   Utilities win over the hand-written rules by layer order, which is what you
-   want when overriding one property on one element. */
+   properties we never set ourselves. Utilities win over the hand-written rules
+   by layer order, which is what you want when overriding one property on one
+   element. */
 
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
@@ -46,6 +41,25 @@
   --color-danger-wash: var(--danger-wash);
   --color-accent-wash: var(--accent-wash);
   --color-flag-wash: var(--flag-wash);
+  --color-warn-ink: var(--warn-ink);
+  --color-scrim: var(--scrim);
+
+  /* categorical object-type hues — identity, not state. See DESIGN.md §1 */
+  --color-type-character: var(--type-character);
+  --color-type-relationship: var(--type-relationship);
+  --color-type-timeline-event: var(--type-timeline-event);
+  --color-type-thread: var(--type-thread);
+  --color-type-world: var(--type-world);
+  --color-type-tone: var(--type-tone);
+  --color-type-neutral: var(--type-neutral);
+
+  /* Self-referential ON PURPOSE, here and in the --font-* bridges below:
+     tokens.css is unlayered and beats this layer(theme) block, so tokens.css
+     supplies the value and the bridge only registers the name with Tailwind so
+     `shadow-pop` etc. generate. Moving tokens.css into a layer kills all three. */
+  --shadow-pop: var(--shadow-pop);
+  --shadow-panel: var(--shadow-panel);
+  --shadow-modal: var(--shadow-modal);
 
   /* type */
   --font-label: var(--font-label);

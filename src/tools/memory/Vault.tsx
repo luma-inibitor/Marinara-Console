@@ -1,4 +1,4 @@
-// Memory Vault — browse and correct what is stored (ltm-review J4).
+// Memory Vault — browse and correct what is stored.
 // Source notes are audit records, not memories: excluded by default, behind a
 // toggle. Cap pressure reads as a gradient on the row. Archive is the
 // destructive default (undoable); permanent delete confirms.
@@ -11,10 +11,10 @@ import {
   type Note, type NoteType, fetchNotes, patchNote, deleteNote,
   SECTION_CAP, KEYWORD_CAP,
 } from "./data";
-import { t, OURS } from "./strings";
+import { t } from "../../copy";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
-import { IconSearch } from "@tabler/icons-preact";
+import { Back, ICON_SIZE, NoMatches } from "../../ui/icons";
 import { Chip, DetailSection, EmptyState, ErrorState, IconButton, Loading, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
@@ -70,8 +70,8 @@ export function Vault() {
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [notes]);
 
-  if (error) return <div class="screen"><ErrorState title="Could not load" message={error} /></div>;
-  if (!notes) return <div class="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
+  if (error) return <div className="screen"><ErrorState title={t("memoryvault.memoriesCouldNotLoad")} message={error} /></div>;
+  if (!notes) return <div className="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
 
   const stackOpen = !desktop && Boolean(openId);
   useEffect(() => {
@@ -83,27 +83,27 @@ export function Vault() {
   const open = openId ? notes.find((n) => n.id === openId) ?? null : null;
 
   return (
-    <div class={`audit ${desktop ? "is-desktop" : ""}`}>
-      <div class="audit-list">
-        <header class="console">
-          <div class="probe">
+    <div className={`audit ${desktop ? "is-desktop" : ""}`}>
+      <div className="audit-list">
+        <header className="console">
+          <div className="probe">
             <SearchBar label={t("memoryvault.searchMemories")} value={query}
               onInput={setQuery} count={visible.length} />
           </div>
-          <div class="chiprail">
+          <div className="chiprail">
             <Chip pressed={!showSources} onClick={() => setShowSources(false)}>
-              Memories <b class="t-num">{memoriesN}</b>
+              {t("longtermmemorynavigation.memories")} <b className="t-num">{memoriesN}</b>
             </Chip>
             <Chip pressed={showSources} onClick={() => setShowSources(true)}>
-              {t("memoryvault.sources")} <b class="t-num">{sourcesN}</b>
+              {t("memoryvault.sources")} <b className="t-num">{sourcesN}</b>
             </Chip>
-            <span class="rail-gap" />
+            <span className="rail-gap" />
             {types.map(([type, n]) => (
               <Chip key={type} pressed={typeFilter === type} onClick={() => setTypeFilter(typeFilter === type ? null : type)}>
-                <span class={`tdot type-${type}`} aria-hidden="true" />{type.replaceAll("_", " ")} {n}
+                <span className={`tdot type-${type}`} aria-hidden="true" />{type.replaceAll("_", " ")} {n}
               </Chip>
             ))}
-            <span class="rail-gap" />
+            <span className="rail-gap" />
             {(["updated", "title", "pressure", "status"] as SortKey[]).map((k) => (
               <Chip key={k} pressed={sort === k} onClick={() => setSort(k)}>
                 ↓ {{ updated: "Edited", title: "Title", pressure: "Limits", status: "Status" }[k]}
@@ -111,13 +111,13 @@ export function Vault() {
             ))}
           </div>
         </header>
-        <main class="rows mem-rows">
+        <main className="rows mem-rows">
           {visible.length === 0 && (
             // The filtered case earns the magnifier; an empty vault has no
             // search to point at, so it gets the sentence alone.
             (query.trim() || typeFilter)
               ? <EmptyState
-                  icon={<IconSearch size={22} stroke={1.75} aria-hidden />}
+                  icon={<NoMatches size={22} stroke={1.75} aria-hidden />}
                   title={t("memoryvault.filteredEmptyDescription", { value1: query.trim() ? t("memoryvault.filteredEmptySearch", { value1: query.trim() }) : (typeFilter ?? "") })} />
               : <EmptyState title={t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")} />
           )}
@@ -125,17 +125,19 @@ export function Vault() {
         </main>
       </div>
       {desktop && (
-        <aside class="audit-detail">
+        <aside className="audit-detail">
           {open
             ? <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />
-            : <EmptyState title="No memory open" body="Select a memory to edit it." />}
+            : <EmptyState title={t("memory.vault.noneOpen")} body={t("memory.vault.selectToEdit")} />}
         </aside>
       )}
       {!desktop && open && (
-        <div class="stack-screen">
-          <header class="console"><div class="hrow">
-            <IconButton class="hit" label="Back to vault" onClick={closeTopOverlay}>‹</IconButton>
-            <h1 class="console-title">{open.title ?? open.id}</h1>
+        <div className="stack-screen">
+          <header className="console"><div className="hrow">
+            <IconButton className="hit" label={t("memory.backToVault")} onClick={closeTopOverlay}>
+              <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+            </IconButton>
+            <h1 className="console-title">{open.title ?? open.id}</h1>
           </div></header>
           <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />
         </div>
@@ -149,24 +151,24 @@ function NoteRow(props: { note: Note; isOpen: boolean; onOpen: () => void }) {
   const p = pressureOf(n);
   const chars = Object.values(n.sections ?? {}).reduce((sum, s) => sum + (s.text?.length ?? 0), 0);
   return (
-    <div class={`row ${props.isOpen ? "is-open" : ""}`}>
-      <button class="row-summary vault-summary" onClick={props.onOpen}>
-        <span class="rail-cell"><span class={`tdot type-${n.type}`} aria-hidden="true" /></span>
-        <span class="mid">
-          <span class="nm">{n.title ?? n.id}</span>
-          <span class="metaline t-data">
-            <span class={`chip-min type-${n.type}`}>{n.type.replaceAll("_", " ")}</span>
-            {n.status !== "active" && <><i class="sep" data-contrast-exempt>·</i>{n.status}</>}
-            <i class="sep" data-contrast-exempt>·</i><span class="dim">{(n.modes ?? []).join(" ")}</span>
-            {p >= 0.8 && <><i class="sep" data-contrast-exempt>·</i><span class="fl">{p >= 1 ? OURS.overLimit : OURS.nearLimit}</span></>}
+    <div className={`row ${props.isOpen ? "is-open" : ""}`}>
+      <button className="row-summary vault-summary" onClick={props.onOpen}>
+        <span className="rail-cell"><span className={`tdot type-${n.type}`} aria-hidden="true" /></span>
+        <span className="mid">
+          <span className="nm">{n.title ?? n.id}</span>
+          <span className="metaline t-data">
+            <span className={`chip-min type-${n.type}`}>{n.type.replaceAll("_", " ")}</span>
+            {n.status !== "active" && <><i className="sep" data-contrast-exempt>·</i>{n.status}</>}
+            <i className="sep" data-contrast-exempt>·</i><span className="dim">{(n.modes ?? []).join(" ")}</span>
+            {p >= 0.8 && <><i className="sep" data-contrast-exempt>·</i><span className="fl">{p >= 1 ? t("memory.overLimit") : t("memory.nearLimit")}</span></>}
           </span>
           {p >= 0.5 && (
-            <span class="pbar"><i class={p >= 1 ? "is-over" : p >= 0.8 ? "is-near" : ""} style={`width:${Math.min(p * 100, 100)}%`} /></span>
+            <span className="pbar"><i className={p >= 1 ? "is-over" : p >= 0.8 ? "is-near" : ""} style={`width:${Math.min(p * 100, 100)}%`} /></span>
           )}
         </span>
-        <span class="num">
-          <span class={`tok ${p >= 0.8 ? "is-hot" : ""}`}>{(chars / 1000).toFixed(1)}k</span>
-          <span class="unit">ch</span>
+        <span className="num">
+          <span className={`tok ${p >= 0.8 ? "is-hot" : ""}`}>{(chars / 1000).toFixed(1)}k</span>
+          <span className="unit">{t("ui.editor.charUnit")}</span>
         </span>
       </button>
     </div>
@@ -197,7 +199,7 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
       if (v !== undefined && v !== s.text) sections[key] = { ...s, text: v };
     }
     if (Object.keys(sections).length) patch.sections = { ...n.sections, ...sections };
-    if (!Object.keys(patch).length) { toast("No changes"); return; }
+    if (!Object.keys(patch).length) { toast(t("memory.noChanges")); return; }
     setBusy(true);
     try {
       await patchNote(n.id, patch);
@@ -215,8 +217,8 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
     try {
       await patchNote(n.id, { status: "archived" });
       await props.onChanged();
-      toast(`Archived ${n.title ?? n.id}`, {
-        actionLabel: "Undo",
+      toast(t("memory.vault.archived", { title: n.title ?? n.id }), {
+        actionLabel: t("memoryvault.undo"),
         onAction: () => {
           patchNote(n.id, { status: previous })
             .then(() => props.onChanged())
@@ -231,11 +233,11 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
   const remove = async () => {
     const message = n.type === "source"
       ? t("sourcesworkspace.deleteImportedSourceKeepExtractedMessage", { value1: n.title ?? n.id })
-      : `${t("sourcesworkspace.deletePermanently")}: ${n.title ?? n.id}? ${t("sourcesworkspace.deleteImportedSourceWithExtractedMessage", { value1: "" }).split("?")[1]?.trim() ?? "This cannot be undone."}`;
+      : t("memory.vault.deleteConfirm", { title: n.title ?? n.id });
     if (!confirm(message)) return;
     try {
       await deleteNote(n.id);
-      toast(`Deleted ${n.title ?? n.id}`);
+      toast(t("memory.vault.deleted", { title: n.title ?? n.id }));
       props.onClose();
       await props.onChanged();
     } catch (error) {
@@ -246,28 +248,31 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
   const dedupe = (key: string) => {
     const current = drafts[key] ?? n.sections[key]?.text ?? "";
     const result = dedupeLines(current);
-    if (!result) { toast("No near-duplicate lines found"); return; }
+    if (!result) { toast(t("memory.vault.noDupeLines")); return; }
     setDrafts((prev) => ({ ...prev, [key]: result.text }));
-    toast(`Dropped ${result.dropped} near-duplicate line${result.dropped === 1 ? "" : "s"} · ${(current.length - result.text.length).toLocaleString()} ch freed — save to keep it`);
+    toast(t("memory.vault.dedupeResult", {
+      count: result.dropped,
+      chars: (current.length - result.text.length).toLocaleString(),
+    }));
   };
 
   return (
-    <div class="claim-detail">
-      <div class="kvs t-data">
-        <div><span class="k">id</span>{n.id}</div>
-        <div><span class="k">type</span><Tag class={`type-${n.type}`}>{n.type.replaceAll("_", " ")}</Tag></div>
-        <div><span class="k">status</span>
-          <span class="segset" role="group" aria-label="Status">
+    <div className="claim-detail">
+      <div className="kvs t-data">
+        <div><span className="k">{t("memory.vault.id")}</span>{n.id}</div>
+        <div><span className="k">type</span><Tag className={`type-${n.type}`}>{n.type.replaceAll("_", " ")}</Tag></div>
+        <div><span className="k">status</span>
+          <span className="segset" role="group" aria-label="Status">
             {(["active", "resolved", "archived"] as const).map((st) => (
-              <button key={st} class={`seg st-${st} t-data`} aria-pressed={status === st} onClick={() => changeStatus(st)}>{st}</button>
+              <button key={st} className={`seg st-${st} t-data`} aria-pressed={status === st} onClick={() => changeStatus(st)}>{st}</button>
             ))}
           </span>
         </div>
-        <div><span class="k">modes</span>{(n.modes ?? []).join(", ")}</div>
-        <div><span class="k">keywords</span>{(n.keywords ?? []).join(", ") || "—"} <span class="dim">{(n.keywords ?? []).length}/{KEYWORD_CAP}</span></div>
+        <div><span className="k">modes</span>{(n.modes ?? []).join(", ")}</div>
+        <div><span className="k">keywords</span>{(n.keywords ?? []).join(", ") || "—"} <span className="dim">{(n.keywords ?? []).length}/{KEYWORD_CAP}</span></div>
         {(n.links ?? []).length > 0 && (
-          <div><span class="k">links</span>
-            <span>{n.links.map((l, i) => <span key={i} class="linkline"><span class="dim">{l.relation}</span> → <NoteRef id={l.target} /> </span>)}</span>
+          <div><span className="k">{t("memory.vault.links")}</span>
+            <span>{n.links.map((l, i) => <span key={i} className="linkline"><span className="dim">{l.relation}</span> → <NoteRef id={l.target} /> </span>)}</span>
           </div>
         )}
       </div>
@@ -278,12 +283,12 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
         return (
           <DetailSection key={key} sectionKey={key}
             meta={<>
-              <span class="seccount t-data">{value.length.toLocaleString()}<i> / {SECTION_CAP.toLocaleString()}</i></span>
-              <Chip onClick={() => dedupe(key)}>Dedupe lines</Chip>
+              <span className="seccount t-data">{value.length.toLocaleString()}<i> / {SECTION_CAP.toLocaleString()}</i></span>
+              <Chip onClick={() => dedupe(key)}>{t("memory.vault.dedupeLines")}</Chip>
             </>}
-            meter={<span class="pbar"><i class={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={`width:${pct}%`} /></span>}>
+            meter={<span className="pbar"><i className={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={`width:${pct}%`} /></span>}>
             <textarea
-              class="t-prose edit-area"
+              className="t-prose edit-area"
               rows={Math.min(14, Math.max(3, Math.ceil(value.length / 60)))}
               value={value}
               onInput={(e) => setDrafts((prev) => ({ ...prev, [key]: e.currentTarget.value }))}
@@ -292,10 +297,10 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
         );
       })}
 
-      <div class="group-actions">
-        <button class="dock-primary t-label" disabled={busy} onClick={() => void save()}>{t("memoryvault.save")}</button>
-        <button class="action-sec t-label" onClick={() => void archive()}>Archive</button>
-        <button class="action-sec is-danger-act t-label" onClick={() => void remove()}>{t("sourcesworkspace.deletePermanently")}</button>
+      <div className="group-actions">
+        <button className="dock-primary t-label" disabled={busy} onClick={() => void save()}>{t("memoryvault.save")}</button>
+        <button className="action-sec t-label" onClick={() => void archive()}>{t("memoryvault.archive")}</button>
+        <button className="action-sec is-danger-act t-label" onClick={() => void remove()}>{t("sourcesworkspace.deletePermanently")}</button>
       </div>
     </div>
   );

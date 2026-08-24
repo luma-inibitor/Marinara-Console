@@ -1,10 +1,9 @@
 // Read-only quick view of any memory, openable from anywhere a reference
 // appears. References render as <NoteRef/>; the peek is a stacked panel
 // (mobile) / side overlay that never nests — opening a reference from inside
-// a peek replaces the peek. v2 (2026-08-22, detail-surfaces wave): the peek
-// speaks the list's vocabulary — type icon + categorical hue, resolved link
-// targets instead of raw ids, §key section typography, the three-segment
-// mode pill (its first home), and the raw id demoted to a quiet footer.
+// a peek replaces the peek. It speaks the list's vocabulary: type icon +
+// categorical hue, resolved link targets instead of raw ids, §key section
+// typography, the mode pill, and the raw id demoted to a quiet footer.
 
 import { signal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";
@@ -14,6 +13,7 @@ import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { notesById } from "./store";
 import { TypeIcon } from "./icons";
 import { Term, TYPE_TIP } from "./glossary";
+import { t } from "../../copy";
 import { CopyableText, DetailSection, ModePill, RawJson, Sheet, SheetHead, Tag } from "../../ui";
 
 export const peeked = signal<Note | null>(null);
@@ -31,7 +31,7 @@ export async function peekNote(id: string) {
 
 export function NoteRef(props: { id: string; label?: string }) {
   return (
-    <button class="notelink t-data" onClick={(e) => { e.stopPropagation(); peekNote(props.id); }}>
+    <button className="notelink t-data" onClick={(e) => { e.stopPropagation(); peekNote(props.id); }}>
       {props.label ?? props.id}
     </button>
   );
@@ -43,7 +43,7 @@ function PeekLinkTarget({ id }: { id: string }) {
   const note = notesById.value.get(id);
   if (note) {
     return (
-      <span class="nref">
+      <span className="nref">
         <TypeIcon type={note.type} size={14} />
         <NoteRef id={id} label={note.title ?? id} />
       </span>
@@ -62,20 +62,20 @@ export function NotePeek() {
         icon={<Term tip={TYPE_TIP[n.type] ?? n.type}><TypeIcon type={n.type} size={16} /></Term>}
         title={n.title ?? n.id}
       />
-        <div class="peek-meta t-data">
-          <span class={`stt st-${n.status}`}>{n.status}</span>
+        <div className="peek-meta t-data">
+          <span className={`stt st-${n.status}`}>{n.status}</span>
           <ModePill modes={n.modes ?? []} />
         </div>
         {(n.keywords ?? []).length > 0 && (
-          <div class="peek-kw">
+          <div className="peek-kw">
             {n.keywords!.map((k) => <Tag key={k}>{k}</Tag>)}
           </div>
         )}
         {(n.links ?? []).length > 0 && (
-          <div class="peek-links t-data">
+          <div className="peek-links t-data">
             {n.links.map((l, i) => (
-              <div key={i} class="linkrow">
-                <span class="rel">{l.relation.replaceAll("_", " ")} →</span>
+              <div key={i} className="linkrow">
+                <span className="rel">{l.relation.replaceAll("_", " ")} →</span>
                 <PeekLinkTarget id={l.target} />
               </div>
             ))}
@@ -83,13 +83,13 @@ export function NotePeek() {
         )}
         {Object.entries(n.sections ?? {}).map(([key, s]) => (
           <DetailSection key={key} sectionKey={key}>
-            <div class="t-prose peek-text">{s.text}</div>
+            <div className="t-prose peek-text">{s.text}</div>
           </DetailSection>
         ))}
-      <div class="peek-id t-data">
-        <CopyableText value={n.id} label="the memory id" />
+      <div className="peek-id t-data">
+        <CopyableText value={n.id} label={t("memory.peek.id")} />
       </div>
-      <RawJson value={n} label="Raw memory" />
+      <RawJson value={n} label={t("memory.peek.rawMemory")} />
     </Sheet>
   );
 }

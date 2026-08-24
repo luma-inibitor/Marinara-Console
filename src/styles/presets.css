@@ -52,7 +52,6 @@
 
 /* ── rows: ordinal rail, dimmed when off ── */
 .audit .row.in-group { box-shadow: inset 2px 0 0 var(--edge-strong); }
-.audit .row.in-group.is-start { box-shadow: inset 2px 0 0 var(--edge-strong); }
 .rail-cell .ord {
   font-size: 12px; font-weight: 700; color: var(--text-dim);
   font-variant-numeric: tabular-nums;
@@ -112,7 +111,9 @@
   border: var(--hairline); border-radius: var(--r-m);
   background: var(--surface-1); color: var(--text);
 }
-.edit-content .ec-label { color: var(--accent); }
+/* inline-flex + gap so the fullscreen icon sits on the label's centre line
+   rather than its baseline. Gap matches .dbtn, the console's other icon+text button. */
+.edit-content .ec-label { color: var(--accent); display: inline-flex; align-items: center; gap: 6px; }
 .edit-content .ec-meta { color: var(--text-dim); }
 .content-preview {
   margin: 0; padding: var(--s2) var(--s3);
@@ -143,20 +144,20 @@
   .ta.is-fill { min-height: 0; }
 }
 
-/* ── §1 type-role corrections (critique finding B7) ── */
+/* ── §1 type-role corrections ── */
 
-/* A number inside a chip inherited the chip's 9.5px tracked uppercase label
-   styling, so it read as a label rather than a value. Numbers are data. */
+/* Numbers are data: a number inside a chip must not inherit the chip’s 9.5px
+   tracked uppercase label styling, or it reads as a label, not a value. */
 .chip .t-num {
   font-family: var(--font-data);
   font-size: var(--fs-data); letter-spacing: 0; text-transform: none;
   color: var(--text);
 }
 
-/* ── explicit save (2026-08-21) ─────────────────────────────────────
+/* ── explicit save ──────────────────────────────────────────────────
    The commit bar is the only thing in either tool that writes. It sticks to the
    bottom of the editing surface so the state and the action are never scrolled
-   away — the old autosave pill could leave the viewport entirely. */
+   away. */
 .savebar {
   position: sticky; bottom: 0; z-index: 12;
   display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
@@ -190,7 +191,7 @@
 /* per-field dirty marking, so a 40-field panel shows what a save would write */
 .ta.is-dirty, .tin.is-dirty { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
 
-/* inline key entry, replacing window.prompt() */
+/* inline key entry */
 .kadd-in {
   min-height: var(--tap-2); min-width: 92px; flex: 0 0 auto;
   background: var(--canvas); border: 1px dashed var(--edge-strong);
@@ -234,7 +235,7 @@
   .savebar-acts .dbtn { flex: 1; }
 }
 
-/* ── connection banner (P1.1) ────────────────────────────────────── */
+/* ── connection banner ─────────────────────────────────────────── */
 .connbar {
   position: fixed; left: 0; right: 0; top: 0; z-index: 80;
   display: flex; align-items: center; gap: var(--s2);
@@ -256,7 +257,7 @@
 }
 @media (max-width: 640px) { .connbar { flex-wrap: wrap; } .connbar-btn { width: 100%; } }
 
-/* ── toasts (P1.5) ───────────────────────────────────────────────── */
+/* ── toasts ────────────────────────────────────────────────────── */
 /* clear the action dock AND the tab bar, so the sole undo path is never
    overlapped by the controls it sits above */
 .toaster { bottom: calc(128px + env(safe-area-inset-bottom)); }

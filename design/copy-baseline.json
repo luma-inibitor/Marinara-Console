@@ -1,0 +1,21 @@
+{
+  "_areas": {
+    "src/shell": "clean",
+    "src/ui": "clean",
+    "src/tools": "baselined",
+    "src/tools/memory": "clean",
+    "src/tools/lorebooks": "clean",
+    "src/tools/presets": "baselined"
+  },
+  "src/tools/PlaceholderTool.tsx": [
+    "unknown tool"
+  ],
+  "src/tools/presets/PresetsTool.tsx": [
+    "\u0000 unsaved \u0000",
+    "change",
+    "changes",
+    "fields",
+    "this section was updated elsewhere while you were editing \u0000 . saving now would overwrite that.",
+    "\u2014 the same \u0000 you changed"
+  ]
+}
