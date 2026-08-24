@@ -78,7 +78,7 @@ export type { Icon };
 
 /** The size scale, read off the 63 call sites that existed before it did.
  *  Stroke is 1.75 everywhere except the small glyphs, which need 2+ to stay
- *  legible — `strokeFor` encodes that rather than leaving it to each caller. */
+ *  legible; call sites pass `stroke={2}` at xs/sm. */
 export const ICON_SIZE = {
   xs: 12,   // inline help, cost, fold markers, small actions
   sm: 13,   // inline body glyphs, chevrons, flags
@@ -87,13 +87,6 @@ export const ICON_SIZE = {
   xl: 16,   // kebab, modal headers
   hero: 22, // empty-state icons — 11/11 consistent before this existed
 } as const;
-
-export type IconSize = keyof typeof ICON_SIZE;
-
-/** Small glyphs need a heavier stroke to survive at 11–13px. */
-export function strokeFor(size: number): number {
-  return size <= 13 ? 2 : 1.75;
-}
 
 // ── Semantic names ──────────────────────────────────────────────────
 // Grouped by what they MEAN. Two names may point at one glyph when the
@@ -189,6 +182,9 @@ export const Incomplete = IconAlertTriangle;    // an extraction that stopped
                                                 // short — not a failure, a
                                                 // partial harvest that needs
                                                 // re-running
+// reserved: PartialResult and Degraded have no call site yet — they are the
+// state-signal vocabulary DESIGN.md §207 commits to, kept so the two states
+// cannot be re-invented under a different glyph (owner-decided 2026-08-23).
 export const PartialResult = IconProgressX;     // partial: some of the batch
                                                 // landed, some did not. The
                                                 // progress arc is its own
@@ -278,6 +274,8 @@ export const TYPE_ICON: Record<string, Icon> = {
   world: IconWorld,
   tone: IconMusic,
   source: IconDatabase,
+  // reserved: `scene` is a real schema type in MEMORY-SCHEMA.md; the live
+  // corpus simply has zero scene notes today, so this entry reads unused.
   scene: IconMovie,
 };
 
@@ -291,28 +289,6 @@ export const OP_ICON: Record<string, Icon> = {
   set_status: IconActivity,
   set_subjects: IconUsers,
 };
-
-/** Render a registry glyph at a scale step. Decorative by default: an icon
- *  that repeats a label next to it must not be read out twice. */
-export function Glyph(props: {
-  icon: Icon;
-  size?: number;
-  stroke?: number;
-  className?: string;
-  label?: string;
-}) {
-  const I = props.icon;
-  const size = props.size ?? ICON_SIZE.md;
-  return (
-    <I
-      size={size}
-      stroke={props.stroke ?? strokeFor(size)}
-      className={props.className}
-      aria-hidden={props.label ? undefined : true}
-      aria-label={props.label}
-    />
-  );
-}
 
 export const Pending = VIEW_ICON.review;        // "work still waiting on you".
                                                 // Deliberately the same binding

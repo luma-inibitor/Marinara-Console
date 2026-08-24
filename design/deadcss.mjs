@@ -33,7 +33,9 @@ const DOMAINS = {
   "dec-": ["keep", "drop", "undecided"],
   "ln-": ["add", "del", "ctx"],
   "st-": ["active", "resolved", "archived"],
-  "is-": ["dirty", "saved", "err"],       // SavePill
+  // SavePill (dirty/saved/err) plus the group-run boundaries the presets audit
+  // composes as `is-${run}` — see groupRunBoundaries in src/tools/presets/data.ts.
+  "is-": ["dirty", "saved", "err", "start", "mid", "end", "solo"],
   "kw-": ["add", "del"],
   "es-": ["ok", "danger"],          // EmptyState tone
 };

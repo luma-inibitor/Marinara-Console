@@ -52,7 +52,6 @@
 
 /* ── rows: ordinal rail, dimmed when off ── */
 .audit .row.in-group { box-shadow: inset 2px 0 0 var(--edge-strong); }
-.audit .row.in-group.is-start { box-shadow: inset 2px 0 0 var(--edge-strong); }
 .rail-cell .ord {
   font-size: 12px; font-weight: 700; color: var(--text-dim);
   font-variant-numeric: tabular-nums;
