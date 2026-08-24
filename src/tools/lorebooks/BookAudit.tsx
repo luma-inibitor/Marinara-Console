@@ -1,8 +1,8 @@
 // The audit screen: console header (Find/Test probe, budget meter, sort chips),
 // audit rows, bulk select, tag panel, and the entry editor — inline accordion on
 // mobile, master-detail side panel on desktop (DESIGN.md §6).
-import type { ComponentChildren } from "preact";
-import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { navigate } from "../../shell/router";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { toast } from "../../shell/toast";
@@ -62,10 +62,11 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     if (!entries.some((e) => e.id === initialEntryId)) return;
     setFocusId(initialEntryId);
     setOpen((s) => new Set(s).add(initialEntryId));
-    requestAnimationFrame(() => {
+    const frame = requestAnimationFrame(() => {
       (listRef.current?.querySelector(`[data-row="${CSS.escape(initialEntryId)}"]`) as HTMLElement | null)
         ?.scrollIntoView({ block: "center" });
     });
+    return () => cancelAnimationFrame(frame);
   }, [entries, initialEntryId]);
 
   useEffect(() => {
@@ -235,8 +236,15 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
   // up its own half of the overlay contract: flip the signal, then register a
   // closer. Without it the back gesture walks past the panel and leaves the
   // lorebook, which on a phone is the only dismissal gesture there is.
+  // The ref, not the effect body, is what makes this exactly-once: openOverlay
+  // pushes a history entry and there is no un-push, so a second registration
+  // for the same open leaves a phantom entry on the stack and the back gesture
+  // has to be used twice to leave the panel.
+  const tagsRegistered = useRef(false);
   useEffect(() => {
-    if (showTags) openOverlay(() => setShowTags(false));
+    if (!showTags || tagsRegistered.current) return;
+    tagsRegistered.current = true;
+    openOverlay(() => { tagsRegistered.current = false; setShowTags(false); });
   }, [showTags]);
 
   // ── keyboard: j/k roving focus, Enter opens, Escape backs out ──
@@ -244,8 +252,8 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
   const roving = useRovingFocus({
     listRef, keys: visible.map((e) => e.id), current: focusId, onFocus: setFocusId,
   });
-  const onListKey = useCallback((ev: KeyboardEvent) => {
-    if (roving.ignore(ev)) return;
+  const onListKey = useCallback((ev: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (roving.ignore(ev.nativeEvent)) return;
     if (ev.key === "j" || ev.key === "ArrowDown") { ev.preventDefault(); roving.move(1); }
     else if (ev.key === "k" || ev.key === "ArrowUp") { ev.preventDefault(); roving.move(-1); }
     else if ((ev.key === "Enter" || ev.key === "o") && focusId) {
@@ -468,7 +476,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
 function Row(props: {
   entry: Entry; ev?: Evaluation; hotT: boolean; hotK: boolean; mode: Mode;
   selecting: boolean; isSelected: boolean; isOpen: boolean; isFocused: boolean;
-  onActivate: () => void; drawer: ComponentChildren;
+  onActivate: () => void; drawer: ReactNode;
 }) {
   const { entry: e, ev, hotT, hotK } = props;
   const status = statusOf(e);

@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useState } from "react";
 import { Copy, Copied } from "./icons";
 import { toast } from "../shell/toast";
 import { t } from "../copy";

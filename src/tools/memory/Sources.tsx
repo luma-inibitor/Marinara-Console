@@ -8,8 +8,8 @@
 //
 // Every state name and action verb here comes from the product catalog.
 
-import { useEffect, useMemo, useState } from "preact/hooks";
-import { signal } from "@preact/signals";
+import { useEffect, useMemo, useState } from "react";
+import { createStore, useStore } from "../../lib/store";
 import {
   NoMatches, ChevronRight, ChevronDown, ExternalLink, Confirm,
   Failure, Cost, Info, Edit, Forward, AllClear, Pending, Close, ICON_SIZE,
@@ -91,8 +91,8 @@ function Spend({ n }: { n: number }) {
 interface Chat { id: string; name?: string; mode?: string }
 
 
-const openRow = signal<string | null>(null);
-const railView = signal<"pending" | "imported" | "all">("pending");
+const openRow = createStore<string | null>(null);
+const railView = createStore<"pending" | "imported" | "all">("pending");
 
 /** Same collapse vocabulary as the review queue: a chevron in the control
  *  column, and a collapsed group keeps its header and its count so the
@@ -116,6 +116,9 @@ export function Sources() {
   const [results, setResults] = useState<ImportResult[] | null>(null);
   const [confirmN, setConfirmN] = useState<number | null>(null);
   const stopRef = useState<{ v: boolean }>({ v: false })[0];
+  const chatId = useStore(scopeChatId);
+  const rail = useStore(railView);
+  const collapsedIds = collapse.useCollapsed();
 
   const load = async () => {
     setLoading(true);
@@ -137,16 +140,16 @@ export function Sources() {
     api<Chat[] | { items: Chat[] }>("/chats")
       .then((r) => setChats(Array.isArray(r) ? r : r.items ?? []))
       .catch(() => setChats([]));
-  }, [scopeChatId.value]);
+  }, [chatId]);
 
   const rows = useMemo(() => buildSources(previews, review, notes), [previews, review, notes]);
   const { pending, imported, all } = partition(rows);
-  useEffect(() => { pendingSources.value = pending.length; }, [pending.length]);
+  useEffect(() => { pendingSources.set(pending.length); }, [pending.length]);
   const blockedDrafts = useMemo(
     () => (review?.sources ?? []).flatMap((s) => s.drafts.filter((d) => d.blockReasons.length)),
     [review]);
 
-  const view = railView.value === "pending" ? pending : railView.value === "imported" ? imported : all;
+  const view = rail === "pending" ? pending : rail === "imported" ? imported : all;
   const byMode = modes.size === MODES.length ? view : view.filter((r) => modes.has(r.importMode));
   // fuzzy: source titles are long and repetitive, and "hh" should find
   // "Harbour Household" without the reviewer typing the whole thing
@@ -170,7 +173,7 @@ export function Sources() {
       setJob({ done: i, total: batch.length });
       try {
         const body: Record<string, unknown> = { source: r.kind, sourceIds: [r.sourceId], extract: true };
-        if (scopeChatId.value) body.chatId = scopeChatId.value;
+        if (scopeChatId.get()) body.chatId = scopeChatId.get();
         out.push(await importSourceNotes(body));
       } catch (error) {
         out.push({ batchStatus: "failed", source: r.kind, imported: [{ sourceId: r.sourceId, title: r.title }] } as ImportResult);
@@ -221,7 +224,7 @@ export function Sources() {
           onResume={(rest) => void runImport(rest)} rest={selectedRows.slice(job.done)} />}
 
         {loading && <Loading label={t("sourcesworkspace.loadingSourcePreview")} />}
-        {!loading && shown.length === 0 && <SourcesEmpty q={q} rows={rows} view={railView.value} chats={chats} />}
+        {!loading && shown.length === 0 && <SourcesEmpty q={q} rows={rows} view={rail} chats={chats} />}
 
         {!loading && KINDS.flatMap(({ id, label, icon: KI, bulk }) => {
           const inKind = shown.filter((r) => r.kind === id);
@@ -236,7 +239,7 @@ export function Sources() {
           const group = gname ? inKind.filter((r) => r.group === gname) : inKind;
           const heading = gname || label();
           const gid = id + "/" + gname;
-          const collapsed = collapse.has(gid);
+          const collapsed = collapsedIds.has(gid);
           const eligible = group.filter(isSelectable);
           const allPicked = eligible.length > 0 && eligible.every((r) => selected.has(r.sourceId));
           return (
@@ -295,8 +298,9 @@ export function Sources() {
 }
 
 function RailChip({ id, label, n }: { id: "pending" | "imported" | "all"; label: string; n: number }) {
+  const rail = useStore(railView);
   return (
-    <button className="qchip hit" aria-pressed={railView.value === id} onClick={() => { railView.value = id; }}>
+    <button className="qchip hit" aria-pressed={rail === id} onClick={() => { railView.set(id); }}>
       {label} <b>{n}</b>
     </button>
   );
@@ -312,7 +316,7 @@ function SourceLine({ row, bulk, selected, onToggle, onReload }: {
   row: SourceRow; bulk: boolean; selected: boolean; onToggle: () => void; onReload: () => Promise<void>;
 }) {
   const expandable = !bulk || isImported(row);
-  const open = openRow.value === row.sourceId;
+  const open = useStore(openRow) === row.sourceId;
   const KI = KINDS.find((k) => k.id === row.kind)?.icon ?? SOURCE_KIND_ICON.character;
   return (
     <>
@@ -325,7 +329,7 @@ function SourceLine({ row, bulk, selected, onToggle, onReload }: {
         )}
         {expandable && (
           <button className="xchev hit" aria-expanded={open} aria-label={open ? t("memory.collapse") : t("memory.expand")}
-            onClick={() => { openRow.value = open ? null : row.sourceId; }}>
+            onClick={() => { openRow.set(open ? null : row.sourceId); }}>
             {open ? <ChevronDown size={13} stroke={1.75} aria-hidden />
                   : <ChevronRight size={13} stroke={1.75} aria-hidden />}
           </button>
@@ -392,20 +396,21 @@ function ProducedPanel({ row }: { row: SourceRow }) {
 }
 
 // ── curate: read the extraction text, edit it, import it ────────────
-const overrides = signal<Map<string, string>>(new Map());
+const overrides = createStore<Map<string, string>>(new Map());
 
 function CuratePanel({ row, onImported }: { row: SourceRow; onImported: () => Promise<void> }) {
-  const stored = overrides.value.get(row.sourceId) ?? row.snippet;
+  const staged = useStore(overrides);
+  const stored = staged.get(row.sourceId) ?? row.snippet;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(stored);
   const [busy, setBusy] = useState(false);
-  const edited = overrides.value.has(row.sourceId);
+  const edited = staged.has(row.sourceId);
 
   const save = () => {
     if (!draft.trim()) { toast(t("reviewqueue.sectionTextCannotBeEmpty"), { kind: "error" }); return; }
-    const next = new Map(overrides.value);
+    const next = new Map(overrides.get());
     next.set(row.sourceId, draft);
-    overrides.value = next;
+    overrides.set(next);
     setEditing(false);
   };
 
@@ -413,10 +418,10 @@ function CuratePanel({ row, onImported }: { row: SourceRow; onImported: () => Pr
     setBusy(true);
     try {
       const body: Record<string, unknown> = { source: row.kind, sourceIds: [row.sourceId], extract: true };
-      if (scopeChatId.value) body.chatId = scopeChatId.value;
+      if (scopeChatId.get()) body.chatId = scopeChatId.get();
       await importSourceNotes(body);
       toast(t("sourcesworkspace.sourceImportComplete"));
-      openRow.value = null;
+      openRow.set(null);
       await onImported();
     } catch (error) {
       toast((error as Error).message, { kind: "error" });
@@ -459,7 +464,7 @@ function CuratePanel({ row, onImported }: { row: SourceRow; onImported: () => Pr
             </button>
             <span className="gsp" />
             {edited && <span className="dirty t-data"><Edit size={12} stroke={1.75} aria-hidden />{t("memoryvault.editedManually")}</span>}
-            <button className="dbtn2 hit" onClick={() => { openRow.value = null; }}>{t("longtermmemorydetail.reviewSkip")}</button>
+            <button className="dbtn2 hit" onClick={() => { openRow.set(null); }}>{t("longtermmemorydetail.reviewSkip")}</button>
           </>
         )}
       </div>
@@ -496,7 +501,7 @@ function JobDock({ job, onStop, onResume, rest }: {
         <span className="gsp" />
         <button className="action-sec hit" onClick={onStop}>{t("memory.stop")}</button>
       </div>
-      <span className="jbar"><i style={`width:${Math.round((job.done / Math.max(1, job.total)) * 100)}%`} /></span>
+      <span className="jbar"><i style={{ width: `${Math.round((job.done / Math.max(1, job.total)) * 100)}%` }} /></span>
       <p className="jobnote t-data dim">
         <Info size={12} stroke={1.75} aria-hidden />
         <span>{t("memory.sources.stopNote")}</span>
@@ -509,7 +514,8 @@ function JobDock({ job, onStop, onResume, rest }: {
 function ConfirmSheet({ n, chats, onCancel, onGo }: {
   n: number; chats: Chat[]; onCancel: () => void; onGo: () => void;
 }) {
-  const scope = chats.find((c) => c.id === scopeChatId.value);
+  const chatId = useStore(scopeChatId);
+  const scope = chats.find((c) => c.id === chatId);
   return (
     <Modal label={t("memory.sources.confirmImport")} onClose={onCancel}>
       <div className="chead"><Cost size={16} stroke={1.75} aria-hidden />
@@ -606,8 +612,9 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
 function SourcesEmpty({ q, rows, view, chats }: {
   q: string; rows: SourceRow[]; view: "pending" | "imported" | "all"; chats: Chat[];
 }) {
-  const scoped = Boolean(scopeChatId.value);
-  const scopeName = chats.find((c) => c.id === scopeChatId.value)?.name ?? t("memory.sources.thisChat");
+  const chatId = useStore(scopeChatId);
+  const scoped = Boolean(chatId);
+  const scopeName = chats.find((c) => c.id === chatId)?.name ?? t("memory.sources.thisChat");
 
   if (q.trim()) {
     return (

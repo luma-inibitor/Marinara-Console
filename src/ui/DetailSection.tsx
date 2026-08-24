@@ -1,4 +1,4 @@
-import type { ComponentChildren } from "preact";
+import type { ReactNode } from "react";
 import "./DetailSection.css";
 
 /** One section of a memory — §core, §appearance — with its heading and body.
@@ -10,9 +10,9 @@ import "./DetailSection.css";
  *  fill bar that belongs under the heading when the section has a cap. */
 export function DetailSection(props: {
   sectionKey: string;
-  meta?: ComponentChildren;
-  meter?: ComponentChildren;
-  children: ComponentChildren;
+  meta?: ReactNode;
+  meter?: ReactNode;
+  children: ReactNode;
   className?: string;
 }) {
   return (

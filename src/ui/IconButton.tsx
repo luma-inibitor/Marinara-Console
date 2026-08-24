@@ -1,4 +1,4 @@
-import type { ComponentChildren } from "preact";
+import type { ReactNode } from "react";
 import "./IconButton.css";
 
 /** A square button holding one icon.
@@ -9,7 +9,7 @@ import "./IconButton.css";
  *  Pass `href` to render an anchor instead — a download link that looks like a
  *  button is still a link, and should keep a link's behaviours. */
 export function IconButton(props: {
-  children: ComponentChildren;
+  children: ReactNode;
   label: string;
   onClick?: () => void;
   href?: string;

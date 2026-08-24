@@ -1,5 +1,5 @@
-import type { ComponentChildren } from "preact";
-import { useState } from "preact/hooks";
+import type { ReactNode } from "react";
+import { useState } from "react";
 import "./Term.css";
 
 /** A word or icon that can explain itself in place.
@@ -13,7 +13,7 @@ import "./Term.css";
  *  Their teaching goes in a first-use hint. */
 export function Term(props: {
   tip: string;
-  children: ComponentChildren;
+  children: ReactNode;
   chip?: boolean;
   /** -1 takes it out of the tab order, for a Term inside a roving composite. */
   tabIndex?: number;
