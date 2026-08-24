@@ -308,11 +308,14 @@ function NoteEditor(props: { note: Note; onClose: () => void }) {
               <Chip onClick={() => dedupe(key)}>{t("memory.vault.dedupeLines")}</Chip>
             </>}
             meter={<span className="pbar"><i className={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={{ width: `${pct}%` }} /></span>}>
+            {/* onInput reads the value out before calling the updater: React runs
+                the updater during a later render, by which point the event has
+                been recycled and currentTarget is null. */}
             <textarea
               className="t-prose edit-area"
               rows={Math.min(14, Math.max(3, Math.ceil(value.length / 60)))}
               value={value}
-              onInput={(e) => setDrafts((prev) => ({ ...prev, [key]: e.currentTarget.value }))}
+              onInput={(e) => { const text = e.currentTarget.value; setDrafts((prev) => ({ ...prev, [key]: text })); }}
             />
           </DetailSection>
         );
