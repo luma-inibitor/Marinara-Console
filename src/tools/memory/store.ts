@@ -8,14 +8,14 @@
 
 import { createStore, derived } from "../../lib/store";
 import { type Mutation, type PreflightResponse, type ReviewResponse } from "./api/types";
-import { acceptDraft, fetchReview, preflightDraft, skipMutations } from "./api/drafts";
+import { fetchReview, preflightDraft } from "./api/drafts";
 import { type BlockedDraft, type Decision, flattenReview, type Rejection, type Row } from "./model/review";
 import { vaultLines, computeDerived } from "./model/derived";
 import { isScoped, rowInScope } from "./model/scope";
 import { currentScope, scopeCharacterId, scopeChatId } from "./store/scope";
 import { lines, loadAllNotes, notesById } from "./store/notes";
 import { activeFacets } from "./store/view";
-import { t, tAny } from "../../copy";
+import { t } from "../../copy";
 import { toast } from "../../shell/toast";
 
 export type { Decision };
@@ -37,13 +37,30 @@ export const edited = createStore<Map<string, Mutation>>(new Map());
 export const appliedThisSession = new Map<string, "applied" | "skipped">();
 
 export const saveState = createStore<"saved" | "saving" | "failed">("saved");
-export const applying = createStore(false);
 export const preflight = createStore<{ ready: number; blockedN: number; auto: number; perDraft: Array<{ draftId: string; pf: PreflightResponse }>; error?: string } | null>(null);
 export const preflightPending = createStore(false);
-export const applyProgress = createStore<{ done: number; total: number } | null>(null);
-export const lastFailures = createStore<Array<{ title: string; fix: string; msg: string; n: number }>>([]);
 
 const undoStack: Array<{ label: string; entries: Array<[string, Decision | null]> }> = [];
+
+/** Record the outcome of one mutation so the next refresh drops its row. */
+export function markApplied(key: string, outcome: "applied" | "skipped") {
+  appliedThisSession.set(key, outcome);
+}
+
+/** Replace the whole ledger in one write, for a batch that resolved many keys. */
+export function commitLedger(dec: Map<string, Decision>, ed: Map<string, Mutation>) {
+  decisions.set(dec);
+  edited.set(ed);
+}
+
+export function clearUndo() {
+  undoStack.length = 0; // snapshots reference applied keys; undoing them would lie
+  canUndo.set(false);
+}
+
+export function clearPreflight() {
+  preflight.set(null);
+}
 
 // ── derived ─────────────────────────────────────────────────────────
 
@@ -334,7 +351,7 @@ export async function refresh(first = false) {
 let preflightTimer: ReturnType<typeof setTimeout> | undefined;
 let preflightSeq = 0;
 
-function keepsByDraft() {
+export function keepsByDraft() {
   const byDraft = new Map<string, Row[]>();
   for (const row of rows.get()) {
     if (decisions.get().get(row.key) !== "keep") continue;
@@ -360,10 +377,8 @@ export function schedulePreflight() {
   preflightTimer = setTimeout(() => void runPreflight(), 500);
 }
 
-/** Cancel the debounce and run a preflight right now (Apply must never use a
- *  stale snapshot: a keep→drop flip inside the debounce would send a
- *  just-skipped id to accept). */
-async function preflightNow() {
+/** Cancel the debounce and run a preflight right now. */
+export async function preflightNow() {
   clearTimeout(preflightTimer);
   preflightTimer = undefined;
   await runPreflight();
@@ -396,124 +411,4 @@ async function runPreflight() {
     preflight.set({ ready: 0, blockedN: 0, auto: 0, perDraft: [], error: (error as Error).message });
   }
   if (seq === preflightSeq) preflightPending.set(false);
-}
-
-// ── apply ───────────────────────────────────────────────────────────
-// Drops first (skip removes exactly those), then accept the keeps.
-// Undecided claims are never sent. Failures classify with the fix named.
-
-// The table pairs a matcher with a copy KEY pair; the prose lives in
-// src/copy/memory.json, so the shape here stays a classifier.
-const ERROR_KINDS: Array<{ match: RegExp; key: string }> = [
-  { match: /exceeds its storage contract|20,000-character|contribution limit/i, key: "storageCap" },
-  { match: /not pending|superseded|already applied/i, key: "draftMoved" },
-  { match: /source or extraction context changed/i, key: "sourceChanged" },
-  { match: /edited mutation/i, key: "editRejected" },
-  { match: /fetch failed|timeout|aborted|network|50\d\b/i, key: "upstream" },
-];
-
-function classify(msg: string): { title: string; fix: string } {
-  const hit = ERROR_KINDS.find((k) => k.match.test(msg));
-  if (!hit) return { title: t("memory.error.applyFailed"), fix: msg.slice(0, 200) };
-  return { title: tAny(`memory.error.${hit.key}.title`), fix: tAny(`memory.error.${hit.key}.fix`) };
-}
-
-export async function applyDecided() {
-  if (applying.get()) return;
-  applying.set(true);
-  await preflightNow();
-  const pf = preflight.get();
-  if (pf?.error) { applying.set(false); return; }
-  const dropsByDraft = new Map<string, Row[]>();
-  for (const row of rows.get()) {
-    if (decisions.get().get(row.key) !== "drop") continue;
-    let list = dropsByDraft.get(row.draftId);
-    if (!list) dropsByDraft.set(row.draftId, (list = []));
-    list.push(row);
-  }
-  const keeps = keepsByDraft();
-  if (!dropsByDraft.size && !keeps.size) { applying.set(false); return; }
-
-  let applied = 0, dropped = 0;
-  const failures = new Map<string, { title: string; fix: string; msg: string; n: number }>();
-  const fail = (msg: string) => {
-    const k = classify(msg);
-    const cur = failures.get(k.title) ?? { ...k, msg, n: 0 };
-    cur.n += 1;
-    failures.set(k.title, cur);
-  };
-
-  const dec = new Map(decisions.get());
-  const ed = new Map(edited.get());
-  const draftIds = new Set([...dropsByDraft.keys(), ...keeps.keys()]);
-  let draftIndex = 0;
-  applyProgress.set({ done: 0, total: draftIds.size });
-  for (const draftId of draftIds) {
-    draftIndex += 1;
-    applyProgress.set({ done: draftIndex, total: draftIds.size });
-    const drops = dropsByDraft.get(draftId) ?? [];
-    if (drops.length) {
-      try {
-        const res = await skipMutations(draftId, drops.map((r) => r.mutation.id));
-        for (const id of res.mutationIds ?? []) {
-          const key = `${draftId}:${id}`;
-          appliedThisSession.set(key, "skipped");
-          dec.delete(key);
-          dropped += 1;
-        }
-      } catch (error) {
-        const msg = String((error as Error).message ?? error);
-        if (!/not pending|superseded|not found/i.test(msg)) {
-          fail(msg);
-          continue; // don't accept into a draft whose drops failed
-        }
-      }
-    }
-    const keepRows = keeps.get(draftId) ?? [];
-    if (!keepRows.length) continue;
-    const draftPf = pf?.perDraft.find((x) => x.draftId === draftId)?.pf;
-    // Preflight may auto-include a dependency the user explicitly dropped;
-    // those ids were just deleted by the skip above — never send them.
-    const dropIds = new Set(drops.map((r) => r.mutation.id));
-    const ids = (draftPf?.readyMutationIds ?? keepRows.map((r) => r.mutation.id))
-      .filter((id) => !dropIds.has(id));
-    if (!ids.length) continue;
-    try {
-      const body: { mutationIds: string[]; editedMutations?: Mutation[] } = { mutationIds: ids };
-      const editedMuts = keepRows.map((r) => edited.get().get(r.key)).filter(Boolean) as Mutation[];
-      if (editedMuts.length) body.editedMutations = editedMuts;
-      const res = await acceptDraft(draftId, body);
-      const serverSkipped = new Set(res.skippedMutationIds ?? []);
-      const appliedIds = res.appliedMutationIds ?? ids.filter((id) => !serverSkipped.has(id));
-      for (const id of appliedIds) {
-        const key = `${draftId}:${id}`;
-        appliedThisSession.set(key, "applied");
-        dec.delete(key);
-        ed.delete(key);
-        applied += 1;
-      }
-      if (res.draft?.indexRebuildStatus === "failed") {
-        toast(t("memoryvault.savedButRecallIsStale", { error: res.draft.indexRebuildError ?? "" }), { kind: "error" });
-      }
-    } catch (error) {
-      fail(String((error as Error).message ?? error));
-    }
-  }
-
-  decisions.set(dec);
-  edited.set(ed);
-  applying.set(false);
-  applyProgress.set(null);
-  preflight.set(null);
-  undoStack.length = 0; // snapshots reference applied keys; undoing them would lie
-  canUndo.set(false);
-  lastFailures.set([...failures.values()]);
-  persist();
-  const failed = lastFailures.get().reduce((n, f) => n + f.n, 0);
-  toast(
-    `${t("reviewqueue.applied")}: ${applied} · ${t("memory.dropped")}: ${dropped}` +
-      (failed ? ` ${t("memory.apply.failedCount", { count: failed })}` : ""),
-    failed ? { kind: "error" } : {},
-  );
-  await refresh();
 }
