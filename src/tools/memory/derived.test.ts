@@ -9,7 +9,7 @@
 // the longer run's, so jaccard is (prefix shingles) / (longer shingles).
 
 import { beforeEach, describe, expect, it } from "vitest";
-import { DUPLICATE_THRESHOLD, computeDerived, dedupeLines, jaccard, shingles, vaultLines } from "./derived";
+import { DUPLICATE_THRESHOLD, computeDerived, dedupeLines, jaccard, normalizeLine, shingles, vaultLines } from "./derived";
 import type { Row } from "./data";
 import { makeNote, makeRow, resetIds, section } from "./test/factories";
 
@@ -194,16 +194,21 @@ describe("vaultLines", () => {
     ]);
   });
 
-  it("leaves an indented bullet marker in place", () => {
-    // SUSPECT: the strip is anchored at the start of the raw line and the trim
-    // only runs afterwards, so any leading whitespace shields the marker.
-    // dedupeLines does the same two steps in the opposite order and does strip
-    // it. The similarity score is unaffected — shingles turns the marker into
-    // whitespace anyway — but the marker rides along in `line`, which is the
-    // string the restates banner quotes back to the reviewer, and it counts
-    // toward the 12-character floor.
+  it("strips the marker from an indented bullet", () => {
+    // The strip is anchored with ^, so it only reaches the marker because
+    // normalizeLine trims first. Getting that order wrong left the marker in
+    // `line`, which is the string the restates banner quotes back, and it
+    // counted toward the 12-character floor.
     const note = makeNote({ sections: { s: section(" *  starred line of length") } });
-    expect(vaultLines([note]).map((l) => l.line)).toEqual(["*  starred line of length"]);
+    expect(vaultLines([note]).map((l) => l.line)).toEqual(["starred line of length"]);
+  });
+
+  it("normalizes the same way dedupeLines does", () => {
+    // The two used to disagree on exactly this input. They share normalizeLine
+    // now, so the assertion is that neither can drift again.
+    const indented = " *  a line long enough to clear both floors";
+    const note = makeNote({ sections: { s: section(indented) } });
+    expect(vaultLines([note])[0].line).toBe(normalizeLine(indented));
   });
 
   it("drops lines shorter than 12 characters, measured after stripping", () => {

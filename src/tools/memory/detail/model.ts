@@ -7,6 +7,7 @@
 // is a CSS behavior rather than a decision this module makes.
 
 import { SECTION_CAP, type Note } from "../data";
+import { normalizeLine } from "../derived";
 import { t } from "../../../copy";
 
 /** Cap pressure at which a section earns the flag. */
@@ -14,12 +15,10 @@ const NEAR_CAP = 0.8;
 
 /** Stored section text as display lines: blank lines are separators rather
  *  than content, and a leading bullet marker is punctuation the row re-adds.
- *  The same normalization `derived.ts` uses to read the vault line by line. */
+ *  Shares `normalizeLine` with the vault reader so the two cannot drift — they
+ *  did, and an indented sub-bullet used to render behind two markers. */
 export function sectionLines(text: string): string[] {
-  return (text ?? "")
-    .split(/\n+/)
-    .map((line) => line.replace(/^[-•*]\s*/, "").trim())
-    .filter(Boolean);
+  return (text ?? "").split(/\n+/).map(normalizeLine).filter(Boolean);
 }
 
 export interface SectionFlag {

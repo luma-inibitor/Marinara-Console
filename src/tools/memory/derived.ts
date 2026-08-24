@@ -16,6 +16,20 @@ import type { Note, Row } from "./data";
 const RESTATES_THRESHOLD = 0.45;
 export const DUPLICATE_THRESHOLD = 0.7;
 
+/** One stored line as content: no bullet marker, no surrounding whitespace.
+ *
+ *  The trim has to come first. The strip is anchored with `^`, so on an
+ *  indented sub-bullet the leading whitespace shields the marker from it and
+ *  the marker survives into the text — which the detail card then renders
+ *  behind a marker of its own.
+ *
+ *  Only one marker comes off. A line that deliberately begins `* ` after its
+ *  bullet keeps that second character, which is a separate question from this
+ *  one. */
+export function normalizeLine(raw: string): string {
+  return raw.trim().replace(/^[-•*]\s*/, "").trim();
+}
+
 export function shingles(text: string, size = 4): Set<string> {
   const words = text.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
   const out = new Set<string>();
@@ -45,7 +59,7 @@ export function vaultLines(notes: Note[]): VaultLine[] {
     if (note.type === "source") continue;
     for (const [key, section] of Object.entries(note.sections ?? {})) {
       for (const raw of (section.text ?? "").split(/\n+/)) {
-        const line = raw.replace(/^[-•*]\s*/, "").trim();
+        const line = normalizeLine(raw);
         if (line.length < 12) continue;
         lines.push({ noteId: note.id, sectionKey: key, line, sh: shingles(line) });
       }
@@ -90,7 +104,7 @@ export function dedupeLines(text: string): { text: string; dropped: number } | n
   const sh: Array<Set<string> | null> = [];
   let dropped = 0;
   for (const line of raw) {
-    const body = line.trim().replace(/^[-•*]\s*/, "");
+    const body = normalizeLine(line);
     if (body.length < 25) { keep.push(line); sh.push(null); continue; }
     const g = shingles(body);
     let hit = -1;
@@ -99,7 +113,7 @@ export function dedupeLines(text: string): { text: string; dropped: number } | n
     }
     if (hit < 0) { keep.push(line); sh.push(g); continue; }
     dropped += 1;
-    const kept = keep[hit].trim().replace(/^[-•*]\s*/, "");
+    const kept = normalizeLine(keep[hit]);
     if (body.length > kept.length) { keep[hit] = line; sh[hit] = g; }
   }
   if (!dropped) return null;
