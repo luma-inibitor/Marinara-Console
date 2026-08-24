@@ -47,7 +47,7 @@ function ctx(over: { pressure?: Map<string, SectionPressure>; notesById?: Map<st
 function pressure(entries: Array<[string, string, number]>): Map<string, SectionPressure> {
   const m = new Map<string, SectionPressure>();
   for (const [noteId, key, projected] of entries) {
-    m.set(`${noteId} ${key}`, { noteId, key, current: 0, projected });
+    m.set(`${noteId} ${key}`, { noteId, key, current: 0, projected, additive: true });
   }
   return m;
 }

@@ -16,6 +16,7 @@ import {
   activeFacets, applyDecided, applying, applyProgress, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, droppedDependencyWarnings, edited, facetSheetOpen, groupBy, lastFailures, loadError, loading, notesById, preflight, preflightPending, preflightRowState, pressure, readyToSend, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, tally, undo,
 } from "./store";
 import { SECTION_CAP as CAP } from "./api/types";
+import { capPercent } from "./model/pressure";
 import { refreshLtmStatus } from "./MemoryTool";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { Flag, AllClear, NoMatches, DECISION_ICON, More, EditedMark, Back, Refresh, Download } from "../../ui/icons";
@@ -589,7 +590,7 @@ function GroupPressure(props: { groupId: string; isTarget: boolean }) {
   }
   if (!worst || worst.projected < CAP * 0.8) return null;
   const over = worst.projected > CAP;
-  const pct = Math.round((worst.projected / CAP) * 100);
+  const pct = capPercent(worst.projected);
   return (
     <span className="fq gcap" data-sev={over ? "danger" : "warn"}
       title={t("memory.review.capTitle", { key: worst.key, stored: worst.current.toLocaleString(), projected: worst.projected.toLocaleString(), cap: CAP.toLocaleString() })}>

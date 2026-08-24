@@ -8,6 +8,7 @@
 
 import { type Note, SECTION_CAP } from "../api/types";
 import { normalizeLine } from "../model/derived";
+import { capPercent } from "../model/pressure";
 import { t } from "../../../copy";
 
 /** Cap pressure at which a section earns the flag. */
@@ -41,10 +42,13 @@ export interface SectionView {
 function capFlag(chars: number, key: string): SectionFlag | null {
   const ratio = chars / SECTION_CAP;
   if (ratio < NEAR_CAP) return null;
-  const pct = Math.round(ratio * 100);
+  const pct = capPercent(chars);
   return {
     ratio,
-    sentence: ratio >= 1
+    // Strictly over, not at: SECTION_CAP is the schema's maximum, so a section
+    // sitting exactly on it is full rather than past the limit. rowOverflows
+    // draws the line in the same place.
+    sentence: ratio > 1
       ? t("memory.detail.sectionOverCap", { key, pct, cap: SECTION_CAP.toLocaleString() })
       : t("memory.detail.sectionNearCap", { key, pct, cap: SECTION_CAP.toLocaleString() }),
   };

@@ -17,6 +17,14 @@ import type { Row } from "./review";
 const RESTATES_THRESHOLD = 0.45;
 export const DUPLICATE_THRESHOLD = 0.7;
 
+/** Shortest stored line worth scanning for the restates-the-vault signal. */
+const VAULT_MIN_LINE = 12;
+
+/** Shortest line dedupeLines is allowed to collapse away. Higher than
+ *  VAULT_MIN_LINE on purpose: admitting a line here costs the reader that
+ *  line, while admitting one to the vault scan only costs a weak score. */
+const DEDUPE_MIN_LINE = 25;
+
 /** One stored line as content: no bullet marker, no surrounding whitespace.
  *
  *  The trim has to come first. The strip is anchored with `^`, so on an
@@ -61,7 +69,7 @@ export function vaultLines(notes: Note[]): VaultLine[] {
     for (const [key, section] of Object.entries(note.sections ?? {})) {
       for (const raw of (section.text ?? "").split(/\n+/)) {
         const line = normalizeLine(raw);
-        if (line.length < 12) continue;
+        if (line.length < VAULT_MIN_LINE) continue;
         lines.push({ noteId: note.id, sectionKey: key, line, sh: shingles(line) });
       }
     }
@@ -89,8 +97,14 @@ export function computeDerived(rows: Row[], lines: VaultLine[]): void {
     for (let j = i + 1; j < rows.length; j++) {
       const score = jaccard(rows[i].sh!, rows[j].sh!);
       if (score >= DUPLICATE_THRESHOLD) {
-        rows[i].duplicateOf ??= { key: rows[j].key, score };
-        rows[j].duplicateOf ??= { key: rows[i].key, score };
+        // Compare-and-replace on both sides, matching `restates` above: the
+        // triangular scan visits each pair once, so a row's best partner can
+        // arrive at any point and has to displace a weaker one already stored.
+        // A strict `>` means equal scores keep the earlier-listed partner.
+        const a = rows[i].duplicateOf;
+        if (!a || score > a.score) rows[i].duplicateOf = { key: rows[j].key, score };
+        const b = rows[j].duplicateOf;
+        if (!b || score > b.score) rows[j].duplicateOf = { key: rows[i].key, score };
       }
     }
   }
@@ -106,7 +120,7 @@ export function dedupeLines(text: string): { text: string; dropped: number } | n
   let dropped = 0;
   for (const line of raw) {
     const body = normalizeLine(line);
-    if (body.length < 25) { keep.push(line); sh.push(null); continue; }
+    if (body.length < DEDUPE_MIN_LINE) { keep.push(line); sh.push(null); continue; }
     const g = shingles(body);
     let hit = -1;
     for (let j = 0; j < sh.length; j++) {

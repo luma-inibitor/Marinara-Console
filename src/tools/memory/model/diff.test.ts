@@ -152,24 +152,23 @@ describe("wordEmphasis", () => {
       want: { pre: "alpha beta ", delMid: "gamma", addMid: "omega", post: "" },
     },
     {
-      // SUSPECT: the inserted word carries a TRAILING space ("quick ") while
-      // `post` loses its leading one ("fox", not " fox"). The suffix scan stops
-      // at the shorter side's remaining token count, so the separator lands
-      // inside the emphasized span instead of outside it. Compare the middle
-      // case above, where post keeps its leading space. Rendered with a
-      // background highlight this shows a trailing blob of color.
+      // The suffix scan stops at the shorter side's remaining token count, so it
+      // leaves the separator inside the mid ("quick ") with `post` losing its
+      // leading space. The separator is moved back out afterwards, so the mid is
+      // the word alone and `post` keeps its leading space, matching the middle
+      // case above. The del side reconstructs as "the " + "" + " fox" — a
+      // doubled separator that collapses when rendered.
       name: "a pure insertion (empty delMid)",
       del: "the fox",
       add: "the quick fox",
-      want: { pre: "the ", delMid: "", addMid: "quick ", post: "fox" },
+      want: { pre: "the ", delMid: "", addMid: "quick", post: " fox" },
     },
     {
-      // SUSPECT: the mirror of the case above — the deleted span is "quick "
-      // with its trailing space, and `post` is "fox" without a leading one.
+      // The mirror of the case above.
       name: "a pure deletion (empty addMid)",
       del: "the quick fox",
       add: "the fox",
-      want: { pre: "the ", delMid: "quick ", addMid: "", post: "fox" },
+      want: { pre: "the ", delMid: "quick", addMid: "", post: " fox" },
     },
     {
       name: "a word replaced by a longer word sharing a character prefix",
@@ -181,5 +180,16 @@ describe("wordEmphasis", () => {
 
   it.each(cases)("emphasizes $name", ({ del: d, add: a, want }) => {
     expect(wordEmphasis(d, a)).toEqual(want);
+  });
+
+  // The contract the renderer depends on: a mid is the changed words and nothing
+  // else. Whitespace at either edge of a mid lands inside a <mark>, whose
+  // background wash then extends past the word that changed.
+  it.each(cases)("keeps whitespace out of both mids for $name", ({ del: d, add: a }) => {
+    const w = wordEmphasis(d, a)!;
+    expect(w).not.toBeNull();
+    for (const mid of [w.delMid, w.addMid]) {
+      expect(mid).toBe(mid.trim());
+    }
   });
 });

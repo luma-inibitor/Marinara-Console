@@ -490,8 +490,10 @@ function DiffLines({ before, after, fold = true }: { before: string; after: stri
       const w = wordEmphasis(ops[i].text, ops[i + 1].text);
       if (w) {
         out.push(
-          <Line key={`d${i}`} mode="del">{w.pre}<mark className="wd">{w.delMid}</mark>{w.post}</Line>,
-          <Line key={`a${i}`} mode="add">{w.pre}<mark className="wa">{w.addMid}</mark>{w.post}</Line>,
+          // an empty mid means that side changed nothing; a padded <mark> around
+          // it would paint a sliver of color where no word was added or removed
+          <Line key={`d${i}`} mode="del">{w.pre}{w.delMid && <mark className="wd">{w.delMid}</mark>}{w.post}</Line>,
+          <Line key={`a${i}`} mode="add">{w.pre}{w.addMid && <mark className="wa">{w.addMid}</mark>}{w.post}</Line>,
         );
         i += 2;
         continue;

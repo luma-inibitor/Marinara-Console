@@ -318,29 +318,44 @@ describe("computeDerived", () => {
     });
   });
 
-  it("points each of three mutual duplicates at the first partner found", () => {
+  it("points each of three equally-scoring duplicates at the first partner found", () => {
     const a = makeRow({ text: words(13) });
     const b = makeRow({ text: words(13) });
     const c = makeRow({ text: words(13) });
     computeDerived([a, b, c], []);
     expect(a.duplicateOf).toEqual({ key: b.key, score: 1 });
     expect(b.duplicateOf).toEqual({ key: a.key, score: 1 });
-    // c pairs with a, not b: the i=0/j=2 comparison runs before i=1/j=2.
+    // All three pairs score 1, and the replacement test is a strict `>`, so
+    // every row keeps the earliest partner it was compared against.
     expect(c.duplicateOf).toEqual({ key: a.key, score: 1 });
   });
 
-  it("keeps the first duplicate partner even when a later one scores higher", () => {
-    // SUSPECT: restates scans for the best score, but duplicateOf uses `??=`
-    // and so freezes on whichever partner the loop reached first. Here row a is
-    // a verbatim duplicate of row c (1.0) yet reports row b (0.7). The UI shows
-    // that score, so the same row can read as "70% duplicate" while an exact
-    // copy of it sits in the same batch.
+  it("replaces an earlier weaker duplicate partner with a later stronger one", () => {
+    // duplicateOf scans for the best score, the way restates does. Row a meets
+    // b first at 0.7 but is a verbatim copy of c, so it must report c at 1.0 —
+    // the flag chip and the detail card both quote this pair, and naming the
+    // weaker partner shows the reviewer the wrong claim's text beside a score
+    // that understates the overlap.
     const a = makeRow({ text: words(13) });
     const b = makeRow({ text: words(10) });
     const c = makeRow({ text: words(13) });
     computeDerived([a, b, c], []);
-    expect(a.duplicateOf).toEqual({ key: b.key, score: 0.7 });
+    expect(a.duplicateOf).toEqual({ key: c.key, score: 1 });
     expect(c.duplicateOf).toEqual({ key: a.key, score: 1 });
+    // b's only partner above the threshold is a, at 0.7 either way round.
+    expect(b.duplicateOf).toEqual({ key: a.key, score: 0.7 });
+  });
+
+  it("replaces a weaker partner on the later row of the pair too", () => {
+    // The scan is triangular, so a row can be reached as rows[j]. Here c is
+    // paired with b at 0.7 on i=0/j=2 before the exact match with a lands on
+    // i=1/j=2, and that hit has to displace the stored 0.7.
+    const b = makeRow({ text: words(10) });
+    const a = makeRow({ text: words(13) });
+    const c = makeRow({ text: words(13) });
+    computeDerived([b, a, c], []);
+    expect(c.duplicateOf).toEqual({ key: a.key, score: 1 });
+    expect(a.duplicateOf).toEqual({ key: c.key, score: 1 });
   });
 
   it("touches only sh, restates and duplicateOf", () => {

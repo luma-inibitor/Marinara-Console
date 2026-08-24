@@ -25,6 +25,8 @@ export function lineDiff(a: string[], b: string[]): DiffOp[] {
   return out;
 }
 
+const EDGE_WS = /^(\s*)([\s\S]*?)(\s*)$/;
+
 /** Common word prefix/suffix of a del/add pair. Null when the lines share too
  *  little for word emphasis to help — the caller falls back to plain lines. */
 export function wordEmphasis(del: string, add: string): { pre: string; delMid: string; addMid: string; post: string } | null {
@@ -38,7 +40,21 @@ export function wordEmphasis(del: string, add: string): { pre: string; delMid: s
   const delMid = aw.slice(p, aw.length - s).join("");
   const addMid = bw.slice(p, bw.length - s).join("");
   if (pre.length + post.length < Math.min(del.length, add.length) * 0.3) return null;
-  return { pre, delMid, addMid, post };
+  // The scans are bounded by the shorter side's token count, so on a pure
+  // insertion or deletion they stop on the word and leave its separator inside
+  // the mid. The mid is rendered as a background wash, so a space in there
+  // paints a space-width of color past the word that actually changed. Move any
+  // edge whitespace out to pre/post — the mids are words only. A pure
+  // insertion's del side then reconstructs with a doubled separator, which is
+  // harmless: the preview lines collapse whitespace.
+  const [, delLead, delCore, delTrail] = EDGE_WS.exec(delMid)!;
+  const [, addLead, addCore, addTrail] = EDGE_WS.exec(addMid)!;
+  return {
+    pre: pre + (delLead || addLead),
+    delMid: delCore,
+    addMid: addCore,
+    post: (delTrail || addTrail) + post,
+  };
 }
 
 export const splitLines = (text: string | undefined | null): string[] =>

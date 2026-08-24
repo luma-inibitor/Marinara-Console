@@ -14,7 +14,7 @@
 
 import { KEYWORD_CAP, type Note, SECTION_CAP } from "../api/types";
 import type { Row } from "./review";
-import { rowOverflows, type SectionPressure } from "./pressure";
+import { capPercent, rowOverflows, type SectionPressure } from "./pressure";
 import { t } from "../../../copy";
 
 export const LOW_CONFIDENCE = 0.93;
@@ -148,7 +148,7 @@ function overCapSentence(r: Row, ctx: FlagContext, over: boolean): string {
   if (!worst) return t(over ? "memory.flag.sectionOverCap" : "memory.flag.sectionNearCap");
   const params = {
     key: worst.key,
-    pct: Math.round((worst.projected / SECTION_CAP) * 100),
+    pct: capPercent(worst.projected),
     cap: SECTION_CAP.toLocaleString(),
   };
   return t(over ? "memory.flag.sectionOverCapNamed" : "memory.flag.sectionNearCapNamed", params);
