@@ -16,6 +16,7 @@ import { t } from "../../../copy";
 import { KEYWORD_CAP, type Note } from "../data";
 import { notesById } from "../store";
 import { NoteRef } from "../NotePeek";
+import { TypeIcon } from "../icons";
 import { relationLabel } from "./model";
 import { ModePill, Tag } from "../../../ui";
 import { Info } from "../../../ui/icons";
@@ -28,16 +29,24 @@ import "./RetrievalCard.css";
  *  a measurement, and it is deterministic before the first render. */
 const KEYWORDS_ON_ONE_LINE = 4;
 
-/** Resolve a link target to its title and its type hue; the raw id is the last
- *  resort, never the first. */
+/** Links shown before the block folds.
+ *
+ *  The card's height must not depend on how much metadata a note carries —
+ *  the rule the keyword rail already answers to, and links were left out of
+ *  it. The live vault holds notes with 81 and 182 links, which put thousands
+ *  of pixels of provenance between the head and the first section. */
+const LINKS_SHOWN = 5;
+
+/** Resolve a link target to its title and its type icon; the raw id is the
+ *  last resort, never the first. */
 function LinkTarget({ id }: { id: string }) {
   const target = useStore(notesById).get(id);
   return (
     <span className="mdc-ret-target">
-      {/* .tdot reads --tc, which .type-* only DECLARES — both classes must land
-          on the same element. An unresolved target takes the hueless type so a
-          missing note never borrows a taxonomy it may not belong to. */}
-      <i className={`tdot type-${target?.type ?? "source"}`} aria-hidden="true" />
+      {/* The vault's standard way of naming a memory: the type's own glyph in
+          the type's hue, then the resolved title. An unresolved target takes
+          the hueless type rather than borrowing a taxonomy it may not be in. */}
+      <TypeIcon type={target?.type ?? "source"} size={14} />
       <NoteRef id={id} label={target?.title} />
     </span>
   );
@@ -46,6 +55,7 @@ function LinkTarget({ id }: { id: string }) {
 export function RetrievalCard({ note }: { note: Note }) {
   const [tipOpen, setTipOpen] = useState(false);
   const [kwOpen, setKwOpen] = useState(false);
+  const [linksOpen, setLinksOpen] = useState(false);
 
   const keywords = note.keywords ?? [];
   const links = note.links ?? [];
@@ -100,8 +110,8 @@ export function RetrievalCard({ note }: { note: Note }) {
               {hidden > 0 && (
                 <button type="button" className="mdc-ret-more" onClick={toggleKw}>
                   {kwOpen
-                    ? t("memory.detail.keywordsFewer")
-                    : t("memory.detail.keywordsMore", { count: hidden })}
+                    ? t("ui.showFewer")
+                    : t("ui.moreCount", { count: hidden })}
                 </button>
               )}
               <span className="mdc-ret-tally">
@@ -115,12 +125,22 @@ export function RetrievalCard({ note }: { note: Note }) {
           <>
             <span className="mdc-ret-key mdc-ret-key-links">{t("memory.vault.links")}</span>
             <span className="mdc-ret-links">
-              {links.map((link, i) => (
+              {(linksOpen ? links : links.slice(0, LINKS_SHOWN)).map((link, i) => (
                 <span className="mdc-ret-linkrow" key={`${link.relation}:${link.target}:${i}`}>
                   <span className="mdc-ret-rel">{relationLabel(link.relation)}</span>
                   <LinkTarget id={link.target} />
                 </span>
               ))}
+              {links.length > LINKS_SHOWN && (
+                <button
+                  type="button"
+                  className="mdc-ret-more mdc-ret-linkmore"
+                  aria-expanded={linksOpen}
+                  onClick={() => setLinksOpen((open) => !open)}
+                >
+                  {linksOpen ? t("ui.showFewer") : t("ui.moreCount", { count: links.length - LINKS_SHOWN })}
+                </button>
+              )}
             </span>
           </>
         )}

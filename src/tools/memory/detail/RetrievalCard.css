@@ -172,23 +172,41 @@
    targets in the card besides the rail, and a secondary target needs both its
    24px and ≥8px of separation from its neighbour (§2). */
 .mdc-ret-links { display: flex; flex-direction: column; gap: var(--s2); }
+/* One link, one line. The title truncates rather than wrapping — the house
+   rule that a title must never be cut protects the SCREEN's title, the one
+   thing a reader cannot recover; a link's title is recoverable by following
+   it, and 81 wrapping links would bury the sections under their own
+   provenance. */
 .mdc-ret-linkrow {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
-/* The relation is the row's preposition, the target's title is its point. */
+/* The relation is the row's preposition, the target's title is its point — so
+   the preposition holds its size and the title is what gives way. */
 .mdc-ret-rel {
+  flex: 0 0 auto;
   color: var(--text-dim);
   font-family: var(--font-prose);
   font-size: 12.5px;
+  white-space: nowrap;
 }
 .mdc-ret-target {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  /* min-width:0 on every link in the chain, or the flex item refuses to shrink
+     below its content and the ellipsis never appears. */
   min-width: 0;
+  flex: 0 1 auto;
+}
+/* The glyph is the type's own, in the type's hue — the vault's standard way of
+   naming a memory. It must not shrink with the title beside it. */
+.mdc-ret-target .ti {
+  flex: 0 0 auto;
+  display: inline-flex;
 }
 .mdc-ret-target .notelink {
   font-family: var(--font-label);
@@ -199,7 +217,18 @@
      Grown rather than padded with .hit: two link rows sit close enough that
      44px hit areas would overlap and the lower row would swallow taps meant
      for the upper one. */
-  display: inline-flex;
-  align-items: center;
+  display: inline-block;
   min-height: 24px;
+  line-height: 24px;
+  /* Truncates instead of wrapping, so a link is always one row tall. */
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
+
+/* Sits on its own line under the run it unfolds, not inline with the last
+   link, so it never reads as another link. */
+.mdc-ret-linkmore { align-self: flex-start; margin-top: 2px; }

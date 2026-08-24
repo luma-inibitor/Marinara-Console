@@ -251,5 +251,15 @@
   "ui.sections": {
     "text": "sections",
     "note": "The count-of-sections label: the presets browser's section count and its sort chip, and the memory detail card's heading over a memory's section list. The catalog's memorySections is a memory's own detail list and renders as \"Memory details\" — a different thing under a colliding key name. Lowercase because both call sites uppercase in CSS."
+  },
+
+  "ui.moreCount": {
+    "text": "+{{count}} more",
+    "note": "How many items a clamped run is holding back — the keyword rail and each relation's link run on the memory detail card. The catalog folds hidden conflicts (moreConflicts) in a full sentence; this is a counter that has to fit at the end of the run it belongs to. Not plural-selected: it only ever shows above one."
+  },
+
+  "ui.showFewer": {
+    "text": "show fewer",
+    "note": "Refolds a clamped run to its one-line form; the counterpart to ui.moreCount. The catalog has no expandable run and so no word for closing one."
   }
 }

@@ -886,16 +886,6 @@
     "note": "The counterpart to memory.detail.expandAll, and the card's manifest state: every section becomes a bare row. memory.collapse names one row's chevron."
   },
 
-  "memory.detail.keywordsMore": {
-    "text": "+{{count}} more",
-    "note": "How many keywords the single-line rail is holding back. The catalog folds hidden conflicts (moreConflicts) in a full sentence; this is a rail counter that has to fit beside the tally. Not plural-selected: the rail only shows it above one."
-  },
-
-  "memory.detail.keywordsFewer": {
-    "text": "show fewer",
-    "note": "Refolds the keyword rail to one line; the counterpart to memory.detail.keywordsMore. The catalog has no expandable rail and so no word for closing one."
-  },
-
   "memory.detail.keywordRail": {
     "text": "Keywords, tap to unfold",
     "note": "Accessible name of the keyword rail, which is one tap target holding many keywords. The visible +N more counter is not a name, and the rail has to announce that tapping it does something."
