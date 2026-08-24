@@ -10,7 +10,6 @@ import { createStore, derived } from "../../lib/store";
 import { type Mutation, type PreflightResponse, type ReviewResponse } from "./api/types";
 import { acceptDraft, fetchReview, preflightDraft, skipMutations } from "./api/drafts";
 import { type BlockedDraft, type Decision, flattenReview, type Rejection, type Row } from "./model/review";
-import { computePressure, type SectionPressure } from "./model/pressure";
 import { vaultLines, computeDerived } from "./model/derived";
 import { isScoped, rowInScope } from "./model/scope";
 import { currentScope, scopeCharacterId, scopeChatId } from "./store/scope";
@@ -43,7 +42,6 @@ export const preflight = createStore<{ ready: number; blockedN: number; auto: nu
 export const preflightPending = createStore(false);
 export const applyProgress = createStore<{ done: number; total: number } | null>(null);
 export const lastFailures = createStore<Array<{ title: string; fix: string; msg: string; n: number }>>([]);
-export const pressure = createStore<Map<string, SectionPressure>>(new Map());
 
 const undoStack: Array<{ label: string; entries: Array<[string, Decision | null]> }> = [];
 
@@ -222,7 +220,6 @@ export function undo() {
   }
   decisions.set(next);
   persist();
-  recomputePressure();
   schedulePreflight();
   toast(t("memory.toast.undid", { action: snap.label }));
 }
@@ -235,7 +232,6 @@ export function setDecision(row: Row, value: Decision | null) {
   if (value == null) next.delete(row.key); else next.set(row.key, value);
   decisions.set(next);
   persist();
-  recomputePressure();
   schedulePreflight();
 }
 
@@ -256,7 +252,6 @@ export function bulkDecide(list: Row[], value: Decision | null, label: string) {
   }
   decisions.set(next);
   persist();
-  recomputePressure();
   schedulePreflight();
   toast(`${list.length} → ${value ?? t("memory.undecided")}`, { actionLabel: t("memoryvault.undo"), onAction: undo });
 }
@@ -271,10 +266,6 @@ export function setEdited(key: string, mutation: Mutation | null) {
 
 // ── loading ─────────────────────────────────────────────────────────
 
-function recomputePressure() {
-  pressure.set(computePressure(rows.get(), (k) => decisions.get().get(k), notesById.get()));
-}
-
 // Every live row the last refresh produced, before scope narrows them. `rows`
 // holds only what the current scope shows, so the tally, the facets, the
 // groups and the apply dock all speak about the same set — scoping the list
@@ -285,7 +276,6 @@ function applyScope() {
   const scope = currentScope();
   const byId = notesById.get();
   rows.set(isScoped(scope) ? rowsBeforeScope.filter((r) => rowInScope(r, byId, scope)) : rowsBeforeScope);
-  recomputePressure();
 }
 
 // Scope is a location, not a filter you re-apply by hand: changing it changes
@@ -324,7 +314,6 @@ export async function refresh(first = false) {
     const ed = new Map(edited.get());
     for (const k of [...ed.keys()]) if (!liveKeys.has(k)) { ed.delete(k); pruned = true; }
     if (pruned) { decisions.set(dec); edited.set(ed); persist(); }
-    recomputePressure();
     // Sources → Review handoff: pre-filter to the just-imported source.
     if (focus) {
       const title = sourceTitles.get(focus) ?? focus;

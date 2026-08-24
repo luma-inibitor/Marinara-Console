@@ -13,8 +13,9 @@ import type { BlockedDraft, Rejection, Row } from "./model/review";
 import { t } from "../../copy";
 import { Copy } from "./Copy";
 import {
-  activeFacets, applyDecided, applying, applyProgress, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, droppedDependencyWarnings, edited, facetSheetOpen, groupBy, lastFailures, loadError, loading, notesById, preflight, preflightPending, preflightRowState, pressure, readyToSend, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, tally, undo,
+  activeFacets, applyDecided, applying, applyProgress, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, droppedDependencyWarnings, edited, facetSheetOpen, groupBy, lastFailures, loadError, loading, notesById, preflight, preflightPending, preflightRowState, readyToSend, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, tally, undo,
 } from "./store";
+import { pressure } from "./store/pressure";
 import { SECTION_CAP as CAP } from "./model/caps";
 import { capPercent } from "./model/pressure";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
