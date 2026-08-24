@@ -4,12 +4,12 @@
 // console's own copy. Coining a word the catalog already holds is the defect
 // this catches.
 //
-//   node design/copycheck.mjs                       # source mode: src/**/*.{ts,tsx}
-//   node design/copycheck.mjs src/tools/memory      # source mode, narrowed
-//   node design/copycheck.mjs public/mockups/x.html # mockup mode (unchanged)
-//   node design/copycheck.mjs --prune               # drop vanished baseline entries
-//   node design/copycheck.mjs --adopt               # record today's untraced set
-//   node design/copycheck.mjs --json                # machine-readable report
+//   node scripts/copycheck.mjs                       # source mode: src/**/*.{ts,tsx}
+//   node scripts/copycheck.mjs src/tools/memory      # source mode, narrowed
+//   node scripts/copycheck.mjs public/mockups/x.html # mockup mode (unchanged)
+//   node scripts/copycheck.mjs --prune               # drop vanished baseline entries
+//   node scripts/copycheck.mjs --adopt               # record today's untraced set
+//   node scripts/copycheck.mjs --json                # machine-readable report
 //
 // ── The baseline ratchet (design/copy-baseline.json) ───────────────────────
 // Keyed by FILE, values are NORMALISED strings — no line numbers, so ordinary

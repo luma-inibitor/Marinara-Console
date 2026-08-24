@@ -1,22 +1,21 @@
 // Definition of done (design/DESIGN.md §7), executable.
-//   node verify.mjs [--url http://127.0.0.1:7872]
+//   node scripts/verify.mjs [--url http://127.0.0.1:7872]
 // Checks per screen × viewport: console/page errors (fail), contrast (fail),
 // tap targets (fail <24px, warn <40px), rows-per-screen (report), keyboard walk
 // (desktop, fail if list navigation is dead). Screenshots into shots/verify/.
 // Read-only: navigates and presses j/k only — never types into fields.
-import { chromium } from "playwright";
+import { launch, ALL_VIEWPORTS } from "./lib/browser.mjs";
 import { mkdirSync } from "node:fs";
 
+// This check drives a served build, not the dev server, so it takes its origin
+// on the command line rather than from the harness's MC_DEV_URL.
 const URL = process.argv.includes("--url")
   ? process.argv[process.argv.indexOf("--url") + 1]
   : "http://127.0.0.1:7872";
 
-const VIEWPORTS = [
-  { name: "mobile", width: 390, height: 844, mobile: true },
-  { name: "phone", width: 486, height: 1085, mobile: true }, // Luma's device
-  { name: "tablet", width: 768, height: 1024, mobile: true },
-  { name: "desktop", width: 1280, height: 800, mobile: false },
-];
+// Touch emulation is a property of the run, not of the viewport, so it stays
+// here: only this check opens contexts with isMobile/hasTouch at all.
+const TOUCH = new Set(["narrow", "phone", "tablet"]);
 
 mkdirSync("shots/verify", { recursive: true });
 
@@ -110,7 +109,7 @@ const AUDITS = `((rowSel) => {
 })`;
 
 // ── run ────────────────────────────────────────────────────────────
-const browser = await chromium.launch();
+const browser = await launch();
 const bookId = await (async () => {
   const res = await fetch(`${URL}/api/lorebooks`);
   const books = await res.json();
@@ -152,10 +151,11 @@ const SCREENS = [
 ];
 
 let failures = 0, warnings = 0, blind = 0;
-for (const vp of VIEWPORTS) {
+for (const vp of ALL_VIEWPORTS) {
+  const mobile = TOUCH.has(vp.name);
   const ctx = await browser.newContext({
     viewport: { width: vp.width, height: vp.height },
-    deviceScaleFactor: 2, isMobile: vp.mobile, hasTouch: vp.mobile,
+    deviceScaleFactor: 2, isMobile: mobile, hasTouch: mobile,
   });
   const page = await ctx.newPage();
   const errors = [];
@@ -202,7 +202,7 @@ for (const vp of VIEWPORTS) {
   }
 
   // command palette check (desktop)
-  if (!vp.mobile) {
+  if (!mobile) {
     await page.goto(URL + "/", { waitUntil: "networkidle" });
     await page.keyboard.press("ControlOrMeta+k");
     const seen = await page.waitForSelector(".palette-input", { timeout: 3000 }).catch(() => null);
@@ -226,7 +226,7 @@ for (const vp of VIEWPORTS) {
   }
 
   // keyboard walk on desktop audit screen
-  if (!vp.mobile && bookId) {
+  if (!mobile && bookId) {
     await page.goto(`${URL}/#/lorebooks/${bookId}`, { waitUntil: "networkidle" });
     await page.waitForSelector(".row");
     await page.click(".row .row-summary");

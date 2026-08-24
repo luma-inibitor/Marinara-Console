@@ -173,7 +173,7 @@ The cost of layer-first: seeing everything about "sections" means looking in thr
 
 The house habit is to encode a rule in a script rather than trust a convention—`copycheck` for copy, `deadcss` for CSS, `overlaycheck` for dismissal.
 
-- **`design/layercheck.mjs`** reads every import and fails when one points upward. The directory gives it the layer without a manifest to maintain, and without a default that silently claims files nobody classified.
+- **`scripts/layercheck.mjs`** reads every import and fails when one points upward. The directory gives it the layer without a manifest to maintain, and without a default that silently claims files nobody classified.
 
 ---
 

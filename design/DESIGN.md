@@ -46,7 +46,7 @@ is already prose, so applying it anywhere else is noise. Never put a type
 utility on an element whose component class sets a different face: the two
 rules have equal specificity and the winner is decided by stylesheet order,
 which means the markup asserts one face and the page renders another.
-`node design/faceprobe.mjs` reports the face every utility actually gets.
+`node scripts/faceprobe.mjs` reports the face every utility actually gets.
 
 ### Color — semantic first, chrome second
 
@@ -236,7 +236,7 @@ exists, use it; if it needs a new one, add it here in the same change.
 - **Copy provenance** — every user-visible string traces to the vendored
   catalog (`src/copy/vendor/ltm-en.json`) or to a registered entry in
   `src/copy/<area>.json`, each carrying a `note` saying why the product has no
-  word for it. `design/copycheck.mjs` checks this mechanically against a
+  word for it. `scripts/copycheck.mjs` checks this mechanically against a
   rendered surface. Coining silently has been the single most repeated defect
   in this tool. (The old `OURS` object and `src/tools/memory/strings.ts` are
   gone: `OURS` could not express a mirror, and its reasons were comments
@@ -324,11 +324,14 @@ exists, use it; if it needs a new one, add it here in the same change.
 
 ## 7. Definition of done — `verify.mjs`
 
-A UI change is not done until `node verify.mjs` passes:
+A UI change is not done until `node scripts/verify.mjs` passes:
 
-1. Screenshots at the standard viewports — `node design/shots.mjs <url> <name>`:
-   **390×844** narrow floor · **486×1085** Luma's device, the one that must be
-   right · **768×1024** the band between the breakpoints · **1280×800** desktop.
+1. Screenshots at the standard viewports — `node scripts/shots.mjs <url> <name>`:
+   **390×844** `narrow`, the floor · **486×1085** `phone`, Luma's device and the
+   one that must be right · **768×1024** `tablet`, the band between the
+   breakpoints · **1280×800** `desktop`. Those four names are the only viewport
+   vocabulary; they are declared once in `scripts/lib/browser.mjs` and every
+   browser check imports them rather than restating widths.
    A "mobile" rendering drawn in a small box on a wide page is not a mobile
    rendering; render at the viewport or do not claim the result.
    CSS breakpoints are two, semantic: **720px** (below it everything stacks)
@@ -457,15 +460,15 @@ place on. Measured before and after in the claim detail at a 1600px viewport:
 
 ### Checks that belong to this layer
 
-- `node design/deadcss.mjs` — CSS classes nothing appears to use. A **candidate**
+- `node scripts/deadcss.mjs` — CSS classes nothing appears to use. A **candidate**
   list: class names reach the DOM literally, composed as `` `type-${n.type}` ``,
   and as bare strings passed to a `cls` prop. Read every hit. The first version
   of this script reported 36 dead classes of which 20 were live.
-- `node design/domsnap.mjs before` / `... after --diff` — snapshots the rendered
+- `node scripts/domsnap.mjs before` / `... after --diff` — snapshots the rendered
   element tree and its class hooks across five screens at two viewports. Any
   refactor claiming "renders identically" runs this instead of asserting it. It
   is what caught three silent regressions in the chip sweep.
-- `node design/overlaycheck.mjs` — every layered surface must close on scrim
+- `node scripts/overlaycheck.mjs` — every layered surface must close on scrim
   tap, on Escape, and on back. The import confirm answered only one of those
   for weeks, because each sheet registered with the overlay stack by hand and
   one forgot. `Sheet` and `Modal` now do it, so the check guards a rule the

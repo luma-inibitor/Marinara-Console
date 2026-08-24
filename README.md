@@ -27,4 +27,4 @@ Dev loop: `node server.mjs` in one shell (API proxy), `npm run dev` in another
 | `server.mjs` | zero-dep proxy: strips `embedding` vectors from entry payloads (~85% of bytes), serves `dist/` at `/` and the design mockups at `/mockups/`; for the memory tool it also keeps a rotating LTM restore point before each run's first write (`.backups/`), stores review decisions (`.state/`), and forwards `MARINARA_ADMIN_SECRET` for engines off loopback |
 | `src/` | the console — Vite + Preact + TS, hash routing, tokens-based CSS |
 | `design/` | DESIGN.md, tokens rationale, vendored UI research |
-| `verify.mjs` | definition-of-done checks (screenshots, contrast, tap targets, console errors) |
+| `scripts/` | the executable checks: `verify.mjs` (definition of done — screenshots, contrast, tap targets, console errors), `copycheck`, `layercheck`, `deadcss`, `domsnap`, `faceprobe`, `overlaycheck`, `shots`; browser ones share `lib/browser.mjs` |

@@ -2,17 +2,16 @@
 // Report the computed type face of every element carrying a type utility, so a
 // class that claims a face can be checked against the face it actually gets.
 //
-//   node design/faceprobe.mjs before
-//   node design/faceprobe.mjs after --diff
+//   node scripts/faceprobe.mjs before
+//   node scripts/faceprobe.mjs after --diff
 //
 // domsnap answers "did the element tree change" and deadcss answers "is this
 // rule matched by anything". Neither catches the failure this exists for: a
 // utility that matches plenty of elements and loses every one of them to a
 // component rule, so the markup asserts a face the page never renders.
-import { chromium } from "playwright-core";
+import { launch, openPage, VIEWPORTS } from "./lib/browser.mjs";
 import fs from "node:fs";
 
-const DEV_URL = (process.env.MC_DEV_URL ?? "http://127.0.0.1:5173") + "/";
 const tag = process.argv[2] ?? "snap";
 const diff = process.argv.includes("--diff");
 const BOOK = process.env.MC_BOOK ?? "JZzGg_2NjFx1hFP_G4Yeq";
@@ -23,12 +22,10 @@ const PAGES = [
   ["book", `#/lorebooks/${BOOK}`], ["presets", "#/presets"],
 ];
 
-const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH });
+const browser = await launch();
 const out = {};
 for (const [name, hash] of PAGES) {
-  const p = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-  await p.goto(DEV_URL + hash, { waitUntil: "networkidle", timeout: 60000 });
-  await p.waitForTimeout(1200);
+  const p = await openPage(browser, { viewport: VIEWPORTS.desktop, hash, settle: 1200 });
   out[name] = await p.evaluate((sel) => [...document.querySelectorAll(sel)].map((el) => {
     const s = getComputedStyle(el);
     const cls = (typeof el.className === "string" ? el.className : "").trim().split(/\s+/).sort().join(".");

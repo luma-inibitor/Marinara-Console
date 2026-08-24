@@ -5,15 +5,19 @@
 // the overlay stack is by hand, per sheet, so a surface can silently miss one
 // route while answering the others.
 //
-//   node design/overlaycheck.mjs
+//   node scripts/overlaycheck.mjs
 //
 // The import confirm is not in the table below because it only appears above
 // CONFIRM_THRESHOLD sources and the seeded corpus has fewer. To check it, set
 // that constant in Sources.tsx to 0, select one source, and confirm the modal
 // closes on scrim tap, Escape, back and Cancel — and that dismissing it does
 // not import. Put the constant back afterwards.
-import { chromium } from "playwright-core";
-const DEV_URL = (process.env.MC_DEV_URL ?? "http://127.0.0.1:5173") + "/";
+import { launch, openPage, VIEWPORTS } from "./lib/browser.mjs";
+
+// Every case runs at one page height rather than its viewport's own, so the
+// amount of page behind a surface is constant across cases. Only the width
+// selects the layout path under test.
+const HEIGHT = 900;
 
 // `dismiss` names the routes a surface actually offers. Everything built on
 // <Sheet>/<Modal> offers all three. The tag panel is a full-screen surface with
@@ -22,13 +26,13 @@ const DEV_URL = (process.env.MC_DEV_URL ?? "http://127.0.0.1:5173") + "/";
 const ALL = ["scrim", "escape", "back"];
 
 const CASES = [
-  { name: "facet sheet",  hash: "#/memory/review",  w: 486, open: async (p) => {
+  { name: "facet sheet",  hash: "#/memory/review",  vp: VIEWPORTS.phone, open: async (p) => {
       await p.getByRole("button", { name: /^Filter/ }).click(); }, sel: ".sheet" },
-  { name: "group sheet",  hash: "#/memory/review",  w: 486, open: async (p) => {
+  { name: "group sheet",  hash: "#/memory/review",  vp: VIEWPORTS.phone, open: async (p) => {
       await p.getByRole("button", { name: /^Group/ }).click(); }, sel: ".sheet.option-sheet" },
-  { name: "sort sheet",   hash: "#/memory/review",  w: 486, open: async (p) => {
+  { name: "sort sheet",   hash: "#/memory/review",  vp: VIEWPORTS.phone, open: async (p) => {
       await p.getByRole("button", { name: /^Sort/ }).click(); }, sel: ".sheet.option-sheet" },
-  { name: "note peek",    hash: "#/memory/vault",   w: 1280, open: async (p) => {
+  { name: "note peek",    hash: "#/memory/vault",   vp: VIEWPORTS.desktop, open: async (p) => {
       await p.locator(".row-summary").first().click();
       await p.waitForTimeout(500);
       await p.locator(".notelink").first().click(); }, sel: ".sheet" },
@@ -37,19 +41,20 @@ const CASES = [
   // The lorebook tag panel. Every case above is a memory-tool surface, so this
   // is the one non-memory surface the check covers. Opened from the dock so it
   // exercises the phone path.
-  { name: "tag panel", hash: "#/lorebooks/JZzGg_2NjFx1hFP_G4Yeq", w: 486,
+  { name: "tag panel", hash: "#/lorebooks/JZzGg_2NjFx1hFP_G4Yeq", vp: VIEWPORTS.phone,
     dismiss: ["escape", "back"], open: async (p) => {
       await p.getByRole("button", { name: /Tags/ }).click(); }, sel: ".tagpanel" },
 ];
 
-const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH });
+const browser = await launch();
 let fails = 0;
 for (const c of CASES) {
   for (const how of c.dismiss ?? ALL) {
-    const p = await browser.newPage({ viewport: { width: c.w, height: 900 } });
+    let p;
     try {
-      await p.goto(DEV_URL + c.hash, { waitUntil: "networkidle", timeout: 60000 });
-      await p.waitForTimeout(1500);
+      p = await openPage(browser, {
+        viewport: { width: c.vp.width, height: HEIGHT }, hash: c.hash, settle: 1500,
+      });
       await c.open(p);
       await p.waitForTimeout(700);
       const opened = await p.locator(c.sel).count();
@@ -72,7 +77,8 @@ for (const c of CASES) {
     } catch (e) {
       console.log(`FAIL ${c.name} / ${how}: ${String(e).split("\n")[0].slice(0, 90)}`); fails++;
     }
-    await p.close();
+    // Optional: a navigation that never landed leaves no page to close.
+    await p?.close();
   }
 }
 await browser.close();

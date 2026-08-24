@@ -45,7 +45,7 @@ Tailwind utilities are available too (`bg-surface-2`, `text-dim`, `font-data`,
 
 - **A phone frame is `wf-phone`, which is 486px** — the width Luma's device
   reports. A 300px box on a desktop page is not a phone and proves nothing.
-- **Screenshot with `node design/shots.mjs <url> <name>`**, which renders at
+- **Screenshot with `node scripts/shots.mjs <url> <name>`**, which renders at
   390 / 486 / 768 / 1280 and reports horizontal overflow per viewport.
 - **Wireframes stay greyscale.** Color is a decision; a wireframe is about
   where things sit. If a wireframe needs color to make its point, it is a

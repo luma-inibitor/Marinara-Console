@@ -95,7 +95,7 @@ Owner-confirmed. Do not re-litigate; see `DESIGN.md` §2 for the full list.
   from the data, not from constants someone picked.
 - Copy comes from the engine's own catalog (`ltm-en.json`) wherever the
   concept exists upstream. Anything genuinely new is registered in `OURS` with a
-  reason. `design/copycheck.mjs` enforces this.
+  reason. `scripts/copycheck.mjs` enforces this.
 - Content is markdown; editors are plain textareas with counts. No rich editing.
 
 ## 6. Requirements this work established
@@ -206,9 +206,9 @@ Not optional, and not judgment calls:
 
 | Command | Checks |
 |---|---|
-| `node verify.mjs` | Contrast, tap targets, console errors, keyboard walk, density |
-| `node design/copycheck.mjs <file>` | Every user-visible string traces to the catalog or `OURS` |
-| `node design/deadcss.mjs` | CSS classes nothing uses |
-| `node design/domsnap.mjs before` / `after --diff` | A refactor renders identically — proved, not asserted |
-| `node design/overlaycheck.mjs` | Every layered surface closes on scrim, Escape and back |
-| `node design/shots.mjs <url>` | Screenshots at 390 / 486 / 768 / 1280 |
+| `node scripts/verify.mjs` | Contrast, tap targets, console errors, keyboard walk, density |
+| `node scripts/copycheck.mjs <file>` | Every user-visible string traces to the catalog or `OURS` |
+| `node scripts/deadcss.mjs` | CSS classes nothing uses |
+| `node scripts/domsnap.mjs before` / `after --diff` | A refactor renders identically — proved, not asserted |
+| `node scripts/overlaycheck.mjs` | Every layered surface closes on scrim, Escape and back |
+| `node scripts/shots.mjs <url>` | Screenshots at 390 / 486 / 768 / 1280 |

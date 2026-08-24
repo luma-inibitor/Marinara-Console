@@ -2,14 +2,13 @@
 // Snapshot the rendered DOM as a class-and-tag skeleton, so a refactor that
 // claims "renders identically" can be checked instead of asserted.
 //
-//   node design/domsnap.mjs before        # capture
-//   node design/domsnap.mjs after --diff  # capture and compare
+//   node scripts/domsnap.mjs before        # capture
+//   node scripts/domsnap.mjs after --diff  # capture and compare
 //
 // Deliberately ignores text content and attribute values: this answers "did
 // the element tree and its styling hooks change", which is the question a
 // component extraction actually raises.
-import { chromium } from "playwright-core";
-const DEV_URL = (process.env.MC_DEV_URL ?? "http://127.0.0.1:5173") + "/";
+import { launch, openPage, VIEWPORTS } from "./lib/browser.mjs";
 import fs from "node:fs";
 
 const tag = process.argv[2] ?? "snap";
@@ -27,15 +26,13 @@ const PAGES = [
   ["lore", "#/lorebooks"],
   ["book", `#/lorebooks/${BOOK}`],
 ];
-const VPS = [{ n: "phone", w: 486, h: 1085 }, { n: "desktop", w: 1280, h: 800 }];
+const VPS = [VIEWPORTS.phone, VIEWPORTS.desktop];
 
-const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH });
+const browser = await launch();
 const out = {};
 for (const [name, hash] of PAGES) for (const vp of VPS) {
-  const p = await browser.newPage({ viewport: { width: vp.w, height: vp.h } });
-  await p.goto(DEV_URL + hash, { waitUntil: "networkidle", timeout: 60000 });
-  await p.waitForTimeout(1400);
-  out[`${name}/${vp.n}`] = await p.evaluate(() =>
+  const p = await openPage(browser, { viewport: vp, hash, settle: 1400 });
+  out[`${name}/${vp.name}`] = await p.evaluate(() =>
     [...document.querySelectorAll("#app *")].map((el) => {
       const cls = (typeof el.className === "string" ? el.className : "").trim().split(/\s+/).sort().join(".");
       return el.tagName.toLowerCase() + (cls ? "." + cls : "");

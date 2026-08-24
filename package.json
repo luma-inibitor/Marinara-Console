@@ -7,10 +7,11 @@
     "test": "vitest run",
     "dev": "vite",
     "build": "vite build",
-    "copycheck": "node design/copycheck.mjs",
+    "copycheck": "node scripts/copycheck.mjs",
     "preview": "vite preview",
     "kit": "npx @tailwindcss/cli -i design/mockup-kit.css -o public/mockups/kit.css",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "layercheck": "node scripts/layercheck.mjs"
   },
   "keywords": [],
   "author": "",

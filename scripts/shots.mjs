@@ -2,38 +2,28 @@
 // Screenshots at the project's standard viewports, so every visual review is
 // taken at the same widths and a "mobile" rendering is actually mobile.
 //
-//   node design/shots.mjs <url> [name] [--sel .selector] [--full]
+//   node scripts/shots.mjs <url> [name] [--sel .selector] [--full]
 //
-// Widths match verify.mjs exactly (design/DESIGN.md §7): a wireframe that
-// looks fine in a 300px box on a desktop page has proved nothing — the box
-// was not a phone. Render at the real viewport or do not claim the result.
+// Widths come from the shared harness, so they match verify.mjs exactly
+// (design/DESIGN.md §7): a wireframe that looks fine in a 300px box on a
+// desktop page has proved nothing — the box was not a phone. Render at the
+// real viewport or do not claim the result.
 
-import { chromium } from "playwright-core";
-const DEV_URL = (process.env.MC_DEV_URL ?? "http://127.0.0.1:5173") + "/";
+import { launch, ALL_VIEWPORTS } from "./lib/browser.mjs";
 import { mkdirSync } from "node:fs";
-
-export const VIEWPORTS = [
-  // 390 is the narrow floor (iPhone-class). 486 is Luma's actual device
-  // (1080 physical at DPR 2.22) and is the one that has to look right — a
-  // layout tuned only at 390 has never been seen at the width it ships to.
-  { name: "narrow", width: 390, height: 844 },
-  { name: "phone", width: 486, height: 1085 },
-  { name: "tablet", width: 768, height: 1024 },
-  { name: "desktop", width: 1280, height: 800 },
-];
 
 const args = process.argv.slice(2);
 const url = args[0];
 const name = args[1] && !args[1].startsWith("--") ? args[1] : "shot";
 const sel = args.includes("--sel") ? args[args.indexOf("--sel") + 1] : null;
 const full = args.includes("--full");
-if (!url) { console.error("usage: node design/shots.mjs <url> [name] [--sel .x] [--full]"); process.exit(1); }
+if (!url) { console.error("usage: node scripts/shots.mjs <url> [name] [--sel .x] [--full]"); process.exit(1); }
 
 const OUT = "/tmp/shots";
 mkdirSync(OUT, { recursive: true });
 
-const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH });
-for (const vp of VIEWPORTS) {
+const browser = await launch();
+for (const vp of ALL_VIEWPORTS) {
   const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height } });
   const problems = [];
   page.on("pageerror", (e) => problems.push(String(e).slice(0, 100)));

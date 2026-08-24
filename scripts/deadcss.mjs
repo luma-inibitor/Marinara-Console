@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Report CSS classes no .tsx/.ts file appears to use.
 //
-//   node design/deadcss.mjs
+//   node scripts/deadcss.mjs
 //
 // This is a CANDIDATE list, not a delete list. Read every hit before removing
 // anything. Class names reach the DOM three ways here and all three have to be
