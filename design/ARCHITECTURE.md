@@ -40,6 +40,44 @@ Five roles. A file belongs to exactly one.
 | **state** | stores, orchestration, invalidation | JSX |
 | **presentation** | JSX, tokens, copy | `fetch` |
 
+### State: two kinds of store, and who may write to them
+
+A **component** is a function that returns markup, and React runs it again from
+the top every time something changes. A **hook** is how a component remembers
+something across those runs, or plugs into something outside itself; `useState`
+remembers a value that belongs to one component and dies with it. A **store** is
+a value that lives in a module instead of inside a component, so any file can
+read it and it outlives any screen. `useStore(s)` is the hook that joins the
+two: it reads a store and re-runs the component whenever the store changes.
+`lib/store.ts` deliberately offers no `.value`, so every read has to say whether
+it is subscribing or not.
+
+Stores do not all carry the same weight, and the difference decides who is
+allowed to write to one.
+
+**View state** is what a screen looks like at this moment: how the list is
+sorted, which row is focused, which sheet is open. Nothing else has to happen
+when it changes. It sits in a store rather than in `useState` only so that it
+outlives the screen — Review's sort survives a trip to Sources and the Vault's
+does not, because one is a store and the other is `useState`. **A screen may
+write its own view state directly.**
+
+**Entity state** is the records themselves: the memories, the review queue, the
+keep/drop ledger. Changing one of these has to do more than change a value. The
+ledger has to reach the server, derived figures have to be recomputed, and
+anything still showing the old copy has to hear about it. **Entity state is
+written only by the module that owns it, through named actions.**
+
+The console already works this way from instinct rather than from a rule. No
+component calls `decisions.set()`, because a decision has to be persisted and
+re-preflighted, so it goes through `setDecision()`. Notes are the counter-example
+and the bug in §3: nothing owns them, so two screens write two copies.
+
+So the rule is about what a store holds, not about how it is reached. Stores stay
+exported, and `layercheck.mjs` flags a write to an entity store from a `.tsx`
+file — a far more useful check than banning store exports outright, which would
+only add one-line wrappers around the writes that were never the problem.
+
 ### The dependency rule
 
 Imports point **downward only**:
@@ -181,14 +219,11 @@ The house habit is to encode a rule in a script rather than trust a convention �
    `components/` names a shape, and everything is a component. Renaming costs
    ~16 imports and 5 doc mentions, and would update DESIGN.md §8 and CLAUDE.md
    in the same change.
-2. **Do `*.store.ts` files expose stores, or only hooks?** Hooks-only is the
-   stricter boundary, but `refresh()` and the scope subscription need store
-   access from outside React.
-3. **Where do screens live** once a tool has many? Flat at the tool root reads
+2. **Where do screens live** once a tool has many? Flat at the tool root reads
    well at four screens and badly at ten.
-4. **Does `detail/` survive** as a screen family, or dissolve into the concept
+3. **Does `detail/` survive** as a screen family, or dissolve into the concept
    folders it draws from?
-5. **Is `memory.api.ts` one file or a folder** once it covers notes, drafts,
+4. **Is `memory.api.ts` one file or a folder** once it covers notes, drafts,
    import and backup.
-6. **Do the other two tools follow immediately**, or does memory prove the shape
+5. **Do the other two tools follow immediately**, or does memory prove the shape
    first?
