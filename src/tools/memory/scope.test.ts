@@ -11,7 +11,8 @@
 // in the node environment with no DOM.
 
 import { beforeEach, describe, expect, it } from "vitest";
-import type { Note, Row } from "./data";
+import type { Note } from "./api/types";
+import type { Row } from "./data";
 import {
   currentScope,
   isScoped,

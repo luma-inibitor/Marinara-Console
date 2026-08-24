@@ -3,7 +3,8 @@
 
 import { useEffect, useMemo } from "react";
 import { navigate } from "../../shell/router";
-import { ltmStatus, rebuildIndexes, type LtmStatus } from "./data";
+import type { LtmStatus } from "./api/types";
+import { ltmStatus, rebuildIndexes } from "./api/status";
 import { VIEW_ICON } from "../../ui/icons";
 import { ScopeBar, useScopeData } from "./ScopeBar";
 import { toast } from "../../shell/toast";

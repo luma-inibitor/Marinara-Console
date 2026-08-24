@@ -5,7 +5,8 @@
 // Counts are computed with each facet's own filter excluded, so a count
 // answers "what would I get if I toggled this".
 
-import { type Mutation, type Row } from "./data";
+import type { Mutation } from "./api/types";
+import type { Row } from "./data";
 import { t } from "../../copy";
 import { type Decision } from "./store";
 import { flagsOf, type FlagContext } from "./flags";

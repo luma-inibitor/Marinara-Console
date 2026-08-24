@@ -7,13 +7,15 @@
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { toast } from "../../shell/toast";
-import { type BlockedDraft, type Rejection, type Row, backupExportUrl, extractNote } from "./data";
+import { extractNote } from "./api/notes";
+import { backupExportUrl } from "./api/backup";
+import type { BlockedDraft, Rejection, Row } from "./data";
 import { t, tAny } from "../../copy";
 import { Copy } from "./Copy";
 import {
   activeFacets, applyDecided, applying, applyProgress, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, droppedDependencyWarnings, edited, facetSheetOpen, groupBy, lastFailures, loadError, loading, notesById, preflight, preflightPending, preflightRowState, pressure, readyToSend, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, tally, undo,
 } from "./store";
-import { SECTION_CAP as CAP } from "./data";
+import { SECTION_CAP as CAP } from "./api/types";
 import { refreshLtmStatus } from "./MemoryTool";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { Flag, AllClear, NoMatches, DECISION_ICON, More, EditedMark, Back, Refresh, Download } from "../../ui/icons";

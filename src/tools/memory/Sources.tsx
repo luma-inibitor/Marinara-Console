@@ -18,10 +18,10 @@ import {
 import { navigate } from "../../shell/router";
 import { api } from "../../shell/api";
 import { toast } from "../../shell/toast";
-import {
-  type ImportPreview, type ImportResult, type Note,
-  importPreview, importSourceNotes, fetchNotes, fetchReview,
-} from "./data";
+import type { ImportPreview, ImportResult, Note } from "./api/types";
+import { fetchNotes } from "./api/notes";
+import { fetchReview } from "./api/drafts";
+import { importPreview, importSourceNotes } from "./api/import";
 import { t } from "../../copy";
 import { Copy } from "./Copy";
 import { focusSource, refreshLtmStatus } from "./MemoryTool";

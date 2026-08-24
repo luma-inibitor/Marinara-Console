@@ -16,7 +16,8 @@ import { useState, type ReactNode } from "react";
 // `Preview` is aliased: this file already has a local <Preview/> zone component.
 import { ChevronRight, Preview as PreviewIcon, Flag, ValidationOk, Edit, EditedMark, Forward, Remove, Add } from "../../ui/icons";
 import { toast } from "../../shell/toast";
-import { type Mutation, type Row, type SectionPressure, KEYWORD_CAP, SECTION_CAP } from "./data";
+import { KEYWORD_CAP, type Mutation, SECTION_CAP } from "./api/types";
+import type { Row, SectionPressure } from "./data";
 import { t, tAny } from "../../copy";
 import { Copy } from "./Copy";
 import { decisions, edited, rows, notesById, pressure, setDecision, setEdited } from "./store";

@@ -12,7 +12,8 @@
 // catalog here and nowhere else. `FLAG` is the label table, exported so a
 // filter can name a flag without re-deriving its text.
 
-import { type Note, type Row, type SectionPressure, KEYWORD_CAP, SECTION_CAP } from "./data";
+import { KEYWORD_CAP, type Note, SECTION_CAP } from "./api/types";
+import type { Row, SectionPressure } from "./data";
 import { rowOverflows } from "./store";
 import { t } from "../../copy";
 

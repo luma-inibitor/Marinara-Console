@@ -12,7 +12,7 @@
 // tail, an `i`, an `!`, a segmented arc — is a different object and is free.
 
 import { TYPE_ICON, OP_ICON, DECISION_ICON, type Icon as IconC } from "../../ui/icons";
-import type { Mutation } from "./data";
+import type { Mutation } from "./api/types";
 
 /** Type icon in the note's categorical hue. Decorative next to a title. */
 export function TypeIcon(props: { type: string; size?: number }) {

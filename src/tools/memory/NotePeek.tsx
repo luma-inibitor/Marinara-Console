@@ -6,7 +6,8 @@
 // typography, the mode pill, and the raw id demoted to a quiet footer.
 
 import { createStore, useStore } from "../../lib/store";
-import { fetchNote, type Note } from "./data";
+import type { Note } from "./api/types";
+import { fetchNote } from "./api/notes";
 import { toast } from "../../shell/toast";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { notesById } from "./store";

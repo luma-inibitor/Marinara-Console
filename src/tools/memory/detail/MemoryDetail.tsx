@@ -18,7 +18,7 @@
 // the note arrives as a prop.
 
 import { useLayoutEffect, useRef, useState } from "react";
-import type { Note } from "../data";
+import type { Note } from "../api/types";
 import { t } from "../../../copy";
 import { TypeIcon } from "../icons";
 import { Back, Edit, ExpandSet, ICON_SIZE } from "../../../ui/icons";

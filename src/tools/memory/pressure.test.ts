@@ -20,7 +20,8 @@ vi.mock("../../copy", () => ({
       : key,
 }));
 
-import { SECTION_CAP, computePressure, type Note, type SectionPressure } from "./data";
+import { type Note, SECTION_CAP } from "./api/types";
+import { computePressure, type SectionPressure } from "./data";
 import { rowOverflows } from "./store";
 import { sectionViews } from "./detail/model";
 import { chars, makeNote, makeRow, makeWrite, section } from "./test/factories";

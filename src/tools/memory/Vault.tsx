@@ -7,10 +7,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { navigate } from "../../shell/router";
 import { refreshLtmStatus } from "./MemoryTool";
 import { toast } from "../../shell/toast";
-import {
-  type Note, type NoteType, fetchNotes, patchNote, deleteNote,
-  SECTION_CAP, KEYWORD_CAP,
-} from "./data";
+import { KEYWORD_CAP, type Note, type NoteType, SECTION_CAP } from "./api/types";
+import { deleteNote, fetchNotes, patchNote } from "./api/notes";
 import { t } from "../../copy";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";

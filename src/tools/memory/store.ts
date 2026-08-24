@@ -7,12 +7,10 @@
 // is never contacted, so an unfinished review resumes where it stopped.
 
 import { createStore, derived } from "../../lib/store";
-import {
-  type Row, type Note, type BlockedDraft, type Rejection, type ReviewResponse,
-  type Mutation, type PreflightResponse, type SectionPressure,
-  fetchReview, fetchNotes, preflightDraft, acceptDraft, skipMutations,
-  flattenReview, computePressure, SECTION_CAP,
-} from "./data";
+import { type Mutation, type Note, type PreflightResponse, type ReviewResponse, SECTION_CAP } from "./api/types";
+import { fetchNotes } from "./api/notes";
+import { acceptDraft, fetchReview, preflightDraft, skipMutations } from "./api/drafts";
+import { type BlockedDraft, computePressure, flattenReview, type Rejection, type Row, type SectionPressure } from "./data";
 import { vaultLines, computeDerived, type VaultLine } from "./derived";
 import { currentScope, isScoped, rowInScope, scopeCharacterId, scopeChatId } from "./scope";
 import { t, tAny } from "../../copy";
