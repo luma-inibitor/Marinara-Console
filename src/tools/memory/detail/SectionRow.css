@@ -121,35 +121,21 @@
   line-height: 1.5;
 }
 
-/* Clips the body to the preview budget; the height comes from PREVIEW_BUDGET
-   so the clip and the estimate that chose this glyph cannot drift apart. */
-.mdc-row-preview {
-  position: relative;
-  overflow: hidden;
-  margin-left: 24px;
-  margin-bottom: var(--s3);
-}
+/* An open row rides the top of the screen while its own body scrolls past, so
+   the control that closes a long section is never a hundred lines back up.
+   Sticky costs a short section nothing: a header whose body is shorter than
+   the remaining viewport never reaches its offset, so this needs no length
+   threshold and nothing has to be measured to decide it applies.
 
-.mdc-row-preview > .mdc-row-body {
-  margin-left: 0;
-  margin-bottom: 0;
+   --mdc-head-h is the card's own sticky head, published by MemoryDetail; the
+   row parks directly beneath it rather than sliding under it. */
+.mdc-row.is-open {
+  position: sticky;
+  top: var(--mdc-head-h, 0px);
+  z-index: 3;
+  /* Opaque, or the body scrolls visibly through the header it is passing. */
+  background: var(--mdc-ground, var(--canvas));
+  border-bottom: var(--hairline);
 }
+.mdc-row.is-open:hover { background: var(--surface-1); }
 
-.mdc-row-fade {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 56px;
-  /* Fades into whatever surface the card is mounted on, not into --canvas:
-     the desktop detail pane is --surface-1, and a fade painted in the wrong
-     ground reads as a lighter rectangle laid over the text.
-
-     The opaque stop has to be deeper than one line box (13.5px at 1.5 = 20.25px).
-     The clip lands mid-line whenever the text does not divide evenly into the
-     budget, and a shallower stop left the top of a sliced line showing through
-     at partial opacity — chopped letterforms sitting on the divider, which
-     reads as a rendering fault rather than as more text below. */
-  background: linear-gradient(to top, var(--mdc-ground, var(--canvas)) 42%, transparent);
-  pointer-events: none;
-}

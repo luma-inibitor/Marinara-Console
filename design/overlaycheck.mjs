@@ -32,13 +32,8 @@ const CASES = [
       await p.locator(".row-summary").first().click();
       await p.waitForTimeout(500);
       await p.locator(".notelink").first().click(); }, sel: ".sheet" },
-  // The detail card's section peek. Opened from the row whose body overflows
-  // the preview budget, which is the only row that carries the arrow glyph —
-  // selected by that glyph rather than by index, so the case does not silently
-  // start testing a different row if the seeded note gains a section.
-  { name: "section peek", hash: "#/memory/vault/char_devi_okonkwo", w: 486, open: async (p) => {
-      await p.locator('.mdc-row:has(.mdc-row-glyph path[d^="M16 4l4 0"])').first().click(); },
-    sel: ".sheet.mdc-peek" },
+  // The memory detail card has no layered surface of its own: every section
+  // expands in place, so there is nothing here to dismiss.
   // The lorebook tag panel. Every case above is a memory-tool surface, so this
   // is the one non-memory surface the check covers. Opened from the dock so it
   // exercises the phone path.

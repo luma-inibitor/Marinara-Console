@@ -931,11 +931,6 @@
     "note": "The memory's version in the meta line, abbreviated because the line is mono data separated by ·. The catalog exposes a version only inside backup-validation prose."
   },
 
-  "memory.detail.peekLabel": {
-    "text": "Section §{{key}}",
-    "note": "Accessible name of the sheet holding one section's full text. §key is the console's section typography; the sheet needs a spoken name that says what kind of thing it is."
-  },
-
   "memory.detail.edit": {
     "use": "longtermmemorydetail.reviewEdit",
     "note": "Opens the vault's editor from the read-only detail card. The catalog's own one-word Edit action."

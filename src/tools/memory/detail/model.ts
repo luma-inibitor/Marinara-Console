@@ -1,28 +1,13 @@
 // The memory detail card's data model — pure, no JSX, no stores.
 //
-// Its whole job is to answer one question per section: does the body fit the
-// preview budget? The row's glyph and the row's tap behaviour both read that
-// single answer, so the glyph cannot promise an inline expand and then open a
-// peek — the rule the handoff states the row must never break.
-//
-// Fit is ESTIMATED, not measured. A DOM measurement can only run after first
-// paint, so the glyph would render as a chevron and then become an arrow: the
-// exact drift the rule forbids, arriving as a flicker. The estimate is
-// deterministic and available before the first render.
+// Every section behaves the same way: one row, one chevron, expands in place.
+// There is no size threshold here and no second surface to route long sections
+// to, so nothing has to predict how tall a body will render. A long section is
+// handled by its row sticking to the top of the screen while you read it, which
+// is a CSS behaviour rather than a decision this module makes.
 
 import { SECTION_CAP, type Note } from "../data";
 import { t } from "../../../copy";
-
-/** Preview height, matching the fade overlay's clip. */
-export const PREVIEW_BUDGET = 168;
-
-/** Body type: 13.5px at 1.5, one row per line, 7px between rows. */
-const LINE_HEIGHT = 20.25;
-const LINE_GAP = 7;
-
-/** `--measure: 68ch`. The body is capped at the reading measure, so a line
- *  wraps about every 68 characters — close enough to predict a row count. */
-const COLS = 68;
 
 /** Cap pressure at which a section earns the flag. */
 const NEAR_CAP = 0.8;
@@ -37,13 +22,6 @@ export function sectionLines(text: string): string[] {
     .filter(Boolean);
 }
 
-/** Rendered height of a body, in px, without rendering it. */
-function estimateHeight(lines: string[]): number {
-  if (!lines.length) return 0;
-  const rows = lines.reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / COLS)), 0);
-  return rows * LINE_HEIGHT + (lines.length - 1) * LINE_GAP;
-}
-
 export interface SectionFlag {
   /** Sentence shown in the row's flag popover. */
   sentence: string;
@@ -55,9 +33,6 @@ export interface SectionView {
   key: string;
   lines: string[];
   chars: number;
-  /** True when the body fits the preview budget: chevron, expands in place.
-   *  False: diagonal arrow, opens the peek. Nothing else may decide this. */
-  fits: boolean;
   flag: SectionFlag | null;
 }
 
@@ -82,14 +57,7 @@ function capFlag(chars: number, key: string): SectionFlag | null {
 export function sectionViews(note: Note): SectionView[] {
   return Object.entries(note.sections ?? {}).map(([key, section]) => {
     const text = section.text ?? "";
-    const lines = sectionLines(text);
-    return {
-      key,
-      lines,
-      chars: text.length,
-      fits: estimateHeight(lines) <= PREVIEW_BUDGET,
-      flag: capFlag(text.length, key),
-    };
+    return { key, lines: sectionLines(text), chars: text.length, flag: capFlag(text.length, key) };
   });
 }
 

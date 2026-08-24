@@ -271,20 +271,27 @@ exists, use it; if it needs a new one, add it here in the same change.
   only box on the screen, so *boxed means metadata, unboxed means content*. A
   second card — especially around a section body — collapses that distinction and
   was the single biggest failure of the directions that lost.
-  **The glyph must never lie.** One section = one row = one tap target. A body that
-  fits the preview budget gets a chevron and expands in place; a body that exceeds
-  it gets a diagonal arrow and opens a peek, and never expands inline. Both the
-  glyph and the tap read the same computed value (`model.ts`, `SectionView.fits`),
-  so they cannot drift. Fit is *estimated* from the text, never measured from the
-  DOM: a measurement can only run after first paint, so the glyph would render as
-  a chevron and then become an arrow — the drift the rule forbids, as a flicker.
+  **One section, one row, one behaviour.** Every section expands in place, however
+  long it is, so the chevron has only one thing it can mean. An earlier pass
+  routed oversized sections to a bottom-sheet peek and made the glyph predict
+  which of the two you would get (chevron vs diagonal arrow); Luma retired it —
+  two interaction models and a size threshold to explain, in exchange for a
+  problem stickiness solves outright.
+  **A long section carries its own way out.** While a section is open its row is
+  `position: sticky` under the card's head, so the control that closes it is on
+  screen the whole way down. Sticky needs no length threshold and no measurement
+  to decide it applies: a row whose body is shorter than the remaining viewport
+  never reaches its offset. Collapsing must anchor the scroll back to the row —
+  the document shrinks under the reader otherwise, and the sticky control creates
+  the disorientation it exists to prevent.
   **No truncation notices.** No "141 lines between", no dashed count boxes, no
-  "show rest". The row states the size, the fade shows there is more, the glyph
-  says where to get it. Every notice tried here read as noise.
+  "show rest". The row states the size and the chevron opens it. Every notice
+  tried here read as noise.
   Collapse-all is the manifest state — every section becomes a bare row — which is
   why a long memory needs no separate overflow design, only `defaultCollapsed`.
-  The limit meter belongs in the peek and nowhere else: in the row list it
-  competed with content for attention.
+  Cap pressure is stated in words in the flag's popover; the meter bar it used to
+  have died with the peek, and does not come back into the row, where it competed
+  with content for attention.
 
 ## 6. Layout recipes (with mobile collapse)
 

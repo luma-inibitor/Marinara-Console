@@ -10,10 +10,14 @@
 // anywhere — especially around a section body — collapses that distinction and
 // was the single biggest failure of the directions that lost.
 //
+// Every section expands in place, however long it is. A long one is made
+// navigable by its own row sticking under the head while you read it, so there
+// is one interaction to learn and one thing the chevron can mean.
+//
 // All state here is view-local. Nothing is persisted and nothing is fetched:
 // the note arrives as a prop.
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { Note } from "../data";
 import { t } from "../../../copy";
 import { TypeIcon } from "../icons";
@@ -21,7 +25,6 @@ import { Back, Edit, ExpandSet, ICON_SIZE } from "../../../ui/icons";
 import { Chip, CopyableText, IconButton } from "../../../ui";
 import { RetrievalCard } from "./RetrievalCard";
 import { SectionRow } from "./SectionRow";
-import { SectionPeek } from "./SectionPeek";
 import { editStamp, sectionViews } from "./model";
 import "./MemoryDetail.css";
 
@@ -45,22 +48,60 @@ export function MemoryDetail(props: {
   // clear the overrides or a row would keep answering to a stale decision.
   const [allOpen, setAllOpen] = useState(!(props.defaultCollapsed ?? views.length > COLLAPSE_PAST));
   const [openBySection, setOpenBySection] = useState<Record<string, boolean>>({});
-  const [peekKey, setPeekKey] = useState<string | null>(null);
   const [flagKey, setFlagKey] = useState<string | null>(null);
 
+  const scroller = useRef<HTMLDivElement>(null);
+  const head = useRef<HTMLElement>(null);
+  const [headH, setHeadH] = useState(0);
+
+  // An open row parks under the head, so it has to know how tall the head is —
+  // and that changes with the title's wrap and the meta line's. Observed rather
+  // than assumed: a guessed offset leaves a gap or hides the row behind it.
+  useLayoutEffect(() => {
+    const el = head.current;
+    if (!el) return;
+    const measure = () => setHeadH(el.getBoundingClientRect().height);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Collapsing a section you have scrolled deep into removes everything you
+  // were standing on, and the scroll position lands wherever the shortened
+  // document puts it. Anchor back to the row instead — without this, the
+  // sticky control creates the disorientation it exists to prevent.
+  const anchorTo = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    const key = anchorTo.current;
+    if (!key) return;
+    anchorTo.current = null;
+    const box = scroller.current;
+    const row = box?.querySelector<HTMLElement>(`.mdc-row-wrap[data-key="${CSS.escape(key)}"]`);
+    if (!box || !row) return;
+    const above = row.getBoundingClientRect().top - (box.getBoundingClientRect().top + headH);
+    if (above < 0) box.scrollTop += above;
+  });
+
   const isOpen = (key: string) => openBySection[key] ?? allOpen;
+  const toggleSection = (key: string) => {
+    if (isOpen(key)) anchorTo.current = key; // closing: keep the row in view
+    setOpenBySection((prev) => ({ ...prev, [key]: !isOpen(key) }));
+  };
   const toggleAll = () => {
+    // Closing everything at once has no single row to anchor to, so the list's
+    // own head is the destination.
+    if (allOpen) anchorTo.current = views[0]?.key ?? null;
     setAllOpen((was) => !was);
     setOpenBySection({});
   };
 
   const chars = views.reduce((sum, v) => sum + v.chars, 0);
   const edited = editStamp(n.updatedAt);
-  const peeked = peekKey ? views.find((v) => v.key === peekKey) ?? null : null;
 
   return (
-    <div className="mdc">
-      <header className="console mdc-head">
+    <div className="mdc" ref={scroller} style={{ "--mdc-head-h": `${headH}px` } as React.CSSProperties}>
+      <header className="console mdc-head" ref={head}>
         <div className="hrow">
           <IconButton className="mdc-back" label={t("memory.backToVault")} onClick={props.onBack}>
             <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
@@ -107,8 +148,7 @@ export function MemoryDetail(props: {
             view={view}
             open={isOpen(view.key)}
             flagOpen={flagKey === view.key}
-            onToggle={() => setOpenBySection((prev) => ({ ...prev, [view.key]: !isOpen(view.key) }))}
-            onPeek={() => setPeekKey(view.key)}
+            onToggle={() => toggleSection(view.key)}
             onFlag={() => setFlagKey((was) => (was === view.key ? null : view.key))}
           />
         ))}
@@ -120,8 +160,6 @@ export function MemoryDetail(props: {
           <CopyableText value={n.id} label={t("memory.peek.id")} />
         </div>
       </div>
-
-      {peeked && <SectionPeek view={peeked} onClose={() => setPeekKey(null)} />}
     </div>
   );
 }

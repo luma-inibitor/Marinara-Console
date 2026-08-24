@@ -1,15 +1,20 @@
 import type { KeyboardEvent, MouseEvent } from "react";
 import { t } from "../../../copy";
-import { ChevronRight, Flag, Fullscreen, ICON_SIZE } from "../../../ui/icons";
-import { PREVIEW_BUDGET, sectionMeta, type SectionView } from "./model";
+import { ChevronRight, Flag, ICON_SIZE } from "../../../ui/icons";
+import { sectionMeta, type SectionView } from "./model";
 import "./SectionRow.css";
 
 /** One section of a memory as one row and one tap target.
  *
- *  The glyph and the tap both read `view.fits` and nothing else, so the row
- *  cannot promise an inline expand and then open the peek. A capped section
- *  never expands in place — that is what keeps a 147-line section from turning
- *  the card into twenty screens.
+ *  Every section behaves identically: the chevron expands the body in place,
+ *  however long the body is. There is no size threshold and no second surface,
+ *  so the glyph has only one thing it can mean.
+ *
+ *  A long section is made navigable by the row itself: while its body is open
+ *  the row sticks under the card's head, so the control that closes it is on
+ *  screen the whole way down instead of a hundred lines back up. That is a CSS
+ *  behaviour, and it costs nothing for a short section — a header with less
+ *  body than viewport never reaches its sticky offset.
  *
  *  Section keys are arbitrary suggestions rather than an enum: the row renders
  *  the key it is given, in payload order, with no key privileged over another.
@@ -20,35 +25,25 @@ export function SectionRow(props: {
   open: boolean;
   flagOpen: boolean;
   onToggle: () => void;
-  onPeek: () => void;
   onFlag: () => void;
 }) {
   const { view, open } = props;
-  const inline = view.fits;
 
   const activateFlag = (e: MouseEvent | KeyboardEvent) => {
     // The flag sits inside the row button, so its activation must not also
-    // fire the row's expand/peek.
+    // fire the row's expand.
     e.stopPropagation();
     e.preventDefault();
     props.onFlag();
   };
 
-  const body = (
-    <div className="mdc-row-body">
-      {view.lines.map((line, i) => (
-        <div key={i}>- {line}</div>
-      ))}
-    </div>
-  );
-
   return (
-    <div className="mdc-row-wrap">
+    <div className="mdc-row-wrap" data-key={view.key}>
       <button
         type="button"
-        className="mdc-row"
+        className={`mdc-row${open ? " is-open" : ""}`}
         aria-expanded={open}
-        onClick={inline ? props.onToggle : props.onPeek}
+        onClick={props.onToggle}
       >
         <span className="mdc-row-name-cell">
           <span className="mdc-row-name">§{view.key}</span>
@@ -76,28 +71,19 @@ export function SectionRow(props: {
 
         <span className="mdc-row-meta">{sectionMeta(view)}</span>
 
-        <span className={`mdc-row-glyph${inline && open ? " mdc-row-glyph-open" : ""}`}>
-          {inline ? (
-            <ChevronRight size={ICON_SIZE.md} aria-hidden="true" />
-          ) : (
-            <Fullscreen size={ICON_SIZE.md} aria-hidden="true" />
-          )}
+        <span className={`mdc-row-glyph${open ? " mdc-row-glyph-open" : ""}`}>
+          <ChevronRight size={ICON_SIZE.md} aria-hidden="true" />
         </span>
       </button>
 
       {/* Body text lives outside the button so it can be selected normally. */}
-      {open &&
-        (inline ? (
-          body
-        ) : (
-          // A capped section shows a fixed slice with a fade: no count, no
-          // "show rest" — the meta states the size and the glyph says where
-          // the rest is, so every notice tried here only read as noise.
-          <div className="mdc-row-preview" style={{ height: `${PREVIEW_BUDGET}px` }}>
-            {body}
-            <span className="mdc-row-fade" />
-          </div>
-        ))}
+      {open && (
+        <div className="mdc-row-body">
+          {view.lines.map((line, i) => (
+            <div key={i}>- {line}</div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
