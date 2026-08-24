@@ -13,3 +13,14 @@ ds-bundle/
 .design-sync/learnings/
 .design-sync/node_modules
 .design-sync/ds-entry.css
+
+# Screenshots and captured images — never source, always regenerable
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+shots/
+**/_screenshots/
+design/research/**/assets/
+design/research/**/shots-*/
