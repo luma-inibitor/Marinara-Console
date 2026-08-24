@@ -12,8 +12,9 @@
 
 import { derived } from "../../../lib/store";
 import { type Row } from "../model/review";
-import { decisions, edited, preflight, rows } from "../store";
+import { decisions, edited, rows } from "../store";
 import { notesById } from "./notes";
+import { preflight } from "./preflight";
 
 /** How many mutations Apply will actually send: the engine's ready set for
  *  each draft, minus the ids the reviewer dropped in that same draft.

@@ -18,7 +18,6 @@ import { type Mutation } from "../api/types";
 import { acceptDraft, skipMutations } from "../api/drafts";
 import { type Row } from "../model/review";
 import {
-  clearPreflight,
   clearUndo,
   commitLedger,
   decisions,
@@ -26,11 +25,10 @@ import {
   keepsByDraft,
   markApplied,
   persist,
-  preflight,
-  preflightNow,
   refresh,
   rows,
 } from "../store";
+import { clearPreflight, preflight, preflightNow } from "./preflight";
 import { t, tAny } from "../../../copy";
 import { toast } from "../../../shell/toast";
 

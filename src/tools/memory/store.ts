@@ -6,9 +6,9 @@
 // sent; Apply is a batch over everything decided. A draft with no decisions
 // is never contacted, so an unfinished review resumes where it stopped.
 
-import { createStore, derived } from "../../lib/store";
-import { type Mutation, type PreflightResponse, type ReviewResponse } from "./api/types";
-import { fetchReview, preflightDraft } from "./api/drafts";
+import { createStore } from "../../lib/store";
+import { type Mutation, type ReviewResponse } from "./api/types";
+import { fetchReview } from "./api/drafts";
 import { type BlockedDraft, type Decision, flattenReview, type Rejection, type Row } from "./model/review";
 import { vaultLines, computeDerived } from "./model/derived";
 import { isScoped, rowInScope } from "./model/scope";
@@ -37,9 +37,6 @@ export const edited = createStore<Map<string, Mutation>>(new Map());
 export const appliedThisSession = new Map<string, "applied" | "skipped">();
 
 export const saveState = createStore<"saved" | "saving" | "failed">("saved");
-export const preflight = createStore<{ ready: number; blockedN: number; auto: number; perDraft: Array<{ draftId: string; pf: PreflightResponse }>; error?: string } | null>(null);
-export const preflightPending = createStore(false);
-
 const undoStack: Array<{ label: string; entries: Array<[string, Decision | null]> }> = [];
 
 /** Record the outcome of one mutation so the next refresh drops its row. */
@@ -57,28 +54,6 @@ export function clearUndo() {
   undoStack.length = 0; // snapshots reference applied keys; undoing them would lie
   canUndo.set(false);
 }
-
-export function clearPreflight() {
-  preflight.set(null);
-}
-
-// ── derived ─────────────────────────────────────────────────────────
-
-/** row key -> preflight outcome, for row badges and dock enumeration. */
-export const preflightRowState = derived([preflight], (pf) => {
-  const auto = new Map<string, true>();
-  const blockedRows = new Map<string, string>(); // key -> first blocker message
-  if (pf) {
-    for (const { draftId, pf: draftPf } of pf.perDraft) {
-      for (const row of draftPf.rows) {
-        const key = `${draftId}:${row.mutationId}`;
-        if (row.autoIncluded) auto.set(key, true);
-        if (row.status === "blocked") blockedRows.set(key, row.blockers[0]?.message ?? "blocked");
-      }
-    }
-  }
-  return { auto, blockedRows };
-});
 
 // ── persistence ─────────────────────────────────────────────────────
 
@@ -157,7 +132,6 @@ export function undo() {
   }
   decisions.set(next);
   persist();
-  schedulePreflight();
   toast(t("memory.toast.undid", { action: snap.label }));
 }
 
@@ -169,7 +143,6 @@ export function setDecision(row: Row, value: Decision | null) {
   if (value == null) next.delete(row.key); else next.set(row.key, value);
   decisions.set(next);
   persist();
-  schedulePreflight();
 }
 
 /** undecided → keep → drop → undecided */
@@ -189,7 +162,6 @@ export function bulkDecide(list: Row[], value: Decision | null, label: string) {
   }
   decisions.set(next);
   persist();
-  schedulePreflight();
   toast(`${list.length} → ${value ?? t("memory.undecided")}`, { actionLabel: t("memoryvault.undo"), onAction: undo });
 }
 
@@ -198,7 +170,6 @@ export function setEdited(key: string, mutation: Mutation | null) {
   if (mutation == null) next.delete(key); else next.set(key, mutation);
   edited.set(next);
   persist();
-  schedulePreflight();
 }
 
 // ── loading ─────────────────────────────────────────────────────────
@@ -263,13 +234,7 @@ export async function refresh(first = false) {
     loadError.set((error as Error).message);
   }
   loading.set(false);
-  schedulePreflight();
 }
-
-// ── preflight ───────────────────────────────────────────────────────
-
-let preflightTimer: ReturnType<typeof setTimeout> | undefined;
-let preflightSeq = 0;
 
 export function keepsByDraft() {
   const byDraft = new Map<string, Row[]>();
@@ -280,55 +245,4 @@ export function keepsByDraft() {
     list.push(row);
   }
   return byDraft;
-}
-
-function preflightBody(list: Row[]) {
-  const body: { mutationIds: string[]; editedMutations?: Mutation[] } = {
-    mutationIds: list.map((r) => r.mutation.id),
-  };
-  const ed = list.map((r) => edited.get().get(r.key)).filter(Boolean) as Mutation[];
-  if (ed.length) body.editedMutations = ed;
-  return body;
-}
-
-export function schedulePreflight() {
-  clearTimeout(preflightTimer);
-  preflightPending.set(true);
-  preflightTimer = setTimeout(() => void runPreflight(), 500);
-}
-
-/** Cancel the debounce and run a preflight right now. */
-export async function preflightNow() {
-  clearTimeout(preflightTimer);
-  preflightTimer = undefined;
-  await runPreflight();
-}
-
-async function runPreflight() {
-  const seq = ++preflightSeq;
-  const byDraft = keepsByDraft();
-  if (!byDraft.size) {
-    preflight.set(null);
-    preflightPending.set(false);
-    return;
-  }
-  try {
-    const results = await Promise.all(
-      [...byDraft.entries()].map(([draftId, list]) =>
-        preflightDraft(draftId, preflightBody(list)).then((pf) => ({ draftId, pf })),
-      ),
-    );
-    if (seq !== preflightSeq) return;
-    let ready = 0, blockedN = 0, auto = 0;
-    for (const { pf } of results) {
-      ready += pf.readyMutationIds.length;
-      blockedN += pf.blockedMutationIds.length;
-      auto += pf.autoIncludedMutationIds.length;
-    }
-    preflight.set({ ready, blockedN, auto, perDraft: results });
-  } catch (error) {
-    if (seq !== preflightSeq) return;
-    preflight.set({ ready: 0, blockedN: 0, auto: 0, perDraft: [], error: (error as Error).message });
-  }
-  if (seq === preflightSeq) preflightPending.set(false);
 }

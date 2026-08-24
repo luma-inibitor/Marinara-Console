@@ -13,8 +13,9 @@ import type { BlockedDraft, Rejection, Row } from "./model/review";
 import { t } from "../../copy";
 import { Copy } from "./Copy";
 import {
-  activeFacets, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, edited, facetSheetOpen, groupBy, loadError, loading, notesById, preflight, preflightPending, preflightRowState, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, undo,
+  activeFacets, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, edited, facetSheetOpen, groupBy, loadError, loading, notesById, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, undo,
 } from "./store";
+import { preflight, preflightPending, preflightRowState } from "./store/preflight";
 import { droppedDependencyWarnings, readyToSend, tally } from "./store/tally";
 import { applyDecided, applying, applyProgress, lastFailures } from "./store/apply";
 import { pressure } from "./store/pressure";
