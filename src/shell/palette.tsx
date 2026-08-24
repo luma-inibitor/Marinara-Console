@@ -1,6 +1,5 @@
 // Command palette (Cmd/Ctrl-K) — DESIGN.md §5. Fuzzy over tools, books,
-// entries, and actions; instant (searches a local cache, refreshed on open).
-// Shows hints so shortcuts get learned in passing.
+// entries, and actions; searches a local cache, refreshed on open.
 import { signal } from "@preact/signals";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { navigate } from "./router";

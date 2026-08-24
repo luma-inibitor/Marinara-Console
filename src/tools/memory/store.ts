@@ -1,7 +1,6 @@
 // Review state: the tri-state decision ledger.
 //
-// The model follows the operator's review workbench (ltm-review study):
-// judgment is separate from transmission. Every claim is undecided / keep /
+// Judgment is separate from transmission. Every claim is undecided / keep /
 // drop; decisions persist server-side (/console/state, keyed by engine
 // target) so a review can span days and devices; undecided claims are never
 // sent; Apply is a batch over everything decided. A draft with no decisions
@@ -42,8 +41,8 @@ export const activeFacets = signal<Map<string, Set<string>>>(new Map());
 export const cursor = signal<string | null>(null);
 export const detailKey = signal<string | null>(null); // open detail panel/screen
 export const facetSheetOpen = signal(false);
-/** Import scope: one value read by every memory screen (owner triage —
- *  tool-level, not console-wide). Scope is not only a filter: the engine
+/** Import scope: one value read by every memory screen, tool-level rather than
+ *  console-wide. Scope is not only a filter: the engine
  *  records it into a draft's extraction context, so changing it after an
  *  extraction is what makes drafts go stale. */
 export const scopeChatId = signal<string>(localStorage.getItem("mc-ltm-chat") ?? "");
@@ -91,11 +90,10 @@ export const preflightRowState = computed(() => {
 /** How many mutations Apply will actually send: the engine's ready set for
  *  each draft, minus the ids the reviewer dropped in that same draft.
  *
- *  The subtraction is the point. Preflight can auto-include a dependency the
- *  reviewer explicitly dropped, and `applyDecided` already filters those out
- *  before sending — but the dock used to add the raw engine number to the
- *  local drop count, so that row landed in both terms and the button stated a
- *  figure Apply would not honour. Same rule in both places, computed once. */
+ *  The subtraction is load-bearing: preflight can auto-include a dependency the
+ *  reviewer explicitly dropped, and `applyDecided` filters those out before
+ *  sending. Anything stating a send count must apply the same rule or it will
+ *  quote a figure Apply does not honour. */
 export const readyToSend = computed(() => {
   const pf = preflight.value;
   if (!pf) return 0;
@@ -239,10 +237,9 @@ function snapshot(label: string, keys: string[]) {
 }
 
 /** Sources waiting to be imported, in the current scope. The nav badge reads
- *  this. It used to read the count of source notes already imported, so the
- *  badge beside Sources meant "done" while the badge beside Review meant
- *  "waiting" — the same channel carrying opposite meanings (owner's call,
- *  2026-08-22). Null until the Sources screen has computed it once. */
+ *  this, and every nav badge must mean "waiting" — a badge counting work
+ *  already done would give the same channel two opposite meanings. Null until
+ *  the Sources screen has computed it once. */
 export const pendingSources = signal<number | null>(null);
 
 export const canUndo = signal(false);

@@ -1,5 +1,4 @@
-// One claim, organized around the decision (owner-approved v5, 2026-08-22;
-// specimens: public/mockups/detail-v5.html). Zones, in the order a reviewer
+// One claim, organized around the decision. Zones, in the order a reviewer
 // asks their questions:
 //   1. HEADLINE — one sentence: what this claim does and to which memory.
 //   2. PREVIEW — op-specific consequence: the vault as it will look after
@@ -7,11 +6,11 @@
 //      (the one destructive op shows what dies); create = the memory as it
 //      will exist; link / keywords / status / subjects = the fact, resolved.
 //   3. EVIDENCE — source attribution + snippet, extraction confidence as a
-//      sentence, diagnostics, and the quiet extraction line (4B).
+//      sentence, diagnostics, and the quiet extraction line.
 //   4. DECIDE — keep/drop at the bottom in the list's circle vocabulary.
 // Editing is a mode: the edit button swaps proposed content for a textarea
 // and the decide bar for save/discard. Edits flow through preflight and
-// accept as editedMutations, exactly as before.
+// accept as editedMutations.
 
 import { type ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
@@ -74,11 +73,9 @@ function Zone(props: { eyebrow: ComponentChildren; foot?: ComponentChildren; cls
   );
 }
 
-/** Help text: the info glyph marks it as education, not content. */
-/** The object under review, inlined (owner-approved S7): an inset card of the
- *  memory's content — dimmer, no diff gutters, folded past three lines. It is
- *  context, not part of the change. Resolves vault memories first, then
- *  batch-pending creates. */
+/** The object under review, inlined: an inset card of the memory's content —
+ *  dimmer, no diff gutters, folded past three lines. It is context, not part of
+ *  the change. Resolves vault memories first, then batch-pending creates. */
 function InlineMemory({ id }: { id: string }) {
   const note = notesById.value.get(id);
   const secs = note
@@ -125,8 +122,6 @@ export function ClaimDetail({ row }: { row: Row }) {
   const target = notesById.value.get(r.targetId);
   const [editing, setEditing] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
-  // Keywords are how recall finds a memory, so a claim that writes them has to
-  // let you fix them before they land (owner, 2026-08-22).
   const storedKeywords = m.kind === "create_note" ? (m.note?.keywords ?? [])
     : m.kind === "set_keywords" ? (m.keywords ?? []) : null;
   const [kwDraft, setKwDraft] = useState<string[] | null>(null);
@@ -172,9 +167,6 @@ export function ClaimDetail({ row }: { row: Row }) {
   };
   const discard = () => { setDrafts({}); setKwDraft(null); setEditing(false); };
 
-  // Whole-memory toggle (owner feedback 2026-08-22): re-render the preview
-  // with every section of the target present and the change marked in place,
-  // instead of popping an overlay the reviewer has to bounce back from.
   const [whole, setWhole] = useState(false);
   const wholeBtn = target && (m.kind === "append_section" || m.kind === "update_section") && !editing && (
     <button className="zbtn hit" aria-pressed={whole} onClick={() => setWhole(!whole)}>
@@ -520,13 +512,11 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
       <div className="evq-a t-data">source: <Ref id={r.sourceNoteId} title={r.sourceTitle} type="source" /></div>
 
       <div className={`sig t-prose ${low ? "" : "sig-ok"}`} data-sev={low ? "warn" : undefined}>
-        {/* Both branches carry a glyph, and they say different things. The low
-            branch flags an exception. The high branch is not "no exception" —
-            it is a positive report that the extraction was checked against the
-            threshold and passed, so it gets `ValidationOk` (zoom-check: the
-            *inspection* succeeded). Not a ticked circle: that interior is
-            reserved for decision states, and confidence is not a decision
-            (owner-decided 2026-08-23). */}
+        {/* Both branches carry a glyph, and they say different things: the low
+            branch flags an exception, the high branch positively reports that
+            the extraction was checked against the threshold and passed. The
+            high branch must not be a ticked circle — that interior is reserved
+            for decision states, and confidence is not a decision. */}
         {low
           ? <Flag size={13} stroke={1.75} aria-hidden />
           : <ValidationOk size={13} stroke={1.75} aria-hidden />}
@@ -572,7 +562,7 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
 /** Keywords are how recall finds a memory, so a claim that writes them has to
  *  be correctable before it lands. Reading shows the list; editing turns each
  *  into a removable chip and adds a field. The cap and the length rule are the
- *  product's own (30 keywords, 80 characters each). */
+ *  product's own (KEYWORD_CAP keywords, 80 characters each). */
 function KeywordEditor({ list, editing, onChange, allNew }: {
   list: string[]; editing: boolean; onChange: (v: string[]) => void; allNew?: boolean;
 }) {

@@ -1,4 +1,4 @@
-// Review Queue — the curation loop's triage surface (ltm-review J3).
+// Review Queue — the curation loop's triage surface.
 //
 // Console header (tally meter, quick chips, facet sheet) · audit rows grouped
 // by target memory · tri-state decision rail · master-detail on desktop,
@@ -333,9 +333,9 @@ function sourceFacetLabel(title: string): string {
   return i > 0 ? t.slice(i + 1).trim() : t;
 }
 
-/** The review queue's facets, shaped for <FacetDrawer>. Provenance grouping is
- *  the review study's: what the console computed, what the model asserted, and
- *  what the reviewer decided. */
+/** The review queue's facets, shaped for <FacetDrawer>. Facets are grouped by
+ *  provenance: what the console computed, what the model asserted, and what the
+ *  reviewer decided. */
 function FacetSheet() {
   if (!facetSheetOpen.value) return null;
   const counts = facetCounts(rows.value, activeFacets.value);
@@ -378,13 +378,13 @@ function FacetSheet() {
 }
 
 
-// Group header v4 (owner-approved 2026-08-21): one line — identity · honest
-// aggregates (sections touched, chars added) · cap flag only when real · bar
-// tally · keep-all/drop-all as icon buttons (undecided rows only) · kebab for
-// the rare object actions. Object affordances (type icon, dot, aggregates,
-// pressure, open-note) exist only when the group key IS an object; enum lanes
-// get label + count + tally + bulk and nothing else. At narrow width the
-// header wraps to two lines and the aggregates drop (priority order, CSS).
+// Group header: one line — identity · aggregates (chars added) · cap flag only
+// when real · bar tally · keep-all/drop-all as icon buttons (undecided rows
+// only) · kebab for the rare object actions. Object affordances (type icon,
+// dot, aggregates, pressure, open-note) exist only when the group key IS an
+// object; enum lanes get label + count + tally + bulk and nothing else. At
+// narrow width the header wraps to two lines and the aggregates drop
+// (priority order, CSS).
 function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key: string) => void; tabbable: (key: string) => boolean }) {
   const g = props.group;
   const isTarget = groupBy.value === "target";
@@ -393,7 +393,6 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   const undecidedRows = g.rows.filter((r) => !decisions.value.get(r.key));
   const isNew = isTarget && !notesById.value.get(g.id) && g.rows.some((r) => r.mutation.kind === "create_note");
   const collapsed = collapse.has(g.id);
-  // Section counts dropped from the header (Luma 2026-08-21: titles get the room).
   const chars = isTarget ? g.rows.reduce((n, r) => n + contributionChars(r), 0) : 0;
   return (
     /* Same grid as the rows: chevron in the rail (the control column gets a
@@ -441,8 +440,7 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
 }
 
 /** The kebab: rare object actions only — open the memory, clear this group's
- *  decisions. (Contents still under discussion; if it ends up with one item
- *  it dies and that item goes inline.) */
+ *  decisions. */
 function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: boolean }) {
   const [open, setOpen] = useState(false);
   const g = props.group;
@@ -471,10 +469,10 @@ function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: 
   );
 }
 
-// Row v2 (owner-approved 2026-08-21): status icon that cycles on tap · fixed
-// op-icon slot · one-line claim · quiet flags chip (worst severity tints it) ·
-// contribution chars. No secondary line, no per-row confidence — the enums
-// live in the detail card, their exceptions live in the flags.
+// Row: status icon that cycles on tap · fixed op-icon slot · one-line claim ·
+// quiet flags chip (worst severity tints it) · contribution chars. No secondary
+// line, no per-row confidence — the enums live in the detail card, their
+// exceptions live in the flags.
 function ClaimRow(props: {
   row: Row; showTarget: boolean; onActivate: (key: string) => void;
   /** True for the one row that holds the list's tab stop. */
@@ -697,8 +695,8 @@ function ApplyDock() {
             {blockedRows.map(({ row, why }) => <div key={row.key} className="dim dock-detail-row">→ {row.targetTitle}: {why}</div>)}
           </details>
         )}
-        {/* The whole sentence branches, not just the noun: pluralising "claim"
-            alone left "1 kept claim depend ... they will fail ... drop them". */}
+        {/* The whole sentence branches on count, not just the noun — the verb
+            and the pronouns have to agree too. */}
         {warnings.length > 0 && (
           <div className="is-drop">{t("memory.dock.droppedDependency", { count: warnings.length })}</div>
         )}

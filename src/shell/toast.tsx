@@ -1,15 +1,6 @@
 // Toast queue with undo support (DESIGN.md: undo over confirm).
 // A toast with an action holds a pending commit: commit fires when the toast
 // expires; the action (Undo) cancels it.
-//
-// P1.5 fixes:
-//   - The dismiss "×" used to call remove(id, true), which fires onExpire —
-//     so the control that looks like "cancel this" was in fact "commit the
-//     delete now". Undoable toasts no longer offer a ×; they show the time
-//     remaining and a full-size Undo, and commit only by actually expiring.
-//   - Targets were 21px. They are now the 44px floor.
-//   - A burst of identical failures produced N stacked toasts. Identical
-//     messages coalesce into one with a count.
 import { signal } from "@preact/signals";
 import { useEffect, useState } from "preact/hooks";
 import { Close, ICON_SIZE } from "../ui/icons";

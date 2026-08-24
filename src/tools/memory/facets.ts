@@ -3,8 +3,7 @@
 // heuristic and a schema field never silently carry the same authority.
 //
 // Counts are computed with each facet's own filter excluded, so a count
-// answers "what would I get if I toggled this" (prior art: the operator's
-// triage tools).
+// answers "what would I get if I toggled this".
 
 import { type Row } from "./data";
 import { t } from "../../copy";

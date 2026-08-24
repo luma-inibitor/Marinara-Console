@@ -24,9 +24,8 @@
 //
 // Keys beginning with `_` are file metadata, never copy.
 //
-// The files are split per area rather than pooled into one, for two reasons:
-// copycheck's per-directory state needs an area boundary that is a *file*, and
-// 470 entries in a single JSON is a permanent merge-conflict surface.
+// The files stay split per area: copycheck's per-directory state needs an area
+// boundary that is a *file*.
 //
 // Enforcement lives in design/copycheck.mjs. What is checked HERE, at load, is
 // only what needs the resolved tables: a console key that shadows a product key,
@@ -44,8 +43,7 @@ import presetsCopy from "./presets.json";
 const PREFIX = "ui.longTermMemory.";
 
 // ── types ────────────────────────────────────────────────────────────────
-// A missing key is a compile error. The previous `t()` warned at runtime and
-// rendered the key itself, which meant a typo shipped as visible copy.
+// A missing key is a compile error.
 
 type Meta = `_${string}`;
 
@@ -185,14 +183,11 @@ export function joinList(items: readonly string[]): string {
   return new Intl.ListFormat("en", { style: "long", type: "conjunction" }).format(items);
 }
 
-// ── transitional: the memory tool's OURS surface ─────────────────────────
-// `Copy` is the adapter that lets the memory tool's ~87 existing call sites keep
-// their current shape while the strings themselves live in memory.json. The
-// records (`nav`, `disposition`) are flat keys in the JSON and are reassembled
-// here through tAny, because their call sites index them by a runtime value.
-//
-// This object is scaffolding. When those call sites are repointed at `t()`
-// directly, delete it — along with src/tools/memory/strings.ts.
+// ── the memory tool's OURS surface ───────────────────────────────────────
+// `Copy` is the adapter the memory tool's call sites read through; the strings
+// themselves live in memory.json. The records (`nav`, `disposition`) are flat
+// keys in the JSON, reassembled here through tAny because their call sites
+// index them by a runtime value.
 /** The flat `prefix.*` keys of one area, reassembled as a record. */
 function group(prefix: string): Record<string, string> {
   const out: Record<string, string> = {};

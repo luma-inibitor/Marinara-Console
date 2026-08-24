@@ -5,10 +5,9 @@ import "./ListGroup.css";
 
 /** The collapse control for a group of rows.
  *
- *  Small, and worth its own component entirely for the accessible name. Two
- *  lists had written this by hand and both had to remember that the label must
- *  say what will happen, to what, and how much is hidden — "Expand Sherlock
- *  Holmes (4)". Get that wrong and a screen reader announces a bare "button". */
+ *  Its own component for the accessible name: the label must say what will
+ *  happen, to what, and how much is hidden — "Expand Sherlock Holmes (4)".
+ *  Without it a screen reader announces a bare "button". */
 export function CollapseButton(props: {
   collapsed: boolean;
   onToggle: () => void;
@@ -36,12 +35,9 @@ export function CollapseButton(props: {
 
 /** A collapsible group of rows: a header, and the rows when it is open.
  *
- *  The header's shape is the caller's — pass `className` to pick it. The review
- *  queue's header shares a grid with its rows so the columns line up by
- *  construction; the sources list is a plain flex row. Those are genuinely
- *  different headers over the same behaviour, and this component owns the
- *  behaviour: the chevron, its accessible name, and not rendering children
- *  while collapsed. */
+ *  The header's shape is the caller's — pass `className` to pick it. This owns
+ *  the behaviour only: the chevron, its accessible name, and not rendering
+ *  children while collapsed. */
 export function ListGroup(props: {
   collapsed: boolean;
   onToggle: () => void;

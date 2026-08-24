@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Every layered surface must dismiss every way it offers — scrim tap, Escape,
 // and back (the Android gesture and the browser button are the same event) —
-// and must leave the reader on the screen they were reading. The import confirm
-// silently answered only one of them for weeks, because each sheet registered
-// with the overlay stack by hand and one forgot.
+// and must leave the reader on the screen they were reading. Registration with
+// the overlay stack is by hand, per sheet, so a surface can silently miss one
+// route while answering the others.
 //
 //   node design/overlaycheck.mjs
 //
@@ -32,9 +32,9 @@ const CASES = [
       await p.locator(".row-summary").first().click();
       await p.waitForTimeout(500);
       await p.locator(".notelink").first().click(); }, sel: ".sheet" },
-  // The lorebook tag panel. Every case above is a memory-tool surface, which is
-  // why this panel shipped unregistered: back left the book instead of closing
-  // the panel. Opened from the dock so the check exercises the phone path.
+  // The lorebook tag panel. Every case above is a memory-tool surface, so this
+  // is the one non-memory surface the check covers. Opened from the dock so it
+  // exercises the phone path.
   { name: "tag panel", hash: "#/lorebooks/JZzGg_2NjFx1hFP_G4Yeq", w: 486,
     dismiss: ["escape", "back"], open: async (p) => {
       await p.getByRole("button", { name: /Tags/ }).click(); }, sel: ".tagpanel" },

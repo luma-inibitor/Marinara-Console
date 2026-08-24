@@ -1,7 +1,7 @@
-// Sources — browse to import (approved specimens: public/mockups/sources-v1.html).
+// Sources — browse to import.
 //
-// The owner browses this screen to import and never for maintenance, so import
-// is the spine: one dense line per source carrying title and state only. Two
+// This screen is browsed to import and never for maintenance, so import is the
+// spine: one dense line per source carrying title and state only. Two
 // interaction models by kind — lorebooks and characters go in bulk, chat
 // summaries are curated and edited one at a time — and both live in the same
 // list, because expanding a row in place keeps the list as the context.

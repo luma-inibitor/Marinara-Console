@@ -1,12 +1,11 @@
-// One flags model for the whole tool (owner-approved redesign, 2026-08-21).
+// One flags model for the whole tool.
 //
 // A flag is a computed exception signal about a row. Rows render flags as one
 // collapsed chip — flag glyph + count — tinted by the WORST severity present
 // (no per-kind icons; the kinds are enumerated in the detail's computed-
 // signals zone and filterable through the flags facet). Near-constant enum
-// columns (disposition, risk, claim kind, confidence) have no columns of
-// their own: their interesting values surface here instead (§3.2 variance
-// filter — 115/124 merge, 120/124 low risk in the live corpus).
+// columns (disposition, risk, claim kind, confidence) get no column of their
+// own: only their interesting values surface, and they surface here.
 //
 // A flag's `label` is a FACET VALUE as well as a chip: the quick chips in the
 // review console filter on these exact strings, so they are read from the

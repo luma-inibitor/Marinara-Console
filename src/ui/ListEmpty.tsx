@@ -5,17 +5,11 @@ import { t } from "../copy";
 
 /** A list with nothing in it, rendered by the reason it is empty.
  *
- *  Empty has three causes and they need three different sentences. The UX
- *  review found first-run copy standing in for filtered-empty, which tells a
- *  reader with forty-seven entries that they have none, and offers them a
- *  "create your first" button for a list that is already full.
- *
- *  A named composition of `EmptyState`, like `ErrorState` and `NotFound`: the
- *  primitive still takes any icon, title and body, and this fixes the three
- *  the console actually has. The filtered case is the reason this exists as a
- *  component rather than a copy table — it is the only empty state that can
- *  offer a way out of itself, by naming the filters responsible and letting
- *  the reader drop them one at a time. */
+ *  Empty has three causes and they need three different sentences: first-run
+ *  copy over a filtered list tells a reader with forty-seven entries that they
+ *  have none. A named composition of `EmptyState`, like `ErrorState` and
+ *  `NotFound`. The filtered case is the only empty state that offers a way out
+ *  of itself, by naming the filters responsible. */
 export function ListEmpty(props: {
   kind: "first-run" | "filtered" | "cleared";
   what: string;

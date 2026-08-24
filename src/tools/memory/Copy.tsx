@@ -1,20 +1,15 @@
 // A catalog string rendered as nodes, so a sentence with something clickable
 // inside it stays ONE string.
 //
-// The claim headlines are the reason this exists: "adds to §state of Ashgate"
-// has a section key and a memory reference embedded mid-sentence, and the
-// obvious fix — splitting it into JSX fragments around the components — moves
-// English word order into the markup, which is the exact defect the copy
-// catalog is here to prevent. `<Copy>` resolves the string first and then
+// Splitting such a sentence into JSX fragments around the embedded components
+// would move English word order into the markup, which is the exact defect the
+// copy catalog exists to prevent. `<Copy>` resolves the string first and then
 // substitutes `{{slot}}` with a node, so the string keeps its word order and
 // the components keep their behaviour.
 //
 // `params` are filled as TEXT (and select the plural, via `count`); `slots`
 // are filled as NODES. A name must not appear in both, or the text fill wins
 // and the node never renders.
-//
-// This lives in the memory tool because src/copy/index.ts has no component
-// layer; if a second tool needs it, promote it there rather than copying it.
 
 import { Fragment, type ComponentChildren } from "preact";
 import { tAny, type Params } from "../../copy";

@@ -20,11 +20,6 @@ export interface FacetGroup { key: string; label: string; facets: FacetLine[] }
 /** The filter drawer: every facet in the current slice, with counts, as
  *  toggles.
  *
- *  Values render as a wrapping run of chips rather than rows, because the full
- *  facet inventory is the only thing that has to fit on a phone screen and a
- *  row per value does not. Each facet's chips get their own wrapping column so
- *  a second line aligns under the first chip and never under the label.
- *
  *  A selected value must stay listed at count 0 — that is the caller's job
  *  when it builds `values`. Dropping it makes the selection un-clearable and
  *  the drawer can render blank. */

@@ -5,12 +5,9 @@ import { t } from "../copy";
 
 /** A link that points at something that isn't there — a real state, not a blank.
  *
- *  A named composition of `EmptyState`, on the same reasoning as `ErrorState`:
- *  a missing record is one situation, so it gets one appearance rather than
- *  whatever each screen invents. Unlike `ErrorState` it does carry a default
- *  destination, because "the thing you asked for is gone" has exactly one
- *  sensible next move — go back to the list it came from — and `backTo` names
- *  which list, so it is never wrong about where that is. */
+ *  A named composition of `EmptyState`. Unlike `ErrorState` it carries a
+ *  default destination: a missing record has one sensible next move, back to
+ *  the list it came from, and `backTo` names which list. */
 export function NotFound(props: { what: string; id?: string; backTo?: string; backLabel?: string }) {
   return (
     <EmptyState

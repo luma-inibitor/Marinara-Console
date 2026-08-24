@@ -14,11 +14,10 @@ export interface DisclosureOption { id: string; name: string; hint?: string }
  *
  *  Use this when the list can be long and the trigger belongs inline — a scope
  *  breadcrumb, a filter in a toolbar. Use `<Picker>` instead when the list is
- *  short and fixed, or when the trigger lives in a phone's thumb rail: a
- *  bottom sheet is the better projection there.
+ *  short and fixed, or when the trigger lives in a phone's thumb rail.
  *
- *  The search field never autofocuses. Opening a picker should not take the
- *  keyboard from someone who came to click (owner's call, 2026-08-22). */
+ *  The search field never autofocuses: opening a picker should not take the
+ *  keyboard from someone who came to click. */
 export function SearchDisclosure(props: {
   label: string;
   value: string;

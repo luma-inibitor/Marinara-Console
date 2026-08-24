@@ -2,11 +2,11 @@
 // Lorebook tool: types, derived data, and engine-faithful evaluation.
 //
 // The copy TABLES below (status labels and hints, position labels) are enum ->
-// label maps, which no position rule in design/copycheck.mjs can reach: the
-// literals sat in an object initialiser, not in a rendered slot. Hence the
-// @copy-strict marker above — in a strict file EVERY string literal with a
-// letter and a space is read as copy, so a label added to one of these maps
-// without a catalog entry fails the check instead of shipping unnoticed.
+// label maps living in object initialisers, not rendered slots, so no position
+// rule in design/copycheck.mjs reaches them. Hence the @copy-strict marker
+// above: in a strict file EVERY string literal with a letter and a space is
+// read as copy, so a label added to one of these maps without a catalog entry
+// fails the check instead of shipping unnoticed. Do not drop the marker.
 import { api, tokensOf } from "../../shell/api";
 import { tAny } from "../../copy";
 import { testPrimaryKeys, testSecondaryKeys } from "../../lib/lorebook-keyword-matching.js";
@@ -47,8 +47,6 @@ export interface Entry {
 export type EntryStatus = "normal" | "constant" | "selective" | "disabled";
 
 // Engine vocabulary — deriveStatus()/STATUS_LABEL in LorebookEntryRow.tsx upstream.
-// The tables keep their shape; only the labels move, from literals here to keys
-// resolved out of src/copy/lorebooks.json.
 const STATUSES: EntryStatus[] = ["normal", "constant", "selective", "disabled"];
 
 const byStatus = (key: (s: EntryStatus) => string): Record<EntryStatus, string> =>
@@ -119,9 +117,9 @@ export function matchesQuery(e: Entry, q: string): boolean {
 
 export interface TagStat { tag: string; n: number; tokens: number; constant: number; disabled: number; ids: string[]; }
 
-/** Sentinel bucket for entries with no tag. Leading space so it sorts and
- *  compares distinctly from any tag a user could type; exported so the audit
- *  screen tests against this exact value instead of its own copy of it. */
+/** Sentinel bucket for entries with no tag. The leading space keeps it sorting
+ *  and comparing distinctly from any tag a user could type; compare against
+ *  this export rather than re-spelling the literal. */
 export const UNTAGGED = " untagged";
 
 export function tagStats(entries: Entry[]): TagStat[] {

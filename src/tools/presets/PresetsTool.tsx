@@ -1,11 +1,5 @@
-// Prompt preset browser + editor.
-//
-// Design comes from design/research/native-preset-editor-audit.md plus a
-// four-lens critique of the first implementation. Key corrections carried here:
-// real collapsible sub-accordions (not hardcoded-open), ordinal-bearing status
-// rail (order is THE attribute of a prompt preset), enabled/role split into two
-// controls, save state always visible, titles wrap, markers labelled by type
-// rather than shown as "0 tokens", and optimistic writes that roll back.
+// Prompt preset browser + editor. Order is THE attribute of a prompt preset,
+// so the status rail carries the ordinal.
 import { Chip, EmptyState, IconButton, Loading, ErrorState, ListEmpty, NotFound } from "../../ui";
 import { Add, Back, Duplicate, Fullscreen, ICON_SIZE, SetDefault } from "../../ui/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
@@ -43,18 +37,16 @@ function useIsDesktop(): boolean {
 
 // ── copy shared with the lorebook tool, deliberately NOT routed here ──
 // "Description", "Content", "Advanced", "Edit in full screen" and "all default"
-// already exist in src/copy/lorebooks.json (lorebooks.entry.*, lorebooks.record.*).
-// They are the drawer-and-editor vocabulary BOTH tools use, so re-coining them
-// under presets.* would be one string under two keys — the exact thing
-// checkCatalog rejects. They stay as literals until those entries move to
-// src/copy/ui.json, where shared UI copy belongs (DESIGN.md §8); copycheck
-// already resolves them against the lorebooks entries in the meantime.
+// live in src/copy/lorebooks.json (lorebooks.entry.*, lorebooks.record.*) and are
+// the drawer-and-editor vocabulary BOTH tools use. Do NOT re-coin them under
+// presets.*: one string under two keys is exactly what checkCatalog rejects.
+// They stay literals here, and copycheck resolves them against the lorebooks
+// entries.
 
 // ══ browser ══════════════════════════════════════════════════════
 type BrowserSort = "tokens" | "sections" | "name";
 
-/** Sort chips, by the copy key that labels each. Two of the three are the
- *  product's own nouns, so the table points at keys rather than holding text. */
+/** Sort chips, by the copy key that labels each. */
 const SORT_KEY: Record<BrowserSort, string> = {
   tokens: "presets.tokens",
   sections: "presets.sections",
@@ -228,7 +220,7 @@ function Editor({ presetId }: { presetId: string }) {
     return false;
   }, [readOnly]);
 
-  // ── explicit save (owner decision, 2026-08-21) ──
+  // ── explicit save ──
   // One section draft at a time, plus a preset-level draft. Nothing is written
   // until Save, so a rejected write cannot leave the UI showing a value the
   // engine refused, and a concurrent write is detected rather than clobbered.
@@ -321,7 +313,7 @@ function Editor({ presetId }: { presetId: string }) {
     });
   }, [presetId, guard, focusId]);
 
-  /** Create inline and focus the name field — no native prompt(). */
+  /** Create inline and focus the name field. */
   const addSection = useCallback(async () => {
     if (guard()) return;
     try {
@@ -547,8 +539,8 @@ function Editor({ presetId }: { presetId: string }) {
               onCancel={() => setFs(null)} />
           ) : null;
         }
-        // Same key per field as the chip that opened it, so the two can never
-        // disagree about the field's name again.
+        // Same key per field as the chip that opened it, so the two cannot
+        // disagree about the field's name.
         const titles = {
           conversationPrompt: t("presets.conversationPrompt"),
           gamePrompt: t("presets.gamePrompt"),
@@ -677,9 +669,8 @@ function SectionDetail(props: {
 
       {marker
         ? sub("content", "Content", <span className="is-runtime">{t("presets.injectedAtRuntime")}</span>, () => (
-            // One slot, filled twice. This used to interpolate the marker name a
-            // second time through .toLowerCase(), which is a runtime edit to copy
-            // and would mangle a label like "ID macro cards".
+            // Pass the marker label through untouched: case-folding it here
+            // would be a runtime edit to copy, mangling e.g. "ID macro cards".
             <p className="prose-note">{t("presets.markerNote", { marker: markerLabel(s) ?? "" })}</p>
           ))
         : sub("content", "Content",

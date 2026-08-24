@@ -2,11 +2,9 @@
 // with delta, wrap toggle, markdown symbol row. Generic: callers supply the
 // title/subtitle and receive the final value on Done.
 //
-// P0.1: this used to have exactly one exit — Done — and no key handler, so
-// Escape bubbled to the list behind it and navigated away, and the Android back
-// gesture did the same. Either one silently discarded the edit. It now owns its
-// own Escape, offers Cancel, guards a dirty discard, and pushes a history entry
-// so the back gesture closes the editor instead of leaving the record.
+// It owns its own Escape, offers Cancel, guards a dirty discard, and pushes a
+// history entry, so neither Escape nor the Android back gesture can reach the
+// list behind it and silently discard the edit.
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { tokensOf } from "../shell/api";
 import { Chip } from "./Chip";
@@ -67,7 +65,7 @@ export function FullscreenText(props: {
   }, []);
 
   // A history entry of our own, so the phone's back gesture closes the editor
-  // rather than unwinding to the book list with the edit dropped.
+  // rather than unwinding to the list behind it with the edit dropped.
   useEffect(() => {
     history.pushState({ fsEditor: true }, "");
     const onPop = () => { live.current.dirty ? setConfirming(true) : props.onCancel(); };

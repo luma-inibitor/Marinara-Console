@@ -21,7 +21,7 @@ import { Add, Back, ICON_SIZE, SelectMode, Tags } from "../../ui/icons";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
 type Mode = "find" | "test";
-/** Retained for the bulk-edit path, which still writes directly. */
+/** Save state for the bulk-edit path, which writes directly. */
 export type SavePill = "dirty" | "saved" | "err";
 
 /** Sort chip labels, as copy keys — a table, so it goes through t() by key. */
@@ -129,7 +129,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     return { testing, budget, pool, aTok, kTok, total: aTok + kTok, over: aTok + kTok > budget };
   }, [entries, evals, mode, query, book]);
 
-  // ── editing: one explicit-save draft at a time (P0.2/P0.3) ──
+  // ── editing: one explicit-save draft at a time ──
   // Nothing is written until Save. A rejected save keeps the draft, so the UI
   // never shows a value the engine refused; a concurrent write is detected and
   // surfaced instead of silently clobbering the other client.
@@ -233,15 +233,14 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
 
   // The tag panel is a full-screen surface, not a `<Sheet>`, so it has to hold
   // up its own half of the overlay contract: flip the signal, then register a
-  // closer. Without this the back gesture walked past the panel and left the
-  // lorebook entirely, which on a phone is the only dismissal gesture there is.
+  // closer. Without it the back gesture walks past the panel and leaves the
+  // lorebook, which on a phone is the only dismissal gesture there is.
   useEffect(() => {
     if (showTags) openOverlay(() => setShowTags(false));
   }, [showTags]);
 
   // ── keyboard: j/k roving focus, Enter opens, Escape backs out ──
-  // The guards live in useRovingFocus. They used to live here, in a copy that
-  // had lost the modifier check, so Ctrl-J walked the cursor.
+  // The modifier guards live in useRovingFocus; do not re-implement them here.
   const roving = useRovingFocus({
     listRef, keys: visible.map((e) => e.id), current: focusId, onFocus: setFocusId,
   });
@@ -255,8 +254,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     } else if (ev.key === "Escape") {
       // Only reached when nothing is stacked: the overlay stack's own capture
       // listener swallows Escape while the tag panel is open. Closing it here
-      // as well would pop two history entries and drop the reader out of the
-      // book — the exact bug the panel's back gesture had.
+      // as well would pop two history entries and drop the reader out of the book.
       navigate("lorebooks");
     }
   }, [visible, focusId, desktop]);

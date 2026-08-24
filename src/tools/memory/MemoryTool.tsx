@@ -40,14 +40,9 @@ function consumeFocusSource(): string | null {
   return v;
 }
 
-// Owner's order and labels (2026-08-22): one word each, so four equal targets
-// fit a phone without truncating. Sources first — material arrives there —
-// then Vault, Review, Activity. Review stays the default landing view because
-// it is the work.
-// (VIEW_ICON now lives in the icon registry: sources = the screen's own verb,
-// vault = library because database is taken by the source-note type icon.)
-// Workflow order: material arrives in Sources, gets decided in Review, and
-// lands in the Vault. Activity comes last, when it is built.
+// One-word labels, so the targets fit a phone without truncating. The order is
+// the workflow: material arrives in Sources, gets decided in Review, and lands
+// in the Vault. Review is the default landing view because it is the work.
 const VIEWS = ["sources", "review", "vault"] as const;
 
 export function MemoryTool({ rest }: { rest: string[] }) {
@@ -83,10 +78,7 @@ export function MemoryTool({ rest }: { rest: string[] }) {
   };
   return (
     <div className="memory-tool">
-      {/* Scope above the views: it decides what every view shows, and this is
-          the same order the phone uses. The old status line is gone — its
-          counts are badges on the tabs, and index health is an alert below
-          rather than a word in the corner. */}
+      {/* Scope above the views: it decides what every view shows. */}
       <ScopeBar chats={chats} characters={characters} />
       <nav className="mem-nav" aria-label={t("longtermmemorynavigation.longTermMemorySections")}>
         {VIEWS.map((id) => {

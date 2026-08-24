@@ -1,38 +1,25 @@
 // The console's single icon import surface.
 //
 // This is the ONLY module in src/ that may import from "@tabler/icons-preact".
-// Everything else imports a *semantic* name from here, so the question "which
-// glyph means X" has exactly one answer and changing it is a one-line edit
-// instead of a grep across seventeen files.
+// Everything else imports a *semantic* name from here.
 //
-// ── The silhouette families (DESIGN.md §5, owner-decided; do not re-litigate)
+// Reserved silhouette families (DESIGN.md §5) — no icon may borrow another
+// family's silhouette:
 //
-//   decision     decision states ONLY — keep / drop / undecided. What is
-//                reserved is the INTERIOR MARK on a SOLID round outline: a
-//                solid circle holding a tick or a cross, plus the 12-dot
-//                dotted circle that means undecided. A round outline holding
-//                anything else (an `i`, an `!`, an arc, a speech tail) is a
-//                different object and is free — info-circle, message-circle
-//                and alert-circle are all fine. So is the whole `progress-*`
-//                family: its 5-segment arc is a different visual vocabulary
-//                from the dotted circle, so `progress-x` and `progress-alert`
-//                no longer read as neighbours of undecided and drop. A DASHED
-//                circle is likewise free — the decision family left it when
-//                `undecided` moved to `circle-dotted`, precisely because
-//                circle-dashed's 8 arc segments and progress-*'s 5 arc
-//                segments are the same vocabulary and the two families were
-//                colliding. Only the reserved interiors can be misread as a
-//                decision, which is the whole point of the rule
-//                — owner-decided 2026-08-23.
+//   decision     decision states ONLY (keep / drop / undecided). What is
+//                reserved is the INTERIOR MARK on a round outline: a solid
+//                circle holding a tick or a cross, plus the 12-dot dotted
+//                circle. A round outline holding anything else — an `i`, an
+//                `!`, an arc, a speech tail — is a different object and is
+//                free, as is the 5-segment `progress-*` arc family and the
+//                8-segment dashed circle.
 //   flag         exception flags ONLY
 //   files+script content ops — script = the whole note, file = one section;
 //                the shared + marks the two additive ops, the pencil marks the
 //                one op that replaces instead of adds
 //
-// No icon may borrow another family's silhouette. That rule killed `flag-2`
-// for status and a bare pencil for the edited mark. If you reach for a solid
-// round glyph whose interior is a tick or a cross, or for the dotted circle,
-// and you are not naming a decision, you have the wrong icon.
+// If you reach for a round glyph whose interior is a tick, a cross, or the
+// dotted edge, and you are not naming a decision, you have the wrong icon.
 //
 // Domain mappings that are *taxonomies* (note types, mutation ops, source
 // kinds) live next to their meaning in this file too, keyed by the domain
@@ -69,29 +56,27 @@ import {
   IconRefreshAlert, IconAdjustments, IconUnlink,
   // navigation + transfer
   IconChevronLeft, IconRefresh, IconDownload,
-  // affordances that were ad-hoc text glyphs before 2026-08-23
+  // affordances
   IconArrowsDiagonal, IconStar, IconCheckbox, IconHash,
   type Icon,
 } from "@tabler/icons-preact";
 
 export type { Icon };
 
-/** The size scale, read off the 63 call sites that existed before it did.
- *  Stroke is 1.75 everywhere except the small glyphs, which need 2+ to stay
- *  legible; call sites pass `stroke={2}` at xs/sm. */
+/** The size scale. Stroke is 1.75 everywhere except the small glyphs, which
+ *  need 2+ to stay legible; call sites pass `stroke={2}` at xs/sm. */
 export const ICON_SIZE = {
   xs: 12,   // inline help, cost, fold markers, small actions
   sm: 13,   // inline body glyphs, chevrons, flags
   md: 14,   // row glyphs, search bar, disclosure triggers
   lg: 15,   // nav tabs, group headers, bulk actions
   xl: 16,   // kebab, modal headers
-  hero: 22, // empty-state icons — 11/11 consistent before this existed
+  hero: 22, // empty-state icons
 } as const;
 
 // ── Semantic names ──────────────────────────────────────────────────
-// Grouped by what they MEAN. Two names may point at one glyph when the
-// concepts are genuinely the same thing seen twice; they must never point at
-// one glyph because nobody checked.
+// Grouped by what they MEAN. Two names may point at one glyph only when the
+// concepts are genuinely the same thing seen twice.
 
 // disclosure + direction
 export const ChevronRight = IconChevronRight;   // collapsed / drill in
@@ -109,123 +94,76 @@ export const Copy = IconCopy;
 export const Copied = IconCheck;                // transient copy confirmation
 export const Confirm = IconCheck;               // commit / checkbox tick
 export const Edit = IconPencil;                 // the "edit" ACTION
-export const EditedMark = IconWriting;          // "edited by you" STATE.
-                                                // Not a pencil: bare pencil
-                                                // collides with file-pencil's
-                                                // silhouette (BACKLOG 2026-08-21).
+export const EditedMark = IconWriting;          // "edited by you" STATE
 export const Add = IconPlus;
 export const Remove = IconX;
 export const More = IconDotsVertical;           // kebab / overflow
 export const Refresh = IconRefresh;             // re-fetch what is already here
-                                                // (distinct from Retry, which
-                                                // re-runs a FAILED action)
 export const Download = IconDownload;           // hand the user a file
 export const Preview = IconEye;                 // show the rendered thing
 export const Raw = IconCode;                    // show the source thing
-export const Close = IconX;                     // dismiss a SURFACE — sheet,
-                                                // modal, toast, result card.
-                                                // Same glyph as `Remove` on
-                                                // purpose, and checked rather
-                                                // than assumed: an X is the one
-                                                // dismiss mark users already
-                                                // read, and every Tabler
-                                                // alternative (circle-x,
-                                                // square-x) borrows the
-                                                // reserved decision family.
-                                                // Two names because the
-                                                // concepts differ — Close takes
-                                                // a surface away, Remove takes
-                                                // an ITEM out of a set (a key
-                                                // chip, a filter chip) — so if
-                                                // one ever needs its own glyph
-                                                // the call sites are already
-                                                // sorted.
+export const Close = IconX;                     // dismiss a SURFACE (sheet,
+                                                // modal, toast). Shares
+                                                // `Remove`'s glyph; the names
+                                                // differ because Close takes a
+                                                // surface away and Remove takes
+                                                // an ITEM out of a set.
 export const Fullscreen = IconArrowsDiagonal;   // open this field in the
                                                 // fullscreen text editor
 export const Duplicate = IconCopy;              // make a second copy of a
                                                 // record. Shares `Copy`'s
                                                 // glyph: both are "make another
-                                                // one of this", the only
-                                                // difference being where it
-                                                // lands. copy-plus and files
-                                                // were both rejected — the +
-                                                // and the file shape belong to
-                                                // the content-ops family.
+                                                // one of this".
 export const SetDefault = IconStar;             // mark the record the app
                                                 // reaches for when unasked
-export const SelectMode = IconCheckbox;         // enter multi-select on a list.
-                                                // A square, not a ticked round
-                                                // glyph: that interior belongs
-                                                // to the decision family.
+export const SelectMode = IconCheckbox;         // enter multi-select on a list
 export const Tags = IconHash;                   // the tag DISTRIBUTION panel.
-                                                // Not IconTags — that is the
-                                                // `set_keywords` mutation op,
-                                                // and this opens a stats view
-                                                // rather than changing anything.
+                                                // Not IconTags — that names the
+                                                // `set_keywords` mutation op.
 
 // signals
 export const Info = IconInfoCircle;             // help text, always this one
 export const Flag = IconFlag;                   // exception flags + computed outliers
 export const Cost = IconSparkles;               // spends model calls
 
-// ── the state signals (owner-decided 2026-08-23) ────────────────────
+// ── the state signals ───────────────────────────────────────────────
 // One glyph per state, so a banner, a row mark and an empty state that all
 // report the same condition look like the same condition.
-//
-// `Failure` and `Incomplete` were one name (`Alert`, alert-triangle) doing two
-// jobs: generic "this failed" and the source-freshness state
-// `extraction_incomplete`. They are different concepts, so they are now
-// different names — a failure is a circle, an incomplete extraction keeps the
-// triangle. Splitting the names makes the split explicit at the call site.
 export const Failure = IconAlertCircle;         // error: the thing did not work
 export const Incomplete = IconAlertTriangle;    // an extraction that stopped
                                                 // short — not a failure, a
                                                 // partial harvest that needs
                                                 // re-running
-// reserved: PartialResult and Degraded have no call site yet — they are the
-// state-signal vocabulary DESIGN.md §207 commits to, kept so the two states
-// cannot be re-invented under a different glyph (owner-decided 2026-08-23).
+// PartialResult and Degraded have no call site yet. They are the state-signal
+// vocabulary DESIGN.md §207 commits to; use these rather than a new glyph.
 export const PartialResult = IconProgressX;     // partial: some of the batch
-                                                // landed, some did not. The
-                                                // progress arc is its own
-                                                // vocabulary and no longer
-                                                // collides with the decision
-                                                // family (see header).
+                                                // landed, some did not
 export const Degraded = IconProgressAlert;      // degraded: it ran, but on a
                                                 // fallback path or with a
                                                 // reduced guarantee
-export const ValidationOk = IconZoomCheck;      // a check was performed and it
-                                                // passed — the *inspection*
-                                                // succeeded, which is not the
-                                                // same as `Confirm`'s "you
-                                                // ticked this" or `AllClear`'s
-                                                // "there is nothing left"
-// info    → `Info` above (info-circle), unchanged
-// loading → no icon. Loading.tsx deliberately carries none: a spinner that is
-//           also a glyph reads as a state you can act on, and you cannot.
+export const ValidationOk = IconZoomCheck;      // an *inspection* passed — not
+                                                // `Confirm`'s "you ticked this"
+                                                // nor `AllClear`'s "nothing is
+                                                // left"
+// loading → no icon. Loading.tsx carries none: a spinner that is also a glyph
+//           reads as a state you can act on, and you cannot.
 
 // the decision family — the reserved interiors (see header)
 export const DECISION_ICON: Record<"keep" | "drop" | "undecided", Icon> = {
   keep: IconCircleCheck,
   drop: IconCircleX,
-  // circle-dotted, not circle-dashed: dashed is 8 arc segments and the
-  // `progress-*` family is 5 arc segments — one vocabulary, so the decision
-  // family and the progress family were colliding. 12 dots is a different
-  // vocabulary and the collision is gone (owner-decided 2026-08-23).
+  // circle-dotted, not circle-dashed: 8 dashes are the same arc vocabulary as
+  // the `progress-*` family, so a dashed circle collides with it.
   undecided: IconCircleDotted,
 };
 
 // empty states
 export const FirstRun = IconInbox;              // nothing added yet
 export const Missing = IconQuestionMark;        // record does not exist
-export const AllClear = IconChecks;             // "all of them are handled" —
-                                                // nothing is left in this set.
-                                                // The double tick is the point:
-                                                // it counts a whole set, where
-                                                // `Confirm` (single check) ticks
-                                                // one thing. No circle, so it
-                                                // never reads as a decision
-                                                // (owner-decided 2026-08-23).
+export const AllClear = IconChecks;             // nothing is left in this set.
+                                                // The double tick counts a whole
+                                                // set, where `Confirm` (single
+                                                // check) ticks one thing.
 
 // memory tool views. `database` is taken — it is the source-note type icon.
 export const VIEW_ICON: Record<string, Icon> = {
@@ -254,14 +192,13 @@ export const SCOPE_ICON: Record<string, Icon> = {
   chat: IconMessageCircle,
 };
 
-// source freshness. Open design item (BACKLOG: "Sources freshness icons");
-// the mapping is centralised here so revisiting it is one edit.
+// source freshness
 export const SOURCE_STATE_ICON: Record<string, Icon> = {
   current: IconCheck,
   source_updated: IconRefreshAlert,
   context_updated: IconAdjustments,
-  extraction_incomplete: Incomplete,   // the triangle, kept: an extraction
-                                       // that stopped short is not a failure
+  extraction_incomplete: Incomplete,   // the triangle: an extraction that
+                                       // stopped short is not a failure
   source_missing: IconUnlink,
 };
 
@@ -270,12 +207,12 @@ export const TYPE_ICON: Record<string, Icon> = {
   character: IconUser,
   relationship: IconHeartHandshake,
   timeline_event: IconTimelineEvent,
-  thread: IconPin, // needle-thread rejected: illegible at 14px (Luma 2026-08-21)
+  thread: IconPin,
   world: IconWorld,
   tone: IconMusic,
   source: IconDatabase,
-  // reserved: `scene` is a real schema type in MEMORY-SCHEMA.md; the live
-  // corpus simply has zero scene notes today, so this entry reads unused.
+  // `scene` is a real schema type in MEMORY-SCHEMA.md; the live corpus has no
+  // scene notes today, so this entry reads unused.
   scene: IconMovie,
 };
 
@@ -291,11 +228,6 @@ export const OP_ICON: Record<string, Icon> = {
 };
 
 export const Pending = VIEW_ICON.review;        // "work still waiting on you".
-                                                // Deliberately the same binding
-                                                // as the Review nav tab, not a
-                                                // second one: this glyph means
-                                                // "the review queue" in both
-                                                // places, so a pending count
-                                                // names the destination the
-                                                // user should go to
-                                                // (owner-decided 2026-08-23).
+                                                // Bound to the Review tab's
+                                                // glyph so a pending count names
+                                                // the destination it sends you to.

@@ -1,4 +1,4 @@
-// Memory Vault — browse and correct what is stored (ltm-review J4).
+// Memory Vault — browse and correct what is stored.
 // Source notes are audit records, not memories: excluded by default, behind a
 // toggle. Cap pressure reads as a gradient on the row. Archive is the
 // destructive default (undoable); permanent delete confirms.

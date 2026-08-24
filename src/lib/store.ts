@@ -1,11 +1,11 @@
 // First-party (the rest of src/lib is vendored engine code).
-// Replacement for @preact/signals: module-scope stores over useSyncExternalStore.
+// Module-scope stores over useSyncExternalStore.
 //
 // There is deliberately no `.value`. A store is read one of two ways, and the
 // type system forces you to say which: `useStore(s)` inside a component (this
-// subscribes), or `s.get()` anywhere else (this does not). Under React, reading
-// a value in a component body without subscribing is a silent no-re-render bug,
-// so the shape that permits it does not exist.
+// subscribes), or `s.get()` anywhere else (this does not). Reading a value in a
+// component body without subscribing is a silent no-re-render bug, so the shape
+// that permits it does not exist. Do not add one.
 //
 // The import below is the ONLY line that changes when preact/compat is swapped
 // for react.
@@ -66,8 +66,7 @@ export function derived<const S extends readonly Store<unknown>[], T>(
 
 /** Subscribing read. The only legal way to read a store inside a component. */
 export function useStore<T>(store: Store<T>): T {
-  // No getServerSnapshot third argument: this app never server-renders, and
-  // preact/compat's signature does not accept one. React's does, optionally; if
-  // SSR is ever added, pass store.get again there (snapshots touch no window).
+  // No getServerSnapshot third argument: preact/compat's signature does not
+  // accept one, and this app never server-renders.
   return useSyncExternalStore(store.subscribe, store.get);
 }

@@ -6,8 +6,8 @@
 [data-d="drop"] { --dc: var(--danger); }
 [data-d="undecided"] { --dc: var(--off); }
 
-/* categorical memory-type hues — chips/dots always carry the name in text
-   The hues themselves now live in tokens.css as the --type-* family. */
+/* categorical memory-type hues — chips/dots always carry the name in text.
+   The hues themselves live in tokens.css as the --type-* family. */
 .type-character    { --tc: var(--type-character); }
 .type-relationship { --tc: var(--type-relationship); }
 .type-timeline_event { --tc: var(--type-timeline-event); }
@@ -22,10 +22,10 @@
   text-transform: none; letter-spacing: 0.02em;
   font-family: var(--font-data); font-size: 10.5px;
 }
-/* The type icon carries the categorical hue. This rule is the thing that
-   makes that true: .type-* only DECLARES --tc, and until 2026-08-23 nothing
-   consumed it on .ti, so every TypeIcon silently inherited its parent's text
-   color while DESIGN.md §5 and icons.tsx both claimed otherwise. */
+/* The type icon carries the categorical hue, and this rule is what makes that
+   true: .type-* only DECLARES --tc, so it must land on the SAME element as .ti
+   for --tc to resolve. Split them and the icon silently falls back to its
+   parent's text color. */
 .ti { color: var(--tc, currentColor); }
 .tdot { width: 9px; height: 9px; border-radius: 50%; background: var(--tc, var(--off)); flex: 0 0 auto; }
 .chip-min { color: var(--tc); }
@@ -70,7 +70,7 @@
 .mbar .m-drop { background: var(--danger); opacity: 0.6; }
 .is-keep { color: var(--ok); }
 .is-drop { color: var(--danger); }
-/* The meter tally is now icon + digit, and .dec is inline-flex — inside plain
+/* The meter tally is icon + digit, and .dec is inline-flex — inside plain
    inline text it baselines off the icon box and sits low against the numeral.
    Scoped to .mval: .is-keep/.is-drop are also plain inline text elsewhere
    (dock counts, "Save FAILED"), which must stay inline. */
@@ -128,12 +128,11 @@
 .dec { display: inline-flex; }
 .dec-keep { color: var(--ok); }
 .dec-drop { color: var(--danger); }
-/* Undecided is circle-dotted (12 dots), not circle-dashed (8 arcs) — the swap
-   that stopped the decision family colliding with progress-* (DESIGN.md §5,
-   2026-08-23). Twelve 1.75px dots carry far less ink than eight arcs, so at
-   --text-faint the rail mark all but vanished: lift it to --text-dim and
-   thicken the stroke so the ring still reads at 12px. Keep/drop keep their
-   own hues and the default stroke. */
+/* Undecided is circle-dotted (12 dots), not circle-dashed, so the decision
+   family does not collide with progress-* (DESIGN.md §5). Twelve 1.75px dots
+   carry far less ink than arcs, so at --text-faint the rail mark all but
+   vanishes: it needs --text-dim and a thicker stroke to still read at 12px.
+   Keep/drop keep their own hues and the default stroke. */
 .dec-undecided { color: var(--text-dim); }
 .dec-undecided svg { stroke-width: 2.25; }
 [data-d="drop"] .claim-text { opacity: 0.5; text-decoration: line-through;
@@ -165,8 +164,8 @@
 /* Seam guards: opaque canvas above each sticky layer, covering the few-px
    gap Android's sticky repaint lag opens during fast scroll. 3px, not more:
    the strip paints over whatever sits above it in normal flow, and a fat
-   strip visibly chops the bottom of an adjacent header or washed row
-   (owner-caught with collapsed groups stacking header-on-header). */
+   strip visibly chops the bottom of an adjacent header or washed row, which
+   shows up worst where collapsed groups stack header-on-header. */
 .memory-tool .console { box-shadow: 0 -3px 0 0 var(--canvas); }
 
 /* ── group headers: the same grid, a different rendering ── */
@@ -253,16 +252,16 @@
 
 /* ══ detail ══ */
 .claim-detail { padding: var(--panel-pad); }
-/* ══ note peek v2 + mode pill ══
+/* ══ note peek + mode pill ══
    The peek speaks the list's vocabulary. The mode pill always renders all
    three segments (DM · RP · GM) at constant width; active segments lit. */
 .peek-meta { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
-/* the id is now copyable, so it is information rather than decoration and
-   takes the dim tone the contrast floor requires */
+/* the id is copyable, so it is information rather than decoration and takes
+   the dim tone the contrast floor requires */
 .peek-id { color: var(--text-dim); font-size: 10.5px; margin-top: var(--s3);
   padding-top: var(--s2); border-top: var(--hairline); overflow-wrap: anywhere; }
 
-/* ══ detail pane v5 — organized around the decision (2026-08-22) ══
+/* ══ detail pane — organized around the decision ══
    Zones top-to-bottom answer the reviewer's questions in order: headline
    (what is this) · preview (what the vault looks like after keep) · evidence
    (why trust it) · decide bar (act). Preview lines speak diff: + tint = lands
@@ -325,7 +324,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
   border: 1px solid color-mix(in srgb, var(--ok) 45%, transparent); }
 .edu { margin: 6px 0 0; font-size: 12px; display: flex; align-items: flex-start; gap: 5px; }
 .edu svg { flex: 0 0 auto; margin-top: 2px; }
-/* the object under review, inlined (S7): context, not change — no gutters */
+/* the object under review, inlined: context, not change — no gutters */
 .inline-card { border: var(--hairline); border-radius: var(--r-s); background: var(--surface-1);
   padding: 6px 9px; margin-top: 7px; }
 .audit-detail .inline-card { background: var(--surface-2); }
@@ -417,7 +416,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 
 .dim { color: var(--text-dim); }
 
-/* ══ education pattern (2026-08-21) ══
+/* ══ education pattern ══
    Every enum value and type/op icon can answer "what does this word mean" in
    place: hover/focus on desktop, tap on touch. Definitions lead with the
    owning field ("claim kind · static — …"). The decision toggle carries no
@@ -427,7 +426,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .mem-row .term:hover::after, .mem-row .term.tip-open::after { left: auto; }
 
 /* Section keys are addresses (§ + text tone) and never accent: accent means
-   interactive, and a §key is not a link (owner, 2026-08-22). */
+   interactive, and a §key is not a link. */
 
 .sig { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; font-size: 13px; }
 .sig svg { flex: 0 0 auto; margin-top: 2px; }
@@ -441,7 +440,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 
 
 
-/* ══ SOURCES — browse to import (2026-08-22) ══
+/* ══ SOURCES — browse to import ══
    The spine is one dense line per source carrying title and state only.
    State is glyph + word: the word is the channel that survives colour
    blindness, a screen reader, and a phone with no hover. "New" is the
@@ -563,11 +562,11 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .resfoot { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s2); flex-wrap: wrap; }
 .resfoot .dock-primary { margin-left: 0; }
 /* empty states */
-/* the empty pane now lives with the component, src/ui/EmptyState.css */
+/* the empty pane lives with the component, src/ui/EmptyState.css */
 .es-acts .dock-primary { margin-left: 0; }
 
 /* keyword editing in the claim editor: chips become removable, and a field
-   adds to the list. The cap is the product's own (30). */
+   adds to the list. */
 .kwedit { border-top: var(--hairline); margin-top: var(--s2); padding-top: var(--s2); }
 .kwc.kw-edit { display: inline-flex; align-items: center; gap: 5px; padding-right: 3px; }
 .kwx { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px;
@@ -579,9 +578,9 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .kwadd input:focus { outline: none; border-color: var(--accent); }
 .kwadd .zbtn { min-height: 34px; }
 
-/* ══ SCOPE BAR + NAV (approved wireframes, public/mockups/nav-wire.html) ══
-   Scope sits above the views because it decides what they show, and it is the
-   same order the phone uses. Each level is its own disclosure, so opening
+/* ══ SCOPE BAR + NAV ══
+   Scope sits above the views because it decides what they show. Each level is
+   its own disclosure, so opening
    "chat" does not disturb the character above it. The search inside a
    disclosure never autofocuses: opening a picker should not take the keyboard
    from someone who came to click. */
@@ -589,14 +588,14 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
   flex-wrap: wrap; padding: var(--s2) var(--s3); border-bottom: var(--hairline); }
 /* the level picker is <SearchDisclosure>, src/ui/SearchDisclosure.css */
 .scopesep { color: var(--text-faint); font-size: 13px; user-select: none; }
-/* the view tabs carry their own counts; the status line is gone */
+/* the view tabs carry their own counts */
 .mem-tab { display: inline-flex; align-items: center; gap: 6px; }
 .mem-tab svg { display: block; flex: 0 0 auto; }
 @media (max-width: 720px) {
   .scoperow { padding: var(--s2); }
   /* Narrow: anchor the panel to the whole row rather than to one control, so
-     it spans the width and cannot run off either edge. Right-aligning to the
-     control fixed the last level and pushed the first one off the left. */
+     it spans the width and cannot run off either edge. Aligning to the control
+     instead keeps the last level on screen but pushes the first off the left. */
   .scoperow .disclosure { position: static; }
   .scoperow .disclosure-pop { left: var(--s2); right: var(--s2); width: auto; max-width: none; }
 }

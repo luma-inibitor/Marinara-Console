@@ -12,14 +12,10 @@ type Mode = "tree" | "raw";
  *
  *  The tree view is the default: objects and arrays fold, so a long record is
  *  a shape you can navigate rather than a wall you scroll. The raw view is the
- *  literal text, for when you need to copy a fragment or see exactly what the
- *  engine sent — a pretty-printer is an interpretation, and sometimes the
- *  interpretation is the thing you are debugging.
+ *  literal text, for copying a fragment or seeing exactly what the engine sent.
  *
- *  The three controls sit inside the block, pinned to its top-right, so they
- *  cost no vertical space and stay put while the content scrolls under them.
- *  The first line is padded to clear them, because a control that covers the
- *  opening brace is a control sitting on the data. */
+ *  The three controls are pinned inside the block's top-right; the first line
+ *  is padded to clear them so no control sits on the data. */
 export function JsonView(props: { value: unknown; label?: string }) {
   const [mode, setMode] = useState<Mode>("tree");
   const [copied, setCopied] = useState(false);
@@ -88,9 +84,8 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
 
   return (
     <div className="jgroup">
-      {/* The whole header line is the control, not just the chevron. An 11px
-          glyph is a sniper target, and the key and the brace are the parts you
-          were already looking at (owner's call, 2026-08-22). */}
+      {/* The whole header line is the control, not just the chevron: an 11px
+          glyph alone is too small a target. */}
       <button
         type="button"
         className="jn jn-head"
@@ -131,8 +126,8 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
 /** Leaves are typed by hue as well as by shape, so a "42" and a 42 are not the
  *  same thing on screen — the difference is exactly what you open this for. */
 function Leaf({ value }: { value: unknown }) {
-  // `null` here is the JSON token itself, not copy — rendered through
-  // String() exactly like the boolean and number cases below it.
+  // `null` here is the JSON token itself, not UI copy — hence String(), like
+  // the boolean and number cases below.
   if (value === null) return <span className="jv jv-null">{String(value)}</span>;
   switch (typeof value) {
     case "string": return <span className="jv jv-str">"{value}"</span>;

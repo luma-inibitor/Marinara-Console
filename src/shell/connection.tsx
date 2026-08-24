@@ -1,9 +1,5 @@
-// Connection state — persistent, not a toast.
-//
-// The owner runs this from a phone over Tailscale against an engine hosted in
-// Termux. The link dropping is a routine event, not an edge case, and the app
-// previously had no handling at all: no banner, N independent failures, nothing
-// retried, and an offline reload was a blank white page.
+// Connection state — persistent, not a toast. The link drops routinely (phone
+// over Tailscale, engine in Termux), so this is a normal state, not an edge case.
 //
 // Two signals, because neither alone is right: the browser's own online/offline
 // events catch airplane mode and Wi-Fi loss, but say nothing about the engine

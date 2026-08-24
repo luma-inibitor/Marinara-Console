@@ -1,10 +1,9 @@
 // Read-only quick view of any memory, openable from anywhere a reference
 // appears. References render as <NoteRef/>; the peek is a stacked panel
 // (mobile) / side overlay that never nests — opening a reference from inside
-// a peek replaces the peek. v2 (2026-08-22, detail-surfaces wave): the peek
-// speaks the list's vocabulary — type icon + categorical hue, resolved link
-// targets instead of raw ids, §key section typography, the three-segment
-// mode pill (its first home), and the raw id demoted to a quiet footer.
+// a peek replaces the peek. It speaks the list's vocabulary: type icon +
+// categorical hue, resolved link targets instead of raw ids, §key section
+// typography, the mode pill, and the raw id demoted to a quiet footer.
 
 import { signal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";

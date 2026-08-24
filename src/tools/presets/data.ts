@@ -26,14 +26,11 @@ export type MarkerType =
 export interface MarkerConfig { type: MarkerType; [extra: string]: unknown; }
 
 // Marker types the engine's assembler actually handles (packages/server/src/
-// services/prompt/{assembler,marker-expander}.ts). Verified against that source
-// AND against live preset data — do not invent entries here: an unmapped type
-// falls through to its raw identifier, which is the honest failure mode.
+// services/prompt/{assembler,marker-expander}.ts). Do not invent entries here:
+// an unmapped type falls through to its raw identifier, which is the honest
+// failure mode.
 //
-// The values are copy KEYS, not labels: the label itself lives in
-// src/copy/presets.json, where four of the eight mirror the product's own nouns
-// (Characters, Persona, Lorebook, Chat Summary) rather than restating them. The
-// table keeps its enum→label shape; only the indirection is new.
+// The values are copy KEYS, not labels; the labels live in src/copy/presets.json.
 export const MARKER_LABEL_KEYS: Record<string, string> = {
   character: "presets.marker.character",
   persona: "presets.marker.persona",

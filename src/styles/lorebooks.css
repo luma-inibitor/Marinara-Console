@@ -19,7 +19,6 @@
 .console { position: sticky; top: 0; z-index: 20; background: var(--canvas);
   border-bottom: var(--hairline); padding: var(--s2) var(--s3) 0; }
 .hrow { display: flex; align-items: center; gap: var(--s2); }
-/* .icon-btn now lives with the component, src/ui/IconButton.css */
 .console-title { font-family: var(--font-label); font-variation-settings: "wdth" 116;
   font-weight: 700; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase;
   margin: 0; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -56,13 +55,11 @@
 /* fade the right edge so an overflowing rail advertises itself */
 .chiprail { mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); }
 .chiprail::-webkit-scrollbar { display: none; }
-/* .chip and .tag now live with the component, src/ui/Chip.css */
 .selcount { font-weight: 700; color: var(--accent); white-space: nowrap; margin-right: 4px; }
 
 /* ══ rows ══ */
 /* .dock-actions is sticky and therefore IN FLOW — it needs no scroll padding
-   to clear it. Only breathing room below the last row. (Measured: a larger
-   pad bought nothing but ~2.5 rows of dead space on a 390px viewport.) */
+   to clear it. Only breathing room below the last row. */
 .rows { flex: 1; padding-bottom: calc(var(--s3) + env(safe-area-inset-bottom)); }
 .grouphead { position: sticky; top: 0; z-index: 5; display: flex; align-items: center;
   gap: var(--s2); padding: 5px var(--s3); background: var(--surface-2);

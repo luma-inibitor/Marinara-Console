@@ -1,15 +1,13 @@
-// The scope bar: one value, read by every memory view (approved wireframes,
-// public/mockups/nav-wire.html §N2/N3). Scope sits above the views because it
-// decides what they show.
+// The scope bar: one value, read by every memory view. Scope sits above the
+// views because it decides what they show.
 //
-// Two levels ship: character → chat. Branch is drawn in the wireframes but the
-// engine exposes no branch data through this console — no /branches route, and
-// chats carry no branch field — so it is left out rather than rendered as a
-// control that can never work. Backlogged with what it needs.
+// Two levels: character → chat. There is deliberately no branch level — the
+// engine exposes no branch data through this console (no /branches route, and
+// chats carry no branch field), so a branch control could never work.
 //
 // Each level is its own disclosure: opening "chat" does not disturb the
-// character above it. The search field never autofocuses (owner's call) —
-// opening a picker should not take the keyboard from someone who came to click.
+// character above it. The search field never autofocuses — opening a picker
+// should not take the keyboard from someone who came to click.
 
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { SCOPE_ICON } from "../../ui/icons";

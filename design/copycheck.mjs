@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 // Copy check: every user-visible string in a rendered surface must trace to
 // the vendored product catalog (ltm-en.json) or be a registered coinage in the
-// console's own copy. Coining silently is the defect this catches — it has
-// shipped three times in one week, each time with the catalog already holding
-// the word.
+// console's own copy. Coining a word the catalog already holds is the defect
+// this catches.
 //
 //   node design/copycheck.mjs                       # source mode: src/**/*.{ts,tsx}
 //   node design/copycheck.mjs src/tools/memory      # source mode, narrowed
@@ -24,14 +23,11 @@
 //              if another string in the same file was routed the same day,
 //              so a swap cannot pass as progress.
 //
-// There used to be a third state, `migrating`, which was the per-string one,
-// while `baselined` enforced by COUNT. Count-based is not a ratchet: it lets
-// you coin a new string as long as you route an old one in the same change,
-// which is the exact defect this tool exists to catch. Once both non-clean
-// states enforce per string they are the same behaviour, and two names for
-// one behaviour is worse than one. The real distinction — "actively being
-// routed" vs "not started" — is a fact about intent, not about enforcement,
-// so it belongs in a comment beside the area, not in the state machine.
+// Enforcement must stay per string, never by count: a count-based baseline
+// lets you coin a new string as long as you route an old one in the same
+// change, which is the exact defect this tool exists to catch. "Actively
+// being routed" vs "not started" is a fact about intent, not enforcement, so
+// it belongs in a comment beside the area, not in the state machine.
 //
 // A directory with no declared area is treated as clean. Entries that no
 // longer appear WARN (never fail) and are removed by --prune. The baseline
@@ -85,9 +81,9 @@ const BASELINE_PATH = join(ROOT, "design", "copy-baseline.json");
 const SENT = "\u0000";
 
 // ── normalisation ─────────────────────────────────────────────────────────
-// Exact matching only. Substring matching was the first version of this tool
-// and it passed 89 of 89 strings, including three the owner had already
-// flagged as coined — a check that never fails is not a check.
+// Matching is EXACT, never substring: under substring matching almost every
+// string finds some catalog entry containing it, and a check that never fails
+// is not a check.
 const norm = (s) =>
   String(s)
     .toLowerCase()
@@ -244,8 +240,7 @@ function loadConsole() {
 // rather than copy failures, because each one means the allowlist is not what
 // it claims to be — and an allowlist you cannot trust makes every green run a
 // lie. The last check is the one that pays for the rest: a coinage whose text
-// already exists upstream. The old `OURS` object could not express it at all,
-// because it had no way to say "this is a pointer" versus "this is new".
+// already exists upstream.
 const PREFIX = "ui.longTermMemory.";
 const MIN_NOTE = 40;
 

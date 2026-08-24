@@ -8,12 +8,8 @@ import "./ModePill.css";
  *  Pass `onToggle` and each segment becomes an independent toggle — all three
  *  lit means no filter. Leave it off and the pill is a read-out.
  *
- *  One component because there were two, and they had drifted: the read-out in
- *  the note peek had no icons and lit its active segments with the accent wash,
- *  while accent is reserved for interactive (DESIGN.md §2). A read-out cannot
- *  be interactive, so it cannot reach for that hue. Both now light with a
- *  raised surface, and only the interactive one adds the accent border that
- *  Chip's toggles already use. */
+ *  Both forms light with a raised surface; only the interactive one adds the
+ *  accent border, because accent is reserved for interactive (DESIGN.md §2). */
 export const MODES = [
   { id: "conversation", short: "DM", name: t("ui.mode.conversation"), Icon: MODE_ICON.conversation },
   { id: "roleplay", short: "RP", name: t("ui.mode.roleplay"), Icon: MODE_ICON.roleplay },

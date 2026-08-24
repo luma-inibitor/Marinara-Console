@@ -1,18 +1,16 @@
-// The education pattern (owner-approved 2026-08-21): every enum value and
-// icon the UI renders can answer "what does this word mean" in place. One
-// definition source; each definition leads with the field the value belongs
-// to ("claim kind · static — …") so a bare word is never floating free.
+// The education pattern: every enum value and icon the UI renders can answer
+// "what does this word mean" in place. One definition source; each definition
+// leads with the field the value belongs to ("claim kind · static — …") so a
+// bare word is never floating free.
 //
 // Desktop: hover or focus shows the definition. Touch: tap toggles it (a
 // tooltip is never hover-only). The decision toggle carries NO tooltip — a
-// help affordance on an interactive control is a contradiction (owner
-// feedback); its teaching lives in a first-use hint instead.
+// help affordance on an interactive control is a contradiction; its teaching
+// lives in a first-use hint instead.
 //
 // The definitions themselves live in src/copy/memory.json, keyed by the schema
 // value they define. This file is the mapping from value to key — the table
 // shape the call sites index by a runtime value, with the prose lifted out.
-// The `@copy-strict` marker is gone with the prose: there are no literals left
-// here for it to catch.
 
 import { tAny } from "../../copy";
 import type { Mutation } from "./data";
@@ -44,5 +42,5 @@ export const TYPE_TIP: Record<string, string> = table("memory.typetip.", [
   "world", "tone", "source", "scene",
 ] as const);
 
-// Term itself now lives in src/ui — it is a tooltip, not a glossary.
+// Term is a tooltip, not a glossary, so it lives in src/ui.
 export { Term } from "../../ui";

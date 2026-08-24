@@ -3,14 +3,14 @@ import { t } from "../copy";
 import "./SearchBar.css";
 
 /** A search field. The magnifier is part of the component, not something each
- *  screen remembers — one of the three copies this replaces had no icon at all.
+ *  screen remembers.
  *
  *  `count` renders the match tally inside the field, and only while there is a
  *  query: a count of everything is not information. Pair it with `fuzzyFilter`
  *  from ./fuzzy so the number and the list cannot disagree.
  *
- *  Never autofocused. A search box that grabs the caret on open steals the
- *  keyboard from the list behind it (owner's call, 2026-08-22). */
+ *  Never autofocused: a search box that grabs the caret on open steals the
+ *  keyboard from the list behind it. */
 export function SearchBar(props: {
   value: string;
   onInput: (v: string) => void;

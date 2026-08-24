@@ -1,8 +1,8 @@
 // Entry editor surfaces: the drawer (sub-accordions, MULTI-EXPAND per DESIGN.md)
 // and the fullscreen text editor with live counts.
 //
-// Explicit save (owner decision, 2026-08-21): fields stage into a draft and are
-// written only by Save. Nothing here touches the network.
+// Explicit save: fields stage into a draft and are written only by Save.
+// Nothing here touches the network.
 import type { ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
 import { tokensOf } from "../../shell/api";
@@ -33,7 +33,7 @@ export function EntryDrawer(props: {
   onExpand: (field: FullscreenCtx["field"]) => void;
 }) {
   const { entry: e, draft } = props;
-  // multi-expand: a Set, siblings never auto-close (survey §11 / Luma-confirmed)
+  // multi-expand: a Set, so siblings never auto-close
   const [openSubs, setOpenSubs] = useState<Set<Sub>>(new Set(["keys"]));
   const toggle = (s: Sub) => setOpenSubs((prev) => {
     const n = new Set(prev); n.has(s) ? n.delete(s) : n.add(s); return n;
@@ -247,7 +247,7 @@ function SaveBar(props: { draft: Draft<Entry>; onSave: () => Promise<boolean> })
   );
 }
 
-/** Inline key entry — replaces window.prompt(); splits pasted lists. */
+/** Inline key entry; splits pasted lists on commas and newlines. */
 function KeyAdd(props: { onAdd: (vals: string[]) => void }) {
   const [v, setV] = useState("");
   const commit = () => {

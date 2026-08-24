@@ -49,8 +49,7 @@ export function useHotkeys() {
 }
 
 // The left column is key notation, not copy: "⌘K", "Escape", "j / k" name
-// physical keys, which no catalog translates and no reader reads as a sentence.
-// Only the right column — what the binding does — is routed.
+// physical keys, so they stay literal. Only the right column is routed.
 const SHORTCUTS: Array<[string, string]> = [
   ["⌘K / Ctrl-K", t("shell.hotkeys.palette")],
   ["g then l / p / m", t("shell.hotkeys.go")],
