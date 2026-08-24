@@ -1,7 +1,7 @@
-// The model layer is pure, but two of its modules read persisted scope at
-// import time, so the node environment needs somewhere for that read to land.
-// A Map is the whole requirement: nothing under test depends on storage
-// surviving a reload, only on the API existing.
+// The scope store reads persisted scope at import time, so the node
+// environment needs somewhere for that read to land. A Map is the whole
+// requirement: nothing under test depends on storage surviving a reload, only
+// on the API existing.
 
 class MemoryStorage implements Storage {
   private map = new Map<string, string>();

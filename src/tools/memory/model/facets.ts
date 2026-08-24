@@ -6,9 +6,8 @@
 // answers "what would I get if I toggled this".
 
 import type { Mutation } from "../api/types";
-import type { Row } from "./review";
+import type { Decision, Row } from "./review";
 import { t } from "../../../copy";
-import { type Decision } from "../store";
 import { flagsOf, type FlagContext } from "./flags";
 
 /** The store values the facet rules need. Facets are evaluated during render,

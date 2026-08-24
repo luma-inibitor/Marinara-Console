@@ -27,7 +27,7 @@ import { Copy } from "./Copy";
 import { focusSource, refreshLtmStatus } from "./MemoryTool";
 import { TypeIcon } from "./icons";
 import { pendingSources } from "./store";
-import { scopeChatId, setScope } from "./scope";
+import { scopeChatId, setScope } from "./store/scope";
 import {
   buildSources, isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,

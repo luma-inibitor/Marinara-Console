@@ -15,7 +15,8 @@ import { Sources } from "./Sources";
 import { NotePeek } from "./NotePeek";
 import { Copy } from "./Copy";
 import { activeFacets, notesById, pendingSources, review, rows } from "./store";
-import { isScoped, noteInScope, useScope } from "./scope";
+import { isScoped, noteInScope } from "./model/scope";
+import { useScope } from "./store/scope";
 import { createStore, useStore } from "../../lib/store";
 
 const status = createStore<LtmStatus | null>(null);

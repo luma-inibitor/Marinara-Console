@@ -9,16 +9,21 @@
 import { createStore, derived } from "../../lib/store";
 import { type Mutation, type Note, type PreflightResponse, type ReviewResponse } from "./api/types";
 import { SECTION_CAP } from "./model/caps";
-import { fetchNotes } from "./api/notes";
 import { acceptDraft, fetchReview, preflightDraft, skipMutations } from "./api/drafts";
-import { type BlockedDraft, flattenReview, type Rejection, type Row } from "./model/review";
+import { type BlockedDraft, type Decision, flattenReview, type Rejection, type Row } from "./model/review";
 import { computePressure, type SectionPressure } from "./model/pressure";
-import { vaultLines, computeDerived, type VaultLine } from "./model/derived";
-import { currentScope, isScoped, rowInScope, scopeCharacterId, scopeChatId } from "./scope";
+import { vaultLines, computeDerived } from "./model/derived";
+import { isScoped, rowInScope } from "./model/scope";
+import { currentScope, scopeCharacterId, scopeChatId } from "./store/scope";
+import { lines, loadAllNotes, notesById } from "./store/notes";
+import { activeFacets } from "./store/view";
 import { t, tAny } from "../../copy";
 import { toast } from "../../shell/toast";
 
-export type Decision = "keep" | "drop";
+export type { Decision };
+export { lines, loadAllNotes, notesById } from "./store/notes";
+export { pendingSources } from "./store/sources";
+export { activeFacets, cursor, detailKey, facetSheetOpen, groupBy, sortBy, sortDir } from "./store/view";
 
 // ── core state ──────────────────────────────────────────────────────
 
@@ -28,20 +33,11 @@ export const review = createStore<ReviewResponse | null>(null);
 export const rows = createStore<Row[]>([]);
 export const blocked = createStore<BlockedDraft[]>([]);
 export const rejections = createStore<Rejection[]>([]);
-export const notesById = createStore<Map<string, Note>>(new Map());
-export const lines = createStore<VaultLine[]>([]);
 
 export const decisions = createStore<Map<string, Decision>>(new Map());
 export const edited = createStore<Map<string, Mutation>>(new Map());
 export const appliedThisSession = new Map<string, "applied" | "skipped">();
 
-export const groupBy = createStore<"target" | "source" | "disposition" | "kind" | "none">("target");
-export const sortBy = createStore<"risk" | "confidence" | "target">("risk");
-export const sortDir = createStore<1 | -1>(1);
-export const activeFacets = createStore<Map<string, Set<string>>>(new Map());
-export const cursor = createStore<string | null>(null);
-export const detailKey = createStore<string | null>(null); // open detail panel/screen
-export const facetSheetOpen = createStore(false);
 export const saveState = createStore<"saved" | "saving" | "failed">("saved");
 export const applying = createStore(false);
 export const preflight = createStore<{ ready: number; blockedN: number; auto: number; perDraft: Array<{ draftId: string; pf: PreflightResponse }>; error?: string } | null>(null);
@@ -215,12 +211,6 @@ function snapshot(label: string, keys: string[]) {
   if (undoStack.length > 50) undoStack.shift();
 }
 
-/** Sources waiting to be imported, in the current scope. The nav badge reads
- *  this, and every nav badge must mean "waiting" — a badge counting work
- *  already done would give the same channel two opposite meanings. Null until
- *  the Sources screen has computed it once. */
-export const pendingSources = createStore<number | null>(null);
-
 export const canUndo = createStore(false);
 
 export function undo() {
@@ -314,7 +304,7 @@ export async function refresh(first = false) {
   try {
     const [data, allNotes] = await Promise.all([
       fetchReview(),
-      fetchNotes({ limit: 500 }).catch(() => [] as Note[]),
+      loadAllNotes(),
     ]);
     review.set(data);
     notesById.set(new Map(allNotes.map((n) => [n.id, n])));

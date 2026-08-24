@@ -9,6 +9,11 @@ import type { Conflict, Disposition, Mutation, NoteType, ReviewChange, ReviewRes
 
 // ── review rows ─────────────────────────────────────────────────────
 
+/** A reviewer's verdict on one row. The third state — undecided — is the
+ *  absence of a decision rather than a value, so an unreviewed claim can never
+ *  be mistaken for a reviewed one. */
+export type Decision = "keep" | "drop";
+
 export interface Row {
   key: string; // draftId:mutationId
   draftId: string;

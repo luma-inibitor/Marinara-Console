@@ -16,46 +16,12 @@
 //   silently hiding something because its note has not loaded yet would make
 //   the queue lie about how much work is left.
 
-import { createStore, useStore } from "../../lib/store";
-import type { Note } from "./api/types";
-import type { Row } from "./model/review";
-
-/** Import scope: one value read by every memory screen, tool-level rather than
- *  console-wide. Scope is not only a filter: the engine records it into a
- *  draft's extraction context, so changing it after an extraction is what makes
- *  drafts go stale.
- *
- *  The stores live here rather than in the review store because scope is not
- *  review state — the vault and the sources workspace answer to it too, and the
- *  predicates below have to reach it without importing the queue. */
-export const scopeChatId = createStore<string>(localStorage.getItem("mc-ltm-chat") ?? "");
-export const scopeCharacterId = createStore<string>(localStorage.getItem("mc-ltm-character") ?? "");
-
-export function setScope(id: string) {
-  scopeChatId.set(id);
-  localStorage.setItem("mc-ltm-chat", id);
-}
-
-/** Choosing a character narrows the chats below it, so a chat that no longer
- *  belongs to the scope cannot stay selected. */
-export function setScopeCharacter(id: string) {
-  scopeCharacterId.set(id);
-  localStorage.setItem("mc-ltm-character", id);
-  if (id) setScope("");
-}
+import type { Note } from "../api/types";
+import type { Row } from "./review";
 
 export interface Scope {
   characterId: string;
   chatId: string;
-}
-
-/** The scope every memory view reads. */
-export function useScope(): Scope {
-  return { characterId: useStore(scopeCharacterId), chatId: useStore(scopeChatId) };
-}
-
-export function currentScope(): Scope {
-  return { characterId: scopeCharacterId.get(), chatId: scopeChatId.get() };
 }
 
 /** False when nothing is selected — every view shows everything. */
