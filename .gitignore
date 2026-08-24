@@ -24,3 +24,6 @@ shots/
 **/_screenshots/
 design/research/**/assets/
 design/research/**/shots-*/
+
+# Vendored research + review artifacts — large, and not build inputs
+design/research/
