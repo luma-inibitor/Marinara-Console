@@ -3,16 +3,18 @@
 // the dropped-dependency warnings preflight cannot raise. Nothing writes them —
 // each is a `derived()` over the ledger and the queue.
 //
-// The import edge is one-way on purpose: this module reads `../store`, and
-// `../store` must never read this one. `../store` computes `derived()` stores
-// and installs subscriptions at module scope, and `derived()` computes eagerly
-// at construction — a cycle would evaluate one of those `const`s before its
-// initializer ran and throw at import time. Nothing else in `store/` may import
-// this module either; its only consumer is the Review screen.
+// The import edge is one-way on purpose: this module reads `./decisions` and
+// `./review`, and neither may read this one. Those modules install
+// subscriptions at module scope and the stores derived from them compute
+// eagerly at construction — a cycle would evaluate one of those `const`s
+// before its initializer ran and throw at import time. Nothing else in
+// `store/` may import this module either; its only consumer is the Review
+// screen.
 
 import { derived } from "../../../lib/store";
 import { type Row } from "../model/review";
-import { decisions, edited, rows } from "../store";
+import { decisions, edited } from "./decisions";
+import { rows } from "./review";
 import { notesById } from "./notes";
 import { preflight } from "./preflight";
 

@@ -8,6 +8,11 @@
 // Deliberately ignores text content and attribute values: this answers "did
 // the element tree and its styling hooks change", which is the question a
 // component extraction actually raises.
+//
+// Do not run this while something else is driving the same dev server. The
+// settle window is generous but finite, and a loaded server can leave a page
+// mid-render — which reports as every element vanishing rather than as a
+// timeout, and reads like catastrophe instead of contention.
 import { launch, openPage, VIEWPORTS } from "./lib/browser.mjs";
 import fs from "node:fs";
 

@@ -5,29 +5,20 @@
 // Drops first (skip removes exactly those), then accept the keeps. Undecided
 // claims are never sent. Failures classify with the fix named.
 //
-// The import edge is one-way on purpose: this module reads `../store`, and
-// `../store` must never read this one. `../store` computes four `derived()`
-// stores and installs two subscriptions at module scope, and `derived()`
-// computes eagerly at construction — a cycle would evaluate one of those
-// `const`s before its initializer ran and throw at import time. That is also
-// why the entity state this pass touches is reached through `../store`'s named
-// actions rather than by writing its stores from here.
+// The import edge is one-way on purpose: this module reads `./decisions` and
+// `./review`, and neither may read this one. Those modules install
+// subscriptions at module scope and the stores derived from them compute
+// eagerly at construction — a cycle would evaluate one of those `const`s
+// before its initializer ran and throw at import time. That is also why the
+// entity state this pass touches is reached through their named actions
+// rather than by writing their stores from here.
 
 import { createStore } from "../../../lib/store";
 import { type Mutation } from "../api/types";
 import { acceptDraft, skipMutations } from "../api/drafts";
 import { type Row } from "../model/review";
-import {
-  clearUndo,
-  commitLedger,
-  decisions,
-  edited,
-  keepsByDraft,
-  markApplied,
-  persist,
-  refresh,
-  rows,
-} from "../store";
+import { clearUndo, commitLedger, decisions, edited, persist } from "./decisions";
+import { keepsByDraft, markApplied, refresh, rows } from "./review";
 import { clearPreflight, preflight, preflightNow } from "./preflight";
 import { t, tAny } from "../../../copy";
 import { toast } from "../../../shell/toast";

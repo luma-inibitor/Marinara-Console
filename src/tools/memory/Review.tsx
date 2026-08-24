@@ -12,9 +12,10 @@ import { backupExportUrl } from "./api/backup";
 import type { BlockedDraft, Rejection, Row } from "./model/review";
 import { t } from "../../copy";
 import { Copy } from "./Copy";
-import {
-  activeFacets, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, edited, facetSheetOpen, groupBy, loadError, loading, notesById, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, undo,
-} from "./store";
+import { bulkDecide, canUndo, cycleDecision, decisions, edited, retryPersist, saveState, setDecision, undo } from "./store/decisions";
+import { blocked, loadError, loading, refresh, rejections, review, rows } from "./store/review";
+import { notesById } from "./store/notes";
+import { activeFacets, cursor, detailKey, facetSheetOpen, groupBy, sortBy, sortDir } from "./store/view";
 import { preflight, preflightPending, preflightRowState } from "./store/preflight";
 import { droppedDependencyWarnings, readyToSend, tally } from "./store/tally";
 import { applyDecided, applying, applyProgress, lastFailures } from "./store/apply";

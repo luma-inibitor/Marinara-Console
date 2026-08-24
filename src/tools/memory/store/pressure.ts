@@ -7,15 +7,16 @@
 // imports this module — an import cleanup that drops the last importer would
 // silently freeze the map with no type error.
 //
-// The import edge is one-way on purpose: this module reads `../store`, and
-// `../store` must never read this one. `../store` computes four `derived()`
-// stores and installs two subscriptions at module scope, and `derived()`
-// computes eagerly at construction — a cycle would evaluate one of those
-// `const`s before its initializer ran and throw at import time.
+// The import edge is one-way on purpose: this module reads `./decisions` and
+// `./review`, and neither may read this one. Those modules install
+// subscriptions at module scope and the stores derived from them compute
+// eagerly at construction — a cycle would evaluate one of those `const`s
+// before its initializer ran and throw at import time.
 
 import { createStore } from "../../../lib/store";
 import { computePressure, type SectionPressure } from "../model/pressure";
-import { decisions, rows } from "../store";
+import { decisions } from "./decisions";
+import { rows } from "./review";
 import { notesById } from "./notes";
 
 export type { SectionPressure };

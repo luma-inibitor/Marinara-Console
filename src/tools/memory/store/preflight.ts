@@ -8,17 +8,18 @@
 // imports this module — an import cleanup that drops the last importer would
 // silently stop the queue from ever being preflighted, with no type error.
 //
-// The import edge is one-way on purpose: this module reads `../store`, and
-// `../store` must never read this one. `../store` computes `derived()` stores
-// and installs subscriptions at module scope, and `derived()` computes eagerly
-// at construction — a cycle would evaluate one of those `const`s before its
-// initializer ran and throw at import time.
+// The import edge is one-way on purpose: this module reads `./decisions` and
+// `./review`, and neither may read this one. Those modules install
+// subscriptions at module scope and the stores derived from them compute
+// eagerly at construction — a cycle would evaluate one of those `const`s
+// before its initializer ran and throw at import time.
 
 import { createStore, derived } from "../../../lib/store";
 import { type Mutation, type PreflightResponse } from "../api/types";
 import { preflightDraft } from "../api/drafts";
 import { type Row } from "../model/review";
-import { decisions, edited, keepsByDraft, rows } from "../store";
+import { decisions, edited } from "./decisions";
+import { keepsByDraft, rows } from "./review";
 
 export const preflight = createStore<{ ready: number; blockedN: number; auto: number; perDraft: Array<{ draftId: string; pf: PreflightResponse }>; error?: string } | null>(null);
 export const preflightPending = createStore(false);
