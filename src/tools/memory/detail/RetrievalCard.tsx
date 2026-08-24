@@ -13,7 +13,8 @@
 import { useState } from "react";
 import { useStore } from "../../../lib/store";
 import { t } from "../../../copy";
-import { KEYWORD_CAP, type Note } from "../api/types";
+import { type Note } from "../api/types";
+import { KEYWORD_CAP } from "../model/caps";
 import { notesById } from "../store";
 import { NoteRef } from "../NotePeek";
 import { TypeIcon } from "../icons";

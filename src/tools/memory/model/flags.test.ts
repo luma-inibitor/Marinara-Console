@@ -23,7 +23,8 @@ vi.mock("../../../copy", () => ({
   joinList: (items: readonly string[]) => items.join(", "),
 }));
 
-import { KEYWORD_CAP, type Mutation, type Note, type ReviewResponse, SECTION_CAP } from "../api/types";
+import type { Mutation, Note, ReviewResponse } from "../api/types";
+import { KEYWORD_CAP, SECTION_CAP } from "./caps";
 import { flattenReview, type Row, sectionTextOf } from "./review";
 import type { SectionPressure } from "./pressure";
 import { FLAG, LOW_CONFIDENCE, contributionChars, flagsOf, worstSeverity } from "./flags";

@@ -4,7 +4,8 @@
 // accumulate and some are replaced wholesale. Both kinds have a size, and both
 // can end up over the cap — the difference is only in how they get there.
 
-import { SECTION_CAP, type Note } from "../api/types";
+import type { Note } from "../api/types";
+import { SECTION_CAP } from "./caps";
 import type { Row } from "./review";
 
 /** Characters the engine spends joining an appended claim to what is already

@@ -1,4 +1,4 @@
-// The shapes the engine puts on the wire, and the two caps its schema fixes.
+// The shapes the engine puts on the wire.
 //
 // This is the endpoints layer's vocabulary: what a payload contains, not what
 // the console makes of it. Row, SectionPressure and the rest are the console's
@@ -6,10 +6,9 @@
 //
 // Every route in api/ exists in the package's routes.ts (long-term-memory
 // 1.2.9); nothing engine-side is invented. Caps and section-additivity rules
-// mirror the package schema and draft-projector — fidelity beats elegance.
+// mirror the package schema and draft-projector — fidelity beats elegance. The
+// caps themselves are rules rather than payload, and live in model/caps.ts.
 
-export const SECTION_CAP = 20000; // ltmSectionSchema text max
-export const KEYWORD_CAP = 30; // note keywords max
 
 export type NoteType = "source" | "timeline_event" | "character" | "relationship" | "scene" | "thread" | "world" | "tone";
 type NoteStatus = "active" | "resolved" | "archived";

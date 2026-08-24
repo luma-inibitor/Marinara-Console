@@ -6,7 +6,8 @@
 // handled by its row sticking to the top of the screen while you read it, which
 // is a CSS behavior rather than a decision this module makes.
 
-import { type Note, SECTION_CAP } from "../api/types";
+import { type Note } from "../api/types";
+import { SECTION_CAP } from "../model/caps";
 import { normalizeLine } from "../model/derived";
 import { capPercent } from "../model/pressure";
 import { t } from "../../../copy";
