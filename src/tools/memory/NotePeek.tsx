@@ -9,7 +9,6 @@ import { createStore, useStore } from "../../lib/store";
 import type { Note } from "./api/types";
 import { fetchNote } from "./api/notes";
 import { toast } from "../../shell/toast";
-import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { notesById } from "./store";
 import { TypeIcon } from "./icons";
 import { Term, TYPE_TIP } from "./glossary";

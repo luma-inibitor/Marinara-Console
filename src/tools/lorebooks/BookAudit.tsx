@@ -224,7 +224,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
 
   const runBulk = useCallback(async (changes: Record<string, unknown>) => {
     const ids = [...selected];
-    if (!ids.length) return toast(t("lorebooks.bulk.nothingSelected"), { kind: "error" });
+    if (!ids.length) { toast(t("lorebooks.bulk.nothingSelected"), { kind: "error" }); return; }
     try {
       await bulkPatch(bookId, ids, changes);
       setEntries(await fetchEntries(bookId));

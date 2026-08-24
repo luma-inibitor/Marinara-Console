@@ -3,7 +3,7 @@
 // toggle. Cap pressure reads as a gradient on the row. Archive is the
 // destructive default (undoable); permanent delete confirms.
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { navigate } from "../../shell/router";
 import { refreshLtmStatus } from "./MemoryTool";
 import { toast } from "../../shell/toast";

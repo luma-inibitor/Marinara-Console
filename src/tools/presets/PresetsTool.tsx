@@ -576,7 +576,6 @@ function SectionDetail(props: {
     draft.merge(patch as Partial<PromptSection>);
   };
   const fErr = (f: string) => draft?.fieldErrors[f];
-  const isDirty = (f: string) => draft?.dirtyFields.includes(f) ?? false;
   const marker = isMarker(s);
   const [openSubs, setOpenSubs] = useState<Set<Sub>>(
     () => new Set<Sub>(marker ? ["section"] : ["section", "content"]));

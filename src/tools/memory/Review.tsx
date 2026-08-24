@@ -10,14 +10,13 @@ import { toast } from "../../shell/toast";
 import { extractNote } from "./api/notes";
 import { backupExportUrl } from "./api/backup";
 import type { BlockedDraft, Rejection, Row } from "./model/review";
-import { t, tAny } from "../../copy";
+import { t } from "../../copy";
 import { Copy } from "./Copy";
 import {
   activeFacets, applyDecided, applying, applyProgress, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, droppedDependencyWarnings, edited, facetSheetOpen, groupBy, lastFailures, loadError, loading, notesById, preflight, preflightPending, preflightRowState, pressure, readyToSend, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, tally, undo,
 } from "./store";
 import { SECTION_CAP as CAP } from "./model/caps";
 import { capPercent } from "./model/pressure";
-import { refreshLtmStatus } from "./MemoryTool";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { Flag, AllClear, NoMatches, DECISION_ICON, More, EditedMark, Back, Refresh, Download } from "../../ui/icons";
 import { DecisionIcon, OpIcon, TypeIcon } from "./icons";

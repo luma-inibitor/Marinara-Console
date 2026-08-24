@@ -7,8 +7,7 @@
 // is never contacted, so an unfinished review resumes where it stopped.
 
 import { createStore, derived } from "../../lib/store";
-import { type Mutation, type Note, type PreflightResponse, type ReviewResponse } from "./api/types";
-import { SECTION_CAP } from "./model/caps";
+import { type Mutation, type PreflightResponse, type ReviewResponse } from "./api/types";
 import { acceptDraft, fetchReview, preflightDraft, skipMutations } from "./api/drafts";
 import { type BlockedDraft, type Decision, flattenReview, type Rejection, type Row } from "./model/review";
 import { computePressure, type SectionPressure } from "./model/pressure";
