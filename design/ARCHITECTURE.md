@@ -62,7 +62,7 @@ Two directions are always wrong:
 
 This is the one exemption, and it is deliberately narrow: a value import pointing upward still fails, whatever it carries.
 
-One debt this exposes. `SECTION_CAP` and `KEYWORD_CAP` currently sit in `api/types.ts` and are imported as values by the model, which the rule above forbids. No module in `api/` reads them — they are not facts about the wire, they are rules about what a note may hold — so they belong in the model. Moving them is a small change and is not done yet.
+The exemption is narrow enough to have caught something. `SECTION_CAP` and `KEYWORD_CAP` were sitting in `api/types.ts` and imported as values by the model, which the rule forbids — and no module in `api/` read them, because a payload does not carry a cap. They are rules about what a note may hold, so they live in `model/caps.ts`. Every remaining model import from `api/` is type-only.
 
 ## 2. Layout
 
