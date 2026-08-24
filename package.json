@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
     "dev": "vite",
     "build": "vite build",
     "copycheck": "node design/copycheck.mjs",
     "preview": "vite preview",
-    "kit": "npx @tailwindcss/cli -i design/mockup-kit.css -o public/mockups/kit.css"
+    "kit": "npx @tailwindcss/cli -i design/mockup-kit.css -o public/mockups/kit.css",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -27,7 +28,8 @@
     "playwright": "^1.62.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
   },
   "private": true,
   "dependencies": {

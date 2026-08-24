@@ -96,79 +96,104 @@ Two directions are always wrong:
 
 ## 2. Layout
 
-**File suffix** carries the layer, so it's visible in a directory listing and
-checkable by a script.
+**The directory carries the layer.** Not a filename suffix: a suffix scheme has
+to declare `*.ts` to mean "model", which makes purity the *default* — every file
+that forgets to opt in is silently claimed by the model layer, including files
+that are nothing of the kind. A directory can't be forgotten, reads correctly in
+any file tree, and gives `layercheck.mjs` a fact to check instead of an absence.
 
-| Suffix | Layer |
-|---|---|
-| `*.api.ts` | endpoints |
-| `*.ts` | model (pure) |
-| `*.store.ts` | state |
-| `*.tsx` | presentation |
-| `*.test.ts` | tests, always beside the module |
+| Directory | Layer | Holds |
+|---|---|---|
+| `api/` | endpoints | one module per route family; wire types only |
+| `model/` | model | pure functions; no React, no `fetch`, no stores |
+| `store/` | state | stores, orchestration, invalidation; no JSX |
+| `components/` | presentation | this tool's components |
+| `screens/` | presentation | the things a route mounts |
+| `test/` | — | factories and recorded payloads, not tests |
 
-Name directories after **concepts in the product**, never after layers or
-shapes. A concept folder holds every layer of one idea:
+Tests stay **beside the module they cover**, inside its layer directory:
+`model/pressure.test.ts` sits next to `model/pressure.ts`. Deleting a module
+deletes its test. `test/` holds only shared fixtures.
+
+The **filename carries the concept**. `model/pressure.ts` is the one cap
+computation; `components/SectionKey.tsx` is the one `§key` renderer. The twelve
+duplicated renderings in the surface census each collapse into one named file —
+what makes the duplication go away is that a concept has exactly one module, not
+that the concept owns a folder.
 
 ```
 src/
   main.tsx
-  lib/                    primitives with no domain knowledge
+  lib/                      primitives with no domain knowledge
     store.ts
-    vendor/               vendored engine code, never edited
-  copy/                   the catalog (unchanged)
-  styles/                 tokens + one sheet per tool (unchanged)
-  shell/                  app frame: router, overlays, toast, palette, transport
-  ui/                     shared presentational, domain-unaware
+    vendor/                 vendored engine code, never edited
+  copy/                     the catalog (unchanged)
+  styles/                   tokens + one sheet per tool (unchanged)
+  shell/                    app frame: router, overlays, toast, palette, transport
+  ui/                       shared presentational, domain-unaware, cross-tool
   tools/
     memory/
-      memory.api.ts       every LTM route, wire types only
-
-      note/               the stored record
-        note.ts           shape, status, id
-        note.store.ts     THE owner of notes
-        NoteRef.tsx       the one link-target renderer
+      api/
+        notes.ts            /notes, /notes/:id
+        drafts.ts           review, preflight, accept, skip
+        import.ts           preview, source-notes
+        backup.ts
+        status.ts
+      model/
+        note.ts             shape, status, id
+        section.ts          lines, meta, cap flag
+        section.test.ts
+        pressure.ts         THE cap computation
+        pressure.test.ts
+        flags.ts
+        flags.test.ts
+        derived.ts
+        derived.test.ts
+        diff.ts
+        diff.test.ts
+        facets.ts
+        relations.ts        relation → English, via the catalog
+        scope.ts            predicates
+        scope.test.ts
+        review.ts           flatten
+        sources.ts
+      store/
+        notes.ts            THE owner of notes
+        review.ts           THE owner of the queue
+        decisions.ts        the keep/drop ledger
+        scope.ts            the two scope stores
+      components/
+        NoteRef.tsx         the one link-target renderer
         StatusPill.tsx
         TypeName.tsx
-      section/
-        section.ts        lines, meta, cap flag
-        section.test.ts
-        SectionKey.tsx    the one §key renderer
-        SectionBody.tsx   the one section-text renderer
-      keywords/
-        keywords.ts       cap, tally
+        SectionKey.tsx
+        SectionBody.tsx
         KeywordList.tsx
         KeywordEditor.tsx
-      links/
-        relations.ts      relation → English, via the catalog
         LinkList.tsx
-      pressure/
-        pressure.ts       THE cap computation
-        pressure.test.ts
         CapPressure.tsx
-      scope/
-        scope.ts          predicates
-        scope.store.ts    the two scope stores
         ScopeBar.tsx
-      review/
-        review.ts         flatten, derive
-        review.store.ts   THE owner of the queue
-        decisions.store.ts
         ClaimDetail.tsx
-        ...
-      Vault.tsx           screens sit at the tool root
-      Review.tsx
-      Sources.tsx
-      MemoryTool.tsx
-      detail/             the memory detail card (provisional, open question 3)
+      screens/
+        Vault.tsx
+        Review.tsx
+        Sources.tsx
+        MemoryTool.tsx
+      detail/               the memory detail card (deferred, open question 2)
+      test/
+        factories.ts
+        setup.ts
 ```
 
-Why concept folders rather than layer folders: **the 12 duplicated field
-renderings in the surface census map one-to-one onto concept folders.** `§key`
-rendered three ways becomes `section/SectionKey.tsx`. Cap pressure computed six
-ways becomes `pressure/pressure.ts`. A layer-first layout would have split each
-of those concepts across two or three directories and left the duplication
-invisible.
+Two names sit next to each other and mean different things on purpose:
+`src/ui/` is shared across tools and knows nothing about memories;
+`tools/memory/components/` is this tool's and knows everything about them.
+Promotion from the second to the first is the rule in §3.
+
+The cost of layer-first: seeing everything about "sections" means looking in
+three directories rather than one. That is what filenames and grep are for, and
+it buys a property that matters more — you can tell what a file is allowed to do
+from where it sits, before opening it.
 
 ## 3. Rules
 
@@ -182,7 +207,7 @@ invisible.
 - **No `utils/`.** Every module is named after a noun in the product. A module
   you can't name that way doesn't have a home yet.
 - **Domain logic never lives in a component file.** If you can test it without a
-  DOM, it belongs in a model file.
+  DOM, it belongs in `model/`.
 - **Promote on the second consumer.** Shared within a tool stays in the tool;
   shared across tools moves to `ui/`.
 - **Engine logic stays vendored.** Never reimplement keyword matching or token
@@ -190,13 +215,20 @@ invisible.
 
 ## 4. Tests
 
-- **Vitest, co-located.** `scope.test.ts` sits beside `scope.ts`. Deleting a
-  module deletes its test.
+- **Vitest, co-located.** `model/scope.test.ts` sits beside `model/scope.ts`.
+  Deleting a module deletes its test.
 - **Unit tests cover model files and nothing else.** Pure functions need no DOM
   and no fixtures.
-- **Pin before collapsing.** Cap pressure gets tests covering all six current
-  computations *before* they become one, so the consolidation is provably
-  behavior-preserving.
+- **Characterization before consolidation.** A duplicated computation gets tests
+  covering *every* current copy before they become one, so the merge is provably
+  behavior-preserving. Cap pressure has three copies that disagree—strict versus
+  non-strict comparison, projected versus current chars—and the tests are how
+  that disagreement became visible rather than discovered later.
+- **Assert catalog keys, not English.** A test that asserts a rendered sentence
+  breaks on any copy rewording. Tests stub `t()` to return `key|param=value`;
+  `copycheck.mjs` guards the copy itself.
+- **No jsdom.** `domsnap.mjs` renders the real app in real Chromium at real
+  breakpoints. A second, weaker rendering environment would buy worse signal.
 - **The browser checks are the UI suite.** `verify.mjs`, `overlaycheck.mjs`,
   `domsnap.mjs`, and `copycheck.mjs` already assert against a real render. They
   keep their jobs, and we call them tests.
@@ -210,21 +242,27 @@ convention—`copycheck` for copy, `deadcss` for CSS, `overlaycheck` for
 dismissal.
 
 - **`design/layercheck.mjs`** reads every import and fails when one points
-  upward. The file suffix gives it the layer without a manifest to maintain.
+  upward. The directory gives it the layer without a manifest to maintain, and
+  without a default that silently claims files nobody classified.
 
 ---
 
 ## Open questions
 
-1. **`ui/` or `components/`.** `ui/` names a role (shared, domain-unaware);
-   `components/` names a shape, and everything is a component. Renaming costs
-   about 16 imports and five doc mentions, and would update `DESIGN.md` §8 and
-   `CLAUDE.md` in the same change.
-2. **Where do screens live** once a tool has many? Flat at the tool root reads
-   well at four screens and badly at 10.
-3. **Does `detail/` survive** as a screen family, or dissolve into the concept
-   folders it draws from?
-4. **Is `memory.api.ts` one file or a folder** once it covers notes, drafts,
-   import, and backup?
-5. **Do the other two tools follow immediately**, or does memory prove the shape
-   first?
+1. **Where do screens live** once a tool has many? `screens/` reads well at
+   four; the question is whether a tool with fifteen wants grouping inside it.
+2. **Does `detail/` survive** as a screen family, or dissolve into `model/`,
+   `components/`, and `screens/`? Deliberately deferred until the design
+   direction for the memory detail card settles—the layout should follow that
+   decision rather than force it.
+3. **Do the other two tools follow**, and when? Memory proves the shape first.
+
+### Settled
+
+- **`ui/` keeps its name.** It names a role—shared, domain-unaware—which is
+  the useful thing to know about that directory. A tool's own components live
+  in the tool, under `components/`.
+- **The layer is a directory, not a filename suffix.** A suffix scheme needs
+  `*.ts` to mean "model", making purity the default for any unclassified file.
+- **`api/` is a directory**, one module per route family.
+- **Memory first.** Lorebooks and presets follow once the shape holds.
