@@ -70,16 +70,10 @@ export function Vault() {
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [notes]);
 
-  // `openOverlay` has no unregister half — closing goes through the history
-  // stack — so the latch is what keeps a double-invoked effect from pushing
-  // two entries for one panel.
   const stackOpen = !desktop && Boolean(openId);
-  const overlayPushed = useRef(false);
   useEffect(() => {
-    if (!stackOpen) { overlayPushed.current = false; return; }
-    if (overlayPushed.current) return;
-    overlayPushed.current = true;
-    openOverlay(() => setOpenId(null));
+    if (!stackOpen) return;
+    return openOverlay(() => setOpenId(null));
   }, [stackOpen]);
 
   if (error) return <div className="screen"><ErrorState title={t("memoryvault.memoriesCouldNotLoad")} message={error} /></div>;

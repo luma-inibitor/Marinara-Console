@@ -233,18 +233,12 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
   }, [bookId, selected]);
 
   // The tag panel is a full-screen surface, not a `<Sheet>`, so it has to hold
-  // up its own half of the overlay contract: flip the signal, then register a
+  // up its own half of the overlay contract: flip the state, then register a
   // closer. Without it the back gesture walks past the panel and leaves the
   // lorebook, which on a phone is the only dismissal gesture there is.
-  // The ref, not the effect body, is what makes this exactly-once: openOverlay
-  // pushes a history entry and there is no un-push, so a second registration
-  // for the same open leaves a phantom entry on the stack and the back gesture
-  // has to be used twice to leave the panel.
-  const tagsRegistered = useRef(false);
   useEffect(() => {
-    if (!showTags || tagsRegistered.current) return;
-    tagsRegistered.current = true;
-    openOverlay(() => { tagsRegistered.current = false; setShowTags(false); });
+    if (!showTags) return;
+    return openOverlay(() => setShowTags(false));
   }, [showTags]);
 
   // ── keyboard: j/k roving focus, Enter opens, Escape backs out ──
@@ -253,7 +247,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     listRef, keys: visible.map((e) => e.id), current: focusId, onFocus: setFocusId,
   });
   const onListKey = useCallback((ev: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (roving.ignore(ev.nativeEvent)) return;
+    if (roving.ignore(ev)) return;
     if (ev.key === "j" || ev.key === "ArrowDown") { ev.preventDefault(); roving.move(1); }
     else if (ev.key === "k" || ev.key === "ArrowUp") { ev.preventDefault(); roving.move(-1); }
     else if ((ev.key === "Enter" || ev.key === "o") && focusId) {

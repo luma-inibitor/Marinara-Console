@@ -123,7 +123,7 @@ export function Review() {
   };
 
   const onListKey = (ev: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (roving.ignore(ev.nativeEvent)) return;
+    if (roving.ignore(ev)) return;
     switch (ev.key) {
       case "j": case "ArrowDown": ev.preventDefault(); move(1); break;
       case "k": case "ArrowUp": ev.preventDefault(); move(-1); break;
@@ -148,16 +148,10 @@ export function Review() {
   };
 
   // The stacked detail participates in the overlay stack (back/Escape close it).
-  // `openOverlay` has no unregister half — closing goes through the history
-  // stack — so the latch is what keeps a double-invoked effect from pushing
-  // two entries for one panel.
   const stackOpen = !desktop && Boolean(openKey);
-  const overlayPushed = useRef(false);
   useEffect(() => {
-    if (!stackOpen) { overlayPushed.current = false; return; }
-    if (overlayPushed.current) return;
-    overlayPushed.current = true;
-    openOverlay(() => { detailKey.set(null); });
+    if (!stackOpen) return;
+    return openOverlay(() => { detailKey.set(null); });
   }, [stackOpen]);
 
   if (err) {
