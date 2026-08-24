@@ -1,4 +1,4 @@
-import type { ComponentChildren } from "preact";
+import type { ReactNode } from "react";
 import "./EmptyState.css";
 
 /** The nothing-here state: an optional icon, a title, an optional explanation,
@@ -11,10 +11,10 @@ import "./EmptyState.css";
  *  `tone` colours the icon only. It never carries meaning alone, so every
  *  toned state still says what happened in the title. */
 export function EmptyState(props: {
-  icon?: ComponentChildren;
-  title: ComponentChildren;
-  body?: ComponentChildren;
-  actions?: ComponentChildren;
+  icon?: ReactNode;
+  title: ReactNode;
+  body?: ReactNode;
+  actions?: ReactNode;
   tone?: "ok" | "danger";
 }) {
   return (

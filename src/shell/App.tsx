@@ -1,4 +1,4 @@
-import type { ComponentType } from "preact";
+import type { ComponentType } from "react";
 import { route, navigate } from "./router";
 import { useStore } from "../lib/store";
 import { LorebooksTool } from "../tools/lorebooks/LorebooksTool";
@@ -27,7 +27,7 @@ const TOOLS: ToolDef[] = [
 
 setResultHook((err) => {
   noteResult(err);
-  if (reach.value !== "ok") startReconnect();
+  if (reach.get() !== "ok") startReconnect();
 });
 
 export function App() {

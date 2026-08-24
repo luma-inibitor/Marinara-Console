@@ -1,12 +1,12 @@
 // Global keyboard layer (DESIGN.md §3): Cmd/Ctrl-K palette, `g` navigation
 // sequences, `?` cheat sheet. Single-key bindings are suppressed while typing.
-import { signal } from "@preact/signals";
-import { useEffect } from "preact/hooks";
+import { useEffect } from "react";
+import { createStore, useStore } from "../lib/store";
 import { navigate } from "./router";
 import { paletteOpen } from "./palette";
 import { t } from "../copy";
 
-export const cheatOpen = signal(false);
+export const cheatOpen = createStore(false);
 
 const G_TARGETS: Record<string, string> = { l: "lorebooks", p: "presets", m: "memory" };
 let gArmed = false;
@@ -22,7 +22,7 @@ export function useHotkeys() {
       // Cmd/Ctrl-K works everywhere, including inputs
       if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "k") {
         ev.preventDefault();
-        paletteOpen.value = !paletteOpen.value;
+        paletteOpen.update((v) => !v);
         return;
       }
       if (isTyping(ev.target) || ev.metaKey || ev.ctrlKey || ev.altKey) return;
@@ -40,11 +40,18 @@ export function useHotkeys() {
         gTimer = setTimeout(() => { gArmed = false; }, 1200);
         return;
       }
-      if (ev.key === "?") { ev.preventDefault(); cheatOpen.value = !cheatOpen.value; return; }
-      if (ev.key === "Escape" && cheatOpen.value) { cheatOpen.value = false; }
+      if (ev.key === "?") { ev.preventDefault(); cheatOpen.update((v) => !v); return; }
+      if (ev.key === "Escape" && cheatOpen.get()) { cheatOpen.set(false); }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      // The `g` sequence is module state: a pending timer outliving this
+      // listener would disarm a sequence armed by the next one.
+      clearTimeout(gTimer);
+      gTimer = undefined;
+      gArmed = false;
+    };
   }, []);
 }
 
@@ -60,9 +67,10 @@ const SHORTCUTS: Array<[string, string]> = [
 ];
 
 export function CheatSheet() {
-  if (!cheatOpen.value) return null;
+  const open = useStore(cheatOpen);
+  if (!open) return null;
   return (
-    <div className="palette-backdrop" onClick={() => { cheatOpen.value = false; }}>
+    <div className="palette-backdrop" onClick={() => { cheatOpen.set(false); }}>
       <div className="palette cheat" role="dialog" aria-modal="true" aria-label={t("shell.hotkeys.title")}
         onClick={(ev) => ev.stopPropagation()}>
         <div className="cheat-head t-label">{t("shell.hotkeys.title")}</div>

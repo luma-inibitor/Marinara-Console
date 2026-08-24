@@ -1,4 +1,8 @@
-import type { RefObject } from "preact";
+import type { RefObject } from "react";
+
+/** Only the fields the guards read, so a list can hand this either a synthetic
+ *  event from onKeyDown or a native one from a window listener. */
+type KeyLike = Pick<KeyboardEvent, "key" | "metaKey" | "ctrlKey" | "altKey" | "target">;
 
 /** Keyboard navigation for a list: j/k roving focus, and the guards that say
  *  which key events belong to the list at all.
@@ -25,7 +29,7 @@ export function useRovingFocus(opts: {
   navKeys?: string[];
 }) {
   /** True when the event is not the list's to handle. */
-  const ignore = (ev: KeyboardEvent): boolean => {
+  const ignore = (ev: KeyLike): boolean => {
     // A shortcut is a shortcut. Cmd-K opens the palette; it must not also
     // walk the cursor.
     if (ev.metaKey || ev.ctrlKey || ev.altKey) return true;

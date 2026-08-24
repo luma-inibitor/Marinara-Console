@@ -12,15 +12,15 @@
 // and the decide bar for save/discard. Edits flow through preflight and
 // accept as editedMutations.
 
-import { type ComponentChildren } from "preact";
-import { useState } from "preact/hooks";
+import { useState, type ReactNode } from "react";
 // `Preview` is aliased: this file already has a local <Preview/> zone component.
 import { ChevronRight, Preview as PreviewIcon, Flag, ValidationOk, Edit, EditedMark, Forward, Remove, Add } from "../../ui/icons";
 import { toast } from "../../shell/toast";
-import { type Mutation, type Row, KEYWORD_CAP, SECTION_CAP } from "./data";
+import { type Mutation, type Row, type SectionPressure, KEYWORD_CAP, SECTION_CAP } from "./data";
 import { t, tAny } from "../../copy";
 import { Copy } from "./Copy";
 import { decisions, edited, rows, notesById, pressure, setDecision, setEdited } from "./store";
+import { useStore } from "../../lib/store";
 import { NoteRef } from "./NotePeek";
 import { OpIcon, TypeIcon, DecisionIcon } from "./icons";
 import { Term, GLOSSARY, OP_TIP, TYPE_TIP } from "./glossary";
@@ -44,7 +44,7 @@ function Skey(props: { k: string }) {
   return <span className="skey">§{props.k}</span>;
 }
 
-function Fold(props: { label: string; children: ComponentChildren }) {
+function Fold(props: { label: string; children: ReactNode }) {
   return (
     <details className="fold">
       <summary className="t-data"><ChevronRight className="fold-c" size={12} stroke={1.75} aria-hidden /><span>{props.label}</span></summary>
@@ -53,7 +53,7 @@ function Fold(props: { label: string; children: ComponentChildren }) {
   );
 }
 
-function Line(props: { mode?: "add" | "del"; children: ComponentChildren }) {
+function Line(props: { mode?: "add" | "del"; children: ReactNode }) {
   const g = props.mode === "add" ? "+" : props.mode === "del" ? "−" : "";
   return (
     <div className={`ln ln-${props.mode ?? "ctx"}`}>
@@ -63,7 +63,7 @@ function Line(props: { mode?: "add" | "del"; children: ComponentChildren }) {
   );
 }
 
-function Zone(props: { eyebrow: ComponentChildren; foot?: ComponentChildren; cls?: string; children: ComponentChildren }) {
+function Zone(props: { eyebrow: ReactNode; foot?: ReactNode; cls?: string; children: ReactNode }) {
   return (
     <div className={`zone ${props.cls ?? ""}`}>
       <div className="z-eye t-label t-label-s">{props.eyebrow}</div>
@@ -77,11 +77,12 @@ function Zone(props: { eyebrow: ComponentChildren; foot?: ComponentChildren; cls
  *  dimmer, no diff gutters, folded past three lines. It is context, not part of
  *  the change. Resolves vault memories first, then batch-pending creates. */
 function InlineMemory({ id }: { id: string }) {
-  const note = notesById.value.get(id);
+  const note = useStore(notesById).get(id);
+  const allRows = useStore(rows);
   const secs = note
     ? Object.values(note.sections ?? {}).map((s) => s.text ?? "")
     : Object.values(
-        rows.value.find((x) => x.targetId === id && x.mutation.kind === "create_note")?.mutation.note?.sections ?? {},
+        allRows.find((x) => x.targetId === id && x.mutation.kind === "create_note")?.mutation.note?.sections ?? {},
       ).map((s) => s.text ?? "");
   const lines = secs.flatMap(splitLines);
   if (!lines.length) return null;
@@ -99,9 +100,11 @@ function InlineMemory({ id }: { id: string }) {
   );
 }
 
-/** Cap pressure for one section, shown only when it matters (≥80%). */
-function capNote(targetId: string, key: string) {
-  const p = pressure.value.get(`${targetId} ${key}`);
+/** Cap pressure for one section, shown only when it matters (≥80%). Called
+ *  from render, so the pressure map is passed in rather than read: a store read
+ *  here would not subscribe the caller and the note would go stale. */
+function capNote(sectionPressure: Map<string, SectionPressure>, targetId: string, key: string) {
+  const p = sectionPressure.get(`${targetId} ${key}`);
   if (!p || p.projected < SECTION_CAP * 0.8) return null;
   const over = p.projected > SECTION_CAP;
   return (
@@ -117,9 +120,10 @@ const STORED_CONTEXT = 2; // stored lines kept visible above an append
 
 export function ClaimDetail({ row }: { row: Row }) {
   const r = row;
-  const m = (edited.value.get(r.key) ?? r.mutation) as Mutation;
-  const d = decisions.value.get(r.key);
-  const target = notesById.value.get(r.targetId);
+  const editedMuts = useStore(edited);
+  const m = (editedMuts.get(r.key) ?? r.mutation) as Mutation;
+  const d = useStore(decisions).get(r.key);
+  const target = useStore(notesById).get(r.targetId);
   const [editing, setEditing] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const storedKeywords = m.kind === "create_note" ? (m.note?.keywords ?? [])
@@ -178,7 +182,7 @@ export function ClaimDetail({ row }: { row: Row }) {
       <Edit size={12} stroke={1.75} aria-hidden /> {t("longtermmemorydetail.reviewEdit")}
     </button>
   );
-  const staged = edited.value.has(r.key);
+  const staged = editedMuts.has(r.key);
   const stagedMark = staged && !editing && (
     <span className="zbtn-group">
       <Term tip={t("memory.editedTip")}>
@@ -257,9 +261,10 @@ function Headline({ r, m, target }: { r: Row; m: Mutation; target: boolean }) {
  *  pending-in-batch chip renders only where asked — the preview states it;
  *  the headline stays short. */
 function LinkTarget({ target, chip }: { target: string; chip?: boolean }) {
-  const note = notesById.value.get(target);
+  const note = useStore(notesById).get(target);
+  const allRows = useStore(rows);
   if (note) return <Ref id={target} title={note.title ?? target} type={note.type} />;
-  const pending = rows.value.find((x) => x.targetId === target && x.mutation.kind === "create_note");
+  const pending = allRows.find((x) => x.targetId === target && x.mutation.kind === "create_note");
   if (pending) {
     return <span className="nref"><Ref title={pending.targetTitle} type={pending.targetType} />{chip && <span className="chip-batch t-data">{t("memory.detail.pendingInBatch")}</span>}</span>;
   }
@@ -273,10 +278,12 @@ function Preview(props: {
   keywords: string[] | null; setKeywords: (v: string[]) => void;
   drafts: Record<string, string>; setDrafts: (f: (p: Record<string, string>) => Record<string, string>) => void;
   editableSections: Array<{ id: string; label: string; text: string }>;
-  controls: ComponentChildren;
+  controls: ReactNode;
 }) {
   const { r, m, editing, whole } = props;
-  const target = notesById.value.get(r.targetId);
+  const notes = useStore(notesById);
+  const sectionPressure = useStore(pressure);
+  const target = notes.get(r.targetId);
   // The op icon lives on the preview zone (not the headline — a sentence
   // starting with an icon read wrong), keeping its education tooltip in the pane.
   const opTag = <Term tip={OP_TIP[m.kind]}><span className="z-opi"><OpIcon kind={m.kind} size={13} /></span></Term>;
@@ -289,7 +296,7 @@ function Preview(props: {
 
   // Whole-memory mode: every section of the target, in stored order, with the
   // affected one swapped for its marked rendering. Context lines stay dim.
-  const wholeSections = (affectedKey: string, affected: ComponentChildren) => (
+  const wholeSections = (affectedKey: string, affected: ReactNode) => (
     <>
       {Object.entries(target?.sections ?? {}).map(([key, sec]) => (
         <div key={key} className="nc-sec">
@@ -311,7 +318,7 @@ function Preview(props: {
     const addLines = editing ? area("__text", m.text ?? "") : adds.map((l, i) => <Line key={i} mode="add">{l}</Line>);
     return (
       <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<Skey k={key} /> · {t(editing ? "memory.zoneEditing" : "memory.zonePreview")}</span>{props.controls}</>}
-        foot={<><span className="dim">+{addCh.toLocaleString()} · {(stored.length + addCh).toLocaleString()} {t("ui.editor.charUnit")}</span>{capNote(r.targetId, key)}</>}>
+        foot={<><span className="dim">+{addCh.toLocaleString()} · {(stored.length + addCh).toLocaleString()} {t("ui.editor.charUnit")}</span>{capNote(sectionPressure, r.targetId, key)}</>}>
         {whole ? (
           wholeSections(key, <>{storedLines.map((l, i) => <Line key={i}>{l}</Line>)}{addLines}</>)
         ) : (
@@ -336,7 +343,7 @@ function Preview(props: {
     const after = change?.after ?? m.section?.text ?? m.text ?? "";
     return (
       <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<Skey k={key} /> · {t(editing ? "memory.zoneEditing" : "memory.zoneDiff")}</span>{props.controls}</>}
-        foot={<><span className="dim">{after.length >= before.length ? "+" : "−"}{Math.abs(after.length - before.length).toLocaleString()} · {after.length.toLocaleString()} {t("ui.editor.charUnit")}</span>{capNote(r.targetId, key)}</>}>
+        foot={<><span className="dim">{after.length >= before.length ? "+" : "−"}{Math.abs(after.length - before.length).toLocaleString()} · {after.length.toLocaleString()} {t("ui.editor.charUnit")}</span>{capNote(sectionPressure, r.targetId, key)}</>}>
         {editing
           ? <>{splitLines(before).map((l, i) => <Line key={i} mode="del">{l}</Line>)}{area("__text", after)}</>
           : whole
@@ -386,7 +393,7 @@ function Preview(props: {
     return (
       <Zone eyebrow={<span className="z-lab">{opTag}{t("memory.zonePreview")}</span>}>
         <div className="linkrow">
-          <Ref id={notesById.value.has(r.targetId) ? r.targetId : undefined} title={r.targetTitle} type={r.targetType} />
+          <Ref id={notes.has(r.targetId) ? r.targetId : undefined} title={r.targetTitle} type={r.targetType} />
           <span className="rel t-data">— {rel} →</span>
           <LinkTarget target={m.link?.target ?? ""} chip />
         </div>
@@ -452,7 +459,7 @@ function Preview(props: {
  *  one context line stays visible on each side of a change. */
 function DiffLines({ before, after, fold = true }: { before: string; after: string; fold?: boolean }) {
   const ops = lineDiff(splitLines(before), splitLines(after));
-  const out: ComponentChildren[] = [];
+  const out: ReactNode[] = [];
   let i = 0;
   while (i < ops.length) {
     if (ops[i].t === "ctx") {
@@ -497,14 +504,17 @@ function DiffLines({ before, after, fold = true }: { before: string; after: stri
 // ── zone 3: evidence ────────────────────────────────────────────────
 
 function Evidence({ r, m }: { r: Row; m: Mutation }) {
-  const srcNote = notesById.value.get(r.sourceNoteId);
+  const notes = useStore(notesById);
+  const sectionPressure = useStore(pressure);
+  const allRows = useStore(rows);
+  const srcNote = notes.get(r.sourceNoteId);
   const snippet = srcNote
     ? Object.values(srcNote.sections ?? {}).map((s) => s.text ?? "").join(" ").trim().slice(0, 220)
     : "";
   const conf = Math.round(m.confidence * 100);
   const low = m.confidence < LOW_CONFIDENCE;
-  const diags = flagsOf(r).filter((f) => f.label !== FLAG.lowConfidence);
-  const partner = r.duplicateOf ? rows.value.find((x) => x.key === r.duplicateOf!.key) : null;
+  const diags = flagsOf(r, { pressure: sectionPressure, notesById: notes }).filter((f) => f.label !== FLAG.lowConfidence);
+  const partner = r.duplicateOf ? allRows.find((x) => x.key === r.duplicateOf!.key) : null;
 
   return (
     <Zone cls="z-ev" eyebrow={<span className="z-lab">{t("memory.zoneEvidence")}</span>}>
@@ -538,7 +548,7 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
       ))}
       {r.restates && (
         <div className="ev-rel">
-          <div className="z-eye t-label t-label-s">{t("memory.restates")} <NoteRef id={r.restates.noteId} label={notesById.value.get(r.restates.noteId)?.title ?? r.restates.noteId} /> · {r.restates.score.toFixed(2)}</div>
+          <div className="z-eye t-label t-label-s">{t("memory.restates")} <NoteRef id={r.restates.noteId} label={notes.get(r.restates.noteId)?.title ?? r.restates.noteId} /> · {r.restates.score.toFixed(2)}</div>
           <div className="evq-q t-prose">{r.restates.line}</div>
         </div>
       )}

@@ -1,5 +1,5 @@
 import { Loading, ErrorState, ListEmpty } from "../../ui";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 import { t } from "../../copy";
 import { navigate } from "../../shell/router";
 import { fetchBooks, fetchEntries, entryTokens, type Lorebook } from "./data";
@@ -33,9 +33,11 @@ export function Picker() {
   };
 
   useEffect(() => {
+    let alive = true;
     fetchBooks()
-      .then((list) => { setBooks(list); for (const b of list) loadStats(b.id); })
-      .catch((e: unknown) => setError(e));
+      .then((list) => { if (!alive) return; setBooks(list); for (const b of list) loadStats(b.id); })
+      .catch((e: unknown) => { if (alive) setError(e); });
+    return () => { alive = false; };
   }, []);
 
   const retry = () => { setError(null); setBooks(null); loadAll(setBooks, setError, loadStats); };

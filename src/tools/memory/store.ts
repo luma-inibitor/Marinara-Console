@@ -6,7 +6,7 @@
 // sent; Apply is a batch over everything decided. A draft with no decisions
 // is never contacted, so an unfinished review resumes where it stopped.
 
-import { signal, computed } from "@preact/signals";
+import { createStore, derived } from "../../lib/store";
 import {
   type Row, type Note, type BlockedDraft, type Rejection, type ReviewResponse,
   type Mutation, type PreflightResponse, type SectionPressure,
@@ -21,60 +21,59 @@ export type Decision = "keep" | "drop";
 
 // ── core state ──────────────────────────────────────────────────────
 
-export const loading = signal(true);
-export const loadError = signal<string | null>(null);
-export const review = signal<ReviewResponse | null>(null);
-export const rows = signal<Row[]>([]);
-export const blocked = signal<BlockedDraft[]>([]);
-export const rejections = signal<Rejection[]>([]);
-export const notesById = signal<Map<string, Note>>(new Map());
-export const lines = signal<VaultLine[]>([]);
+export const loading = createStore(true);
+export const loadError = createStore<string | null>(null);
+export const review = createStore<ReviewResponse | null>(null);
+export const rows = createStore<Row[]>([]);
+export const blocked = createStore<BlockedDraft[]>([]);
+export const rejections = createStore<Rejection[]>([]);
+export const notesById = createStore<Map<string, Note>>(new Map());
+export const lines = createStore<VaultLine[]>([]);
 
-export const decisions = signal<Map<string, Decision>>(new Map());
-export const edited = signal<Map<string, Mutation>>(new Map());
+export const decisions = createStore<Map<string, Decision>>(new Map());
+export const edited = createStore<Map<string, Mutation>>(new Map());
 export const appliedThisSession = new Map<string, "applied" | "skipped">();
 
-export const groupBy = signal<"target" | "source" | "disposition" | "kind" | "none">("target");
-export const sortBy = signal<"risk" | "confidence" | "target">("risk");
-export const sortDir = signal<1 | -1>(1);
-export const activeFacets = signal<Map<string, Set<string>>>(new Map());
-export const cursor = signal<string | null>(null);
-export const detailKey = signal<string | null>(null); // open detail panel/screen
-export const facetSheetOpen = signal(false);
+export const groupBy = createStore<"target" | "source" | "disposition" | "kind" | "none">("target");
+export const sortBy = createStore<"risk" | "confidence" | "target">("risk");
+export const sortDir = createStore<1 | -1>(1);
+export const activeFacets = createStore<Map<string, Set<string>>>(new Map());
+export const cursor = createStore<string | null>(null);
+export const detailKey = createStore<string | null>(null); // open detail panel/screen
+export const facetSheetOpen = createStore(false);
 /** Import scope: one value read by every memory screen, tool-level rather than
  *  console-wide. Scope is not only a filter: the engine
  *  records it into a draft's extraction context, so changing it after an
  *  extraction is what makes drafts go stale. */
-export const scopeChatId = signal<string>(localStorage.getItem("mc-ltm-chat") ?? "");
-export const scopeCharacterId = signal<string>(localStorage.getItem("mc-ltm-character") ?? "");
+export const scopeChatId = createStore<string>(localStorage.getItem("mc-ltm-chat") ?? "");
+export const scopeCharacterId = createStore<string>(localStorage.getItem("mc-ltm-character") ?? "");
 export function setScope(id: string) {
-  scopeChatId.value = id;
+  scopeChatId.set(id);
   localStorage.setItem("mc-ltm-chat", id);
 }
 /** Choosing a character narrows the chats below it, so a chat that no longer
  *  belongs to the scope cannot stay selected. */
 export function setScopeCharacter(id: string) {
-  scopeCharacterId.value = id;
+  scopeCharacterId.set(id);
   localStorage.setItem("mc-ltm-character", id);
   if (id) setScope("");
 }
-export const saveState = signal<"saved" | "saving" | "failed">("saved");
-export const applying = signal(false);
-export const preflight = signal<{ ready: number; blockedN: number; auto: number; perDraft: Array<{ draftId: string; pf: PreflightResponse }>; error?: string } | null>(null);
-export const preflightPending = signal(false);
-export const applyProgress = signal<{ done: number; total: number } | null>(null);
-export const lastFailures = signal<Array<{ title: string; fix: string; msg: string; n: number }>>([]);
-export const pressure = signal<Map<string, SectionPressure>>(new Map());
+export const saveState = createStore<"saved" | "saving" | "failed">("saved");
+export const applying = createStore(false);
+export const preflight = createStore<{ ready: number; blockedN: number; auto: number; perDraft: Array<{ draftId: string; pf: PreflightResponse }>; error?: string } | null>(null);
+export const preflightPending = createStore(false);
+export const applyProgress = createStore<{ done: number; total: number } | null>(null);
+export const lastFailures = createStore<Array<{ title: string; fix: string; msg: string; n: number }>>([]);
+export const pressure = createStore<Map<string, SectionPressure>>(new Map());
 
 const undoStack: Array<{ label: string; entries: Array<[string, Decision | null]> }> = [];
 
 // ── derived ─────────────────────────────────────────────────────────
 
 /** row key -> preflight outcome, for row badges and dock enumeration. */
-export const preflightRowState = computed(() => {
+export const preflightRowState = derived([preflight], (pf) => {
   const auto = new Map<string, true>();
   const blockedRows = new Map<string, string>(); // key -> first blocker message
-  const pf = preflight.value;
   if (pf) {
     for (const { draftId, pf: draftPf } of pf.perDraft) {
       for (const row of draftPf.rows) {
@@ -94,12 +93,11 @@ export const preflightRowState = computed(() => {
  *  reviewer explicitly dropped, and `applyDecided` filters those out before
  *  sending. Anything stating a send count must apply the same rule or it will
  *  quote a figure Apply does not honour. */
-export const readyToSend = computed(() => {
-  const pf = preflight.value;
+export const readyToSend = derived([preflight, rows, decisions], (pf, allRows, dec) => {
   if (!pf) return 0;
   const droppedByDraft = new Map<string, Set<string>>();
-  for (const row of rows.value) {
-    if (decisions.value.get(row.key) !== "drop") continue;
+  for (const row of allRows) {
+    if (dec.get(row.key) !== "drop") continue;
     let set = droppedByDraft.get(row.draftId);
     if (!set) droppedByDraft.set(row.draftId, (set = new Set()));
     set.add(row.mutation.id);
@@ -114,35 +112,38 @@ export const readyToSend = computed(() => {
   return n;
 });
 
-export const tally = computed(() => {
+export const tally = derived([rows, decisions, edited], (allRows, dec, ed) => {
   let keep = 0, drop = 0;
   const touched = new Set<string>(), undecidedDrafts = new Set<string>();
-  for (const row of rows.value) {
-    const d = decisions.value.get(row.key);
+  for (const row of allRows) {
+    const d = dec.get(row.key);
     if (d === "keep") keep += 1;
     else if (d === "drop") drop += 1;
     if (d) touched.add(row.draftId); else undecidedDrafts.add(row.draftId);
   }
   return {
     keep, drop,
-    undecided: rows.value.length - keep - drop,
-    edited: edited.value.size,
+    undecided: allRows.length - keep - drop,
+    edited: ed.size,
     willSend: touched.size,
     stayPending: [...undecidedDrafts].filter((id) => touched.has(id)).length,
   };
 });
 
-export function rowOverflows(row: Row): boolean {
-  return row.parts.some((p) => (pressure.value.get(`${row.targetId} ${p.key}`)?.projected ?? 0) > SECTION_CAP);
+/** The pressure map is a PARAMETER, not a read: this is called from render, and
+ *  a store read there would not subscribe the caller — the badge would freeze
+ *  at whatever pressure held when the row first painted. */
+export function rowOverflows(row: Row, sectionPressure: Map<string, SectionPressure>): boolean {
+  return row.parts.some((p) => (sectionPressure.get(`${row.targetId} ${p.key}`)?.projected ?? 0) > SECTION_CAP);
 }
 
 /** The server auto-includes UNDECIDED dependencies but cannot recover one
  *  explicitly DROPPED — drops are deleted from the draft before the accept.
  *  That asymmetry is the one structural failure preflight cannot see. */
-export const droppedDependencyWarnings = computed(() => {
+export const droppedDependencyWarnings = derived([rows, decisions, notesById], (allRows, dec, notes) => {
   const out: Array<{ kept: Row; dropped: Row }> = [];
   const byDraft = new Map<string, Row[]>();
-  for (const row of rows.value) {
+  for (const row of allRows) {
     let list = byDraft.get(row.draftId);
     if (!list) byDraft.set(row.draftId, (list = []));
     list.push(row);
@@ -150,18 +151,18 @@ export const droppedDependencyWarnings = computed(() => {
   for (const draftRows of byDraft.values()) {
     const droppedCreates = new Map<string, Row>();
     for (const r of draftRows) {
-      if (decisions.value.get(r.key) === "drop" && r.mutation.kind === "create_note") {
+      if (dec.get(r.key) === "drop" && r.mutation.kind === "create_note") {
         droppedCreates.set(r.targetId, r);
       }
     }
     if (!droppedCreates.size) continue;
     for (const r of draftRows) {
-      if (decisions.value.get(r.key) !== "keep" || r.mutation.kind === "create_note") continue;
+      if (dec.get(r.key) !== "keep" || r.mutation.kind === "create_note") continue;
       // A kept claim depends on its target note AND on any note it links to.
       const needs = new Set<string>([r.targetId]);
       if (r.mutation.kind === "add_link" && r.mutation.link) needs.add(r.mutation.link.target);
       for (const id of needs) {
-        if (droppedCreates.has(id) && !notesById.value.has(id)) {
+        if (droppedCreates.has(id) && !notes.has(id)) {
           out.push({ kept: r, dropped: droppedCreates.get(id)! });
           break;
         }
@@ -185,21 +186,21 @@ async function persistNow(keepalive = false) {
       headers: { "content-type": "application/json" },
       keepalive,
       body: JSON.stringify({
-        dec: Object.fromEntries(decisions.value),
-        edited: Object.fromEntries(edited.value),
+        dec: Object.fromEntries(decisions.get()),
+        edited: Object.fromEntries(edited.get()),
         savedAt: new Date().toISOString(),
       }),
     });
     if (res.ok) ledgerDirty = false;
-    saveState.value = res.ok ? "saved" : "failed";
+    saveState.set(res.ok ? "saved" : "failed");
   } catch {
-    saveState.value = "failed";
+    saveState.set("failed");
   }
 }
 
 export function persist() {
   ledgerDirty = true;
-  saveState.value = "saving";
+  saveState.set("saving");
   clearTimeout(persistTimer);
   persistTimer = setTimeout(() => void persistNow(), 700);
 }
@@ -224,15 +225,15 @@ async function loadPersisted() {
   if (ledgerDirty) return;
   try {
     const s = await (await fetch("/console/state/ltm-review")).json();
-    decisions.value = new Map(Object.entries(s.dec ?? {}));
-    edited.value = new Map(Object.entries(s.edited ?? {}));
+    decisions.set(new Map(Object.entries(s.dec ?? {})));
+    edited.set(new Map(Object.entries(s.edited ?? {})));
   } catch { /* fresh start */ }
 }
 
 // ── decisions ───────────────────────────────────────────────────────
 
 function snapshot(label: string, keys: string[]) {
-  undoStack.push({ label, entries: keys.map((k) => [k, decisions.value.get(k) ?? null]) });
+  undoStack.push({ label, entries: keys.map((k) => [k, decisions.get().get(k) ?? null]) });
   if (undoStack.length > 50) undoStack.shift();
 }
 
@@ -240,19 +241,19 @@ function snapshot(label: string, keys: string[]) {
  *  this, and every nav badge must mean "waiting" — a badge counting work
  *  already done would give the same channel two opposite meanings. Null until
  *  the Sources screen has computed it once. */
-export const pendingSources = signal<number | null>(null);
+export const pendingSources = createStore<number | null>(null);
 
-export const canUndo = signal(false);
+export const canUndo = createStore(false);
 
 export function undo() {
   const snap = undoStack.pop();
-  canUndo.value = undoStack.length > 0;
+  canUndo.set(undoStack.length > 0);
   if (!snap) return;
-  const next = new Map(decisions.value);
+  const next = new Map(decisions.get());
   for (const [k, v] of snap.entries) {
     if (v == null) next.delete(k); else next.set(k, v);
   }
-  decisions.value = next;
+  decisions.set(next);
   persist();
   recomputePressure();
   schedulePreflight();
@@ -260,12 +261,12 @@ export function undo() {
 }
 
 export function setDecision(row: Row, value: Decision | null) {
-  if ((decisions.value.get(row.key) ?? null) === value) return; // no-op
+  if ((decisions.get().get(row.key) ?? null) === value) return; // no-op
   snapshot(value ?? "undecide", [row.key]);
-  canUndo.value = true;
-  const next = new Map(decisions.value);
+  canUndo.set(true);
+  const next = new Map(decisions.get());
   if (value == null) next.delete(row.key); else next.set(row.key, value);
-  decisions.value = next;
+  decisions.set(next);
   persist();
   recomputePressure();
   schedulePreflight();
@@ -273,20 +274,20 @@ export function setDecision(row: Row, value: Decision | null) {
 
 /** undecided → keep → drop → undecided */
 export function cycleDecision(row: Row) {
-  const cur = decisions.value.get(row.key);
+  const cur = decisions.get().get(row.key);
   setDecision(row, cur === "keep" ? "drop" : cur === "drop" ? null : "keep");
 }
 
 export function bulkDecide(list: Row[], value: Decision | null, label: string) {
-  list = list.filter((r) => (decisions.value.get(r.key) ?? null) !== value);
+  list = list.filter((r) => (decisions.get().get(r.key) ?? null) !== value);
   if (!list.length) return;
   snapshot(label, list.map((r) => r.key));
-  canUndo.value = true;
-  const next = new Map(decisions.value);
+  canUndo.set(true);
+  const next = new Map(decisions.get());
   for (const r of list) {
     if (value == null) next.delete(r.key); else next.set(r.key, value);
   }
-  decisions.value = next;
+  decisions.set(next);
   persist();
   recomputePressure();
   schedulePreflight();
@@ -294,9 +295,9 @@ export function bulkDecide(list: Row[], value: Decision | null, label: string) {
 }
 
 export function setEdited(key: string, mutation: Mutation | null) {
-  const next = new Map(edited.value);
+  const next = new Map(edited.get());
   if (mutation == null) next.delete(key); else next.set(key, mutation);
-  edited.value = next;
+  edited.set(next);
   persist();
   schedulePreflight();
 }
@@ -304,14 +305,14 @@ export function setEdited(key: string, mutation: Mutation | null) {
 // ── loading ─────────────────────────────────────────────────────────
 
 function recomputePressure() {
-  pressure.value = computePressure(rows.value, (k) => decisions.value.get(k), notesById.value);
+  pressure.set(computePressure(rows.get(), (k) => decisions.get().get(k), notesById.get()));
 }
 
 export async function refresh(first = false) {
   const focus = sessionStorage.getItem("mc-ltm-focus-source");
   if (focus) sessionStorage.removeItem("mc-ltm-focus-source");
   if (first) {
-    loading.value = true;
+    loading.set(true);
     await loadPersisted();
   }
   try {
@@ -319,37 +320,37 @@ export async function refresh(first = false) {
       fetchReview(),
       fetchNotes({ limit: 500 }).catch(() => [] as Note[]),
     ]);
-    review.value = data;
-    notesById.value = new Map(allNotes.map((n) => [n.id, n]));
+    review.set(data);
+    notesById.set(new Map(allNotes.map((n) => [n.id, n])));
     const sourceTitles = new Map(allNotes.filter((n) => n.type === "source").map((n) => [n.id, n.title ?? n.id]));
-    lines.value = vaultLines(allNotes);
+    lines.set(vaultLines(allNotes));
     const flat = flattenReview(data, sourceTitles);
     const live = flat.rows.filter((r) => !appliedThisSession.has(r.key));
-    computeDerived(live, lines.value);
-    rows.value = live;
-    blocked.value = flat.blocked;
-    rejections.value = flat.rejections;
+    computeDerived(live, lines.get());
+    rows.set(live);
+    blocked.set(flat.blocked);
+    rejections.set(flat.rejections);
     // prune decisions for claims that no longer exist
     const liveKeys = new Set(live.map((r) => r.key));
     let pruned = false;
-    const dec = new Map(decisions.value);
+    const dec = new Map(decisions.get());
     for (const k of [...dec.keys()]) if (!liveKeys.has(k)) { dec.delete(k); pruned = true; }
-    const ed = new Map(edited.value);
+    const ed = new Map(edited.get());
     for (const k of [...ed.keys()]) if (!liveKeys.has(k)) { ed.delete(k); pruned = true; }
-    if (pruned) { decisions.value = dec; edited.value = ed; persist(); }
+    if (pruned) { decisions.set(dec); edited.set(ed); persist(); }
     recomputePressure();
     // Sources → Review handoff: pre-filter to the just-imported source.
     if (focus) {
       const title = sourceTitles.get(focus) ?? focus;
-      const next = new Map(activeFacets.value);
+      const next = new Map(activeFacets.get());
       next.set("source", new Set([title]));
-      activeFacets.value = next;
+      activeFacets.set(next);
     }
-    loadError.value = null;
+    loadError.set(null);
   } catch (error) {
-    loadError.value = (error as Error).message;
+    loadError.set((error as Error).message);
   }
-  loading.value = false;
+  loading.set(false);
   schedulePreflight();
 }
 
@@ -360,8 +361,8 @@ let preflightSeq = 0;
 
 function keepsByDraft() {
   const byDraft = new Map<string, Row[]>();
-  for (const row of rows.value) {
-    if (decisions.value.get(row.key) !== "keep") continue;
+  for (const row of rows.get()) {
+    if (decisions.get().get(row.key) !== "keep") continue;
     let list = byDraft.get(row.draftId);
     if (!list) byDraft.set(row.draftId, (list = []));
     list.push(row);
@@ -373,14 +374,14 @@ function preflightBody(list: Row[]) {
   const body: { mutationIds: string[]; editedMutations?: Mutation[] } = {
     mutationIds: list.map((r) => r.mutation.id),
   };
-  const ed = list.map((r) => edited.value.get(r.key)).filter(Boolean) as Mutation[];
+  const ed = list.map((r) => edited.get().get(r.key)).filter(Boolean) as Mutation[];
   if (ed.length) body.editedMutations = ed;
   return body;
 }
 
 export function schedulePreflight() {
   clearTimeout(preflightTimer);
-  preflightPending.value = true;
+  preflightPending.set(true);
   preflightTimer = setTimeout(() => void runPreflight(), 500);
 }
 
@@ -397,8 +398,8 @@ async function runPreflight() {
   const seq = ++preflightSeq;
   const byDraft = keepsByDraft();
   if (!byDraft.size) {
-    preflight.value = null;
-    preflightPending.value = false;
+    preflight.set(null);
+    preflightPending.set(false);
     return;
   }
   try {
@@ -414,12 +415,12 @@ async function runPreflight() {
       blockedN += pf.blockedMutationIds.length;
       auto += pf.autoIncludedMutationIds.length;
     }
-    preflight.value = { ready, blockedN, auto, perDraft: results };
+    preflight.set({ ready, blockedN, auto, perDraft: results });
   } catch (error) {
     if (seq !== preflightSeq) return;
-    preflight.value = { ready: 0, blockedN: 0, auto: 0, perDraft: [], error: (error as Error).message };
+    preflight.set({ ready: 0, blockedN: 0, auto: 0, perDraft: [], error: (error as Error).message });
   }
-  if (seq === preflightSeq) preflightPending.value = false;
+  if (seq === preflightSeq) preflightPending.set(false);
 }
 
 // ── apply ───────────────────────────────────────────────────────────
@@ -443,20 +444,20 @@ function classify(msg: string): { title: string; fix: string } {
 }
 
 export async function applyDecided() {
-  if (applying.value) return;
-  applying.value = true;
+  if (applying.get()) return;
+  applying.set(true);
   await preflightNow();
-  const pf = preflight.value;
-  if (pf?.error) { applying.value = false; return; }
+  const pf = preflight.get();
+  if (pf?.error) { applying.set(false); return; }
   const dropsByDraft = new Map<string, Row[]>();
-  for (const row of rows.value) {
-    if (decisions.value.get(row.key) !== "drop") continue;
+  for (const row of rows.get()) {
+    if (decisions.get().get(row.key) !== "drop") continue;
     let list = dropsByDraft.get(row.draftId);
     if (!list) dropsByDraft.set(row.draftId, (list = []));
     list.push(row);
   }
   const keeps = keepsByDraft();
-  if (!dropsByDraft.size && !keeps.size) { applying.value = false; return; }
+  if (!dropsByDraft.size && !keeps.size) { applying.set(false); return; }
 
   let applied = 0, dropped = 0;
   const failures = new Map<string, { title: string; fix: string; msg: string; n: number }>();
@@ -467,14 +468,14 @@ export async function applyDecided() {
     failures.set(k.title, cur);
   };
 
-  const dec = new Map(decisions.value);
-  const ed = new Map(edited.value);
+  const dec = new Map(decisions.get());
+  const ed = new Map(edited.get());
   const draftIds = new Set([...dropsByDraft.keys(), ...keeps.keys()]);
   let draftIndex = 0;
-  applyProgress.value = { done: 0, total: draftIds.size };
+  applyProgress.set({ done: 0, total: draftIds.size });
   for (const draftId of draftIds) {
     draftIndex += 1;
-    applyProgress.value = { done: draftIndex, total: draftIds.size };
+    applyProgress.set({ done: draftIndex, total: draftIds.size });
     const drops = dropsByDraft.get(draftId) ?? [];
     if (drops.length) {
       try {
@@ -504,7 +505,7 @@ export async function applyDecided() {
     if (!ids.length) continue;
     try {
       const body: { mutationIds: string[]; editedMutations?: Mutation[] } = { mutationIds: ids };
-      const editedMuts = keepRows.map((r) => edited.value.get(r.key)).filter(Boolean) as Mutation[];
+      const editedMuts = keepRows.map((r) => edited.get().get(r.key)).filter(Boolean) as Mutation[];
       if (editedMuts.length) body.editedMutations = editedMuts;
       const res = await acceptDraft(draftId, body);
       const serverSkipped = new Set(res.skippedMutationIds ?? []);
@@ -524,16 +525,16 @@ export async function applyDecided() {
     }
   }
 
-  decisions.value = dec;
-  edited.value = ed;
-  applying.value = false;
-  applyProgress.value = null;
-  preflight.value = null;
+  decisions.set(dec);
+  edited.set(ed);
+  applying.set(false);
+  applyProgress.set(null);
+  preflight.set(null);
   undoStack.length = 0; // snapshots reference applied keys; undoing them would lie
-  canUndo.value = false;
-  lastFailures.value = [...failures.values()];
+  canUndo.set(false);
+  lastFailures.set([...failures.values()]);
   persist();
-  const failed = lastFailures.value.reduce((n, f) => n + f.n, 0);
+  const failed = lastFailures.get().reduce((n, f) => n + f.n, 0);
   toast(
     `${t("reviewqueue.applied")}: ${applied} · ${t("memory.dropped")}: ${dropped}` +
       (failed ? ` ${t("memory.apply.failedCount", { count: failed })}` : ""),

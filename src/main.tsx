@@ -1,4 +1,5 @@
-import { render } from "preact";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import "@fontsource-variable/archivo/wdth.css";
 import "@fontsource-variable/jetbrains-mono";
 import "@fontsource-variable/source-sans-3";
@@ -14,4 +15,8 @@ import { App } from "./shell/App";
 const savedDensity = localStorage.getItem("mc-density");
 if (savedDensity) document.documentElement.dataset.density = savedDensity;
 
-render(<App />, document.getElementById("app")!);
+createRoot(document.getElementById("app")!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);

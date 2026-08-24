@@ -5,22 +5,30 @@
 // Counts are computed with each facet's own filter excluded, so a count
 // answers "what would I get if I toggled this".
 
-import { type Row } from "./data";
+import { type Mutation, type Row } from "./data";
 import { t } from "../../copy";
-import { decisions, edited } from "./store";
-import { flagsOf } from "./flags";
+import { type Decision } from "./store";
+import { flagsOf, type FlagContext } from "./flags";
+
+/** The store values the facet rules need. Facets are evaluated during render,
+ *  where a store read does not subscribe the caller, so the caller reads them
+ *  with `useStore` and passes them down. */
+export interface FacetContext extends FlagContext {
+  decisions: Map<string, Decision>;
+  edited: Map<string, Mutation>;
+}
 
 interface FacetDef {
   id: string;
   label: string;
   source: "computed" | "model" | "yours";
-  get: (r: Row) => string | string[] | null;
+  get: (r: Row, ctx: FacetContext) => string | string[] | null;
 }
 
 // The facet and the row chip read the same flags, so filtering by a flag
 // always matches exactly the rows whose chip counted it.
-function qualityFlags(r: Row): string[] | null {
-  const f = flagsOf(r).map((x) => x.label);
+function qualityFlags(r: Row, ctx: FacetContext): string[] | null {
+  const f = flagsOf(r, ctx).map((x) => x.label);
   return f.length ? f : null;
 }
 
@@ -34,21 +42,21 @@ export const FACETS: FacetDef[] = [
   { id: "source", label: t("reviewqueue.sources"), source: "model", get: (r) => r.sourceTitle },
   {
     id: "status", label: "decision", source: "yours",
-    get: (r) => {
-      const s: string[] = [decisions.value.get(r.key) ?? t("memory.undecided")];
-      if (edited.value.has(r.key)) s.push("edited");
+    get: (r, ctx) => {
+      const s: string[] = [ctx.decisions.get(r.key) ?? t("memory.undecided")];
+      if (ctx.edited.has(r.key)) s.push("edited");
       return s;
     },
   },
 ];
 
-export function applyFilters(list: Row[], active: Map<string, Set<string>>): Row[] {
+export function applyFilters(list: Row[], active: Map<string, Set<string>>, ctx: FacetContext): Row[] {
   const live = [...active.entries()].filter(([, set]) => set.size);
   if (!live.length) return list;
   const byId = new Map(FACETS.map((f) => [f.id, f]));
   return list.filter((row) =>
     live.every(([id, set]) => {
-      let vs = byId.get(id)?.get(row);
+      let vs = byId.get(id)?.get(row, ctx);
       if (vs == null) return false;
       if (!Array.isArray(vs)) vs = [vs];
       return vs.some((v) => set.has(v));
@@ -56,15 +64,15 @@ export function applyFilters(list: Row[], active: Map<string, Set<string>>): Row
   );
 }
 
-export function facetCounts(list: Row[], active: Map<string, Set<string>>): Map<string, Map<string, number>> {
+export function facetCounts(list: Row[], active: Map<string, Set<string>>, ctx: FacetContext): Map<string, Map<string, number>> {
   const counts = new Map<string, Map<string, number>>();
   for (const f of FACETS) {
     const others = new Map([...active.entries()].filter(([id]) => id !== f.id));
-    const pool = applyFilters(list, others);
+    const pool = applyFilters(list, others, ctx);
     const m = new Map<string, number>();
     counts.set(f.id, m);
     for (const row of pool) {
-      let vs = f.get(row);
+      let vs = f.get(row, ctx);
       if (vs == null) continue;
       if (!Array.isArray(vs)) vs = [vs];
       for (const v of vs) m.set(v, (m.get(v) ?? 0) + 1);

@@ -12,8 +12,8 @@
 // catalog here and nowhere else. `FLAG` is the label table, exported so a
 // filter can name a flag without re-deriving its text.
 
-import { type Note, type Row, KEYWORD_CAP, SECTION_CAP } from "./data";
-import { notesById, pressure, rowOverflows } from "./store";
+import { type Note, type Row, type SectionPressure, KEYWORD_CAP, SECTION_CAP } from "./data";
+import { rowOverflows } from "./store";
 import { t } from "../../copy";
 
 export const LOW_CONFIDENCE = 0.93;
@@ -43,6 +43,15 @@ export const FLAG = {
 export const riskLabel = (risk: string): string =>
   risk === "high" ? FLAG.highRisk : risk === "medium" ? FLAG.mediumRisk : FLAG.lowRisk;
 
+/** The two stores the flag rules read, passed in rather than read.
+ *  `flagsOf` runs during render, where a store read does not subscribe the
+ *  caller; a component asks for these with `useStore` and hands them over, so
+ *  a pressure or vault change repaints the chips that depend on it. */
+export interface FlagContext {
+  pressure: Map<string, SectionPressure>;
+  notesById: Map<string, Note>;
+}
+
 export interface RowFlag {
   /** Facet value — stable, filterable, shown in the detail signals zone. */
   label: string;
@@ -64,7 +73,7 @@ export function contributionChars(r: Row): number {
   return 0;
 }
 
-export function flagsOf(r: Row): RowFlag[] {
+export function flagsOf(r: Row, ctx: FlagContext): RowFlag[] {
   const f: RowFlag[] = [];
   const conf = r.mutation.confidence;
 
@@ -74,10 +83,10 @@ export function flagsOf(r: Row): RowFlag[] {
       sentence: t("memory.flag.conflictCount", { count: r.conflicts.length }),
     });
   }
-  if (rowOverflows(r)) {
-    f.push({ label: FLAG.overLimit, severity: "danger", sentence: overCapSentence(r, true) });
-  } else if (r.parts.some((p) => (pressure.value.get(`${r.targetId} ${p.key}`)?.projected ?? 0) >= SECTION_CAP * 0.8)) {
-    f.push({ label: FLAG.nearLimit, severity: "warn", sentence: overCapSentence(r, false) });
+  if (rowOverflows(r, ctx.pressure)) {
+    f.push({ label: FLAG.overLimit, severity: "danger", sentence: overCapSentence(r, ctx, true) });
+  } else if (r.parts.some((p) => (ctx.pressure.get(`${r.targetId} ${p.key}`)?.projected ?? 0) >= SECTION_CAP * 0.8)) {
+    f.push({ label: FLAG.nearLimit, severity: "warn", sentence: overCapSentence(r, ctx, false) });
   }
   if (r.disposition === "rewrite") {
     f.push({ label: FLAG.rewrite, severity: "warn", sentence: t("reviewqueue.acceptReplacesSavedMemory") });
@@ -120,7 +129,7 @@ export function flagsOf(r: Row): RowFlag[] {
   if (r.mutation.kind === "create_note" && !(r.mutation.note?.keywords ?? []).length) {
     f.push({ label: FLAG.noKeywords, severity: "warn", sentence: t("memory.flag.noKeywordsSentence") });
   }
-  if (((notesById.value.get(r.targetId) as Note | undefined)?.keywords ?? []).length >= 25) {
+  if (((ctx.notesById.get(r.targetId) as Note | undefined)?.keywords ?? []).length >= 25) {
     f.push({
       label: FLAG.keywordCap, severity: "warn",
       sentence: t("memory.flag.keywordCapSentence", { cap: KEYWORD_CAP }),
@@ -129,10 +138,10 @@ export function flagsOf(r: Row): RowFlag[] {
   return f;
 }
 
-function overCapSentence(r: Row, over: boolean): string {
+function overCapSentence(r: Row, ctx: FlagContext, over: boolean): string {
   let worst: { key: string; projected: number } | null = null;
   for (const p of r.parts) {
-    const proj = pressure.value.get(`${r.targetId} ${p.key}`);
+    const proj = ctx.pressure.get(`${r.targetId} ${p.key}`);
     if (proj && (!worst || proj.projected > worst.projected)) worst = { key: p.key, projected: proj.projected };
   }
   if (!worst) return t(over ? "memory.flag.sectionOverCap" : "memory.flag.sectionNearCap");

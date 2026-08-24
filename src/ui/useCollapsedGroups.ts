@@ -1,4 +1,4 @@
-import { signal } from "@preact/signals";
+import { createStore, useStore } from "../lib/store";
 
 /** Collapsed-group state for a grouped list.
  *
@@ -14,18 +14,27 @@ export function collapsedGroups(storageKey?: string) {
   const initial: string[] = storageKey
     ? safeParse(localStorage.getItem(storageKey))
     : [];
-  const ids = signal<Set<string>>(new Set(initial));
+  const ids = createStore<Set<string>>(new Set(initial));
 
   function toggle(id: string) {
-    const next = new Set(ids.value);
+    const next = new Set(ids.get());
     next.has(id) ? next.delete(id) : next.add(id);
-    ids.value = next;
+    ids.set(next);
     if (storageKey) localStorage.setItem(storageKey, JSON.stringify([...next]));
   }
 
-  /** `ids` is the signal itself, for reading inside a memo's dependency list.
-   *  `has` is the convenience read for render. */
-  return { ids, toggle, has: (id: string) => ids.value.has(id) };
+  /** The subscribing read, and the only legal one during render. There is
+   *  deliberately no `has(id)` helper: it would close over the store and read
+   *  it without subscribing, which under React returns the right answer and
+   *  silently stops re-rendering. Call `useCollapsed()` and ask the Set.
+   *
+   *  `toggle` assigns a fresh Set every time, so the identity change is what
+   *  invalidates a useMemo depending on it. Do not mutate in place. */
+  function useCollapsed(): ReadonlySet<string> {
+    return useStore(ids);
+  }
+
+  return { ids, toggle, useCollapsed };
 }
 
 function safeParse(raw: string | null): string[] {

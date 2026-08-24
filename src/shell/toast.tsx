@@ -1,8 +1,8 @@
 // Toast queue with undo support (DESIGN.md: undo over confirm).
 // A toast with an action holds a pending commit: commit fires when the toast
 // expires; the action (Undo) cancels it.
-import { signal } from "@preact/signals";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
+import { createStore, useStore } from "../lib/store";
 import { Close, ICON_SIZE } from "../ui/icons";
 import { t } from "../copy";
 
@@ -19,7 +19,7 @@ export interface Toast {
   expiresAt: number;
 }
 
-const toasts = signal<Toast[]>([]);
+const toasts = createStore<Toast[]>([]);
 let seq = 0;
 const timers = new Map<number, ReturnType<typeof setTimeout>>();
 
@@ -28,11 +28,11 @@ const ERROR_MS = 8_000;
 const INFO_MS = 4_000;
 
 function remove(id: number, expired: boolean) {
-  const t = toasts.value.find((x) => x.id === id);
+  const t = toasts.get().find((x) => x.id === id);
   if (!t) return;
   clearTimeout(timers.get(id));
   timers.delete(id);
-  toasts.value = toasts.value.filter((x) => x.id !== id);
+  toasts.update((list) => list.filter((x) => x.id !== id));
   if (expired) t.onExpire?.();
 }
 
@@ -41,22 +41,22 @@ export function toast(message: string, opts: Partial<Omit<Toast, "id" | "message
   // pending write at once, and N identical toasts bury the one useful fact.
   // Never coalesce undoable toasts: each holds a distinct pending commit.
   if (!opts.onExpire && !opts.onAction) {
-    const dup = toasts.value.find((t) => t.message === message && t.kind === (opts.kind ?? "info"));
+    const dup = toasts.get().find((t) => t.message === message && t.kind === (opts.kind ?? "info"));
     if (dup) {
       const ttl = (opts.kind === "error" ? ERROR_MS : INFO_MS);
       clearTimeout(timers.get(dup.id));
       timers.set(dup.id, setTimeout(() => remove(dup.id, true), ttl));
-      toasts.value = toasts.value.map((t) =>
-        t.id === dup.id ? { ...t, count: t.count + 1, expiresAt: Date.now() + ttl } : t);
+      toasts.update((list) => list.map((t) =>
+        t.id === dup.id ? { ...t, count: t.count + 1, expiresAt: Date.now() + ttl } : t));
       return dup.id;
     }
   }
 
   const id = ++seq;
   const ttl = opts.onExpire ? UNDO_MS : opts.kind === "error" ? ERROR_MS : INFO_MS;
-  toasts.value = [...toasts.value, {
+  toasts.update((list) => [...list, {
     id, message, kind: opts.kind ?? "info", count: 1, expiresAt: Date.now() + ttl, ...opts,
-  }];
+  }]);
   timers.set(id, setTimeout(() => remove(id, true), ttl));
   return id;
 }
@@ -97,9 +97,10 @@ function ToastRow({ t: item }: { t: Toast }) {
 }
 
 export function Toaster() {
+  const list = useStore(toasts);
   return (
     <div className="toaster" role="status" aria-live="polite">
-      {toasts.value.map((t) => <ToastRow key={t.id} t={t} />)}
+      {list.map((t) => <ToastRow key={t.id} t={t} />)}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 // toggle. Cap pressure reads as a gradient on the row. Archive is the
 // destructive default (undoable); permanent delete confirms.
 
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { refreshLtmStatus } from "./MemoryTool";
 import { toast } from "../../shell/toast";
@@ -70,13 +70,14 @@ export function Vault() {
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [notes]);
 
-  if (error) return <div className="screen"><ErrorState title={t("memoryvault.memoriesCouldNotLoad")} message={error} /></div>;
-  if (!notes) return <div className="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
-
   const stackOpen = !desktop && Boolean(openId);
   useEffect(() => {
-    if (stackOpen) openOverlay(() => setOpenId(null));
+    if (!stackOpen) return;
+    return openOverlay(() => setOpenId(null));
   }, [stackOpen]);
+
+  if (error) return <div className="screen"><ErrorState title={t("memoryvault.memoriesCouldNotLoad")} message={error} /></div>;
+  if (!notes) return <div className="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
 
   const memoriesN = notes.filter((n) => n.type !== "source").length;
   const sourcesN = notes.length - memoriesN;
@@ -163,7 +164,7 @@ function NoteRow(props: { note: Note; isOpen: boolean; onOpen: () => void }) {
             {p >= 0.8 && <><i className="sep" data-contrast-exempt>·</i><span className="fl">{p >= 1 ? t("memory.overLimit") : t("memory.nearLimit")}</span></>}
           </span>
           {p >= 0.5 && (
-            <span className="pbar"><i className={p >= 1 ? "is-over" : p >= 0.8 ? "is-near" : ""} style={`width:${Math.min(p * 100, 100)}%`} /></span>
+            <span className="pbar"><i className={p >= 1 ? "is-over" : p >= 0.8 ? "is-near" : ""} style={{ width: `${Math.min(p * 100, 100)}%` }} /></span>
           )}
         </span>
         <span className="num">
@@ -286,7 +287,7 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
               <span className="seccount t-data">{value.length.toLocaleString()}<i> / {SECTION_CAP.toLocaleString()}</i></span>
               <Chip onClick={() => dedupe(key)}>{t("memory.vault.dedupeLines")}</Chip>
             </>}
-            meter={<span className="pbar"><i className={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={`width:${pct}%`} /></span>}>
+            meter={<span className="pbar"><i className={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={{ width: `${pct}%` }} /></span>}>
             <textarea
               className="t-prose edit-area"
               rows={Math.min(14, Math.max(3, Math.ceil(value.length / 60)))}

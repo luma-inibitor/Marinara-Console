@@ -13,7 +13,7 @@
 //
 // Deliberately NOT a store: one hook per edited record, owned by the surface
 // editing it. Nothing here is global.
-import { useCallback, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 /** Field-level errors keyed by field name, as the engine reports them. */
 export type FieldErrors = Record<string, string>;

@@ -5,8 +5,7 @@
 // categorical hue, resolved link targets instead of raw ids, §key section
 // typography, the mode pill, and the raw id demoted to a quiet footer.
 
-import { signal } from "@preact/signals";
-import { useEffect, useRef } from "preact/hooks";
+import { createStore, useStore } from "../../lib/store";
 import { fetchNote, type Note } from "./data";
 import { toast } from "../../shell/toast";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
@@ -16,14 +15,14 @@ import { Term, TYPE_TIP } from "./glossary";
 import { t } from "../../copy";
 import { CopyableText, DetailSection, ModePill, RawJson, Sheet, SheetHead, Tag } from "../../ui";
 
-export const peeked = signal<Note | null>(null);
+export const peeked = createStore<Note | null>(null);
 
 export async function peekNote(id: string) {
   try {
     // A chained peek replaces content inside the same <Sheet>, which stays
     // mounted, so it does not push a second history entry — one back closes
     // the peek however deep you followed the links.
-    peeked.value = await fetchNote(id);
+    peeked.set(await fetchNote(id));
   } catch (error) {
     toast(`${id}: ${(error as Error).message}`, { kind: "error" });
   }
@@ -40,7 +39,7 @@ export function NoteRef(props: { id: string; label?: string }) {
 
 /** Resolve a link target to a titled, typed reference; raw id as last resort. */
 function PeekLinkTarget({ id }: { id: string }) {
-  const note = notesById.value.get(id);
+  const note = useStore(notesById).get(id);
   if (note) {
     return (
       <span className="nref">
@@ -53,10 +52,10 @@ function PeekLinkTarget({ id }: { id: string }) {
 }
 
 export function NotePeek() {
-  const n = peeked.value;
+  const n = useStore(peeked);
   if (!n) return null;
   return (
-    <Sheet label={n.title ?? n.id} onClose={() => { peeked.value = null; }}>
+    <Sheet label={n.title ?? n.id} onClose={() => { peeked.set(null); }}>
       <SheetHead
         autoFocus
         icon={<Term tip={TYPE_TIP[n.type] ?? n.type}><TypeIcon type={n.type} size={16} /></Term>}

@@ -1,12 +1,12 @@
 // Command palette (Cmd/Ctrl-K) — DESIGN.md §5. Fuzzy over tools, books,
 // entries, and actions; searches a local cache, refreshed on open.
-import { signal } from "@preact/signals";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { createStore, useStore } from "../lib/store";
 import { navigate } from "./router";
 import { api } from "./api";
 import { t } from "../copy";
 
-export const paletteOpen = signal(false);
+export const paletteOpen = createStore(false);
 
 function toggleDensity() {
   const el = document.documentElement;
@@ -87,14 +87,16 @@ export function Palette() {
   const [items, setItems] = useState<Item[]>(BASE);
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const open = paletteOpen.value;
+  const open = useStore(paletteOpen);
 
   useEffect(() => {
     if (!open) return;
     setQuery("");
     setActive(0);
     inputRef.current?.focus();
-    void loadDataItems().then((data) => setItems([...BASE, ...data]));
+    let live = true;
+    void loadDataItems().then((data) => { if (live) setItems([...BASE, ...data]); });
+    return () => { live = false; };
   }, [open]);
 
   if (!open) return null;
@@ -106,18 +108,18 @@ export function Palette() {
     : items.filter((it) => it.group !== GROUP.entries)   // unqueried: don't dump every entry
   ).slice(0, 12);
 
-  const run = (it: Item) => { paletteOpen.value = false; it.run(); };
+  const run = (it: Item) => { paletteOpen.set(false); it.run(); };
 
-  const onKey = (ev: KeyboardEvent) => {
+  const onKey = (ev: KeyboardEvent<HTMLInputElement>) => {
     if (ev.key === "ArrowDown") { ev.preventDefault(); setActive((a) => Math.min(results.length - 1, a + 1)); }
     else if (ev.key === "ArrowUp") { ev.preventDefault(); setActive((a) => Math.max(0, a - 1)); }
     else if (ev.key === "Enter" && results[active]) { ev.preventDefault(); run(results[active]); }
-    else if (ev.key === "Escape") { ev.preventDefault(); paletteOpen.value = false; }
+    else if (ev.key === "Escape") { ev.preventDefault(); paletteOpen.set(false); }
   };
 
   let lastGroup = "";
   return (
-    <div className="palette-backdrop" onClick={() => { paletteOpen.value = false; }}>
+    <div className="palette-backdrop" onClick={() => { paletteOpen.set(false); }}>
       <div className="palette" role="dialog" aria-modal="true" aria-label={t("shell.palette.title")}
         onClick={(ev) => ev.stopPropagation()}>
         <input

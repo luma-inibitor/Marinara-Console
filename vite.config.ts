@@ -1,9 +1,9 @@
 import { defineConfig } from "vite";
-import preact from "@preact/preset-vite";
+import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [preact(), tailwindcss()],
+  plugins: [react(), tailwindcss()],
   // public/ is the legacy no-build app, NOT vite's static dir — don't copy it into dist
   publicDir: false,
   build: { outDir: "dist" },
