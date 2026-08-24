@@ -62,6 +62,10 @@ export function MemoryTool({ rest }: { rest: string[] }) {
   const loadedNotes = useStore(notesById);
   const scopedMemories = useMemo(
     () => [...loadedNotes.values()].filter((n) => n.type !== "source" && noteInScope(n, scope)).length,
+    // Scope is a fresh object each render, so depending on it would recompute
+    // every time. Its two fields ARE the whole of it, and noteInScope reads
+    // nothing else, so listing them covers the object exactly.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [loadedNotes, scope.characterId, scope.chatId]);
 
   useEffect(() => { void refreshLtmStatus(); }, [view]);

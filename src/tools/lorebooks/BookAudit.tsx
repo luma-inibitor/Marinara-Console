@@ -259,7 +259,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       // as well would pop two history entries and drop the reader out of the book.
       navigate("lorebooks");
     }
-  }, [visible, focusId, desktop]);
+  }, [roving, focusId, desktop]);
 
   if (missing) return <div className="screen"><NotFound what="Lorebook" id={bookId} /></div>;
   if (error) return <div className="screen"><ErrorState error={error} onRetry={() => setReloadKey((k) => k + 1)} /></div>;

@@ -63,6 +63,12 @@ export function FullscreenText(props: {
       window.removeEventListener("keydown", onKey, true);
       restoreTo.current?.focus?.();
     };
+    // Mount-only: one listener for the editor's lifetime, and the restore in
+    // the cleanup must be the element focused at mount. Editor state is read
+    // through `live.current` for exactly this reason, but onCancel/onDone are
+    // captured here as they were at mount — safe only while callers pass
+    // callbacks that do not change identity-with-behaviour mid-edit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // One overlay entry, owned by the stack, so the phone's back gesture closes
@@ -90,6 +96,11 @@ export function FullscreenText(props: {
     };
     register();
     return () => { alive = false; dispose?.(); dispose = null; };
+    // Mount-only: re-running would spend and re-push overlay entries mid-edit.
+    // Dirtiness is read through `live.current`; props.onCancel is not, so it is
+    // the one captured at mount — safe only while the parent passes a stable
+    // callback.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const insert = (tok: string) => {

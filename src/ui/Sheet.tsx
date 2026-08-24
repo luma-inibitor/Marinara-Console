@@ -83,6 +83,9 @@ export function SheetHead(props: {
   autoFocus?: boolean;
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  // Mount-only on purpose. Depending on autoFocus would re-run the effect when
+  // it later flips true and yank focus out of whatever the reader is using.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (props.autoFocus) closeRef.current?.focus(); }, []);
   return (
     <header className="sheet-head">

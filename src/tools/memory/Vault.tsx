@@ -69,6 +69,10 @@ export function Vault(props: { noteId?: string }) {
   // contradicts its own rows.
   const inScope = useMemo(
     () => (notes ?? []).filter((n) => noteInScope(n, scope)),
+    // Scope is a fresh object each render, so depending on it would refilter
+    // every time. Its two fields ARE the whole of it, and noteInScope reads
+    // nothing else, so listing them covers the object exactly.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [notes, scope.characterId, scope.chatId]);
 
   const visible = useMemo(() => {
