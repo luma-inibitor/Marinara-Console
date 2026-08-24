@@ -3,8 +3,8 @@
 //
 // Explicit save: fields stage into a draft and are written only by Save.
 // Nothing here touches the network.
-import type { ComponentChildren } from "preact";
-import { useState } from "preact/hooks";
+import type { ReactNode } from "react";
+import { useState } from "react";
 import { tokensOf } from "../../shell/api";
 import type { Draft } from "../../shell/draft";
 import {
@@ -55,7 +55,7 @@ export function EntryDrawer(props: {
   const advChanged = ADVANCED_FIELDS.filter(([f, d]) =>
     e[f] !== undefined && JSON.stringify(e[f]) !== JSON.stringify(d));
 
-  const sub = (id: Sub, label: string, summary: ComponentChildren, body: () => ComponentChildren, flag = false) => {
+  const sub = (id: Sub, label: string, summary: ReactNode, body: () => ReactNode, flag = false) => {
     const isOpen = openSubs.has(id);
     return (
       <div className={`sub ${isOpen ? "is-open" : ""} ${flag ? "has-error" : ""}`}>

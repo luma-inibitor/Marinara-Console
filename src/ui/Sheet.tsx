@@ -1,5 +1,5 @@
-import type { ComponentChildren } from "preact";
-import { useEffect, useRef } from "preact/hooks";
+import type { ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import { t } from "../copy";
 import { openOverlay, closeTopOverlay } from "../shell/overlays";
 import { Close, ICON_SIZE } from "./icons";
@@ -18,7 +18,7 @@ import "./Sheet.css";
 export function Sheet(props: {
   label: string;
   onClose: () => void;
-  children: ComponentChildren;
+  children: ReactNode;
   /** Extra classes on the panel — `option-sheet` caps its height, for one. */
   className?: string;
 }) {
@@ -33,7 +33,7 @@ export function Sheet(props: {
 export function Modal(props: {
   label: string;
   onClose: () => void;
-  children: ComponentChildren;
+  children: ReactNode;
   className?: string;
 }) {
   return <Overlay {...props} surface={`modal ${props.className ?? ""}`} />;
@@ -44,14 +44,14 @@ export function Modal(props: {
 function Overlay(props: {
   label: string;
   onClose: () => void;
-  children: ComponentChildren;
+  children: ReactNode;
   surface: string;
 }) {
   // Captured in a ref on purpose: the stack stores this closer for the lifetime
   // of the entry, and re-registering on render would push history entries.
   const close = useRef(props.onClose);
   close.current = props.onClose;
-  useEffect(() => { openOverlay(() => close.current()); }, []);
+  useEffect(() => openOverlay(() => close.current()), []);
 
   return (
     <div className="peek-scrim" onClick={closeTopOverlay}>
@@ -74,11 +74,11 @@ function Overlay(props: {
  *  Separate from `<Sheet>` because a confirm has no dismiss button — you answer
  *  it, you do not wave it away. */
 export function SheetHead(props: {
-  title: ComponentChildren;
+  title: ReactNode;
   /** Sits before the title — a type glyph, usually. */
-  icon?: ComponentChildren;
+  icon?: ReactNode;
   /** Sits between the title and the close button. */
-  children?: ComponentChildren;
+  children?: ReactNode;
   /** Focused on open, so the dialog receives focus without stealing a field. */
   autoFocus?: boolean;
 }) {

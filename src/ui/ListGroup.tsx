@@ -1,4 +1,4 @@
-import type { ComponentChildren } from "preact";
+import type { ReactNode } from "react";
 import { t } from "../copy";
 import { ChevronDown, ChevronRight } from "./icons";
 import "./ListGroup.css";
@@ -44,8 +44,8 @@ export function ListGroup(props: {
   label: string;
   count: number;
   /** Everything in the header after the chevron — icon, title, controls. */
-  head: ComponentChildren;
-  children: ComponentChildren;
+  head: ReactNode;
+  children: ReactNode;
   className?: string;
   chevronSize?: number;
 }) {

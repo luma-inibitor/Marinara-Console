@@ -2,8 +2,8 @@
 // so the status rail carries the ordinal.
 import { Chip, EmptyState, IconButton, Loading, ErrorState, ListEmpty, NotFound } from "../../ui";
 import { Add, Back, Duplicate, Fullscreen, ICON_SIZE, SetDefault } from "../../ui/icons";
-import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
-import type { ComponentChildren } from "preact";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
 import { navigate } from "../../shell/router";
 import { toast } from "../../shell/toast";
 import { useDraft, type Draft } from "../../shell/draft";
@@ -63,15 +63,18 @@ function Browser() {
   const [sort, setSort] = useState<BrowserSort>("tokens");
 
   useEffect(() => {
+    let alive = true;
     setPresets(null); setError(null);
     fetchPresets().then((list) => {
+      if (!alive) return;
       setPresets(list);
       for (const p of list) {
         fetchFull(p.id)
-          .then((full) => setLoads((s) => ({ ...s, [p.id]: presetLoad(full, "conversation") })))
-          .catch(() => setLoads((s) => ({ ...s, [p.id]: "error" })));
+          .then((full) => { if (alive) setLoads((s) => ({ ...s, [p.id]: presetLoad(full, "conversation") })); })
+          .catch(() => { if (alive) setLoads((s) => ({ ...s, [p.id]: "error" })); });
       }
-    }).catch((e: unknown) => setError(e));
+    }).catch((e: unknown) => { if (alive) setError(e); });
+    return () => { alive = false; };
   }, [reloadKey]);
 
   if (error) return <div className="screen is-narrow"><ErrorState error={error} onRetry={reload} /></div>;
@@ -345,7 +348,7 @@ function Editor({ presetId }: { presetId: string }) {
     });
   }, [desktop]);
 
-  const onListKey = useCallback((ev: KeyboardEvent) => {
+  const onListKey = useCallback((ev: ReactKeyboardEvent<HTMLDivElement>) => {
     const tag = (ev.target as HTMLElement).tagName;
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
     const idx = sections.findIndex((s) => s.id === focusId);
@@ -414,7 +417,7 @@ function Editor({ presetId }: { presetId: string }) {
       : <button key="add" className="dbtn is-primary" onClick={addSection}>
           <Add size={ICON_SIZE.md} stroke={1.75} aria-hidden />{t("presets.addSection")}
         </button>,
-  ].filter(Boolean) as ComponentChildren[];
+  ].filter(Boolean) as ReactNode[];
 
   return (
     <div className={`audit ${desktop ? "is-desktop" : ""}`}>
@@ -594,7 +597,7 @@ function SectionDetail(props: {
   const expanded = expand(s.content, props.preset);
   const macroDelta = expanded.length - s.content.length;
 
-  const sub = (id: Sub, label: string, summary: ComponentChildren, body: () => ComponentChildren) => {
+  const sub = (id: Sub, label: string, summary: ReactNode, body: () => ReactNode) => {
     const isOpen = openSubs.has(id);
     return (
       <div className={`sub ${isOpen ? "is-open" : ""}`}>

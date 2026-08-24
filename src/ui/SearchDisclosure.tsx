@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "./icons";
 import type { Icon } from "./icons";
 import { SearchBar } from "./SearchBar";

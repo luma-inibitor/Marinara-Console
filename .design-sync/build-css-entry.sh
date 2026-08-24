@@ -10,4 +10,12 @@ cd "$(dirname "$0")/.."
   cat src/styles/tokens.css
   echo "/* base.css: .t-* type utilities + .hit tap-target expander, applied by class name in src/ui */"
   cat src/styles/base.css
+  # The generated preview card ends its head with `<style>body{...background:#fff}</style>`,
+  # which is emitted after this stylesheet and would win on order. This console
+  # is dark-only, so a white surface renders light text on white and the card
+  # reads as blank. `html body` is specificity 0,0,2 against the card's 0,0,1,
+  # so it wins without !important — and a design that genuinely wants another
+  # surface can still beat it the same way.
+  echo "/* preview surface: this design system is dark-only, see the note in build-css-entry.sh */"
+  echo "html body { background: var(--canvas); color: var(--text); }"
 } > .design-sync/ds-entry.css

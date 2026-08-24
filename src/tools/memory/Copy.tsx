@@ -11,7 +11,7 @@
 // are filled as NODES. A name must not appear in both, or the text fill wins
 // and the node never renders.
 
-import { Fragment, type ComponentChildren } from "preact";
+import { Fragment, type ReactNode } from "react";
 import { tAny, type Params } from "../../copy";
 
 const SLOT = /\{\{\s*(\w+)\s*\}\}/g;
@@ -19,10 +19,10 @@ const SLOT = /\{\{\s*(\w+)\s*\}\}/g;
 export function Copy(props: {
   k: string;
   params?: Params;
-  slots?: Record<string, ComponentChildren>;
+  slots?: Record<string, ReactNode>;
 }) {
   const text = tAny(props.k, props.params);
-  const out: ComponentChildren[] = [];
+  const out: ReactNode[] = [];
   let last = 0;
   SLOT.lastIndex = 0;
   for (let m = SLOT.exec(text); m; m = SLOT.exec(text)) {

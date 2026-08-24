@@ -1,6 +1,6 @@
 // The console's single icon import surface.
 //
-// This is the ONLY module in src/ that may import from "@tabler/icons-preact".
+// This is the ONLY module in src/ that may import from "@tabler/icons-react".
 // Everything else imports a *semantic* name from here.
 //
 // Reserved silhouette families (DESIGN.md §5) — no icon may borrow another
@@ -59,7 +59,7 @@ import {
   // affordances
   IconArrowsDiagonal, IconStar, IconCheckbox, IconHash,
   type Icon,
-} from "@tabler/icons-preact";
+} from "@tabler/icons-react";
 
 export type { Icon };
 

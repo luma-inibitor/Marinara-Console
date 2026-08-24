@@ -51,10 +51,28 @@ function install() {
   }, true);
 }
 
-export function openOverlay(close: () => void) {
+/** Returns a disposer that unregisters the entry without running its closer —
+ *  for a component that unmounts without being dismissed. Safe to call twice,
+ *  and a no-op once the entry has already been settled by back or Escape.
+ *
+ *  The disposer removes the entry BEFORE rewinding history, which is what keeps
+ *  the resulting popstate harmless: settle() then finds the stack already at
+ *  the depth the restored state asks for. It rewinds only when our own entry is
+ *  still the current one — if something else navigated in between, an extra
+ *  history entry is the cheaper mistake than eating someone else's. */
+export function openOverlay(close: () => void): () => void {
   install();
-  stack.push({ close, restoreFocus: document.activeElement as HTMLElement | null });
-  history.pushState({ mcOverlay: stack.length }, "", location.href);
+  const entry: Entry = { close, restoreFocus: document.activeElement as HTMLElement | null };
+  stack.push(entry);
+  const mine = stack.length;
+  history.pushState({ mcOverlay: mine }, "", location.href);
+
+  return () => {
+    const i = stack.indexOf(entry);
+    if (i === -1) return;
+    stack.splice(i, 1);
+    if (depth() === mine) history.back();
+  };
 }
 
 /** Programmatic close (× button, scrim tap, post-action) — routes through

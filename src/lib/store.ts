@@ -7,9 +7,7 @@
 // component body without subscribing is a silent no-re-render bug, so the shape
 // that permits it does not exist. Do not add one.
 //
-// The import below is the ONLY line that changes when preact/compat is swapped
-// for react.
-import { useSyncExternalStore } from "preact/compat";
+import { useSyncExternalStore } from "react";
 
 type Listener = () => void;
 
@@ -66,7 +64,6 @@ export function derived<const S extends readonly Store<unknown>[], T>(
 
 /** Subscribing read. The only legal way to read a store inside a component. */
 export function useStore<T>(store: Store<T>): T {
-  // No getServerSnapshot third argument: preact/compat's signature does not
-  // accept one, and this app never server-renders.
+  // No getServerSnapshot third argument: this app never server-renders.
   return useSyncExternalStore(store.subscribe, store.get);
 }

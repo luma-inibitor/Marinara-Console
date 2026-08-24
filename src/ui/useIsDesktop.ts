@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 
 /** True at and above the split breakpoint — the width where a list and its
  *  detail can sit side by side instead of stacking (design/DESIGN.md §7).

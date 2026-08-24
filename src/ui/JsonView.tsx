@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useState } from "react";
 import {
   Preview, Raw, Copy, Copied, ChevronRight, ChevronDown,
 } from "./icons";

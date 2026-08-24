@@ -1,4 +1,4 @@
-import type { ComponentChildren } from "preact";
+import type { ReactNode } from "react";
 import { Failure } from "./icons";
 import { ApiError } from "../shell/api";
 import { EmptyState } from "./EmptyState";
@@ -22,7 +22,7 @@ export function ErrorState(props: {
   title?: string;
   message?: string;
   error?: unknown;
-  actions?: ComponentChildren;
+  actions?: ReactNode;
   onRetry?: () => void;
 }) {
   const api = props.error instanceof ApiError ? props.error : null;
