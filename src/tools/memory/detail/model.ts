@@ -7,7 +7,7 @@
 // is a CSS behavior rather than a decision this module makes.
 
 import { type Note, SECTION_CAP } from "../api/types";
-import { normalizeLine } from "../derived";
+import { normalizeLine } from "../model/derived";
 import { t } from "../../../copy";
 
 /** Cap pressure at which a section earns the flag. */

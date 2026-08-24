@@ -13,18 +13,17 @@ import { describe, expect, it, vi } from "vitest";
 // English would couple these tests to src/copy/memory.json, so the stub returns
 // the catalog key and params instead. vi.mock is hoisted above the imports, so
 // the factory must not close over anything imported here.
-vi.mock("../../copy", () => ({
+vi.mock("../../../copy", () => ({
   t: (key: string, params?: Record<string, unknown>) =>
     params && Object.keys(params).length
       ? `${key}|${Object.entries(params).map(([k, v]) => `${k}=${v}`).join(",")}`
       : key,
 }));
 
-import { type Note, SECTION_CAP } from "./api/types";
-import { computePressure, type SectionPressure } from "./data";
-import { rowOverflows } from "./store";
-import { sectionViews } from "./detail/model";
-import { chars, makeNote, makeRow, makeWrite, section } from "./test/factories";
+import { type Note, SECTION_CAP } from "../api/types";
+import { computePressure, rowOverflows, type SectionPressure } from "./pressure";
+import { sectionViews } from "../detail/model";
+import { chars, makeNote, makeRow, makeWrite, section } from "../test/factories";
 
 /** No row is ever decided in these tests unless the test says so. */
 const undecided = () => undefined;

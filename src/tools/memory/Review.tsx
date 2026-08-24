@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboa
 import { toast } from "../../shell/toast";
 import { extractNote } from "./api/notes";
 import { backupExportUrl } from "./api/backup";
-import type { BlockedDraft, Rejection, Row } from "./data";
+import type { BlockedDraft, Rejection, Row } from "./model/review";
 import { t, tAny } from "../../copy";
 import { Copy } from "./Copy";
 import {
@@ -21,8 +21,8 @@ import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { Flag, AllClear, NoMatches, DECISION_ICON, More, EditedMark, Back, Refresh, Download } from "../../ui/icons";
 import { DecisionIcon, OpIcon, TypeIcon } from "./icons";
 import { Term, OP_TIP } from "./glossary";
-import { flagsOf, worstSeverity, contributionChars, FLAG } from "./flags";
-import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
+import { flagsOf, worstSeverity, contributionChars, FLAG } from "./model/flags";
+import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./model/facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./NotePeek";
 import { Chip, collapsedGroups, EmptyState, ErrorState, FacetDrawer, IconButton, ListGroup, Loading, Picker, useIsDesktop, useRovingFocus } from "../../ui";

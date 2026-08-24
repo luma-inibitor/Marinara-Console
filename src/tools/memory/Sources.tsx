@@ -31,7 +31,7 @@ import { scopeChatId, setScope } from "./scope";
 import {
   buildSources, isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,
-} from "./sourceModel";
+} from "./model/sources";
 import { collapsedGroups, Edu, EmptyState, IconButton, ListGroup, Loading, Modal, ModePill, MODES, SearchBar, fuzzyFilter } from "../../ui";
 import { closeTopOverlay } from "../../shell/overlays";
 

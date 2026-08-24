@@ -12,7 +12,7 @@
 
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("../../copy", () => ({
+vi.mock("../../../copy", () => ({
   t: (key: string, params?: Record<string, unknown>) =>
     params && Object.keys(params).length
       ? `${key}|${Object.entries(params).map(([k, v]) => `${k}=${v}`).join(",")}`
@@ -23,10 +23,11 @@ vi.mock("../../copy", () => ({
   joinList: (items: readonly string[]) => items.join(", "),
 }));
 
-import { KEYWORD_CAP, type Note, SECTION_CAP } from "./api/types";
-import type { Row, SectionPressure } from "./data";
+import { KEYWORD_CAP, type Note, SECTION_CAP } from "../api/types";
+import type { Row } from "./review";
+import type { SectionPressure } from "./pressure";
 import { FLAG, LOW_CONFIDENCE, contributionChars, flagsOf, worstSeverity } from "./flags";
-import { chars, makeMutation, makeNote, makeRow, section } from "./test/factories";
+import { chars, makeMutation, makeNote, makeRow, section } from "../test/factories";
 
 const LONG_CHARS = 800; // module-private in flags.ts
 const NEAR_LIMIT = SECTION_CAP * 0.8;

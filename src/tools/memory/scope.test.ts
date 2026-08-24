@@ -12,7 +12,7 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Note } from "./api/types";
-import type { Row } from "./data";
+import type { Row } from "./model/review";
 import {
   currentScope,
   isScoped,

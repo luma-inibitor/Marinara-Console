@@ -1,15 +1,11 @@
-// What the console makes of a review payload: rows, and the cap pressure a
-// batch would create. Pure — no routes, no stores, no JSX.
+// What the console makes of a review payload.
 //
 // A Row is the console's own unit, not the engine's: one mutation against one
 // target, carrying the source it came from and the derived signals computed
-// after load. The engine has no such object.
+// after load. The engine has no such object, which is why flattening a
+// response is a transform rather than a parse.
 
-import {
-  SECTION_CAP,
-  type Conflict, type Disposition, type Mutation, type Note, type NoteType,
-  type ReviewChange, type ReviewResponse,
-} from "./api/types";
+import type { Conflict, Disposition, Mutation, NoteType, ReviewChange, ReviewResponse } from "../api/types";
 
 // ── review rows ─────────────────────────────────────────────────────
 
@@ -107,52 +103,4 @@ export function flattenReview(data: ReviewResponse, sourceTitles: Map<string, st
     }
   }
   return { rows, blocked, rejections };
-}
-
-// ── section pressure ────────────────────────────────────────────────
-// Projected size of every additive section the queue writes to: what the note
-// already holds plus what every kept-or-undecided claim would append. Mirrors
-// isAdditiveLtmSection in the package's draft-projector.
-
-function isAdditive(type: string | undefined, tags: string[] | undefined, key: string): boolean {
-  const tg = tags ?? [];
-  if (type === "timeline_event") return true;
-  if (type === "character") return !["items", "progression"].includes(key);
-  if (type === "relationship") return key === "history";
-  if (type === "world") return true;
-  if (type === "tone") return key === "observations";
-  return tg.includes("anchor") || key === "anchors";
-}
-
-export interface SectionPressure { noteId: string; key: string; current: number; projected: number }
-
-export function computePressure(
-  rows: Row[],
-  decisionOf: (key: string) => "keep" | "drop" | undefined,
-  notesById: Map<string, Note>,
-): Map<string, SectionPressure> {
-  const proj = new Map<string, SectionPressure & { additive: boolean }>();
-  for (const row of rows) {
-    if (decisionOf(row.key) === "drop") continue;
-    const existing = notesById.get(row.targetId);
-    for (const part of row.parts) {
-      const k = `${row.targetId} ${part.key}`;
-      let p = proj.get(k);
-      if (!p) {
-        p = {
-          noteId: row.targetId,
-          key: part.key,
-          current: existing?.sections?.[part.key]?.text?.length ?? 0,
-          projected: 0,
-          additive: !existing || isAdditive(existing.type ?? row.targetType, existing.tags, part.key),
-        };
-        p.projected = p.current;
-        proj.set(k, p);
-      }
-      if (p.additive) p.projected += (part.text?.length ?? 0) + 2;
-    }
-  }
-  const out = new Map<string, SectionPressure>();
-  for (const [k, p] of proj) if (p.additive) out.set(k, p);
-  return out;
 }

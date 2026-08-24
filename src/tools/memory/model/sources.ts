@@ -7,7 +7,7 @@
 //
 // State names are the product catalog's, never coined (design/CHECKLIST.md §2).
 
-import type { ImportPreview, Note, ReviewResponse } from "./api/types";
+import type { ImportPreview, Note, ReviewResponse } from "../api/types";
 
 export type SourceKind = "characters" | "lorebooks" | "chats";
 

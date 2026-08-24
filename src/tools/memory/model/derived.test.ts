@@ -10,8 +10,8 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 import { DUPLICATE_THRESHOLD, computeDerived, dedupeLines, jaccard, normalizeLine, shingles, vaultLines } from "./derived";
-import type { Row } from "./data";
-import { makeNote, makeRow, resetIds, section } from "./test/factories";
+import type { Row } from "./review";
+import { makeNote, makeRow, resetIds, section } from "../test/factories";
 
 /** `w1 w2 … wn` — n distinct words, so exactly n - 3 default-size shingles. */
 function words(n: number): string {

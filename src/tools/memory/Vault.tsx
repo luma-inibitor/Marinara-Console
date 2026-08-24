@@ -10,7 +10,7 @@ import { toast } from "../../shell/toast";
 import { KEYWORD_CAP, type Note, type NoteType, SECTION_CAP } from "./api/types";
 import { deleteNote, fetchNotes, patchNote } from "./api/notes";
 import { t } from "../../copy";
-import { dedupeLines } from "./derived";
+import { dedupeLines } from "./model/derived";
 import { NoteRef } from "./NotePeek";
 import { notesById } from "./store";
 import { isScoped, noteInScope, useScope } from "./scope";

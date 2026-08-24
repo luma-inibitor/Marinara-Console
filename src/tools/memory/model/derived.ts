@@ -11,8 +11,8 @@
 // A pass of this shape over 1,142 claims × 161 notes measured 133ms in the
 // review study, so it runs synchronously after load.
 
-import type { Note } from "./api/types";
-import type { Row } from "./data";
+import type { Note } from "../api/types";
+import type { Row } from "./review";
 
 const RESTATES_THRESHOLD = 0.45;
 export const DUPLICATE_THRESHOLD = 0.7;

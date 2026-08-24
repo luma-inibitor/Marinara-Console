@@ -17,7 +17,8 @@ import { useState, type ReactNode } from "react";
 import { ChevronRight, Preview as PreviewIcon, Flag, ValidationOk, Edit, EditedMark, Forward, Remove, Add } from "../../ui/icons";
 import { toast } from "../../shell/toast";
 import { KEYWORD_CAP, type Mutation, SECTION_CAP } from "./api/types";
-import type { Row, SectionPressure } from "./data";
+import type { Row } from "./model/review";
+import type { SectionPressure } from "./model/pressure";
 import { t, tAny } from "../../copy";
 import { Copy } from "./Copy";
 import { decisions, edited, rows, notesById, pressure, setDecision, setEdited } from "./store";
@@ -25,8 +26,8 @@ import { useStore } from "../../lib/store";
 import { NoteRef } from "./NotePeek";
 import { OpIcon, TypeIcon, DecisionIcon } from "./icons";
 import { Term, GLOSSARY, OP_TIP, TYPE_TIP } from "./glossary";
-import { flagsOf, riskLabel, FLAG, LOW_CONFIDENCE } from "./flags";
-import { lineDiff, splitLines, wordEmphasis } from "./diff";
+import { flagsOf, riskLabel, FLAG, LOW_CONFIDENCE } from "./model/flags";
+import { lineDiff, splitLines, wordEmphasis } from "./model/diff";
 import { Edu } from "../../ui";
 
 // ── small pieces ────────────────────────────────────────────────────

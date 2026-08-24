@@ -10,8 +10,9 @@ import { createStore, derived } from "../../lib/store";
 import { type Mutation, type Note, type PreflightResponse, type ReviewResponse, SECTION_CAP } from "./api/types";
 import { fetchNotes } from "./api/notes";
 import { acceptDraft, fetchReview, preflightDraft, skipMutations } from "./api/drafts";
-import { type BlockedDraft, computePressure, flattenReview, type Rejection, type Row, type SectionPressure } from "./data";
-import { vaultLines, computeDerived, type VaultLine } from "./derived";
+import { type BlockedDraft, flattenReview, type Rejection, type Row } from "./model/review";
+import { computePressure, type SectionPressure } from "./model/pressure";
+import { vaultLines, computeDerived, type VaultLine } from "./model/derived";
 import { currentScope, isScoped, rowInScope, scopeCharacterId, scopeChatId } from "./scope";
 import { t, tAny } from "../../copy";
 import { toast } from "../../shell/toast";
@@ -112,12 +113,6 @@ export const tally = derived([rows, decisions, edited], (allRows, dec, ed) => {
   };
 });
 
-/** The pressure map is a PARAMETER, not a read: this is called from render, and
- *  a store read there would not subscribe the caller — the badge would freeze
- *  at whatever pressure held when the row first painted. */
-export function rowOverflows(row: Row, sectionPressure: Map<string, SectionPressure>): boolean {
-  return row.parts.some((p) => (sectionPressure.get(`${row.targetId} ${p.key}`)?.projected ?? 0) > SECTION_CAP);
-}
 
 /** The server auto-includes UNDECIDED dependencies but cannot recover one
  *  explicitly DROPPED — drops are deleted from the draft before the accept.

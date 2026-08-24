@@ -9,7 +9,7 @@
 // in the test, not in a fixture file someone has to open to understand it.
 
 import type { Mutation, Note, NoteSection, NoteType } from "../api/types";
-import type { Row } from "../data";
+import type { Row } from "../model/review";
 
 /** Section text of an exact length — the only thing cap tests care about. */
 export function chars(n: number): string {

@@ -18,7 +18,7 @@
 
 import { createStore, useStore } from "../../lib/store";
 import type { Note } from "./api/types";
-import type { Row } from "./data";
+import type { Row } from "./model/review";
 
 /** Import scope: one value read by every memory screen, tool-level rather than
  *  console-wide. Scope is not only a filter: the engine records it into a
