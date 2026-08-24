@@ -10,6 +10,7 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { tokensOf } from "../shell/api";
 import { Chip } from "./Chip";
+import { t } from "../copy";
 
 const MD_TOKENS = ["# ", "## ", "**", "_", "- ", "> ", "`", "[]", "\n"];
 
@@ -90,22 +91,22 @@ export function FullscreenText(props: {
           <div className="t-label">{props.title}</div>
           <div className="meta">
             <span>{props.subtitle}</span>
-            {dirty && <span className="is-dirty-dot">unsaved</span>}
+            {dirty && <span className="is-dirty-dot">{t("ui.editor.unsaved")}</span>}
           </div>
         </div>
-        <Chip pressed={wrap} onClick={() => setWrap(!wrap)}>↵ wrap</Chip>
-        <button className="dbtn" onClick={cancel}>Cancel</button>
-        <button className="dbtn is-primary" onClick={() => props.onDone(value)}>Done</button>
+        <Chip pressed={wrap} onClick={() => setWrap(!wrap)}>{t("ui.editor.wrap")}</Chip>
+        <button className="dbtn" onClick={cancel}>{t("ui.editor.cancel")}</button>
+        <button className="dbtn is-primary" onClick={() => props.onDone(value)}>{t("ui.editor.done")}</button>
       </div>
       <div className="fs-counts meta">
-        <span><b className="t-num">{ch.toLocaleString()}</b> ch</span>
-        <span><b className="t-num">{tk.toLocaleString()}</b> tokens (est.)</span>
+        <span><b className="t-num">{ch.toLocaleString()}</b> {t("ui.editor.charUnit")}</span>
+        <span><b className="t-num">{tk.toLocaleString()}</b> {t("ui.editor.tokensEst")}</span>
         {props.budget !== undefined && props.budget > 0 && (
-          <span>{((tk / props.budget) * 100).toFixed(1)}% of budget</span>
+          <span>{t("ui.editor.ofBudget", { pct: ((tk / props.budget) * 100).toFixed(1) })}</span>
         )}
         {(dTk !== 0 || dCh !== 0) && (
           <span className={`delta ${dTk > 0 ? "is-up" : dTk < 0 ? "is-down" : ""}`}>
-            {sign(dCh)} ch · {sign(dTk)} tokens
+            {sign(dCh)} {t("ui.editor.charUnit")} · {sign(dTk)} {t("ui.editor.tokenUnit")}
           </span>
         )}
       </div>
@@ -121,15 +122,15 @@ export function FullscreenText(props: {
 
       {confirming && (
         // Verb buttons naming the outcome — never Yes/No (forms doc §4).
-        <div className="fs-confirm" role="alertdialog" aria-label="Discard changes?">
+        <div className="fs-confirm" role="alertdialog" aria-label={t("ui.editor.discardTitle")}>
           <div className="fs-confirm-box">
-            <p className="t-label">Discard changes?</p>
+            <p className="t-label">{t("ui.editor.discardTitle")}</p>
             <p className="prose-note">
-              {sign(dCh)} characters since you opened this editor. Discarding cannot be undone.
+              {t("ui.editor.discardBody", { delta: sign(dCh) })}
             </p>
             <div className="fs-confirm-acts">
-              <button className="dbtn" onClick={() => setConfirming(false)}>Keep editing</button>
-              <button className="dbtn is-danger" onClick={props.onCancel}>Discard changes</button>
+              <button className="dbtn" onClick={() => setConfirming(false)}>{t("ui.editor.keepEditing")}</button>
+              <button className="dbtn is-danger" onClick={props.onCancel}>{t("ui.editor.discard")}</button>
             </div>
           </div>
         </div>

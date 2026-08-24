@@ -1,4 +1,5 @@
 import { MODE_ICON } from "./icons";
+import { t, joinList } from "../copy";
 import "./ModePill.css";
 
 /** The three chat modes as a segmented pill. Every segment always renders, so
@@ -14,9 +15,9 @@ import "./ModePill.css";
  *  raised surface, and only the interactive one adds the accent border that
  *  Chip's toggles already use. */
 export const MODES = [
-  { id: "conversation", short: "DM", name: "conversation mode", Icon: MODE_ICON.conversation },
-  { id: "roleplay", short: "RP", name: "roleplay mode", Icon: MODE_ICON.roleplay },
-  { id: "game", short: "GM", name: "game mode", Icon: MODE_ICON.game },
+  { id: "conversation", short: "DM", name: t("ui.mode.conversation"), Icon: MODE_ICON.conversation },
+  { id: "roleplay", short: "RP", name: t("ui.mode.roleplay"), Icon: MODE_ICON.roleplay },
+  { id: "game", short: "GM", name: t("ui.mode.game"), Icon: MODE_ICON.game },
 ] as const;
 
 export function ModePill(props: {
@@ -32,7 +33,7 @@ export function ModePill(props: {
   if (!props.onToggle) {
     const lit = MODES.filter((m) => on(m.id)).map((m) => m.name);
     return (
-      <span className="modepill" role="img" aria-label={`modes: ${lit.join(", ") || "none"}`}>
+      <span className="modepill" role="img" aria-label={t("ui.mode.readout", { list: lit.length ? joinList(lit) : t("ui.mode.none") })}>
         {MODES.map((m) => (
           <span key={m.id} className={`mseg ${on(m.id) ? "is-on" : ""}`} title={m.name}>
             <m.Icon size={13} stroke={1.75} aria-hidden />
@@ -44,7 +45,7 @@ export function ModePill(props: {
   }
 
   return (
-    <div className="modepill is-interactive" role="group" aria-label={props.label ?? "Filter by mode"}>
+    <div className="modepill is-interactive" role="group" aria-label={props.label ?? t("ui.mode.filterLabel")}>
       {MODES.map((m) => (
         <button
           key={m.id}

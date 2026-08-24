@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";
+import { t } from "../copy";
 import { openOverlay, closeTopOverlay } from "../shell/overlays";
 import { Close, ICON_SIZE } from "./icons";
 import "./Sheet.css";
@@ -94,7 +95,7 @@ export function SheetHead(props: {
       {props.icon}
       <span className="sheet-title t-prose">{props.title}</span>
       {props.children}
-      <button ref={closeRef} className="hit sheet-x" aria-label="Close" onClick={closeTopOverlay}>
+      <button ref={closeRef} className="hit sheet-x" aria-label={t("ui.sheet.close")} onClick={closeTopOverlay}>
         <Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
       </button>
     </header>

@@ -1,6 +1,7 @@
 import { Missing } from "./icons";
 import { navigate } from "../shell/router";
 import { EmptyState } from "./EmptyState";
+import { t } from "../copy";
 
 /** A link that points at something that isn't there — a real state, not a blank.
  *
@@ -14,16 +15,16 @@ export function NotFound(props: { what: string; id?: string; backTo?: string; ba
   return (
     <EmptyState
       icon={<Missing size={22} stroke={1.75} aria-hidden />}
-      title={`${props.what} not found`}
+      title={t("ui.notfound.title", { what: props.what })}
       body={
         <>
-          It may have been deleted, or the link may be out of date.
-          {props.id && <> The id was <span className="t-data">{props.id}</span>.</>}
+          {t("ui.notfound.body")}
+          {props.id && <> {t("ui.notfound.id", { id: props.id })}</>}
         </>
       }
       actions={
         <button className="dbtn is-primary" onClick={() => navigate(props.backTo ?? "lorebooks")}>
-          {props.backLabel ?? "Back to lorebooks"}
+          {props.backLabel ?? t("ui.notfound.back")}
         </button>
       }
     />

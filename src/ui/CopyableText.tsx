@@ -1,6 +1,7 @@
 import { useState } from "preact/hooks";
 import { Copy, Copied } from "./icons";
 import { toast } from "../shell/toast";
+import { t } from "../copy";
 import "./CopyableText.css";
 
 /** A value you are meant to be able to take somewhere else — an id, a hash, a
@@ -19,7 +20,7 @@ export function CopyableText(props: { value: string; label?: string; className?:
       setDone(true);
       setTimeout(() => setDone(false), 1200);
     } catch {
-      toast("Could not copy — the clipboard is unavailable here", { kind: "error" });
+      toast(t("ui.copy.failed"), { kind: "error" });
     }
   };
   return (
@@ -28,7 +29,7 @@ export function CopyableText(props: { value: string; label?: string; className?:
       <button
         type="button"
         className="copyable-b hit"
-        aria-label={done ? "Copied" : `Copy ${props.label ?? props.value}`}
+        aria-label={done ? t("ui.copy.copied") : t("ui.copy.value", { what: props.label ?? props.value })}
         onClick={copy}
       >
         {done

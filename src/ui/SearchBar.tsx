@@ -1,4 +1,5 @@
 import { Search } from "./icons";
+import { t } from "../copy";
 import "./SearchBar.css";
 
 /** A search field. The magnifier is part of the component, not something each
@@ -30,7 +31,7 @@ export function SearchBar(props: {
         value={props.value}
         onInput={(e) => props.onInput(e.currentTarget.value)}
       />
-      {showCount && <span className="searchbar-count t-data">{props.count} match</span>}
+      {showCount && <span className="searchbar-count t-data">{t("ui.search.matches", { count: props.count! })}</span>}
     </label>
   );
 }

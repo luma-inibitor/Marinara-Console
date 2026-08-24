@@ -1,4 +1,3 @@
-/* @copy-strict */ // every string literal in this file is user-visible copy
 // Review state: the tri-state decision ledger.
 //
 // The model follows the operator's review workbench (ltm-review study):
@@ -16,7 +15,7 @@ import {
   flattenReview, computePressure, SECTION_CAP,
 } from "./data";
 import { vaultLines, computeDerived, type VaultLine } from "./derived";
-import { t, OURS } from "./strings";
+import { t, tAny } from "../../copy";
 import { toast } from "../../shell/toast";
 
 export type Decision = "keep" | "drop";
@@ -260,7 +259,7 @@ export function undo() {
   persist();
   recomputePressure();
   schedulePreflight();
-  toast(`Undid ${snap.label}`);
+  toast(t("memory.toast.undid", { action: snap.label }));
 }
 
 export function setDecision(row: Row, value: Decision | null) {
@@ -294,7 +293,7 @@ export function bulkDecide(list: Row[], value: Decision | null, label: string) {
   persist();
   recomputePressure();
   schedulePreflight();
-  toast(`${list.length} → ${value ?? "undecided"}`, { actionLabel: "Undo", onAction: undo });
+  toast(`${list.length} → ${value ?? t("memory.undecided")}`, { actionLabel: t("memoryvault.undo"), onAction: undo });
 }
 
 export function setEdited(key: string, mutation: Mutation | null) {
@@ -430,26 +429,20 @@ async function runPreflight() {
 // Drops first (skip removes exactly those), then accept the keeps.
 // Undecided claims are never sent. Failures classify with the fix named.
 
-const ERROR_KINDS: Array<{ match: RegExp; title: string; fix: string }> = [
-  { match: /exceeds its storage contract|20,000-character|contribution limit/i,
-    title: "A note hit a storage cap",
-    fix: "Open the target note in the Memory Vault and prune the named field (Dedupe lines helps), then retry. Failed drafts stay pending — nothing was lost." },
-  { match: /not pending|superseded|already applied/i,
-    title: "Draft moved on",
-    fix: "Reload — it is probably already resolved." },
-  { match: /source or extraction context changed/i,
-    title: "The source changed since extraction",
-    fix: "Re-extract the source, then review the new draft." },
-  { match: /edited mutation/i,
-    title: "An edit was rejected",
-    fix: "Open the claim, revert or fix the edit, then retry." },
-  { match: /fetch failed|timeout|aborted|network|50\d\b/i,
-    title: "Upstream hiccup",
-    fix: "Safe to retry — each mutation applies at most once." },
+// The table pairs a matcher with a copy KEY pair; the prose lives in
+// src/copy/memory.json, so the shape here stays a classifier.
+const ERROR_KINDS: Array<{ match: RegExp; key: string }> = [
+  { match: /exceeds its storage contract|20,000-character|contribution limit/i, key: "storageCap" },
+  { match: /not pending|superseded|already applied/i, key: "draftMoved" },
+  { match: /source or extraction context changed/i, key: "sourceChanged" },
+  { match: /edited mutation/i, key: "editRejected" },
+  { match: /fetch failed|timeout|aborted|network|50\d\b/i, key: "upstream" },
 ];
 
-function classify(msg: string) {
-  return ERROR_KINDS.find((k) => k.match.test(msg)) ?? { title: "Apply failed", fix: msg.slice(0, 200) };
+function classify(msg: string): { title: string; fix: string } {
+  const hit = ERROR_KINDS.find((k) => k.match.test(msg));
+  if (!hit) return { title: t("memory.error.applyFailed"), fix: msg.slice(0, 200) };
+  return { title: tAny(`memory.error.${hit.key}.title`), fix: tAny(`memory.error.${hit.key}.fix`) };
 }
 
 export async function applyDecided() {
@@ -545,7 +538,8 @@ export async function applyDecided() {
   persist();
   const failed = lastFailures.value.reduce((n, f) => n + f.n, 0);
   toast(
-    `${t("reviewqueue.applied")}: ${applied} · ${OURS.dropped}: ${dropped}${failed ? ` · ${failed} failed` : ""}`,
+    `${t("reviewqueue.applied")}: ${applied} · ${t("memory.dropped")}: ${dropped}` +
+      (failed ? ` ${t("memory.apply.failedCount", { count: failed })}` : ""),
     failed ? { kind: "error" } : {},
   );
   await refresh();

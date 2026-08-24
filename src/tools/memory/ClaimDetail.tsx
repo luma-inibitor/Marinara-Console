@@ -19,12 +19,13 @@ import { useState } from "preact/hooks";
 import { ChevronRight, Preview as PreviewIcon, Flag, ValidationOk, Edit, EditedMark, Forward, Remove, Add } from "../../ui/icons";
 import { toast } from "../../shell/toast";
 import { type Mutation, type Row, KEYWORD_CAP, SECTION_CAP } from "./data";
-import { t, OURS } from "./strings";
+import { t, tAny } from "../../copy";
+import { Copy } from "./Copy";
 import { decisions, edited, rows, notesById, pressure, setDecision, setEdited } from "./store";
 import { NoteRef } from "./NotePeek";
 import { OpIcon, TypeIcon, DecisionIcon } from "./icons";
 import { Term, GLOSSARY, OP_TIP, TYPE_TIP } from "./glossary";
-import { flagsOf } from "./flags";
+import { flagsOf, riskLabel, FLAG, LOW_CONFIDENCE } from "./flags";
 import { lineDiff, splitLines, wordEmphasis } from "./diff";
 import { Edu } from "../../ui";
 
@@ -93,7 +94,7 @@ function InlineMemory({ id }: { id: string }) {
     <div className="inline-card">
       {head.map((l, i) => <div key={i} className="lt-i t-prose">{l}</div>)}
       {rest.length > 0 && (
-        <Fold label={`${rest.length} more line${rest.length === 1 ? "" : "s"} · ${rest.join(" ").length.toLocaleString()} ch`}>
+        <Fold label={t("memory.detail.moreLines", { count: rest.length, chars: rest.join(" ").length.toLocaleString() })}>
           {rest.map((l, i) => <div key={i} className="lt-i t-prose">{l}</div>)}
         </Fold>
       )}
@@ -108,7 +109,7 @@ function capNote(targetId: string, key: string) {
   const over = p.projected > SECTION_CAP;
   return (
     <span className={over ? "is-drop" : "fl"}>
-      {(p.projected / 1000).toFixed(1)}k / {(SECTION_CAP / 1000).toFixed(0)}k after batch
+      {t("memory.detail.capAfterBatch", { used: (p.projected / 1000).toFixed(1), cap: (SECTION_CAP / 1000).toFixed(0) })}
     </span>
   );
 }
@@ -167,7 +168,7 @@ export function ClaimDetail({ row }: { row: Row }) {
     setDrafts({});
     setKwDraft(null);
     setEditing(false);
-    toast(changed ? "Edit staged — applies with the batch" : "No changes");
+    toast(t(changed ? "memory.detail.editStaged" : "memory.noChanges"));
   };
   const discard = () => { setDrafts({}); setKwDraft(null); setEditing(false); };
 
@@ -177,22 +178,22 @@ export function ClaimDetail({ row }: { row: Row }) {
   const [whole, setWhole] = useState(false);
   const wholeBtn = target && (m.kind === "append_section" || m.kind === "update_section") && !editing && (
     <button className="zbtn hit" aria-pressed={whole} onClick={() => setWhole(!whole)}>
-      <PreviewIcon size={12} stroke={1.75} aria-hidden /> whole memory
+      <PreviewIcon size={12} stroke={1.75} aria-hidden /> {t("memory.detail.wholeMemory")}
     </button>
   );
   const editBtn = (editableSections.length > 0 || storedKeywords) && hasEditable && !editing && (
     <button className="zbtn hit" onClick={() => setEditing(true)}>
-      <Edit size={12} stroke={1.75} aria-hidden /> {t("longtermmemorydetail.reviewEdit").toLowerCase()}
+      <Edit size={12} stroke={1.75} aria-hidden /> {t("longtermmemorydetail.reviewEdit")}
     </button>
   );
   const staged = edited.value.has(r.key);
   const stagedMark = staged && !editing && (
     <span className="zbtn-group">
-      <Term tip="edited — this claim's text was changed by you; the edit applies with the batch">
+      <Term tip={t("memory.editedTip")}>
         <EditedMark className="edit-mark" size={13} stroke={1.75} aria-hidden />
       </Term>
       <button className="zbtn hit" onClick={() => { setEdited(r.key, null); setDrafts({}); }}>
-        {t("memorysettings.discardChanges").toLowerCase()}
+        {t("memorysettings.discardChanges")}
       </button>
     </span>
   );
@@ -207,19 +208,19 @@ export function ClaimDetail({ row }: { row: Row }) {
       <div className="decbar">
         {editing ? (
           <>
-            <button className="dbtn2 save-on hit" onClick={save}>{t("memoryvault.save").toLowerCase()}</button>
-            <button className="dbtn2 hit" onClick={discard}>{t("memorysettings.discardChanges").toLowerCase()}</button>
-            <span className="decbar-note t-data" data-contrast-exempt>applies with the batch</span>
+            <button className="dbtn2 save-on hit" onClick={save}>{t("memoryvault.save")}</button>
+            <button className="dbtn2 hit" onClick={discard}>{t("memorysettings.discardChanges")}</button>
+            <span className="decbar-note t-data" data-contrast-exempt>{t("memory.detail.appliesWithBatch")}</span>
           </>
         ) : (
           <>
             <button className="dbtn2 hit" data-on={d === "keep"} data-dk="keep"
               onClick={() => setDecision(r, d === "keep" ? null : "keep")}>
-              <DecisionIcon d="keep" size={15} /> {OURS.keep}
+              <DecisionIcon d="keep" size={15} /> {t("memory.keep")}
             </button>
             <button className="dbtn2 hit" data-on={d === "drop"} data-dk="drop"
               onClick={() => setDecision(r, d === "drop" ? null : "drop")}>
-              <DecisionIcon d="drop" size={15} /> {OURS.drop}
+              <DecisionIcon d="drop" size={15} /> {t("memory.drop")}
             </button>
           </>
         )}
@@ -232,22 +233,29 @@ export function ClaimDetail({ row }: { row: Row }) {
 
 function Headline({ r, m, target }: { r: Row; m: Mutation; target: boolean }) {
   const ref = <Ref id={target ? r.targetId : undefined} title={r.targetTitle} type={r.targetType} />;
+  // One string per op, with the reference (and the section, and the link
+  // target) as SLOTS: the word order around them is English and belongs in
+  // the catalog, not in the JSX. See ./Copy.
   const body = (() => {
     switch (m.kind) {
       case "create_note":
-        return <>creates a new {r.targetType.replaceAll("_", " ")} memory — {ref}</>;
+        return <Copy k="memory.headline.create"
+          params={{ type: r.targetType.replaceAll("_", " ") }} slots={{ ref }} />;
       case "append_section":
-        return <>adds to <Skey k={m.sectionKey ?? ""} /> of {ref}</>;
+        return <Copy k="memory.headline.append"
+          slots={{ section: <Skey k={m.sectionKey ?? ""} />, ref }} />;
       case "update_section":
-        return <>rewrites <Skey k={m.sectionKey ?? ""} /> of {ref}</>;
+        return <Copy k="memory.headline.update"
+          slots={{ section: <Skey k={m.sectionKey ?? ""} />, ref }} />;
       case "add_link":
-        return <>links {ref} to <LinkTarget target={m.link?.target ?? ""} /></>;
+        return <Copy k="memory.headline.link"
+          slots={{ ref, target: <LinkTarget target={m.link?.target ?? ""} /> }} />;
       case "set_keywords":
-        return <>replaces the keywords of {ref}</>;
+        return <Copy k="memory.headline.keywords" slots={{ ref }} />;
       case "set_status":
-        return <>changes the status of {ref}</>;
+        return <Copy k="memory.headline.status" slots={{ ref }} />;
       case "set_subjects":
-        return <>changes the subjects of {ref}</>;
+        return <Copy k="memory.headline.subjects" slots={{ ref }} />;
     }
   })();
   return <div className="hl t-prose">{body}</div>;
@@ -261,7 +269,7 @@ function LinkTarget({ target, chip }: { target: string; chip?: boolean }) {
   if (note) return <Ref id={target} title={note.title ?? target} type={note.type} />;
   const pending = rows.value.find((x) => x.targetId === target && x.mutation.kind === "create_note");
   if (pending) {
-    return <span className="nref"><Ref title={pending.targetTitle} type={pending.targetType} />{chip && <span className="chip-batch t-data">pending in this batch</span>}</span>;
+    return <span className="nref"><Ref title={pending.targetTitle} type={pending.targetType} />{chip && <span className="chip-batch t-data">{t("memory.detail.pendingInBatch")}</span>}</span>;
   }
   return <span className="dim t-data">{target}</span>;
 }
@@ -310,14 +318,14 @@ function Preview(props: {
     const addCh = (m.text ?? "").length;
     const addLines = editing ? area("__text", m.text ?? "") : adds.map((l, i) => <Line key={i} mode="add">{l}</Line>);
     return (
-      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<Skey k={key} /> · {editing ? "editing proposed content" : OURS.zonePreview}</span>{props.controls}</>}
-        foot={<><span className="dim">+{addCh.toLocaleString()} · {(stored.length + addCh).toLocaleString()} ch</span>{capNote(r.targetId, key)}</>}>
+      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<Skey k={key} /> · {t(editing ? "memory.zoneEditing" : "memory.zonePreview")}</span>{props.controls}</>}
+        foot={<><span className="dim">+{addCh.toLocaleString()} · {(stored.length + addCh).toLocaleString()} {t("ui.editor.charUnit")}</span>{capNote(r.targetId, key)}</>}>
         {whole ? (
           wholeSections(key, <>{storedLines.map((l, i) => <Line key={i}>{l}</Line>)}{addLines}</>)
         ) : (
           <>
             {head.length > 0 && (
-              <Fold label={`${head.length} earlier line${head.length === 1 ? "" : "s"} · ${head.join(" ").length.toLocaleString()} ch`}>
+              <Fold label={t("memory.detail.earlierLines", { count: head.length, chars: head.join(" ").length.toLocaleString() })}>
                 {head.map((l, i) => <Line key={i}>{l}</Line>)}
               </Fold>
             )}
@@ -335,8 +343,8 @@ function Preview(props: {
     const before = change?.before ?? target?.sections?.[key]?.text ?? "";
     const after = change?.after ?? m.section?.text ?? m.text ?? "";
     return (
-      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<Skey k={key} /> · {editing ? "editing proposed content" : OURS.zoneDiff}</span>{props.controls}</>}
-        foot={<><span className="dim">{after.length >= before.length ? "+" : "−"}{Math.abs(after.length - before.length).toLocaleString()} · {after.length.toLocaleString()} ch</span>{capNote(r.targetId, key)}</>}>
+      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<Skey k={key} /> · {t(editing ? "memory.zoneEditing" : "memory.zoneDiff")}</span>{props.controls}</>}
+        foot={<><span className="dim">{after.length >= before.length ? "+" : "−"}{Math.abs(after.length - before.length).toLocaleString()} · {after.length.toLocaleString()} {t("ui.editor.charUnit")}</span>{capNote(r.targetId, key)}</>}>
         {editing
           ? <>{splitLines(before).map((l, i) => <Line key={i} mode="del">{l}</Line>)}{area("__text", after)}</>
           : whole
@@ -352,8 +360,8 @@ function Preview(props: {
     const kws = m.note?.keywords ?? [];
     return (
       <Zone cls={`nc ${editing ? "is-editing" : ""}`}
-        eyebrow={<><span className="z-lab">{opTag}{OURS.zoneNewMemory} · {editing ? "editing proposed content" : OURS.zonePreview}</span>{props.controls}</>}
-        foot={<span className="dim">+{totalCh.toLocaleString()} ch · {OURS.zoneNewMemory}</span>}>
+        eyebrow={<><span className="z-lab">{opTag}{t("memory.zoneNewMemory")} · {t(editing ? "memory.zoneEditing" : "memory.zonePreview")}</span>{props.controls}</>}
+        foot={<span className="dim">+{totalCh.toLocaleString()} {t("ui.editor.charUnit")} · {t("memory.zoneNewMemory")}</span>}>
         {secs.map(([key, s]) => {
           const lines = splitLines(s.text);
           const headLines = lines.slice(0, 3);
@@ -365,7 +373,7 @@ function Preview(props: {
                 <>
                   {headLines.map((l, i) => <Line key={i} mode="add">{l}</Line>)}
                   {rest.length > 0 && (
-                    <Fold label={`show the rest · ${rest.join(" ").length.toLocaleString()} of ${(s.text ?? "").length.toLocaleString()} ch`}>
+                    <Fold label={t("memory.detail.showRest", { shown: rest.join(" ").length.toLocaleString(), total: (s.text ?? "").length.toLocaleString() })}>
                       {rest.map((l, i) => <Line key={i} mode="add">{l}</Line>)}
                     </Fold>
                   )}
@@ -384,7 +392,7 @@ function Preview(props: {
   if (m.kind === "add_link") {
     const rel = (m.link?.relation ?? "").replaceAll("_", " ");
     return (
-      <Zone eyebrow={<span className="z-lab">{opTag}{OURS.zonePreview}</span>}>
+      <Zone eyebrow={<span className="z-lab">{opTag}{t("memory.zonePreview")}</span>}>
         <div className="linkrow">
           <Ref id={notesById.value.has(r.targetId) ? r.targetId : undefined} title={r.targetTitle} type={r.targetType} />
           <span className="rel t-data">— {rel} →</span>
@@ -403,8 +411,8 @@ function Preview(props: {
     const added = next.filter((k) => !old.includes(k));
     const removed = old.filter((k) => !next.includes(k));
     return (
-      <Zone eyebrow={<span className="z-lab">{opTag}keywords · {OURS.zonePreview}</span>}
-        foot={<span className={next.length >= KEYWORD_CAP ? "fl" : "dim"}>{next.length} of {KEYWORD_CAP} keywords</span>}>
+      <Zone eyebrow={<span className="z-lab">{opTag}{t("memoryvault.keywords")} · {t("memory.zonePreview")}</span>}
+        foot={<span className={next.length >= KEYWORD_CAP ? "fl" : "dim"}>{t("memory.detail.keywordCount", { count: next.length, cap: KEYWORD_CAP })}</span>}>
         {editing
           ? <KeywordEditor list={props.keywords ?? next} editing onChange={props.setKeywords} />
           : (
@@ -423,7 +431,7 @@ function Preview(props: {
     const from = target?.status ?? "?";
     const to = String(m.status ?? "");
     return (
-      <Zone eyebrow={<span className="z-lab">{opTag}{OURS.zonePreview}</span>}>
+      <Zone eyebrow={<span className="z-lab">{opTag}{t("memory.zonePreview")}</span>}>
         <div className="linkrow">
           <span className="stt t-data">{from}</span>
           <Forward className="dim-i" size={13} stroke={1.75} aria-hidden />
@@ -437,7 +445,7 @@ function Preview(props: {
 
   // set_subjects and anything the ops above did not claim: honest before/after.
   return (
-    <Zone eyebrow={<span className="z-lab">{opTag}{OURS.zonePreview}</span>}>
+    <Zone eyebrow={<span className="z-lab">{opTag}{t("memory.zonePreview")}</span>}>
       {r.changes.map((c, i) => (
         <div key={i}>
           {c.before && <Line mode="del">{c.before}</Line>}
@@ -465,7 +473,7 @@ function DiffLines({ before, after, fold = true }: { before: string; after: stri
       run.slice(0, keepStart).forEach((op, k) => out.push(<Line key={`c${i}-${k}`}>{op.text}</Line>));
       if (fold && folded.length > 1) {
         out.push(
-          <Fold key={`f${i}`} label={`${folded.length} unchanged lines`}>
+          <Fold key={`f${i}`} label={t("memory.detail.unchangedLines", { count: folded.length })}>
             {folded.map((op, k) => <Line key={k}>{op.text}</Line>)}
           </Fold>,
         );
@@ -502,12 +510,12 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
     ? Object.values(srcNote.sections ?? {}).map((s) => s.text ?? "").join(" ").trim().slice(0, 220)
     : "";
   const conf = Math.round(m.confidence * 100);
-  const low = m.confidence < 0.93;
-  const diags = flagsOf(r).filter((f) => f.label !== "low confidence");
+  const low = m.confidence < LOW_CONFIDENCE;
+  const diags = flagsOf(r).filter((f) => f.label !== FLAG.lowConfidence);
   const partner = r.duplicateOf ? rows.value.find((x) => x.key === r.duplicateOf!.key) : null;
 
   return (
-    <Zone cls="z-ev" eyebrow={<span className="z-lab">{OURS.zoneEvidence}</span>}>
+    <Zone cls="z-ev" eyebrow={<span className="z-lab">{t("memory.zoneEvidence")}</span>}>
       {snippet && <div className="evq-q t-prose">{snippet}{snippet.length === 220 ? "…" : ""}</div>}
       <div className="evq-a t-data">source: <Ref id={r.sourceNoteId} title={r.sourceTitle} type="source" /></div>
 
@@ -522,7 +530,7 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
         {low
           ? <Flag size={13} stroke={1.75} aria-hidden />
           : <ValidationOk size={13} stroke={1.75} aria-hidden />}
-        <span>extraction confidence {conf}%{low && <> — below the 93% threshold</>}</span>
+        <span>{t("memoryvault.extractionConfidence")} {conf}%{low && <> {t("memory.detail.belowThreshold", { pct: Math.round(LOW_CONFIDENCE * 100) })}</>}</span>
       </div>
       {diags.map((f) => (
         <div key={f.label} className="sig t-prose" data-sev={f.severity}>
@@ -533,29 +541,29 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
 
       {r.conflicts.map((c, i) => (
         <div key={i} className="ev-rel">
-          <div className="z-eye t-label t-label-s">{c.field ?? "field"} · existing → proposed</div>
+          <div className="z-eye t-label t-label-s">{c.field ?? t("memory.detail.field")} · {t("memory.zoneDiff")}</div>
           <Line mode="del">{String(c.existing ?? "")}</Line>
           <Line mode="add">{String(c.proposed ?? "")}</Line>
         </div>
       ))}
       {r.restates && (
         <div className="ev-rel">
-          <div className="z-eye t-label t-label-s">restates <NoteRef id={r.restates.noteId} label={notesById.value.get(r.restates.noteId)?.title ?? r.restates.noteId} /> · {r.restates.score.toFixed(2)}</div>
+          <div className="z-eye t-label t-label-s">{t("memory.restates")} <NoteRef id={r.restates.noteId} label={notesById.value.get(r.restates.noteId)?.title ?? r.restates.noteId} /> · {r.restates.score.toFixed(2)}</div>
           <div className="evq-q t-prose">{r.restates.line}</div>
         </div>
       )}
       {partner && (
         <div className="ev-rel">
-          <div className="z-eye t-label t-label-s">duplicate incoming → {partner.targetTitle} · {r.duplicateOf!.score.toFixed(2)}</div>
+          <div className="z-eye t-label t-label-s">{t("memory.flag.duplicateIncoming")} → {partner.targetTitle} · {r.duplicateOf!.score.toFixed(2)}</div>
           <div className="evq-q t-prose">{partner.text}</div>
         </div>
       )}
 
       <div className="readline t-data">
-        {OURS.zoneExtraction}:{" "}
+        {t("memory.zoneExtraction")}:{" "}
         <Term tip={GLOSSARY[m.claimKind] ?? m.claimKind}>{m.claimKind}</Term> ·{" "}
-        <Term tip={GLOSSARY[r.disposition] ?? r.disposition}>{OURS.disposition[r.disposition]}</Term> ·{" "}
-        <Term tip={GLOSSARY[`${m.risk} risk`] ?? m.risk}>{m.risk} risk</Term>
+        <Term tip={GLOSSARY[r.disposition] ?? r.disposition}>{tAny(`memory.disposition.${r.disposition}`)}</Term> ·{" "}
+        <Term tip={GLOSSARY[`${m.risk} risk`] ?? m.risk}>{riskLabel(m.risk)}</Term>
       </div>
     </Zone>
   );
@@ -591,7 +599,7 @@ function KeywordEditor({ list, editing, onChange, allNew }: {
         {list.map((k) => (
           <span key={k} className="kwc kw-edit t-data">
             {k}
-            <button className="kwx hit" aria-label={`Remove keyword ${k}`}
+            <button className="kwx hit" aria-label={t("pill.removeValue1", { value1: k })}
               onClick={() => onChange(list.filter((x) => x !== k))}>
               <Remove size={11} stroke={2} aria-hidden />
             </button>
@@ -604,7 +612,7 @@ function KeywordEditor({ list, editing, onChange, allNew }: {
           onInput={(e) => setEntry(e.currentTarget.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }} />
         <button className="zbtn hit" onClick={add} disabled={!entry.trim()}>
-          <Add size={12} stroke={2} aria-hidden /> {t("memoryvault.addKeyword").toLowerCase()}
+          <Add size={12} stroke={2} aria-hidden /> {t("memoryvault.addKeyword")}
         </button>
       </div>
     </div>

@@ -148,5 +148,704 @@
   "memory.proposed": {
     "text": "proposed",
     "note": "Diff-zone eyebrow label, rendered on its own as well as inside memory.zoneDiff. Derived from reviewqueue.proposedValue (\"Proposed: {{value}}\"), a whole interpolated sentence carrying the value — it cannot be used as a bare label, so the catalog has no string for the label alone. Lowercase because eyebrows uppercase in CSS."
+  },
+  "memory.noChanges": {
+    "text": "No changes to save.",
+    "note": "Toast after a save that found nothing to write, naming the action that found nothing rather than reporting a bare state. memoryvault.unchanged (\"Unchanged\") is a transfer-preview row status for one record; the console's own lorebooks.record.noChanges is the record editor's shorter form of the same idea."
+  },
+  "memory.editing": {
+    "text": "editing",
+    "note": "Appended to a zone eyebrow while its textarea is open. The catalog has no editing MODE: upstream an edit is a form you open, so it names the verb (reviewEdit) but never the state a zone is in."
+  },
+  "memory.editedTip": {
+    "text": "edited — you replaced this claim's proposed text; your version applies with the batch",
+    "note": "Tooltip on the edited mark, on the row and in the detail alike — one fact, one sentence, per CHECKLIST §2. The catalog's reviewqueue.editedChange is a two-word noun phrase used inside longer server messages and explains nothing about when the edit lands."
+  },
+  "memory.expand": {
+    "text": "Expand",
+    "note": "Accessible name of a row's disclosure chevron. The catalog mentions expanding only inside a sentence about hidden conflicts and has no name for the control itself."
+  },
+  "memory.collapse": {
+    "text": "Collapse",
+    "note": "Accessible name of a row's disclosure chevron when open; the counterpart to memory.expand. The catalog has no collapsible rows and so no word for closing one."
+  },
+  "memory.stop": {
+    "text": "Stop",
+    "note": "Halts a running import batch between sources. Upstream import is one request that either completes or is cancelled by the transport (importCancelledSelectionRetained); there is no user-facing verb for stopping a batch part-way."
+  },
+  "memory.save.autosaving": {
+    "text": "Autosaving…",
+    "note": "The review ledger's save pill (DESIGN §2 mandates Autosaving… / Saved / Failed). The catalog's memoryvault.saving is a modal save the user pressed; this ledger writes itself on a debounce, which is a different promise to make."
+  },
+  "memory.gloss.static": {
+    "text": "claim kind · an enduring fact or defined state — true about someone or the world, not established by a narrated event",
+    "note": "Definition of the schema value claimKind=\"static\". The extractor prompt classifies claims this way and the wire format carries it, but the catalog never renders the value, so it has no definition for it."
+  },
+  "memory.gloss.change": {
+    "text": "claim kind · an outcome caused by a specific event — traces back to a timeline event",
+    "note": "Definition of the schema value claimKind=\"change\"; the counterpart to memory.gloss.static. The catalog's reviewqueue.dependentChange is about mutation dependencies, not about this field."
+  },
+  "memory.gloss.new": {
+    "text": "disposition · creates a memory that does not exist yet",
+    "note": "Definition of the computed disposition \"new\" (see memory.disposition.new). The product computes the same three dispositions and labels none of them, so every definition in this triad is ours."
+  },
+  "memory.gloss.merge": {
+    "text": "disposition · folds new material into a memory that already exists",
+    "note": "Definition of the computed disposition \"merge\". The catalog's reviewqueue.mergeIntoMemory is a button that performs it; a button label is not a definition of the state."
+  },
+  "memory.gloss.rewrite": {
+    "text": "disposition · replaces the stored section text instead of adding to it",
+    "note": "Definition of the computed disposition \"rewrite\". The catalog's acceptReplacesSavedMemory says what accepting does, in the second person, at the moment of accepting — it cannot serve as the standing definition of a value."
+  },
+  "memory.gloss.lowRisk": {
+    "text": "risk · the blast radius if this claim is wrong — low: additive and easy to undo",
+    "note": "Definition of the extractor's risk=low. The catalog renders the value (reviewqueue.riskLow \"Low\") but nowhere says what risk measures, and the whole point of the education pattern is that a rendered enum can explain itself."
+  },
+  "memory.gloss.mediumRisk": {
+    "text": "risk · the blast radius if this claim is wrong — medium: worth a look before it lands",
+    "note": "Definition of the extractor's risk=medium; see memory.gloss.lowRisk for why the catalog's bare value label cannot be reused as a definition."
+  },
+  "memory.gloss.highRisk": {
+    "text": "risk · the blast radius if this claim is wrong — high: review this one",
+    "note": "Definition of the extractor's risk=high; see memory.gloss.lowRisk for why the catalog's bare value label cannot be reused as a definition."
+  },
+  "memory.optip.create_note": {
+    "text": "operation · create — makes a new memory (a script is the whole memory; a file is one section)",
+    "note": "Definition of the mutation kind create_note, including the icon vocabulary it teaches. The catalog names the action (reviewqueue.createMemory) but never explains the op, and it has no icon family to explain."
+  },
+  "memory.optip.append_section": {
+    "text": "operation · append — adds lines to the end of one section",
+    "note": "Definition of the mutation kind append_section. reviewqueue.addToSection is the button; this is what the op does, which is what a reviewer holding an unfamiliar glyph needs."
+  },
+  "memory.optip.update_section": {
+    "text": "operation · update — replaces one section's stored text",
+    "note": "Definition of the mutation kind update_section, naming the one destructive op. reviewqueue.updateSection is the button label only."
+  },
+  "memory.optip.add_link": {
+    "text": "operation · link — connects this memory to another memory",
+    "note": "Definition of the mutation kind add_link. reviewqueue.addLink is the button label; memoryvault.explicitRelationshipsUsedToConnectThisMemoryToRelated explains the FIELD in the vault, not the review-time operation."
+  },
+  "memory.optip.set_keywords": {
+    "text": "operation · keywords — replaces the memory's keyword list",
+    "note": "Definition of the mutation kind set_keywords. The catalog's underTheHoodKeywords explains what keywords are for; it does not say that this op replaces the whole list rather than adding to it."
+  },
+  "memory.optip.set_status": {
+    "text": "operation · status — changes the memory's lifecycle status",
+    "note": "Definition of the mutation kind set_status. memoryvault.statusHelp explains the three statuses; this names the operation that writes one."
+  },
+  "memory.optip.set_subjects": {
+    "text": "operation · subjects — changes who the memory is about",
+    "note": "Definition of the mutation kind set_subjects. memoryvault.theCharacterOrRelationshipIdentitiesDescribedByThisMemory defines the field; this names the op."
+  },
+  "memory.typetip.character": {
+    "text": "memory type · character — one person",
+    "note": "Definition of the note type \"character\". The catalog renders the type name as a vault filter heading (memoryvault.characters) and never says what belongs in one, which is what the type icon has to answer in place."
+  },
+  "memory.typetip.relationship": {
+    "text": "memory type · relationship — the state between two people",
+    "note": "Definition of the note type \"relationship\". Its cardinality is the whole distinction from a character memory, and the catalog states it only as a save-time validation error."
+  },
+  "memory.typetip.timeline_event": {
+    "text": "memory type · timeline event — something that happened, anchored in time",
+    "note": "Definition of the note type \"timeline_event\". The catalog has the plural heading (memoryvault.timelineEvents) and no definition; the time anchor is the part reviewers get wrong."
+  },
+  "memory.typetip.thread": {
+    "text": "memory type · thread — an open question the story should resolve",
+    "note": "Definition of the note type \"thread\". memoryvault.threads is a filter heading; nothing upstream says a thread is a question waiting on an answer."
+  },
+  "memory.typetip.world": {
+    "text": "memory type · world — setting, places, rules",
+    "note": "Definition of the note type \"world\". memoryvault.world is the bare label; the three-word enumeration is what tells a reviewer whether a claim belongs here or in a scene."
+  },
+  "memory.typetip.tone": {
+    "text": "memory type · tone — how scenes should feel",
+    "note": "Definition of the note type \"tone\", the one type that is an instruction rather than a fact. memoryvault.tone is the bare label."
+  },
+  "memory.typetip.source": {
+    "text": "memory type · source — an imported record that claims were extracted from",
+    "note": "Definition of the note type \"source\". The catalog's sourceNoteRecallHelp says a source note is audit evidence and is not recalled; this is the one-line form that fits a tooltip on an icon."
+  },
+  "memory.typetip.scene": {
+    "text": "memory type · scene — one scene's record",
+    "note": "Definition of the note type \"scene\". memoryvault.scenes is a filter heading with no definition behind it."
+  },
+  "memory.flag.hasConflicts": {
+    "text": "has conflicts",
+    "note": "Flag label and facet value: this claim disagrees with a stored field. The catalog's memoryvault.conflicts is a vault section heading listing them; a facet value has to be a predicate about a row, not the name of a panel."
+  },
+  "memory.flag.conflictCount": {
+    "one": "{{count}} field conflict with the stored memory",
+    "other": "{{count}} field conflicts with the stored memory",
+    "note": "The has-conflicts flag as a sentence. The catalog's conflictsFound pair counts UNRESOLVED conflicts inside its own resolution UI, which the console does not have; ours counts fields that differ from the vault."
+  },
+  "memory.flag.lowRisk": {
+    "text": "low risk",
+    "note": "The extractor's risk value rendered as a phrase. The catalog renders the bare adjective (reviewqueue.riskLow \"Low\") beside a separate \"risk |\" label; the console renders one token, because it is a facet value and a chip, where a bare \"Low\" names nothing."
+  },
+  "memory.flag.mediumRisk": {
+    "text": "medium risk",
+    "note": "The extractor's risk value rendered as a phrase; see memory.flag.lowRisk for why the catalog's split label and value cannot be reused."
+  },
+  "memory.flag.highRisk": {
+    "text": "high risk",
+    "note": "The extractor's risk value rendered as a phrase; see memory.flag.lowRisk for why the catalog's split label and value cannot be reused."
+  },
+  "memory.flag.highRiskSentence": {
+    "text": "The extractor rates this claim high risk.",
+    "note": "The high-risk flag as a sentence in the detail's signals zone, attributed to the extractor because risk is the model's own estimate and not a console judgment. The catalog states risk as a bare value and never attributes it."
+  },
+  "memory.flag.mediumRiskSentence": {
+    "text": "The extractor rates this claim medium risk.",
+    "note": "The medium-risk flag as a sentence; the counterpart to memory.flag.highRiskSentence, attributed for the same reason."
+  },
+  "memory.flag.lowConfidence": {
+    "text": "low confidence",
+    "note": "Flag label and facet value for an extraction below the threshold. The catalog has the field (memoryvault.confidence) and the unit (reviewqueue.confidence \"% confidence\") but no name for the exception, because upstream never filters by it."
+  },
+  "memory.flag.confidenceSentence": {
+    "text": "{{pct}}% — below the {{threshold}}% confidence threshold",
+    "note": "The low-confidence flag as a sentence, stating the measurement and the line it fell under. The catalog's confidenceHelp describes what confidence means; it has nothing that reports one claim against a threshold."
+  },
+  "memory.flag.restatesVault": {
+    "text": "restates vault",
+    "note": "Flag label and facet value: this claim repeats a line already stored. The catalog filters near-duplicates out BEFORE review (underTheHoodDuplicates), so it has no word for one that survived and needs a human."
+  },
+  "memory.flag.restatesSentence": {
+    "text": "Very similar ({{score}}) to a line already stored.",
+    "note": "The restates-vault flag as a sentence, carrying the similarity score so the reviewer can judge the match. Upstream never surfaces a similarity score at all."
+  },
+  "memory.flag.duplicateIncoming": {
+    "text": "duplicate incoming",
+    "note": "Flag label and facet value: two claims in this batch say the same thing. The catalog's extractionprompttemplates.duplicate is a template action (\"Duplicate\" a prompt) and its dedupe vocabulary describes work already done, never a pair still in front of you."
+  },
+  "memory.flag.duplicateSentence": {
+    "text": "Very similar ({{score}}) to another incoming claim in this batch.",
+    "note": "The duplicate-incoming flag as a sentence; the batch-internal counterpart to memory.flag.restatesSentence, and the reason the console needs a word for \"batch\" at all."
+  },
+  "memory.flag.long": {
+    "text": "long",
+    "note": "Flag label and facet value for an unusually large single contribution. The catalog rejects oversize SOURCES before extraction (rejectsASourceWhenItsEstimatedSizeExceedsThis) and caps section text, but has no signal for a claim that is merely big."
+  },
+  "memory.flag.longSentence": {
+    "text": "Long entry: +{{chars}} chars in one claim.",
+    "note": "The long flag as a sentence, naming the contribution in characters because that is the unit the caps are written in."
+  },
+  "memory.flag.undatedEvent": {
+    "text": "undated event",
+    "note": "Flag label and facet value: a timeline_event whose text carries no date. The date convention is the console's own extraction contract; the catalog has timeline events but no rule about their text."
+  },
+  "memory.flag.undatedSentence": {
+    "text": "A timeline event with no [YYYY-MM-DD] date in its text.",
+    "note": "The undated-event flag as a sentence, quoting the exact bracketed format the matcher looks for so the fix is unambiguous."
+  },
+  "memory.flag.noKeywords": {
+    "text": "no keywords",
+    "note": "Flag label and facet value: a create with an empty keyword list. The catalog explains what keywords do (underTheHoodKeywords) and caps them, but never warns that a memory shipped without any."
+  },
+  "memory.flag.noKeywordsSentence": {
+    "text": "A new memory with no keywords — keyword matching cannot find it.",
+    "note": "The no-keywords flag as a sentence, naming the consequence rather than the condition, because the condition alone reads as a stylistic quibble."
+  },
+  "memory.flag.keywordCap": {
+    "text": "target near keyword cap",
+    "note": "Flag label and facet value: the memory this claim targets is close to the 30-keyword ceiling. The catalog states the cap only as a rejection message after the fact (manualKeywordLimit)."
+  },
+  "memory.flag.keywordCapSentence": {
+    "text": "The target memory is near its {{cap}}-keyword cap.",
+    "note": "The keyword-cap flag as a sentence. Interpolates the cap rather than spelling it, so the sentence cannot drift from KEYWORD_CAP the way the catalog's hardcoded \"at most 30\" would."
+  },
+  "memory.flag.sectionNearCap": {
+    "text": "The section is close to its cap.",
+    "note": "Section-pressure flag when no single section can be named (nothing projected). The catalog has no pressure model at all: upstream a write either fits or is rejected, so approaching a cap is a state it cannot describe."
+  },
+  "memory.flag.sectionOverCap": {
+    "text": "The section would exceed its cap after this batch.",
+    "note": "Section-pressure flag when no single section can be named; the far side of memory.flag.sectionNearCap. \"After this batch\" is the console's own projection over everything kept, which upstream does not compute."
+  },
+  "memory.flag.sectionNearCapNamed": {
+    "text": "§{{key}} is at {{pct}}% of its {{cap}}-char cap after this batch",
+    "note": "Section-pressure flag naming the worst section. §key is the console's section typography; the projection over the whole batch has no upstream equivalent."
+  },
+  "memory.flag.sectionOverCapNamed": {
+    "text": "§{{key}} would reach {{pct}}% of its {{cap}}-char cap after this batch — over the limit",
+    "note": "Section-pressure flag naming the worst section when the projection breaks the cap; the far side of memory.flag.sectionNearCapNamed, ending in the console's own memory.overLimit phrase."
+  },
+  "memory.error.storageCap.title": {
+    "text": "A note hit a storage cap",
+    "note": "Apply-failure class: the engine refused a write for exceeding a storage contract. The catalog reports the raw server message and has no taxonomy of apply failures, because upstream accepts one draft at a time and shows the error inline."
+  },
+  "memory.error.storageCap.fix": {
+    "text": "Open the target note in the Memory Vault and prune the named field (Dedupe lines helps), then retry. Failed drafts stay pending — nothing was lost.",
+    "note": "The fix for memory.error.storageCap. Names a console-only affordance (Dedupe lines) and states the recovery guarantee; the catalog's recommendedFix family is about rejected extraction candidates, not about apply."
+  },
+  "memory.error.draftMoved.title": {
+    "text": "Draft moved on",
+    "note": "Apply-failure class: the draft is no longer pending. The catalog has the server states (reviewqueue.notPending, superseded) as bare status words, not as a failure a reviewer has to act on."
+  },
+  "memory.error.draftMoved.fix": {
+    "text": "Refresh — it is probably already resolved.",
+    "note": "The fix for memory.error.draftMoved. Uses Refresh, one of the console's two reload words, because the queue is re-fetched rather than the failed action re-tried."
+  },
+  "memory.error.sourceChanged.title": {
+    "text": "The source changed since extraction",
+    "note": "Apply-failure class: the draft's extraction context no longer matches its source. The catalog names the state (sourcesworkspace.contextChanged) as a source-row chip, never as the reason an apply failed."
+  },
+  "memory.error.sourceChanged.fix": {
+    "text": "Re-extract the source, then review the new draft.",
+    "note": "The fix for memory.error.sourceChanged, in the catalog's own verb (sourcesworkspace.reExtract). The two-step sentence is ours because upstream re-extraction is offered on the source row, not as recovery from a failure."
+  },
+  "memory.error.editRejected.title": {
+    "text": "An edit was rejected",
+    "note": "Apply-failure class: the engine refused an editedMutation. The catalog validates edited mutations before accepting (invalidEditedMutation) and so has no name for one that failed at apply."
+  },
+  "memory.error.editRejected.fix": {
+    "text": "Open the claim, revert or fix the edit, then retry.",
+    "note": "The fix for memory.error.editRejected. Offers reverting as well as fixing, which only makes sense where an edit is staged locally and can be dropped — a console-only state."
+  },
+  "memory.error.upstream.title": {
+    "text": "Upstream hiccup",
+    "note": "Apply-failure class: a transport or 5xx failure. The catalog's errors.interfaceStopped treats a failed request as terminal; the console classifies it as retryable, which needs its own name."
+  },
+  "memory.error.upstream.fix": {
+    "text": "Safe to retry — each mutation applies at most once.",
+    "note": "The fix for memory.error.upstream, promising idempotency. The catalog never makes this promise (its retry strings only say a retry is or is not needed), and it is the whole reason this class is safe to retry unattended."
+  },
+  "memory.error.applyFailed": {
+    "text": "Apply failed",
+    "note": "The unclassified apply failure, and the heading of the failure card. The catalog's draftActionFailed carries the raw message; the console splits title from fix, so it needs a title for the case where there is no known fix."
+  },
+  "memory.apply.failedCount": {
+    "text": "· {{count}} failed",
+    "note": "The failure tail of the apply toast, appended only when something failed. The catalog reports failures per draft inside batchResultSummary; the console reports once per batch, so the clause has to stand alone."
+  },
+  "memory.toast.undid": {
+    "text": "Undid {{action}}",
+    "note": "Confirms an undo of a decision-ledger change, naming what was undone. The catalog has the button (memoryvault.undo) and failure (archiveUndoFailed) but no confirmation, because it has no undo stack to walk."
+  },
+  "memory.index.rebuilding": {
+    "text": "Rebuilding…",
+    "note": "Busy state of the recall-index rebuild button. The catalog names the phase (activityview.phaseRebuild) and the outcome (reindexComplete) but never the in-flight state, because upstream runs the repair from a settings screen that blocks."
+  },
+  "memory.index.unhealthy": {
+    "text": "Recall index is {{state}} — saved memories may not be searchable.",
+    "note": "Banner when the engine reports an index health other than healthy. The catalog's semanticRecallUnavailable covers one cause and one consequence; this reports whatever state the engine names, and the consequence is the broader one."
+  },
+  "memory.index.noEmbeddings": {
+    "text": "Semantic recall is unavailable on this engine (no embedding model) — retrieval runs on keywords and text matching only.",
+    "note": "Banner when the engine has no embedding model at all. The catalog's semanticRecallUnavailable blames a repairable index; this condition is not repairable and saying so would send the reviewer to a rebuild that cannot help."
+  },
+  "memory.peek.rawMemory": {
+    "text": "Raw memory",
+    "note": "Label of the peek's raw-JSON disclosure. The catalog's activityview.copyJson and technicalDetails belong to the debug log and name a copy action, not a fold holding one memory's stored record."
+  },
+  "memory.peek.id": {
+    "text": "the memory id",
+    "note": "Accessible name for the copy control on the peek's id footer, phrased as the object being copied because the control's own verb is supplied by the shared component. The catalog never exposes a note id as a labelled, copyable field."
+  },
+  "memory.backToQueue": {
+    "text": "Back to queue",
+    "note": "Accessible name of the stacked detail's back button, in the catalog's own \"Back to {destination}\" shape (longtermmemorydetail.backToAgents). The destination is the console's own review list, which upstream has no stacked navigation for."
+  },
+  "memory.backToVault": {
+    "text": "Back to vault",
+    "note": "Accessible name of the stacked editor's back button; same shape and same reason as memory.backToQueue."
+  },
+  "memory.review.groupBy": {
+    "text": "Group by",
+    "note": "Accessible name of the grouping chooser, in the shape of the catalog's own memoryvault.sortBy. The product's review queue is one flat list with no grouping, so there is nothing to borrow."
+  },
+  "memory.review.filter": {
+    "text": "Filter",
+    "note": "Key half of the mobile three-button rail. The catalog has clearFilters and \"active filters\" prose but no bare noun for the control, because upstream filtering is a row of always-visible selects rather than one button."
+  },
+  "memory.review.group": {
+    "text": "Group",
+    "note": "Key half of the mobile three-button rail; the control that opens memory.review.groupBy. See memory.review.filter for why the rail's three keys are ours."
+  },
+  "memory.review.sort": {
+    "text": "Sort",
+    "note": "Key half of the mobile three-button rail. The catalog's memoryvault.sortBy is the full phrase and does not fit a fixed 108px key column beside Filter and Group."
+  },
+  "memory.review.decided": {
+    "text": "decided",
+    "note": "Label of the tally meter over keep/drop. The catalog's progress vocabulary is \"reviewed / remaining\" (reviewSummary), which counts server actions taken; decided counts local judgments not yet transmitted. Lowercase because the meter label uppercases in CSS."
+  },
+  "memory.review.decidedOf": {
+    "text": "{{done}} of {{total}} decided",
+    "note": "Accessible name of a group's tally bar, giving the bar's proportion as a number for screen readers. The catalog's reviewProgress is a whole status line, not a per-group figure."
+  },
+  "memory.review.shownOf": {
+    "text": "{{shown}} of {{total}}",
+    "note": "How many rows survive the active facets, shown beside the bulk actions so a bulk press states its own blast radius. The catalog's memoryvault.shown is the bare word used inside a longer count phrase."
+  },
+  "memory.review.chipDupes": {
+    "text": "Dupes",
+    "note": "Quick chip for the duplicate-incoming flag, clipped to one short word for the same reason as memory.review.chipRestates. The catalog's dedupe vocabulary is always the full word and always about work already done."
+  },
+  "memory.review.keepShown": {
+    "text": "Keep shown",
+    "note": "Bulk-decide the filtered set to keep. The catalog's bulk verbs act on a SELECTION (selectAll, skipSelected); the console has no selection here — the filter is the selection, which is what \"shown\" names."
+  },
+  "memory.review.dropShown": {
+    "text": "Drop shown",
+    "note": "Bulk-decide the filtered set to drop; the counterpart to memory.review.keepShown, and drop rather than skip because the decision is local until Apply."
+  },
+  "memory.review.reset": {
+    "text": "Reset",
+    "note": "Returns the filtered rows to undecided. The catalog has no third decision state to return to, so it has no verb for clearing a judgment; extractionprompttemplates.resetToDefault resets a template, not a decision."
+  },
+  "memory.review.keepUndecided": {
+    "text": "Keep {{count}} undecided",
+    "note": "Tooltip on a group's keep-all button, stating how many rows it touches and that decided rows are left alone. The catalog's bulk actions never exclude already-actioned rows, because upstream an actioned proposal leaves the queue."
+  },
+  "memory.review.dropUndecided": {
+    "text": "Drop {{count}} undecided",
+    "note": "Tooltip on a group's drop-all button; the counterpart to memory.review.keepUndecided."
+  },
+  "memory.review.keepAllUndecidedIn": {
+    "text": "Keep all {{count}} undecided in {{group}}",
+    "note": "Accessible name of a group's keep-all button, naming the group because the visible tooltip cannot. The catalog has no grouped queue and so no per-group bulk action to name."
+  },
+  "memory.review.dropAllUndecidedIn": {
+    "text": "Drop all {{count}} undecided in {{group}}",
+    "note": "Accessible name of a group's drop-all button; the counterpart to memory.review.keepAllUndecidedIn."
+  },
+  "memory.review.clearDecisions": {
+    "text": "Clear decisions ({{count}})",
+    "note": "Group kebab item returning that group's decided rows to undecided. The catalog's memoryvault.clearFilters clears a view; there is no upstream state that clearing a decision could mean."
+  },
+  "memory.review.decisionCycle": {
+    "text": "Decision: {{decision}}. Tap to cycle.",
+    "note": "Accessible name of the row's tri-state decision control, stating the current value and the gesture. Upstream a proposal has two immediate buttons and nothing that cycles, so both halves are ours."
+  },
+  "memory.review.claimPosition": {
+    "text": "Claim {{index}} of {{total}}",
+    "note": "Heads the stacked detail with the reviewer's position in the filtered queue rather than the target's title, because position is what j/k triage needs. The catalog's queue has no cursor and no position."
+  },
+  "memory.review.noClaimOpen": {
+    "text": "No claim open",
+    "note": "Empty state of the desktop detail pane. The catalog's memoryvault.openAMemoryForDetailsOrAddOne is the vault's equivalent and offers a create the review queue cannot do."
+  },
+  "memory.review.triageHint": {
+    "text": "j/k to move · a keep · d drop · Enter opens",
+    "note": "Teaches the triage keys where the empty detail pane would otherwise be blank. The product binds no keys at all, so no part of this can trace."
+  },
+  "memory.review.noMatch": {
+    "text": "No proposals match the active facets.",
+    "note": "Empty state when facets filter everything away, in the catalog's own \"No {nouns} match…\" shape (memoryvault.noMemoriesMatchTheseFilters). The nouns are proposals and facets, and the catalog has no facets."
+  },
+  "memory.review.noFacetValues": {
+    "text": "No facet values in this slice.",
+    "note": "Empty state inside the facet drawer itself, when the other active facets leave nothing to offer. The product has no facet drawer, so it cannot have an empty one."
+  },
+  "memory.review.refreshQueue": {
+    "text": "Refresh queue",
+    "note": "Accessible name of the queue's re-fetch button. The catalog's activityview.refresh is the bare verb for the activity log; naming the object matters here because the header also carries a Retry for the save ledger."
+  },
+  "memory.review.generatedAt": {
+    "text": "Generated {{time}}",
+    "note": "When the engine built the review payload now on screen. The catalog's memoryvault.generated marks a FIELD as model-generated; this is a timestamp on a snapshot, which upstream never shows because it never caches one."
+  },
+  "memory.review.dedupedUpstream": {
+    "text": "{{count}} deduped upstream",
+    "note": "How many candidates the engine dropped as near-duplicates before the console saw them. The catalog reports deduplications inside an extraction-details accounting line; here it is a one-clause footnote on the queue's provenance."
+  },
+  "memory.review.willBeCreated": {
+    "text": "Will be created",
+    "note": "Accessible name of the green dot marking a target that does not exist yet. The catalog's reviewqueue.createMemory is the action; this marks a target as not-yet-real, which only matters where several claims share one pending target."
+  },
+  "memory.review.capPct": {
+    "text": "cap {{pct}}%",
+    "note": "The compact cap signal on a group header, where only the percentage fits. The catalog has no cap-pressure signal at all; activityview.limits (\"Limits:\") is a debug heading. Lowercase because the chip's row is data type, not a sentence."
+  },
+  "memory.review.capTitle": {
+    "text": "§{{key}}: stored {{stored}} ch, {{projected}} after this batch, cap {{cap}}",
+    "note": "The full numbers behind memory.review.capPct, on hover. Stored-versus-projected is the console's own batch projection and has no upstream equivalent."
+  },
+  "memory.review.blockedDrafts": {
+    "one": "{{n}} draft blocked",
+    "other": "{{n}} drafts blocked",
+    "note": "Heads an obligation card: drafts the engine will not accept until their reason is cleared. The catalog's reviewqueue.blockedMutations counts blocked MUTATIONS inside a longer server sentence; this counts the drafts holding them."
+  },
+  "memory.review.claimsHeld": {
+    "one": "{{n}} claim held",
+    "other": "{{n}} claims held",
+    "note": "The second half of the obligation card's count line: how many claims sit inside the blocked drafts. \"Held\" rather than blocked, because the claims themselves are fine — their draft is not."
+  },
+  "memory.review.claimCount": {
+    "one": "{{count}} claim",
+    "other": "{{count}} claims",
+    "note": "Bare count of claims under one blocked source. The catalog counts mutations (reviewqueue.mutations) — the wire word — where the console counts claims, which is the word the reviewer holds one of."
+  },
+  "memory.review.extractingProgress": {
+    "text": "Extracting {{progress}}…",
+    "note": "Busy label while re-extracting blocked sources one at a time, carrying an n/total. The catalog's savingAndExtracting states a total only, because upstream sends the batch in one request and cannot report progress through it."
+  },
+  "memory.review.reextractNote": {
+    "text": "Re-extracting calls the model once per source and replaces each blocked draft with a fresh one.",
+    "note": "States the cost and the consequence before a bulk re-extract. The catalog's refreshExplanation makes the opposite promise (refresh does NOT call the model); there is no upstream sentence for what re-extraction spends."
+  },
+  "memory.review.rawSummary": {
+    "text": "Raw",
+    "note": "Fold holding the server's verbatim error text under a classified failure. The catalog's activityview.technicalDetails names the same idea in the debug log; here it sits inside a failure card where \"technical details\" would outweigh the fix above it."
+  },
+  "memory.apply.button": {
+    "text": "Apply decided ({{count}})",
+    "note": "The commit. The catalog's applyPreflighted (\"Apply preflighted ({{count}})\") names the server's preflight; this button applies the reviewer's decided set, which is the local ledger, and the count is drops plus ready keeps."
+  },
+  "memory.apply.buttonChecking": {
+    "text": "Apply decided (…)",
+    "note": "The commit button while preflight is still in flight and the count is not yet known. Holding the label and eliding only the number keeps the button from changing width or vocabulary mid-press; the catalog has no debounced preflight to wait on."
+  },
+  "memory.apply.progress": {
+    "text": "Applying {{done}}/{{total}}…",
+    "note": "The commit button while applying, counting drafts. The catalog's reviewqueue.accepting (\"Accepting...\") speaks the server vocabulary and reports no progress, because upstream accepts one draft per press."
+  },
+  "memory.apply.progressDraft": {
+    "text": "Applying draft {{done}}/{{total}}…",
+    "note": "The same progress in the dock, where there is room to name the unit being counted. Drafts, not claims: one apply may span several drafts, which is why the console needed the word batch."
+  },
+  "memory.dock.stayPending": {
+    "one": "({{count}} still holds undecided claims)",
+    "other": "({{count}} still hold undecided claims)",
+    "note": "Warns that a draft this apply touches will stay pending because some of its claims are undecided. Upstream a draft is accepted whole, so a partially-decided draft is a state the catalog cannot describe."
+  },
+  "memory.dock.ready": {
+    "text": "{{count}} ready",
+    "note": "Preflight's ready count in the dock. The catalog's preflightSummary is a whole sentence toast; memoryvault.ready is a transfer-preview row status. Neither is a clause that can sit in a running dock line."
+  },
+  "memory.dock.blocked": {
+    "text": "{{count}} blocked",
+    "note": "Preflight's blocked count in the dock; the counterpart to memory.dock.ready. reviewqueue.blockedMutations (\"; {{count}} blocked before Apply\") is a fragment welded to a server summary, punctuation and all."
+  },
+  "memory.dock.blockedHeld": {
+    "text": "{{count}} blocked — held back from Apply",
+    "note": "Summary of the dock's blocked-rows fold, saying what happens to them rather than only counting them. The catalog states blocking as a per-proposal status (preflightBlocked) and never as an outcome for the batch."
+  },
+  "memory.dock.editedCount": {
+    "text": "{{count}} edited",
+    "note": "How many claims in the decided set carry a staged edit. The catalog counts edited mutations only to refuse them (invalidEditedMutation); it has no plain count of the ones that are fine."
+  },
+  "memory.dock.checking": {
+    "text": "checking with the engine…",
+    "note": "The dock while preflight is debounced or in flight. The catalog's preflight strings are all results; upstream preflight is an explicit button press, so there is no waiting state to name."
+  },
+  "memory.dock.droppedDependency": {
+    "one": "{{count}} kept claim depends on a dropped create — it will fail; keep the create or drop it",
+    "other": "{{count}} kept claims depend on a dropped create — they will fail; keep the create or drop them",
+    "note": "The one structural failure preflight cannot see: the server auto-includes an undecided dependency but cannot recover one explicitly dropped. Both halves inflect, so the whole sentence is plural-selected rather than the noun alone. The catalog's dependency strings describe automatic inclusion succeeding."
+  },
+  "memory.detail.field": {
+    "text": "field",
+    "note": "Fallback name for a conflicting field the engine did not name. The catalog's conflict strings always carry the field's own label; there is no word for the anonymous case. Lowercase because the eyebrow uppercases in CSS."
+  },
+  "memory.detail.wholeMemory": {
+    "text": "whole memory",
+    "note": "Toggle that re-renders the preview with every section of the target present and the change marked in place. memoryvault.thisMemory names the memory; nothing upstream offers a scope toggle over a preview, because upstream previews one section."
+  },
+  "memory.detail.appliesWithBatch": {
+    "text": "Applies with the batch",
+    "note": "Note beside save/discard while editing, saying when the edit reaches the engine. Upstream an edited mutation is saved by the same press that accepts it, so there is no interval to explain."
+  },
+  "memory.detail.editStaged": {
+    "text": "Edit staged — applies with the batch",
+    "note": "Toast confirming a staged edit. \"Staged\" is the console's word for a change held in the local ledger; the catalog's save confirmations (memorySaved) all mean the engine has it."
+  },
+  "memory.detail.pendingInBatch": {
+    "text": "pending in this batch",
+    "note": "Chip marking a link target that does not exist yet but is created by another claim in the same apply. The catalog resolves link targets against saved memories only, so a target that exists only inside a batch is unnameable there."
+  },
+  "memory.detail.earlierLines": {
+    "one": "{{count}} earlier line · {{chars}} ch",
+    "other": "{{count}} earlier lines · {{chars}} ch",
+    "note": "Fold holding the stored lines above an append's context window. The catalog folds hidden CONFLICTS (moreConflicts) and nothing else; it has no line-level view of a section."
+  },
+  "memory.detail.moreLines": {
+    "one": "{{count}} more line · {{chars}} ch",
+    "other": "{{count}} more lines · {{chars}} ch",
+    "note": "Fold holding the rest of an inlined memory shown as context. Same reason as memory.detail.earlierLines: the product has no line-level rendering of stored text."
+  },
+  "memory.detail.unchangedLines": {
+    "one": "{{count}} unchanged line",
+    "other": "{{count}} unchanged lines",
+    "note": "Fold collapsing an unchanged run inside a diff. memoryvault.unchanged is a transfer-preview row status for a whole record; this counts lines inside one section's diff, which upstream never renders."
+  },
+  "memory.detail.showRest": {
+    "text": "Show the rest · {{shown}} of {{total}} ch",
+    "note": "Fold holding the tail of a new memory's section. The catalog's reviewqueue.showAll is the bare verb over a list; this names how much text is behind the fold, which is the number that decides whether to open it."
+  },
+  "memory.detail.keywordCount": {
+    "text": "{{count}} of {{cap}} keywords",
+    "note": "How full the keyword list is after this claim, against the product's own 30-keyword cap. The catalog states the cap only when refusing a write (manualKeywordLimit)."
+  },
+  "memory.detail.capAfterBatch": {
+    "text": "{{used}}k / {{cap}}k after batch",
+    "note": "Section pressure in the zone foot, rounded to thousands because it sits beside a character delta. \"After batch\" is the console's projection over everything kept; the product has no such projection."
+  },
+  "memory.detail.belowThreshold": {
+    "text": "— below the {{pct}}% confidence threshold",
+    "note": "The clause appended to the extraction-confidence line when it fell short. Read on its own it is a fragment; it is registered as one because the sentence before it is a catalog mirror carrying the number."
+  },
+  "memory.headline.create": {
+    "text": "Creates a new {{type}} memory — {{ref}}",
+    "note": "Claim headline for create_note. The catalog's reviewqueue.createMemory is a button; a headline states what the claim does to which memory, and the word order around the type and the reference is locked to English, so it is one string with slots."
+  },
+  "memory.headline.append": {
+    "text": "Adds to {{section}} of {{ref}}",
+    "note": "Claim headline for append_section, shaped after the catalog's reviewqueue.addToSection but carrying the section and the target, which the button label cannot. One string with slots, so the word order stays translatable."
+  },
+  "memory.headline.update": {
+    "text": "Rewrites {{section}} of {{ref}}",
+    "note": "Claim headline for update_section. \"Rewrites\" rather than the catalog's \"Update section\", because this is the one destructive op and the headline is where a reviewer decides whether to read the diff below it."
+  },
+  "memory.headline.link": {
+    "text": "Links {{ref}} to {{target}}",
+    "note": "Claim headline for add_link, with both ends of the link as slots. reviewqueue.addLink is the bare button; a link headline is meaningless without naming what it joins."
+  },
+  "memory.headline.keywords": {
+    "text": "Replaces the keywords of {{ref}}",
+    "note": "Claim headline for set_keywords, in the catalog's own verb (replaceKeywords) with the target named. \"Replaces\" is load-bearing: the op discards the existing list rather than adding to it."
+  },
+  "memory.headline.status": {
+    "text": "Changes the status of {{ref}}",
+    "note": "Claim headline for set_status, from the catalog's reviewqueue.changeStatus with the target named."
+  },
+  "memory.headline.subjects": {
+    "text": "Changes the subjects of {{ref}}",
+    "note": "Claim headline for set_subjects, from the catalog's reviewqueue.updateSubjects with the target named. Kept parallel with memory.headline.status so the seven headlines read as one set."
+  },
+  "memory.zoneEditing": {
+    "text": "editing proposed content",
+    "note": "Zone eyebrow while the preview is a textarea, naming what is being edited so it is clear the stored text is not. The catalog's reviewEdit is the verb on a button; there is no upstream edit mode to label. Lowercase because eyebrows uppercase in CSS."
+  },
+  "memory.vault.id": {
+    "text": "id",
+    "note": "Key in the editor's key/value header. The catalog never exposes a note id as a labelled field — upstream ids live in diagnostics — so the one word this column needs has no source. Lowercase to match the column, whose other keys are catalog words rendered lowercase."
+  },
+  "memory.vault.links": {
+    "text": "links",
+    "note": "Key in the editor's key/value header, over the memory's outgoing links. memoryvault.linkedMemories names a whole panel and memoryvault.link is the singular action; neither is the plural noun this column needs. Lowercase to match the column."
+  },
+  "memory.vault.noneOpen": {
+    "text": "No memory open",
+    "note": "Empty state of the desktop editor pane. memoryvault.openAMemoryForDetailsOrAddOne is the closest and offers a create the console's vault does not have."
+  },
+  "memory.vault.selectToEdit": {
+    "text": "Select a memory to edit it.",
+    "note": "Body of memory.vault.noneOpen, in the catalog's own \"Select a {noun} to {verb}\" shape (selectALorebookToInspectItsEntries). The noun and the verb are both different, and the console's vault edits rather than inspects."
+  },
+  "memory.vault.dedupeLines": {
+    "text": "Dedupe lines",
+    "note": "Drops near-duplicate lines inside one section's text. The catalog dedupes CANDIDATES during extraction (extractiondetails.deduplications) and never offers it as an edit over stored text."
+  },
+  "memory.vault.noDupeLines": {
+    "text": "No near-duplicate lines found",
+    "note": "Result of memory.vault.dedupeLines when nothing matched. The catalog reports deduplication only as a count inside an extraction accounting line, so it has no null result to borrow."
+  },
+  "memory.vault.dedupeResult": {
+    "one": "Dropped {{count}} near-duplicate line · {{chars}} ch freed — save to keep it",
+    "other": "Dropped {{count}} near-duplicate lines · {{chars}} ch freed — save to keep it",
+    "note": "Result of memory.vault.dedupeLines, stating what it removed, what that bought, and that the change is still a draft. The last clause is the important one and has no upstream equivalent, because upstream nothing edits stored text in place."
+  },
+  "memory.vault.archived": {
+    "text": "Archived {{title}}",
+    "note": "Toast confirming an archive, naming the memory because the row it came from may have left the view. The catalog's archiveSuccess pair counts memories (\"{{count}} memories archived.\") for a multi-select the console does not have."
+  },
+  "memory.vault.deleted": {
+    "text": "Deleted {{title}}",
+    "note": "Toast confirming a permanent delete, naming the memory for the same reason as memory.vault.archived. sourceoperation.deleted is a bare row status inside an operation report."
+  },
+  "memory.vault.deleteConfirm": {
+    "text": "Permanently delete {{title}}? This cannot be undone.",
+    "note": "Confirm before a permanent delete of a memory. Both of the catalog's delete confirms are source-specific — they ask what to do with the extracted memories — and the generic one (permanentlyDeleteSelectedMemories) speaks about a multi-select. Registered whole because the code used to build it by splitting a catalog sentence on its question mark."
+  },
+  "memory.sources.search": {
+    "text": "Search sources",
+    "note": "Accessible name of the sources search field, in the catalog's own \"Search {nouns}\" family (searchMemories, searchChats, searchStatuses). The family has no sources member, which is the same gap memory.noMatchingSources fills."
+  },
+  "memory.sources.confirmImport": {
+    "text": "Confirm import",
+    "note": "Accessible name of the above-threshold confirm dialog. The catalog confirms deletes and archives but never an import, because upstream an import spends nothing until extraction is chosen separately."
+  },
+  "memory.sources.oneModelCall": {
+    "text": "one model call each",
+    "note": "States the price of the batch in the confirm, beside the catalog's own savingAndExtracting. The catalog never quantifies extraction cost; this console asks before spending it, so it has to."
+  },
+  "memory.sources.perSourceDetail": {
+    "text": "Per-source detail",
+    "note": "Fold holding the import report's per-source table. The catalog's importResultSummary is one flat sentence of totals with no breakdown to fold."
+  },
+  "memory.sources.reportSummary": {
+    "text": "{{ok}} of {{total}} sources · {{kept}} proposed memories ready to review.",
+    "note": "The import report's headline count. The catalog reports per source (sourceSavedProposalsReady) and, for a batch, only a machine-shaped totals line (importResultSummary); neither is a sentence for a person reading one card."
+  },
+  "memory.sources.awaitReview": {
+    "one": "{{count}} proposed memory awaits review",
+    "other": "{{count}} proposed memories await review",
+    "note": "How many proposals an imported source is still holding. The catalog has only the negative (noProposedMemoriesAwaitReviewForSource); the positive form, and its count, are ours."
+  },
+  "memory.sources.moreDerived": {
+    "text": "{{count}} more",
+    "note": "Fold over the memories a source produced, past the first three. The catalog's \"{{count}} more\" phrasings are all welded into sentences about hidden conflicts."
+  },
+  "memory.sources.openInLorebooks": {
+    "text": "Open {{title}} in Lorebooks",
+    "note": "Accessible name of the jump from a lorebook source to the console's lorebook tool, in the catalog's own memoryvault.openInSources shape. The destination is a console tool the product does not have."
+  },
+  "memory.sources.stopNote": {
+    "text": "Stop keeps the sources that have already finished and leaves the rest unprocessed.",
+    "note": "Says what memory.stop does before it is pressed. The catalog's importCancelledSelectionRetained explains a transport cancellation after the fact and promises the SELECTION is retained, which is a different promise."
+  },
+  "memory.sources.stopped": {
+    "text": "Stopped · {{done}} of {{total}} imported",
+    "note": "The job dock after a stop, reporting what did land. The catalog's statusCancelled is a bare row status; there is no upstream partial-batch report because there is no upstream per-source loop."
+  },
+  "memory.sources.searchEmpty": {
+    "text": "The search {{query}} matches nothing. Clearing it would show {{count}} sources.",
+    "note": "Empty state naming the search that emptied the list and what clearing it would restore. The catalog's empty states name the filter set (filteredEmptyDescription) but never say what removing it would show."
+  },
+  "memory.sources.searchEmptyScoped": {
+    "text": "The search {{query}} matches nothing in {{scope}}. Clearing it would show {{count}} sources.",
+    "note": "memory.sources.searchEmpty when an import scope is also narrowing the list, so the sentence names both constraints rather than blaming the search alone."
+  },
+  "memory.sources.emptyScopedBody": {
+    "text": "Widening the import scope will show sources from other chats.",
+    "note": "Body under the catalog's noLorebooksAreAvailableInThisScope, naming the way out. The catalog states the condition and stops; it never tells the reader that the scope is the thing to change."
+  },
+  "memory.sources.emptyPendingBody": {
+    "text": "New chat summaries will appear here as they are written.",
+    "note": "Body of the cleared-backlog empty state, saying why the screen will fill again. The catalog's empty states describe the present only."
+  },
+  "memory.sources.emptyImportedBody": {
+    "text": "Import a source to see it here.",
+    "note": "Body under the catalog's noSourcesHaveBeenImportedInThisScope, naming the action that fills the view. Same gap as memory.sources.emptyPendingBody."
+  },
+  "memory.sources.extractionTextHelp": {
+    "text": "This is the text the extractor will read. Editing it does not change the chat's own summary.",
+    "note": "Help under the editable extraction text. The override is new to this console — upstream extraction always reads the source note verbatim — so nothing here can trace, and the second sentence is the one that stops a reviewer worrying they are editing the chat."
+  },
+  "memory.sources.overrideNote": {
+    "text": "used the next time this source is extracted",
+    "note": "Says when a saved extraction-text override takes effect, beside the save button. The catalog's sourceRefreshedRerunExtraction covers refreshing the imported text, which is the opposite direction."
+  },
+  "memory.confirm.scope": {
+    "text": "scope",
+    "note": "Key in the import confirm's key/value body. The catalog's sourcesworkspace.importScope is the picker's own label and is too long for an 84px key column beside extraction and after. Lowercase because the key column uppercases in CSS."
+  },
+  "memory.confirm.after": {
+    "text": "after",
+    "note": "Key in the import confirm's key/value body, over the sentence describing what the import leaves behind. The catalog has no word for the aftermath of an action. Lowercase because the key column uppercases in CSS."
+  },
+  "memory.report.kept": {
+    "text": "kept",
+    "note": "Column heading in the import report's per-source table. extractiondetails.kept is the same word welded to a comma (\"kept,\") for a run-on accounting line and cannot be used as a heading. Lowercase because the table head uppercases in CSS."
+  },
+  "memory.restates": {
+    "text": "Restates",
+    "note": "The claim repeats a line already stored — used as the queue's quick chip and as the eyebrow over the stored line in the detail. memory.flag.restatesVault is the flag's fuller noun phrase; this is the bare verb, which the catalog has nowhere because upstream filters near-duplicates out before review."
+  },
+  "memory.sources.thisChat": {
+    "use": "longtermmemorydetail.thisChat",
+    "note": "Stands in for the scoped chat's name in the search-empty sentence when the chat has no name to show. The catalog has this verbatim; an earlier pass declined currentChat (\"Current chat\", a picker option that reads as a proper noun mid-sentence) but missed that thisChat is byte-identical to what we wanted."
   }
 }

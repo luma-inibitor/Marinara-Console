@@ -13,6 +13,7 @@ import {
   statusOf, entryTokens,
 } from "./data";
 import { Chip } from "../../ui";
+import { joinList, t } from "../../copy";
 import { Fullscreen, ICON_SIZE, Remove } from "../../ui/icons";
 
 export interface FullscreenCtx { id: string; field: "content" | "description"; }
@@ -59,7 +60,7 @@ export function EntryDrawer(props: {
     return (
       <div className={`sub ${isOpen ? "is-open" : ""} ${flag ? "has-error" : ""}`}>
         <button className="sub-head" aria-expanded={isOpen} onClick={() => toggle(id)}>
-          <span className="t-label t-label-s">{label}{flag && <span className="err-dot" aria-label="has an error">●</span>}</span>
+          <span className="t-label t-label-s">{label}{flag && <span className="err-dot" aria-label={t("lorebooks.entry.hasError")}>●</span>}</span>
           <span className="sub-summary t-data">{summary}</span>
           <span className="caret" aria-hidden="true">{isOpen ? "▴" : "▾"}</span>
         </button>
@@ -73,16 +74,16 @@ export function EntryDrawer(props: {
 
   return (
     <div className="drawer" data-s={status}>
-      {sub("keys", "Primary Keys",
+      {sub("keys", t("lorebooks.entry.subKeys"),
         e.keys.length
           ? <><b>{e.keys.length}</b> · {e.keys.slice(0, 3).join(", ")}{e.keys.length > 3 ? "…" : ""}</>
-          : <span className="is-warn">none</span>,
+          : <span className="is-warn">{t("lorebooks.entry.keysNone")}</span>,
         () => (
           <div className="kchips">
             {e.keys.map((k, i) => (
               <span key={`${k}:${i}`} className={`kchip ${props.evHits.includes(k) ? "is-hit" : ""}`}>
                 <span className="kt">{k}</span>
-                <button className="x" aria-label={`Remove ${k}`}
+                <button className="x" aria-label={t("lorebooks.entry.removeKey", { value1: k })}
                   onClick={() => set("keys", e.keys.filter((_, j) => j !== i))}>
                   <Remove size={ICON_SIZE.xs} stroke={2} aria-hidden />
                 </button>
@@ -92,30 +93,30 @@ export function EntryDrawer(props: {
           </div>
         ), !!err("keys"))}
 
-      {sub("description", "Description",
-        <><b>{(e.description ?? "").length}</b> ch · <b>{tokensOf(e.description)}</b> tokens</>,
+      {sub("description", t("lorebooks.entry.subDescription"),
+        <><b>{(e.description ?? "").length}</b> {t("ui.editor.charUnit")} · <b>{tokensOf(e.description)}</b> {t("lorebooks.unitTokens")}</>,
         () => (
           <>
             <div className="fieldbar">
               <Chip onClick={() => props.onExpand("description")}>
-                <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />Edit in full screen
+                <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />{t("lorebooks.record.editFullscreen")}
               </Chip>
             </div>
             <textarea className={`ta ${isDirty("description") ? "is-dirty" : ""}`} rows={4} value={e.description}
-              placeholder="Brief summary for routing."
+              placeholder={t("lorebooks.entry.descriptionPlaceholder")}
               aria-invalid={!!err("description")}
               onInput={(ev) => set("description", ev.currentTarget.value)} />
             {fieldErr("description")}
           </>
         ), !!err("description"))}
 
-      {sub("content", "Content",
-        <><b>{(e.content ?? "").length}</b> ch · <b>{entryTokens(e)}</b> tokens</>,
+      {sub("content", t("lorebooks.entry.subContent"),
+        <><b>{(e.content ?? "").length}</b> {t("ui.editor.charUnit")} · <b>{entryTokens(e)}</b> {t("lorebooks.unitTokens")}</>,
         () => (
           <>
             <div className="fieldbar">
               <Chip onClick={() => props.onExpand("content")}>
-                <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />Edit in full screen
+                <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />{t("lorebooks.record.editFullscreen")}
               </Chip>
             </div>
             <textarea className={`ta is-mono ${isDirty("content") ? "is-dirty" : ""}`} rows={7} value={e.content}
@@ -125,8 +126,8 @@ export function EntryDrawer(props: {
           </>
         ), !!err("content"))}
 
-      {sub("trigger", "Trigger & Position",
-        <><span className="st">{STATUS_LABEL[status]}</span> · {POS_COMPACT[e.position] ?? ""} · Order <b>{e.order}</b></>,
+      {sub("trigger", t("lorebooks.entry.subTrigger"),
+        <><span className="st">{STATUS_LABEL[status]}</span> · {POS_COMPACT[e.position] ?? ""} · {t("lorebooks.field.order")} <b>{e.order}</b></>,
         () => (
           <>
             <div className="seg4">
@@ -149,19 +150,21 @@ export function EntryDrawer(props: {
               ))}
             </div>
             <div className="movebar">
-              <button aria-label="Lower order" onClick={() => set("order", Math.max(0, e.order - 10))}>−</button>
+              <button aria-label={t("lorebooks.entry.lowerOrder")} onClick={() => set("order", Math.max(0, e.order - 10))}>−</button>
               <span className="slot">
-                <input className="ordin t-num" type="number" value={e.order} aria-label="Order"
+                <input className="ordin t-num" type="number" value={e.order} aria-label={t("lorebooks.field.order")}
                   onInput={(ev) => set("order", Number(ev.currentTarget.value))} />
                 <span className="c">{POS_FULL[e.position] ?? ""}{e.position === 2 ? ` ${e.depth}` : ""}{e.position === 7 ? ` ${e.outletName || "—"}` : ""}</span>
               </span>
-              <button aria-label="Raise order" onClick={() => set("order", e.order + 10)}>＋</button>
+              <button aria-label={t("lorebooks.entry.raiseOrder")} onClick={() => set("order", e.order + 10)}>＋</button>
             </div>
           </>
         ))}
 
-      {sub("advanced", "Advanced",
-        advChanged.length ? <><b>{advChanged.length}</b> changed</> : "all default",
+      {sub("advanced", t("lorebooks.entry.subAdvanced"),
+        advChanged.length
+          ? <><b>{advChanged.length}</b> {t("lorebooks.entry.advChanged")}</>
+          : t("lorebooks.entry.advAllDefault"),
         () => (
           <>
             {ADVANCED_FIELDS.map(([f, d]) => {
@@ -173,16 +176,24 @@ export function EntryDrawer(props: {
                 </div>
               );
             })}
-            <div className="advrow"><span className="an t-data">vector</span><span className="av t-data">{e.hasEmbedding ? "yes" : "none"}</span></div>
-            <div className="advrow"><span className="an t-data">updated</span><span className="av t-data">{String(e.updatedAt ?? "").slice(0, 16).replace("T", " ")} UTC</span></div>
-            <button className="dangerbtn" onClick={props.onDelete}>Delete entry</button>
+            <div className="advrow">
+              <span className="an t-data">{t("lorebooks.entry.fieldVector")}</span>
+              <span className="av t-data">{t(e.hasEmbedding ? "lorebooks.valueYes" : "lorebooks.valueNo")}</span>
+            </div>
+            <div className="advrow">
+              <span className="an t-data">{t("lorebooks.entry.fieldUpdated")}</span>
+              <span className="av t-data">
+                {t("lorebooks.entry.updatedAtUtc", { timestamp: String(e.updatedAt ?? "").slice(0, 16).replace("T", " ") })}
+              </span>
+            </div>
+            <button className="dangerbtn" onClick={props.onDelete}>{t("lorebooks.entry.delete")}</button>
           </>
         ))}
 
-      {sub("name", "Name", <span className="t-data">{e.name || "Untitled entry"}</span>,
+      {sub("name", t("lorebooks.entry.nameLabel"), <span className="t-data">{e.name || t("lorebooks.entry.untitled")}</span>,
         () => (
           <>
-            <input className={`tin ${isDirty("name") ? "is-dirty" : ""}`} value={e.name} placeholder="Untitled entry"
+            <input className={`tin ${isDirty("name") ? "is-dirty" : ""}`} value={e.name} placeholder={t("lorebooks.entry.untitled")}
               aria-invalid={!!err("name")}
               onInput={(ev) => set("name", ev.currentTarget.value)} />
             {fieldErr("name")}
@@ -200,15 +211,20 @@ function SaveBar(props: { draft: Draft<Entry>; onSave: () => Promise<boolean> })
   if (d.conflict) {
     return (
       <div className="savebar has-conflict" role="alertdialog">
-        <p className="t-label">Changed by someone else</p>
+        <p className="t-label">{t("lorebooks.record.conflictTitle")}</p>
         <p className="prose-note">
-          This entry was updated elsewhere while you were editing
-          {d.conflict.fields.length > 0 && <> — the same {d.conflict.fields.length === 1 ? "field" : "fields"} you changed ({d.conflict.fields.join(", ")})</>}
-          . Saving now would overwrite that.
+          {t("lorebooks.entry.conflictBody", {
+            detail: d.conflict.fields.length > 0
+              ? t("lorebooks.record.conflictFields", {
+                  count: d.conflict.fields.length,
+                  list: joinList(d.conflict.fields),
+                })
+              : "",
+          })}
         </p>
         <div className="savebar-acts">
-          <button className="dbtn" onClick={d.takeTheirs}>Discard mine, load theirs</button>
-          <button className="dbtn is-primary" onClick={d.keepMine}>Re-apply mine over theirs</button>
+          <button className="dbtn" onClick={d.takeTheirs}>{t("lorebooks.record.takeTheirs")}</button>
+          <button className="dbtn is-primary" onClick={d.keepMine}>{t("lorebooks.record.keepMine")}</button>
         </div>
       </div>
     );
@@ -216,15 +232,15 @@ function SaveBar(props: { draft: Draft<Entry>; onSave: () => Promise<boolean> })
   return (
     <div className={`savebar ${d.dirty ? "is-dirty" : ""}`}>
       <span className="savebar-state t-data">
-        {d.saving ? "Saving…"
+        {d.saving ? t("lorebooks.record.saving")
           : d.error ? <span className="is-err">{d.error}</span>
-          : d.dirty ? <><b>{d.dirtyFields.length}</b> unsaved {d.dirtyFields.length === 1 ? "change" : "changes"}</>
-          : "No changes"}
+          : d.dirty ? t("lorebooks.record.unsavedChanges", { count: d.dirtyFields.length })
+          : t("lorebooks.record.noChanges")}
       </span>
       <div className="savebar-acts">
-        <button className="dbtn" disabled={!d.dirty || d.saving} onClick={d.cancel}>Cancel</button>
+        <button className="dbtn" disabled={!d.dirty || d.saving} onClick={d.cancel}>{t("lorebooks.record.cancel")}</button>
         <button className="dbtn is-primary" disabled={!d.dirty || d.saving} onClick={() => void props.onSave()}>
-          {d.saving ? "Saving…" : "Save changes"}
+          {d.saving ? t("lorebooks.record.saving") : t("lorebooks.record.saveChanges")}
         </button>
       </div>
     </div>
@@ -243,8 +259,8 @@ function KeyAdd(props: { onAdd: (vals: string[]) => void }) {
     <input
       className="kadd-in t-data"
       value={v}
-      placeholder="+ key"
-      aria-label="Add key"
+      placeholder={t("lorebooks.entry.addKeyPlaceholder")}
+      aria-label={t("lorebooks.entry.addKeyLabel")}
       onInput={(ev) => setV(ev.currentTarget.value)}
       onKeyDown={(ev) => {
         if (ev.key === "Enter") { ev.preventDefault(); commit(); }

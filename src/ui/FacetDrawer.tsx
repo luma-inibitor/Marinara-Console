@@ -1,5 +1,6 @@
 import { Chip } from "./Chip";
 import { Sheet, SheetHead } from "./Sheet";
+import { t } from "../copy";
 import "./FacetDrawer.css";
 
 export interface FacetValue {
@@ -39,9 +40,9 @@ export function FacetDrawer(props: {
     .filter((g) => g.facets.length > 0);
 
   return (
-    <Sheet label="Facets" onClose={props.onClose}>
-      <SheetHead title={<span className="t-label t-label-s">Facets</span>}>
-        <Chip onClick={props.onClear}>Clear</Chip>
+    <Sheet label={t("ui.facets.title")} onClose={props.onClose}>
+      <SheetHead title={<span className="t-label t-label-s">{t("ui.facets.title")}</span>}>
+        <Chip onClick={props.onClear}>{t("ui.facets.clear")}</Chip>
       </SheetHead>
       {live.length === 0 && <p className="t-prose dim">{props.emptyText}</p>}
       {live.map((g) => (

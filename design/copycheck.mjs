@@ -56,6 +56,17 @@
 // "adds to {{section}} of {{ref}}". Without that, a parameterised string could
 // never match and splitting a sentence into fragments would read as a fix.
 //
+// A brand name is not copy: an element marked data-brand is skipped along with
+// its whole subtree. See the note beside `brandSkip` for why it is an attribute
+// and not a word list.
+//
+// ── What the console's own copy is ────────────────────────────────────────
+// src/copy/*.json, one file per area. The allowlist is EXACTLY the rendered
+// text fields — `text`, `one`, `other`. Never keys, never `use` targets, never
+// `note` prose, so nothing can be laundered into the allowlist by writing it in
+// a comment. Entries are checked structurally by checkCatalog(); every one of
+// those checks exits 2, because a bad allowlist makes a green run meaningless.
+//
 // A file whose first three lines contain the marker @copy-strict has EVERY
 // string literal with a letter and a space read as copy. That is how the copy
 // TABLES are covered (glossary.tsx, flags.ts, store.ts message maps), which no
@@ -162,7 +173,7 @@ function loadVendored() {
   const out = [];
   jsonStrings(data, out);
   if (!out.length) integrity.push(`vendored catalog ${relative(ROOT, path)} yielded no strings`);
-  return { path: relative(ROOT, path), strings: out };
+  return { path: relative(ROOT, path), strings: out, data };
 }
 
 /**
@@ -183,12 +194,23 @@ function loadConsole() {
     : [];
   if (files.length) {
     const out = [];
+    const entries = [];
     for (const f of files) {
       const data = readJson(join(dir, f));
-      if (data) jsonStrings(data, out, TEXT_FIELDS);
+      if (!data) continue;
+      jsonStrings(data, out, TEXT_FIELDS);
+      for (const [key, entry] of Object.entries(data)) {
+        if (key.startsWith("_")) continue; // file metadata, never copy
+        entries.push({ file: `src/copy/${f}`, key, entry });
+      }
     }
     if (!out.length) integrity.push("src/copy/*.json exists but yielded no text/one/other entries");
-    return { world: "catalog", source: `src/copy/{${files.map((f) => f.replace(/\.json$/, "")).join(",")}}.json`, strings: out };
+    return {
+      world: "catalog",
+      source: `src/copy/{${files.map((f) => f.replace(/\.json$/, "")).join(",")}}.json`,
+      strings: out,
+      entries,
+    };
   }
 
   const path = join(ROOT, "src", "tools", "memory", "strings.ts");
@@ -215,6 +237,87 @@ function loadConsole() {
   if (!found) integrity.push("src/tools/memory/strings.ts has no `OURS` object");
   if (!out.length) integrity.push("`OURS` in src/tools/memory/strings.ts yielded no strings");
   return { world: "pre-catalog", source: "src/tools/memory/strings.ts", strings: out };
+}
+
+// ── catalog integrity ─────────────────────────────────────────────────────
+// Structural checks on src/copy/*.json itself. All of these are FATAL (exit 2)
+// rather than copy failures, because each one means the allowlist is not what
+// it claims to be — and an allowlist you cannot trust makes every green run a
+// lie. The last check is the one that pays for the rest: a coinage whose text
+// already exists upstream. The old `OURS` object could not express it at all,
+// because it had no way to say "this is a pointer" versus "this is new".
+const PREFIX = "ui.longTermMemory.";
+const MIN_NOTE = 40;
+
+function checkCatalog(entries, vendoredData) {
+  if (!entries || !vendoredData) return;
+  const product = vendoredData;
+  const has = (k) => typeof product[PREFIX + k] === "string";
+
+  // normalised product text -> first key that carries it
+  const byText = new Map();
+  for (const [k, v] of Object.entries(product)) {
+    if (typeof v !== "string") continue;
+    const n = norm(v);
+    if (n && !byText.has(n)) byText.set(n, k.replace(PREFIX, ""));
+  }
+
+  const seenText = new Map();
+  const fail = (e, msg) => integrity.push(`${e.file}: "${e.key}" ${msg}`);
+
+  for (const e of entries) {
+    const v = e.entry;
+    if (!v || typeof v !== "object" || Array.isArray(v)) {
+      fail(e, "is not an entry object ({use} or {text,note} or {one,other,note})");
+      continue;
+    }
+    const texts = ["text", "one", "other"].filter((f) => typeof v[f] === "string").map((f) => v[f]);
+    const isMirror = typeof v.use === "string";
+
+    if (!texts.length && !isMirror) {
+      fail(e, "has neither rendered text (text/one/other) nor a `use` pointer");
+      continue;
+    }
+    if (texts.length && isMirror) {
+      fail(e, "has BOTH `use` and rendered text — a pointer and a copy of what it points at drift apart silently");
+      continue;
+    }
+
+    // a console key must never also be reachable as a product key
+    if (has(e.key)) fail(e, `shadows product key "${PREFIX}${e.key}"`);
+
+    if (isMirror) {
+      if (!has(v.use)) fail(e, `mirrors "${v.use}", which is not in the vendored catalog`);
+      if (v.despite != null) fail(e, "is a mirror and cannot carry `despite`; that field is only for coinages that decline a near-miss");
+      continue;
+    }
+
+    // coinages: the note is the whole argument for the coinage existing
+    if (typeof v.note !== "string" || v.note.trim().length < MIN_NOTE) {
+      fail(e, `is a coinage with ${v.note == null ? "no `note`" : `a ${v.note.trim().length}-character note`} — say why the product has no word for this (min ${MIN_NOTE} chars)`);
+    }
+
+    for (const text of texts) {
+      const n = norm(text);
+      if (!n) continue;
+
+      const dup = seenText.get(n);
+      if (dup) fail(e, `renders the same text as "${dup}" — one string, one key`);
+      else seenText.set(n, e.key);
+
+      const upstream = byText.get(n);
+      if (upstream && !v.despite) {
+        fail(e, `coins ${JSON.stringify(text)}, but the vendored catalog already has it as "${upstream}" — mirror it with {"use": "${upstream}"}, or if it genuinely cannot be used, declare {"despite": "${upstream}"} and say why in the note`);
+      }
+    }
+
+    if (v.despite != null) {
+      if (!has(v.despite)) fail(e, `declares despite:"${v.despite}", which is not in the vendored catalog`);
+      else if (!texts.some((tx) => norm(tx) === norm(product[PREFIX + v.despite]))) {
+        fail(e, `declares despite:"${v.despite}", but that string does not collide with this text — a stale exemption is an exemption for nothing`);
+      }
+    }
+  }
 }
 
 /** Values only — never property keys — descending through nested objects,
@@ -340,6 +443,22 @@ function extractFile(absPath) {
     return { file: rel, parseError: e.message, hits: [] };
   }
 
+  // A brand name is not copy. "Marinara" and "Console" have no catalog entry
+  // and never will, because a product does not translate or re-word its own
+  // name — routing them would put a permanent do-not-touch string in the
+  // allowlist, where the next reader would read it as an ordinary coinage.
+  // The exemption is explicit and greppable rather than a hardcoded word list:
+  // an element marked data-brand is skipped, subtree and all. It is a separate
+  // axis from data-contrast-exempt (which is about ink, not vocabulary), so it
+  // is a separate attribute.
+  const brandSkip = new Set();
+  walk(ast, (n) => {
+    if (n.type !== "JSXElement") return;
+    const marked = n.openingElement.attributes.some(
+      (a) => a.type === "JSXAttribute" && jsxName(a.name) === "data-brand");
+    if (marked) walk(n, (m) => brandSkip.add(m));
+  });
+
   const hits = [];
   const add = (text, alt) => {
     if (text == null) return;
@@ -348,6 +467,7 @@ function extractFile(absPath) {
   };
 
   walk(ast, (n) => {
+    if (brandSkip.has(n)) return;
     if (n.type === "JSXElement" || n.type === "JSXFragment") {
       // 1. the element's own reconstructed sentence
       const flat = childrenText(n.children, false);
@@ -404,6 +524,7 @@ function extractFile(absPath) {
   //    how the copy TABLES get covered; no position rule can reach them.
   if (strict) {
     walk(ast, (n) => {
+      if (brandSkip.has(n)) return;
       if (n.type !== "StringLiteral" && n.type !== "TemplateLiteral") return;
       const t = litText(n);
       if (t == null) return;
@@ -495,6 +616,7 @@ const adopt = flags.has("--adopt");
 
 const vendored = loadVendored();
 const ours = loadConsole();
+checkCatalog(ours.entries, vendored.data);
 const CAT = new Set(vendored.strings.map((s) => norm(s)));
 const OUR = new Set(ours.strings.map((s) => norm(s)));
 CAT.delete("");

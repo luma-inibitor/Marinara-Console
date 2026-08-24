@@ -1,5 +1,6 @@
 // API client: everything goes through server.mjs (/api proxy → engine, with
 // embedding strip). Matches the engine's conventions: cache no-store, JSON.
+import { t } from "../copy";
 
 /**
  * An error carrying what the engine actually said. The engine returns
@@ -35,7 +36,7 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
     });
   } catch (err) {
     // fetch rejects only on network failure — the browser never reached us.
-    const e = new ApiError("No connection to the console server", { status: 0, offline: true });
+    const e = new ApiError(t("shell.api.noConnection"), { status: 0, offline: true });
     onResult?.(e);
     throw e;
   }
@@ -43,7 +44,7 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
     restorePointWarned = true;
     // Lazy import avoids a cycle (toast lives beside the shell).
     void import("./toast").then(({ toast }) =>
-      toast("Restore point FAILED — this write proceeded without a backup. Check the server log.", { kind: "error" }));
+      toast(t("shell.api.restorePointFailed"), { kind: "error" }));
   }
   if (!res.ok) {
     let payload: { error?: string; detail?: string; details?: unknown } = {};

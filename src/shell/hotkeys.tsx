@@ -4,6 +4,7 @@ import { signal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import { navigate } from "./router";
 import { paletteOpen } from "./palette";
+import { t } from "../copy";
 
 export const cheatOpen = signal(false);
 
@@ -47,22 +48,25 @@ export function useHotkeys() {
   }, []);
 }
 
+// The left column is key notation, not copy: "⌘K", "Escape", "j / k" name
+// physical keys, which no catalog translates and no reader reads as a sentence.
+// Only the right column — what the binding does — is routed.
 const SHORTCUTS: Array<[string, string]> = [
-  ["⌘K / Ctrl-K", "Command palette — tools, books, entries, actions"],
-  ["g then l / p / m", "Go to Lorebooks / Presets / Memory"],
-  ["j / k or ↓ / ↑", "Move focus in a list"],
-  ["Enter or o", "Open the focused row"],
-  ["Escape", "Close / back"],
-  ["?", "This cheat sheet"],
+  ["⌘K / Ctrl-K", t("shell.hotkeys.palette")],
+  ["g then l / p / m", t("shell.hotkeys.go")],
+  ["j / k or ↓ / ↑", t("shell.hotkeys.move")],
+  ["Enter or o", t("shell.hotkeys.open")],
+  ["Escape", t("shell.hotkeys.close")],
+  ["?", t("shell.hotkeys.cheat")],
 ];
 
 export function CheatSheet() {
   if (!cheatOpen.value) return null;
   return (
     <div className="palette-backdrop" onClick={() => { cheatOpen.value = false; }}>
-      <div className="palette cheat" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts"
+      <div className="palette cheat" role="dialog" aria-modal="true" aria-label={t("shell.hotkeys.title")}
         onClick={(ev) => ev.stopPropagation()}>
-        <div className="cheat-head t-label">Keyboard shortcuts</div>
+        <div className="cheat-head t-label">{t("shell.hotkeys.title")}</div>
         <div className="cheat-body">
           {SHORTCUTS.map(([keys, what]) => (
             <div key={keys} className="cheat-row">

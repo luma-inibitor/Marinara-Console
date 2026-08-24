@@ -225,10 +225,18 @@ exists, use it; if it needs a new one, add it here in the same change.
 - **Mockups** — one shared kit, `design/MOCKUP-KIT.md`. Books never carry their
   own palette.
 - **Copy provenance** — every user-visible string traces to the vendored
-  catalog (`ltm-en.json`) or to a registered coinage in `OURS`, each with a
-  comment saying why the product has no word for it. `design/copycheck.mjs`
-  checks this mechanically against a rendered surface. Coining silently has
-  been the single most repeated defect in this tool.
+  catalog (`src/copy/vendor/ltm-en.json`) or to a registered entry in
+  `src/copy/<area>.json`, each carrying a `note` saying why the product has no
+  word for it. `design/copycheck.mjs` checks this mechanically against a
+  rendered surface. Coining silently has been the single most repeated defect
+  in this tool. (The old `OURS` object and `src/tools/memory/strings.ts` are
+  gone: `OURS` could not express a mirror, and its reasons were comments
+  rather than data.)
+  A string that appears mid-sentence around a component — a claim headline
+  with a memory reference inside it — stays ONE catalog string and renders
+  through `<Copy>` (`src/tools/memory/Copy.tsx`), which substitutes `{{slot}}`
+  with a node. Splitting such a sentence into JSX fragments puts English word
+  order in the markup and is not a fix.
 - **Detail pane zones (v5)** (`ClaimDetail.tsx`) — a claim's pane answers the
   reviewer's questions in reading order: headline sentence (what this does, to
   which memory) · preview (op-specific consequence: after-state for append,

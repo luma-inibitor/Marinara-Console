@@ -22,7 +22,8 @@ import {
   type ImportPreview, type ImportResult, type Note,
   importPreview, importSourceNotes, fetchNotes, fetchReview,
 } from "./data";
-import { t, OURS } from "./strings";
+import { t } from "../../copy";
+import { Copy } from "./Copy";
 import { focusSource, refreshLtmStatus } from "./MemoryTool";
 import { TypeIcon } from "./icons";
 import { pendingSources, scopeChatId, setScope } from "./store";
@@ -192,7 +193,7 @@ export function Sources() {
     <div className="audit"><div className="audit-list">
       <header className="console">
         <div className="sbar">
-          <SearchBar label="Search sources" value={q} onInput={setQ} count={shown.length} />
+          <SearchBar label={t("memory.sources.search")} value={q} onInput={setQ} count={shown.length} />
           <ModePill modes={modes} onToggle={(id) => setModes((prev) => {
             const n = new Set(prev);
             n.has(id) ? n.delete(id) : n.add(id);
@@ -200,14 +201,14 @@ export function Sources() {
           })} />
         </div>
         <div className="qrail">
-          <RailChip id="pending" label={OURS.sourcesPending} n={pending.length} />
+          <RailChip id="pending" label={t("memory.sourcesPending")} n={pending.length} />
           <RailChip id="imported" label={t("sourcesworkspace.alreadyImported")} n={imported.length} />
-          <RailChip id="all" label="All" n={all.length} />
+          <RailChip id="all" label={t("sourcesworkspace.all")} n={all.length} />
           {blockedDrafts.length > 0 && (
             <>
               <span className="qsp" />
               <a className="qchip qblock" href="#/memory/review">
-                {OURS.sourcesBlocked} <b>{blockedDrafts.length} {t("reviewqueue.draft").toLowerCase()}s</b>
+                {t("memory.sourcesBlocked")} <b>{t("memory.review.blockedDrafts", { count: blockedDrafts.length, n: blockedDrafts.length })}</b>
               </a>
             </>
           )}
@@ -258,7 +259,7 @@ export function Sources() {
                     {allPicked ? "Clear" : `Select all ${eligible.length}`}
                   </button>
                 )}
-                {!bulk && <span className="gact-note t-data dim">{OURS.sourcesReviewEach}</span>}
+                {!bulk && <span className="gact-note t-data dim">{t("memory.sourcesReviewEach")}</span>}
               </>}>
               {group.map((r) => (
                 <SourceLine key={r.sourceId} row={r} bulk={bulk}
@@ -323,7 +324,7 @@ function SourceLine({ row, bulk, selected, onToggle, onReload }: {
           </button>
         )}
         {expandable && (
-          <button className="xchev hit" aria-expanded={open} aria-label={open ? "Collapse" : "Expand"}
+          <button className="xchev hit" aria-expanded={open} aria-label={open ? t("memory.collapse") : t("memory.expand")}
             onClick={() => { openRow.value = open ? null : row.sourceId; }}>
             {open ? <ChevronDown size={13} stroke={1.75} aria-hidden />
                   : <ChevronRight size={13} stroke={1.75} aria-hidden />}
@@ -333,7 +334,7 @@ function SourceLine({ row, bulk, selected, onToggle, onReload }: {
         <span className="stitle t-prose">{row.title}</span>
         <StateMark state={row.state} />
         {row.kind === "lorebooks" && (
-          <button className="jumpb hit" aria-label={`Open ${row.title} in Lorebooks`}
+          <button className="jumpb hit" aria-label={t("memory.sources.openInLorebooks", { title: row.title })}
             onClick={() => navigate("lorebooks")}>
             <ExternalLink size={14} stroke={1.75} aria-hidden />
           </button>
@@ -365,7 +366,7 @@ function ProducedPanel({ row }: { row: SourceRow }) {
         ))}
         {row.derived.length > 3 && !showAll && (
           <button className="fold-btn t-data hit" onClick={() => setShowAll(true)}>
-            <ChevronRight size={12} stroke={1.75} aria-hidden /> {row.derived.length - 3} more
+            <ChevronRight size={12} stroke={1.75} aria-hidden /> {t("memory.sources.moreDerived", { count: row.derived.length - 3 })}
           </button>
         )}
         {row.derived.length === 0 && <p className="t-prose dim">{t("sourcesworkspace.noSourcesHaveBeenImportedInThisScope")}</p>}
@@ -376,7 +377,7 @@ function ProducedPanel({ row }: { row: SourceRow }) {
           : <AllClear className="s-ok" size={14} stroke={1.75} aria-hidden />}
         <span className="t-prose">
           {row.pending
-            ? `${row.pending} proposed memories await review`
+            ? t("memory.sources.awaitReview", { count: row.pending })
             : t("reviewqueue.noProposedMemoriesAwaitReviewForSource")}
         </span>
         <span className="gsp" />
@@ -427,10 +428,10 @@ function CuratePanel({ row, onImported }: { row: SourceRow; onImported: () => Pr
     <div className="xbody">
       <div className={`zone ${editing ? "is-editing" : ""}`}>
         <div className="z-eye t-label t-label-s">
-          <span className="z-lab">{OURS.extractionText}{editing ? " · editing" : ""}</span>
+          <span className="z-lab">{t("memory.extractionText")}{editing && <> · {t("memory.editing")}</>}</span>
           {!editing && (
             <button className="zbtn hit" onClick={() => { setDraft(stored); setEditing(true); }}>
-              <Edit size={12} stroke={1.75} aria-hidden /> {t("longtermmemorydetail.reviewEdit").toLowerCase()}
+              <Edit size={12} stroke={1.75} aria-hidden /> {t("longtermmemorydetail.reviewEdit")}
             </button>
           )}
         </div>
@@ -438,16 +439,16 @@ function CuratePanel({ row, onImported }: { row: SourceRow; onImported: () => Pr
           ? <textarea className="editarea t-prose" rows={Math.min(10, Math.max(3, Math.ceil(draft.length / 60)))}
               value={draft} onInput={(e) => setDraft(e.currentTarget.value)} />
           : <div className="t-prose xtext">{stored}</div>}
-        <div className="z-foot t-data dim">{(editing ? draft : stored).length.toLocaleString()} ch</div>
+        <div className="z-foot t-data dim">{(editing ? draft : stored).length.toLocaleString()} {t("ui.editor.charUnit")}</div>
       </div>
-      {!editing && <Edu>This is the text the extractor will read. Editing it does not change the chat's own summary.</Edu>}
+      {!editing && <Edu>{t("memory.sources.extractionTextHelp")}</Edu>}
       <div className="curbar">
         {editing ? (
           <>
-            <button className="dbtn2 save-on hit" onClick={save}>{t("memoryvault.save").toLowerCase()}</button>
-            <button className="dbtn2 hit" onClick={() => setEditing(false)}>{t("memorysettings.discardChanges").toLowerCase()}</button>
+            <button className="dbtn2 save-on hit" onClick={save}>{t("memoryvault.save")}</button>
+            <button className="dbtn2 hit" onClick={() => setEditing(false)}>{t("memorysettings.discardChanges")}</button>
             <span className="gsp" />
-            <span className="barnote t-data">used the next time this source is extracted</span>
+            <span className="barnote t-data">{t("memory.sources.overrideNote")}</span>
           </>
         ) : (
           <>
@@ -457,8 +458,8 @@ function CuratePanel({ row, onImported }: { row: SourceRow; onImported: () => Pr
               {!busy && <Spend n={1} />}
             </button>
             <span className="gsp" />
-            {edited && <span className="dirty t-data"><Edit size={12} stroke={1.75} aria-hidden />edited</span>}
-            <button className="dbtn2 hit" onClick={() => { openRow.value = null; }}>Skip</button>
+            {edited && <span className="dirty t-data"><Edit size={12} stroke={1.75} aria-hidden />{t("memoryvault.editedManually")}</span>}
+            <button className="dbtn2 hit" onClick={() => { openRow.value = null; }}>{t("longtermmemorydetail.reviewSkip")}</button>
           </>
         )}
       </div>
@@ -475,7 +476,7 @@ function JobDock({ job, onStop, onResume, rest }: {
     return (
       <div className="idock jobdock">
         <div className="jobline">
-          <span className="dcount t-data">Stopped · {job.done} of {job.total} imported</span>
+          <span className="dcount t-data">{t("memory.sources.stopped", { done: job.done, total: job.total })}</span>
           <span className="gsp" />
           {rest.length > 0 && (
             <button className="dock-primary t-label" onClick={() => onResume(rest)}>
@@ -493,12 +494,12 @@ function JobDock({ job, onStop, onResume, rest }: {
           {t("sourcesworkspace.savingAndExtracting", { count: job.total })} {job.done} / {job.total}
         </span>
         <span className="gsp" />
-        <button className="action-sec hit" onClick={onStop}>Stop</button>
+        <button className="action-sec hit" onClick={onStop}>{t("memory.stop")}</button>
       </div>
       <span className="jbar"><i style={`width:${Math.round((job.done / Math.max(1, job.total)) * 100)}%`} /></span>
       <p className="jobnote t-data dim">
         <Info size={12} stroke={1.75} aria-hidden />
-        <span>Stop keeps the sources that have already finished and leaves the rest unprocessed.</span>
+        <span>{t("memory.sources.stopNote")}</span>
       </p>
     </div>
   );
@@ -510,15 +511,15 @@ function ConfirmSheet({ n, chats, onCancel, onGo }: {
 }) {
   const scope = chats.find((c) => c.id === scopeChatId.value);
   return (
-    <Modal label="Confirm import" onClose={onCancel}>
+    <Modal label={t("memory.sources.confirmImport")} onClose={onCancel}>
       <div className="chead"><Cost size={16} stroke={1.75} aria-hidden />
         <b className="t-prose">{t("sourcesworkspace.importValue1", { value1: String(n) })}?</b></div>
       <div className="cbody">
-        <div className="crow"><span className="ck t-label t-label-s">extraction</span>
-          <span className="t-prose">{t("sourcesworkspace.savingAndExtracting", { count: n })} one model call each</span></div>
-        <div className="crow"><span className="ck t-label t-label-s">scope</span>
+        <div className="crow"><span className="ck t-label t-label-s">{t("memory.zoneExtraction")}</span>
+          <span className="t-prose">{t("sourcesworkspace.savingAndExtracting", { count: n })} {t("memory.sources.oneModelCall")}</span></div>
+        <div className="crow"><span className="ck t-label t-label-s">{t("memory.confirm.scope")}</span>
           <span className="t-prose">{scope ? (scope.name ?? scope.id) : t("sourcesworkspace.allChats")}</span></div>
-        <div className="crow"><span className="ck t-label t-label-s">after</span>
+        <div className="crow"><span className="ck t-label t-label-s">{t("memory.confirm.after")}</span>
           <span className="t-prose">{t("sourcesworkspace.importExplanation")}</span></div>
       </div>
       <div className="cfoot">
@@ -552,7 +553,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
         <div>
           <div className="restitle t-prose">{t("sourcesworkspace.sourceImportComplete")}</div>
           <div className="ressub t-prose dim">
-            {ok.length} of {rows.length} sources · {kept} proposed memories ready to review.
+            {t("memory.sources.reportSummary", { ok: ok.length, total: rows.length, kept })}
           </div>
         </div>
         <span className="gsp" />
@@ -573,12 +574,12 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
         <>
           <button className="fold-btn t-data hit" aria-expanded={openDetail} onClick={() => setOpenDetail(!openDetail)}>
             {openDetail ? <ChevronDown size={12} stroke={1.75} aria-hidden /> : <ChevronRight size={12} stroke={1.75} aria-hidden />}
-            Per-source detail
+            {t("memory.sources.perSourceDetail")}
           </button>
           {openDetail && (
             <div className="rtable">
-              <div className="rhead t-label t-label-s"><span>source</span>
-                <span className="rnum">kept</span><span className="rnum">rejected</span></div>
+              <div className="rhead t-label t-label-s"><span>{t("reviewqueue.source")}</span>
+                <span className="rnum">{t("memory.report.kept")}</span><span className="rnum">{t("activityview.rejected")}</span></div>
               {ok.map((r) => (
                 <div key={r.title} className="rrow t-prose">
                   <span className="rname"><span>{r.title}</span></span>
@@ -606,17 +607,17 @@ function SourcesEmpty({ q, rows, view, chats }: {
   q: string; rows: SourceRow[]; view: "pending" | "imported" | "all"; chats: Chat[];
 }) {
   const scoped = Boolean(scopeChatId.value);
-  const scopeName = chats.find((c) => c.id === scopeChatId.value)?.name ?? "this chat";
+  const scopeName = chats.find((c) => c.id === scopeChatId.value)?.name ?? t("memory.sources.thisChat");
 
   if (q.trim()) {
     return (
       <EmptyState
         icon={<NoMatches size={22} stroke={1.75} aria-hidden />}
-        title={OURS.noMatchingSources}
-        body={<>
-          The search <b>{q.trim()}</b> matches nothing{scoped ? <> in <b>{scopeName}</b></> : null}.
-          {" "}Clearing it would show {rows.length} sources.
-        </>}
+        title={t("memory.noMatchingSources")}
+        body={<Copy
+          k={scoped ? "memory.sources.searchEmptyScoped" : "memory.sources.searchEmpty"}
+          params={{ count: rows.length }}
+          slots={{ query: <b>{q.trim()}</b>, scope: <b>{scopeName}</b> }} />}
       />
     );
   }
@@ -625,7 +626,7 @@ function SourcesEmpty({ q, rows, view, chats }: {
       <EmptyState
         icon={<Lorebook size={22} stroke={1.75} aria-hidden />}
         title={t("sourcesworkspace.noLorebooksAreAvailableInThisScope")}
-        body="Widening the import scope will show sources from other chats."
+        body={t("memory.sources.emptyScopedBody")}
         actions={
           <button className="action-sec hit" onClick={() => setScope("")}>
             {t("sourcesworkspace.importScope")}: {t("sourcesworkspace.allChats")}
@@ -640,11 +641,11 @@ function SourcesEmpty({ q, rows, view, chats }: {
       tone="ok"
       icon={<AllClear size={22} stroke={1.75} aria-hidden />}
       title={view === "pending"
-        ? "No sources are waiting to be imported."
+        ? t("sourcesworkspace.noNewOrRetryableSourcesAreReadyToImport")
         : t("sourcesworkspace.noSourcesHaveBeenImportedInThisScope")}
       body={view === "pending"
-        ? "New chat summaries will appear here as they are written."
-        : "Import a source to see it here."}
+        ? t("memory.sources.emptyPendingBody")
+        : t("memory.sources.emptyImportedBody")}
       actions={view === "pending" && (
         <button className="dock-primary t-label" onClick={() => navigate("memory/review")}>
           {t("longtermmemorydetail.openReviewQueue")}

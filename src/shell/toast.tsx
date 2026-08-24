@@ -13,6 +13,7 @@
 import { signal } from "@preact/signals";
 import { useEffect, useState } from "preact/hooks";
 import { Close, ICON_SIZE } from "../ui/icons";
+import { t } from "../copy";
 
 export interface Toast {
   id: number;
@@ -79,24 +80,24 @@ function useCountdown(expiresAt: number): number {
   return left;
 }
 
-function ToastRow({ t }: { t: Toast }) {
-  const undoable = !!t.onExpire;
-  const left = useCountdown(t.expiresAt);
+function ToastRow({ t: item }: { t: Toast }) {
+  const undoable = !!item.onExpire;
+  const left = useCountdown(item.expiresAt);
   return (
-    <div className={`toast ${t.kind === "error" ? "is-error" : ""} ${undoable ? "is-undoable" : ""}`}>
+    <div className={`toast ${item.kind === "error" ? "is-error" : ""} ${undoable ? "is-undoable" : ""}`}>
       <span className="toast-msg">
-        {t.message}
-        {t.count > 1 && <span className="toast-count t-data">×{t.count}</span>}
+        {item.message}
+        {item.count > 1 && <span className="toast-count t-data">×{item.count}</span>}
       </span>
-      {t.actionLabel && (
-        <button className="toast-action" onClick={() => { t.onAction?.(); remove(t.id, false); }}>
-          {t.actionLabel}{undoable && left > 0 && <span className="toast-left t-data">{left}s</span>}
+      {item.actionLabel && (
+        <button className="toast-action" onClick={() => { item.onAction?.(); remove(item.id, false); }}>
+          {item.actionLabel}{undoable && left > 0 && <span className="toast-left t-data">{left}s</span>}
         </button>
       )}
       {/* No dismiss on an undoable toast: dismissing it would have to either
           commit or cancel, and a "×" reads as cancel while committing. */}
       {!undoable && (
-        <button className="toast-x" aria-label="Dismiss" onClick={() => remove(t.id, false)}>
+        <button className="toast-x" aria-label={t("shell.toast.dismiss")} onClick={() => remove(item.id, false)}>
           <Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
         </button>
       )}

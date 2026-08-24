@@ -1,6 +1,7 @@
 import { FirstRun, NoMatches, AllClear, Remove, Add, ICON_SIZE } from "./icons";
 import { Chip } from "./Chip";
 import { EmptyState } from "./EmptyState";
+import { t } from "../copy";
 
 /** A list with nothing in it, rendered by the reason it is empty.
  *
@@ -27,14 +28,14 @@ export function ListEmpty(props: {
     return (
       <EmptyState
         icon={<NoMatches size={22} stroke={1.75} aria-hidden />}
-        title={`No ${props.what} match these filters`}
-        body={props.filters?.length ? "Remove one to widen the search:" : undefined}
+        title={t("ui.list.filteredTitle", { what: props.what })}
+        body={props.filters?.length ? t("ui.list.filteredBody") : undefined}
         actions={
           <>
             {props.filters?.map((f) => (
               <Chip key={f.label} onClick={f.clear}>{f.label}<Remove size={ICON_SIZE.sm} stroke={2} aria-hidden /></Chip>
             ))}
-            {props.onClearAll && <button className="dbtn" onClick={props.onClearAll}>Clear all filters</button>}
+            {props.onClearAll && <button className="dbtn" onClick={props.onClearAll}>{t("ui.list.clearFilters")}</button>}
           </>
         }
       />
@@ -46,8 +47,8 @@ export function ListEmpty(props: {
       <EmptyState
         tone="ok"
         icon={<AllClear size={22} stroke={1.75} aria-hidden />}
-        title="Nothing left"
-        body={`Every ${props.what} has been handled.`}
+        title={t("ui.list.clearedTitle")}
+        body={t("ui.list.clearedBody", { what: props.what })}
       />
     );
   }
@@ -55,8 +56,8 @@ export function ListEmpty(props: {
   return (
     <EmptyState
       icon={<FirstRun size={22} stroke={1.75} aria-hidden />}
-      title={`No ${props.what} yet`}
-      body={`This is where ${props.what} appear once you add them.`}
+      title={t("ui.list.firstRunTitle", { what: props.what })}
+      body={t("ui.list.firstRunBody", { what: props.what })}
       actions={props.action && (
         <button className="dbtn is-primary" onClick={props.action.run}>
           {/* First-run's only action is "make the first one", so the glyph is

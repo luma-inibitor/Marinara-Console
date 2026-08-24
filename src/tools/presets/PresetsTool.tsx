@@ -16,6 +16,7 @@ import { useDraft, type Draft } from "../../shell/draft";
 import { ApiError } from "../../shell/api";
 import { tokensOf } from "../../shell/api";
 import { FullscreenText } from "../../ui/FullscreenText";
+import { t, tAny } from "../../copy";
 import {
   type PresetFull, type PromptPreset, type PromptSection, type PresetLoad,
   fetchPresets, fetchFull, patchPreset, patchSection, createSection, deleteSection,
@@ -40,8 +41,25 @@ function useIsDesktop(): boolean {
   return is;
 }
 
+// ── copy shared with the lorebook tool, deliberately NOT routed here ──
+// "Description", "Content", "Advanced", "Edit in full screen" and "all default"
+// already exist in src/copy/lorebooks.json (lorebooks.entry.*, lorebooks.record.*).
+// They are the drawer-and-editor vocabulary BOTH tools use, so re-coining them
+// under presets.* would be one string under two keys — the exact thing
+// checkCatalog rejects. They stay as literals until those entries move to
+// src/copy/ui.json, where shared UI copy belongs (DESIGN.md §8); copycheck
+// already resolves them against the lorebooks entries in the meantime.
+
 // ══ browser ══════════════════════════════════════════════════════
 type BrowserSort = "tokens" | "sections" | "name";
+
+/** Sort chips, by the copy key that labels each. Two of the three are the
+ *  product's own nouns, so the table points at keys rather than holding text. */
+const SORT_KEY: Record<BrowserSort, string> = {
+  tokens: "presets.tokens",
+  sections: "presets.sections",
+  name: "presets.name",
+};
 
 function Browser() {
   const [presets, setPresets] = useState<PromptPreset[] | null>(null);
@@ -85,24 +103,24 @@ function Browser() {
   return (
     <div className="screen is-narrow">
       <div className="screen-head">
-        <h1 className="screen-title">Presets</h1>
+        <h1 className="screen-title">{t("shell.tool.presets")}</h1>
         <span className="meta">
-          <span>{presets.length === 1 ? "1 preset" : `${presets.length} presets`}</span>
-          {grand > 0 && <span><b className="t-num">{grand.toLocaleString()}</b> tokens total</span>}
+          <span>{t("presets.count", { count: presets.length })}</span>
+          {grand > 0 && <span><b className="t-num">{grand.toLocaleString()}</b> {t("presets.tokensTotal")}</span>}
         </span>
       </div>
 
       <div className="probe">
         <div className="pwrap">
-          <input value={query} placeholder="Search presets…" aria-label="Search presets"
+          <input value={query} placeholder={t("presets.search")} aria-label={t("presets.search")}
             onInput={(e) => setQuery(e.currentTarget.value)} />
-          {query.trim() !== "" && <span className="res">{visible.length} match</span>}
+          {query.trim() !== "" && <span className="res">{t("ui.search.matches", { count: visible.length })}</span>}
         </div>
       </div>
       <div className="chiprail">
         {(["tokens", "sections", "name"] as BrowserSort[]).map((k) => (
           <Chip key={k} pressed={sort === k} onClick={() => setSort(k)}>
-            {{ tokens: "Tokens", sections: "Sections", name: "Name" }[k]}
+            {tAny(SORT_KEY[k])}
             {sort === k && <span className="ar"> ↓</span>}
           </Chip>
         ))}
@@ -117,25 +135,25 @@ function Browser() {
             <div className="preset-card-main">
               <div className="card-title">
                 {p.name}
-                {p.isDefault && <span className="tg is-default">default</span>}
-                {p.systemKey && <span className="tg">stock</span>}
+                {p.isDefault && <span className="tg is-default">{t("presets.tagDefault")}</span>}
+                {p.systemKey && <span className="tg">{t("presets.tagBuiltIn")}</span>}
                 <span className="tg">{p.wrapFormat}</span>
               </div>
               {p.description
                 ? <p className="preset-desc">{p.description}</p>
-                : <p className="preset-desc is-empty">No description</p>}
+                : <p className="preset-desc is-empty">{t("presets.noDescription")}</p>}
               <div className="meta">
-                <span><b className="t-num">{known ? known.totalSections : "—"}</b> sections</span>
+                <span><b className="t-num">{known ? known.totalSections : "—"}</b> {t("presets.sections")}</span>
                 {known && known.enabled !== known.totalSections && (
-                  <span><b className="t-num" style={{ color: "var(--text-dim)" }}>{known.totalSections - known.enabled}</b> off</span>
+                  <span><b className="t-num" style={{ color: "var(--text-dim)" }}>{known.totalSections - known.enabled}</b> {t("presets.off")}</span>
                 )}
-                {known && known.markers > 0 && <span><b className="t-num">{known.markers}</b> runtime</span>}
-                {l === "error" && <span style={{ color: "var(--danger)" }}>could not load detail</span>}
+                {known && known.markers > 0 && <span><b className="t-num">{known.markers}</b> {t("presets.runtime")}</span>}
+                {l === "error" && <span style={{ color: "var(--danger)" }}>{t("presets.loadFailed")}</span>}
               </div>
             </div>
             <div className="preset-card-gutter">
               <b className="tok t-num">{known ? known.total.toLocaleString() : "—"}</b>
-              <span className="unit t-data">tokens</span>
+              <span className="unit t-data">{t("presets.tokens")}</span>
             </div>
             {known && <div className="bar"><i style={{ width: `${(known.total / maxSeen) * 100}%` }} /></div>}
           </button>
@@ -144,7 +162,9 @@ function Browser() {
       {visible.length === 0 && (presets.length === 0
         ? <ListEmpty kind="first-run" what="presets" />
         : <ListEmpty kind="filtered" what="presets"
-            filters={query.trim() ? [{ label: `search: ${query.trim()}`, clear: () => setQuery("") }] : []}
+            filters={query.trim()
+              ? [{ label: t("memoryvault.filteredEmptySearch", { value1: query.trim() }), clear: () => setQuery("") }]
+              : []}
             onClearAll={() => setQuery("")} />)}
     </div>
   );
@@ -204,7 +224,7 @@ function Editor({ presetId }: { presetId: string }) {
     (gid: string | null) => !!gid && full?.groups.find((g) => g.id === gid)?.enabled === false, [full]);
 
   const guard = useCallback(() => {
-    if (readOnly) { toast("This built-in preset is read-only. Duplicate it to edit.", { kind: "error" }); return true; }
+    if (readOnly) { toast(t("presets.readOnlyToast"), { kind: "error" }); return true; }
     return false;
   }, [readOnly]);
 
@@ -226,7 +246,7 @@ function Editor({ presetId }: { presetId: string }) {
       const fresh = await fetchFull(presetId);
       setFull(fresh);
       const mine = fresh.sections.find((x) => x.id === editingId);
-      if (!mine) throw new Error("Section no longer exists");
+      if (!mine) throw new Error(t("presets.sectionGone"));
       return mine;
     },
   });
@@ -280,21 +300,21 @@ function Editor({ presetId }: { presetId: string }) {
       .catch((err: Error) => {
         setPill("err");
         setFull((f) => f && ({ ...f, preset: { ...f.preset, sectionOrder: before } }));
-        toast(`Reverted — could not reorder: ${err.message}`, { kind: "error" });
+        toast(t("presets.reorderFailed", { message: err.message }), { kind: "error" });
       });
   }, [full, presetId, guard]);
 
   const removeSection = useCallback((s: PromptSection) => {
     if (guard()) return;
-    if (isMarker(s)) { toast("Markers inject content at runtime and cannot be deleted.", { kind: "error" }); return; }
+    if (isMarker(s)) { toast(t("presets.markerDeleteBlocked"), { kind: "error" }); return; }
     setFull((f) => f && ({ ...f, sections: f.sections.filter((x) => x.id !== s.id) }));
     if (focusId === s.id) setFocusId(null);
-    toast(`Deleted "${s.name}".`, {
-      actionLabel: "Undo",
+    toast(t("presets.deleted", { name: s.name }), {
+      actionLabel: t("presets.undo"),
       onAction: () => setFull((f) => f && ({ ...f, sections: [...f.sections, s] })),
       onExpire: () => {
         deleteSection(presetId, s.id).catch((err: Error) => {
-          toast(`Delete failed: ${err.message}`, { kind: "error" });
+          toast(t("presets.deleteFailed", { message: err.message }), { kind: "error" });
           setFull((f) => f && ({ ...f, sections: [...f.sections, s] }));
         });
       },
@@ -306,7 +326,7 @@ function Editor({ presetId }: { presetId: string }) {
     if (guard()) return;
     try {
       const created = await createSection(presetId, {
-        presetId, identifier: `custom_${Date.now().toString(36)}`, name: "New Section", content: "",
+        presetId, identifier: `custom_${Date.now().toString(36)}`, name: t("presets.newSectionName"), content: "",
       });
       setFull((f) => f && ({
         ...f,
@@ -319,7 +339,7 @@ function Editor({ presetId }: { presetId: string }) {
         const el = document.querySelector<HTMLInputElement>(`[data-name-input="${CSS.escape(created.id)}"]`);
         el?.focus(); el?.select();
       });
-    } catch (err) { toast(`Failed to add section: ${(err as Error).message}`, { kind: "error" }); }
+    } catch (err) { toast(t("presets.addFailed", { message: (err as Error).message }), { kind: "error" }); }
   }, [presetId, guard]);
 
   const openRow = useCallback((s: PromptSection) => {
@@ -356,7 +376,7 @@ function Editor({ presetId }: { presetId: string }) {
     } else if (ev.key === "Escape") navigate("presets");
   }, [sections, focusId, move, openRow]);
 
-  if (missing) return <div className="screen"><NotFound what="Preset" id={presetId} backTo="presets" backLabel="Back to presets" /></div>;
+  if (missing) return <div className="screen"><NotFound what="Preset" id={presetId} backTo="presets" backLabel={t("presets.back")} /></div>;
   if (error) return <div className="screen"><ErrorState error={error} onRetry={reloadEditor} /></div>;
   if (!full) return <div className="screen"><Loading what="preset" onRetry={reloadEditor} /></div>;
 
@@ -376,7 +396,7 @@ function Editor({ presetId }: { presetId: string }) {
       index={sections.indexOf(s)} total={sections.length}
       desktop={desktop}
       draft={s.id === editingId ? sectionDraft : null} onBeginEdit={() => beginEditSection(s.id)}
-      onSave={async () => { const ok = await sectionDraft.save(); if (ok) toast("Section saved"); return ok; }}
+      onSave={async () => { const ok = await sectionDraft.save(); if (ok) toast(t("presets.sectionSaved")); return ok; }}
       onMove={move} onDelete={() => removeSection(s)}
       onExpand={() => setFs({ kind: "section", id: s.id })}
     />
@@ -384,23 +404,23 @@ function Editor({ presetId }: { presetId: string }) {
 
   const dockButtons = [
     <button key="dup" className="dbtn" onClick={() => { void duplicatePreset(presetId).then((p) => navigate(`presets/${p.id}`)); }}>
-      <Duplicate size={ICON_SIZE.md} stroke={1.75} aria-hidden />Duplicate
+      <Duplicate size={ICON_SIZE.md} stroke={1.75} aria-hidden />{t("presets.duplicate")}
     </button>,
     !full.preset.isDefault && (
       <button key="def" className="dbtn" onClick={() => {
         void setDefaultPreset(presetId)
           .then(() => fetchFull(presetId).then(setFull))
-          .catch((e: Error) => toast(`Could not set default: ${e.message}`, { kind: "error" }));
+          .catch((e: Error) => toast(t("presets.defaultFailed", { message: e.message }), { kind: "error" }));
       }}>
-        <SetDefault size={ICON_SIZE.md} stroke={1.75} aria-hidden />Set default
+        <SetDefault size={ICON_SIZE.md} stroke={1.75} aria-hidden />{t("presets.setDefault")}
       </button>
     ),
     readOnly
       ? <button key="copy" className="dbtn is-primary" onClick={() => { void duplicatePreset(presetId).then((p) => navigate(`presets/${p.id}`)); }}>
-          <Duplicate size={ICON_SIZE.md} stroke={1.75} aria-hidden />Editable copy
+          <Duplicate size={ICON_SIZE.md} stroke={1.75} aria-hidden />{t("presets.copyToEdit")}
         </button>
       : <button key="add" className="dbtn is-primary" onClick={addSection}>
-          <Add size={ICON_SIZE.md} stroke={1.75} aria-hidden />Add Section
+          <Add size={ICON_SIZE.md} stroke={1.75} aria-hidden />{t("presets.addSection")}
         </button>,
   ].filter(Boolean) as ComponentChildren[];
 
@@ -409,37 +429,37 @@ function Editor({ presetId }: { presetId: string }) {
       <div className="audit-list" ref={listRef} onKeyDown={onListKey}>
         <header className="console">
           <div className="hrow">
-            <IconButton label="Back to presets" onClick={() => navigate("presets")}>
+            <IconButton label={t("presets.back")} onClick={() => navigate("presets")}>
               <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
             </IconButton>
             <h1 className="console-title is-wrapping">{full.preset.name}</h1>
             <span className={`savepill is-${sectionDraft.dirty || presetDraft.dirty ? "dirty" : pill}`}>
-              {sectionDraft.dirty || presetDraft.dirty ? "Unsaved changes"
-                : pill === "dirty" ? "Saving…" : pill === "err" ? "Save failed" : "Saved"}
+              {sectionDraft.dirty || presetDraft.dirty ? t("presets.unsavedChanges")
+                : pill === "dirty" ? t("presets.saving") : pill === "err" ? t("presets.saveFailed") : t("presets.saved")}
             </span>
           </div>
           <div className="tagline">
-            {full.preset.isDefault && <span className="tg is-default">default</span>}
-            {readOnly && <span className="tg">read-only</span>}
+            {full.preset.isDefault && <span className="tg is-default">{t("presets.tagDefault")}</span>}
+            {readOnly && <span className="tg">{t("presets.readOnlyTag")}</span>}
             <span className="meta">
-              <span><b className="t-num">{conv.total.toLocaleString()}</b> conv</span>
-              <span><b className="t-num">{game.total.toLocaleString()}</b> game</span>
-              <span>{conv.enabled}/{conv.totalSections} on</span>
-              {conv.markers > 0 && <span>+{conv.markers} runtime</span>}
+              <span><b className="t-num">{conv.total.toLocaleString()}</b> {t("presets.modeConv")}</span>
+              <span><b className="t-num">{game.total.toLocaleString()}</b> {t("presets.modeGame")}</span>
+              <span>{conv.enabled}/{conv.totalSections} {t("presets.on")}</span>
+              {conv.markers > 0 && <span>+{conv.markers} {t("presets.runtime")}</span>}
             </span>
           </div>
           {budget > 0 && (
             <div className="meter">
-              <span className="t-label t-label-s">of context</span>
+              <span className="t-label t-label-s">{t("presets.ofContext")}</span>
               <span className="mbar">
                 <span className="m-k" style={{ width: `${Math.min(100, (conv.total / budget) * 100)}%` }} />
               </span>
-              <span className="mval t-data"><b>{Math.round((conv.total / budget) * 100)}%</b><span className="of"> of {budget.toLocaleString()}</span></span>
+              <span className="mval t-data"><b>{Math.round((conv.total / budget) * 100)}%</b><span className="of"> {t("presets.ofCount", { count: budget.toLocaleString() })}</span></span>
             </div>
           )}
-          <p className="costnote t-data">Template only — excludes characters, personas, lorebooks and history.</p>
+          <p className="costnote t-data">{t("presets.costNote")}</p>
 
-          <div className="segrow" role="group" aria-label="Wrap format">
+          <div className="segrow" role="group" aria-label={t("presets.wrapFormat")}>
             {(["xml", "markdown", "none"] as const).map((w) => (
               <button key={w} className="segbtn is-pos t-data" aria-pressed={full.preset.wrapFormat === w}
                 disabled={readOnly} onClick={() => { presetDraft.set("wrapFormat", w); void presetDraft.save(); }}>{w}</button>
@@ -447,10 +467,10 @@ function Editor({ presetId }: { presetId: string }) {
           </div>
           <div className="chiprail">
             <Chip onClick={() => setFs({ kind: "preset", field: "conversationPrompt" })}>
-              Conv prompt <b className="t-num">{tokensOf(expand(full.preset.conversationPrompt, full.preset))}</b>
+              {t("presets.conversationPrompt")} <b className="t-num">{tokensOf(expand(full.preset.conversationPrompt, full.preset))}</b>
             </Chip>
             <Chip onClick={() => setFs({ kind: "preset", field: "gamePrompt" })}>
-              Game prompt <b className="t-num">{tokensOf(expand(full.preset.gamePrompt, full.preset))}</b>
+              {t("presets.gamePrompt")} <b className="t-num">{tokensOf(expand(full.preset.gamePrompt, full.preset))}</b>
             </Chip>
             <Chip onClick={() => setFs({ kind: "preset", field: "description" })}>Description</Chip>
           </div>
@@ -482,10 +502,10 @@ function Editor({ presetId }: { presetId: string }) {
                       {marker && <span className="tg is-marker">{markerLabel(s)}</span>}
                       {groupName(s.groupId) && (
                         <span className={`tg ${groupOff(s.groupId) ? "is-off" : ""}`}>
-                          {groupName(s.groupId)}{groupOff(s.groupId) ? " off" : ""}
+                          {groupName(s.groupId)}{groupOff(s.groupId) ? ` ${t("presets.off")}` : ""}
                         </span>
                       )}
-                      {!on && <span className="tg is-off">disabled</span>}
+                      {!on && <span className="tg is-off">{t("presets.off")}</span>}
                       {s.injectionPosition !== "ordered" && (
                         <span className="keys t-data">{s.injectionPosition} {s.injectionDepth}</span>
                       )}
@@ -493,9 +513,9 @@ function Editor({ presetId }: { presetId: string }) {
                   </span>
                   <span className="num">
                     {marker
-                      ? <span className="tok-runtime t-data">runtime</span>
+                      ? <span className="tok-runtime t-data">{t("presets.runtime")}</span>
                       : <><b className={`tok t-num ${tok > tokenP90 && tokenP90 > 0 ? "is-hot" : ""}`}>{tok}</b>
-                         <span className="unit t-data">tokens</span></>}
+                         <span className="unit t-data">{t("presets.tokens")}</span></>}
                   </span>
                 </button>
                 {isOpen && detailFor(s)}
@@ -512,7 +532,7 @@ function Editor({ presetId }: { presetId: string }) {
       {desktop && (
         <aside className="audit-detail">
           {focused ? detailFor(focused) : (
-            <EmptyState title="No sections" body="Add a section to start building this prompt." />
+            <EmptyState title={t("presets.noSections")} body={t("presets.noSectionsBody")} />
           )}
         </aside>
       )}
@@ -521,13 +541,19 @@ function Editor({ presetId }: { presetId: string }) {
         if (fs.kind === "section") {
           const s = sections.find((x) => x.id === fs.id);
           return s ? (
-            <FullscreenText title="Edit Content" subtitle={s.name} initial={s.content}
+            <FullscreenText title={t("presets.sectionContent")} subtitle={s.name} initial={s.content}
               budget={budget || undefined}
               onDone={(v) => { beginEditSection(s.id); sectionDraft.set("content", v); setFs(null); }}
               onCancel={() => setFs(null)} />
           ) : null;
         }
-        const titles = { conversationPrompt: "Conversation Prompt", gamePrompt: "Game Prompt", description: "Description" } as const;
+        // Same key per field as the chip that opened it, so the two can never
+        // disagree about the field's name again.
+        const titles = {
+          conversationPrompt: t("presets.conversationPrompt"),
+          gamePrompt: t("presets.gamePrompt"),
+          description: "Description",
+        } as const;
         return (
           <FullscreenText title={titles[fs.field]} subtitle={full.preset.name}
             initial={String(full.preset[fs.field] ?? "")} budget={budget || undefined}
@@ -592,37 +618,38 @@ function SectionDetail(props: {
 
   const advNonDefault = [
     s.injectionPosition !== "ordered" && `${s.injectionPosition} ${s.injectionDepth}`,
-    s.injectionOrder !== 100 && s.injectionOrder !== 0 && `order ${s.injectionOrder}`,
-    s.forbidOverrides && "no overrides",
-    props.groupName && `group ${props.groupName}${props.groupOff ? " (off)" : ""}`,
+    s.injectionOrder !== 100 && s.injectionOrder !== 0 && t("presets.orderN", { order: s.injectionOrder }),
+    s.forbidOverrides && t("presets.noOverrides"),
+    props.groupName && t("presets.groupNamed", { group: props.groupName })
+      + (props.groupOff ? ` (${t("presets.off")})` : ""),
   ].filter(Boolean) as string[];
 
   return (
     <div className="drawer">
-      {sub("section", "Section",
-        <><span className={s.enabled ? "is-on" : "is-off"}>{s.enabled ? "on" : "off"}</span> · {s.role} · {props.index + 1}/{props.total}</>,
+      {sub("section", t("presets.subSettings"),
+        <><span className={s.enabled ? "is-on" : "is-off"}>{s.enabled ? t("presets.on") : t("presets.off")}</span> · {s.role} · {props.index + 1}/{props.total}</>,
         () => (
           <>
-            <input className="tin" value={s.name} placeholder="Section name" disabled={readOnly}
+            <input className="tin" value={s.name} placeholder={t("presets.sectionName")} disabled={readOnly}
               data-name-input={s.id}
               onInput={(ev) => save(s.id, { name: ev.currentTarget.value })}
               aria-invalid={!!fErr("name")} />
             {fErr("name") && <p className="field-err t-data" role="alert">{fErr("name")}</p>}
 
             <div className="field">
-              <span className="t-label t-label-s">Included</span>
+              <span className="t-label t-label-s">{t("presets.included")}</span>
               <button className="toggle" role="switch" aria-checked={s.enabled} disabled={readOnly}
                 onClick={() => save(s.id, { enabled: !s.enabled })}>
                 <span className="toggle-track"><span className="toggle-thumb" /></span>
-                <span className="toggle-label">{s.enabled ? "Enabled" : "Disabled"}</span>
+                <span className="toggle-label">{s.enabled ? t("presets.on") : t("presets.off")}</span>
               </button>
               {props.groupOff && (
-                <p className="hint t-data">Group “{props.groupName}” is disabled — this section will not be injected regardless.</p>
+                <p className="hint t-data">{t("presets.groupOffHint", { group: props.groupName ?? "" })}</p>
               )}
             </div>
 
             <div className="field">
-              <span className="t-label t-label-s">Role</span>
+              <span className="t-label t-label-s">{t("presets.role")}</span>
               <div className="segrow is-3">
                 {(["system", "user", "assistant"] as const).map((r) => (
                   <button key={r} className="segbtn is-pos t-data" aria-pressed={s.role === r} disabled={readOnly}
@@ -632,38 +659,38 @@ function SectionDetail(props: {
             </div>
 
             <div className="field">
-              <span className="t-label t-label-s">Position</span>
+              <span className="t-label t-label-s">{t("presets.position")}</span>
               <div className="movebar">
                 <button className="movebtn" disabled={readOnly || props.index === 0}
-                  onClick={() => props.onMove(s.id, -1)}>↑ <span className="t-label t-label-s">up</span></button>
+                  onClick={() => props.onMove(s.id, -1)}>↑ <span className="t-label t-label-s">{t("presets.moveUp")}</span></button>
                 <span className="slot">
                   <span className="v t-num">{props.index + 1}</span>
-                  <span className="c t-data">of {props.total}</span>
+                  <span className="c t-data">{t("presets.ofCount", { count: props.total })}</span>
                 </span>
                 <button className="movebtn" disabled={readOnly || props.index === props.total - 1}
-                  onClick={() => props.onMove(s.id, 1)}>↓ <span className="t-label t-label-s">down</span></button>
+                  onClick={() => props.onMove(s.id, 1)}>↓ <span className="t-label t-label-s">{t("presets.moveDown")}</span></button>
               </div>
-              {props.desktop && <p className="hint t-data">Shift+J / Shift+K reorders from the list.</p>}
+              {props.desktop && <p className="hint t-data">{t("presets.reorderHint")}</p>}
             </div>
           </>
         ))}
 
       {marker
-        ? sub("content", "Content", <span className="is-runtime">injected at runtime</span>, () => (
-            <p className="prose-note">
-              This is a <b>{markerLabel(s)}</b> marker. The engine replaces it at generation time with live
-              {" "}{markerLabel(s)?.toLowerCase()} content, so it has no fixed token cost here.
-            </p>
+        ? sub("content", "Content", <span className="is-runtime">{t("presets.injectedAtRuntime")}</span>, () => (
+            // One slot, filled twice. This used to interpolate the marker name a
+            // second time through .toLowerCase(), which is a runtime edit to copy
+            // and would mangle a label like "ID macro cards".
+            <p className="prose-note">{t("presets.markerNote", { marker: markerLabel(s) ?? "" })}</p>
           ))
         : sub("content", "Content",
-            <><b>{(macroDelta > 0 ? expanded.length : s.content.length).toLocaleString()}</b> ch · <b>{tok}</b> tokens{macroDelta > 0 ? " (expanded)" : ""}</>,
+            <><b>{(macroDelta > 0 ? expanded.length : s.content.length).toLocaleString()}</b> {t("ui.editor.charUnit")} · <b>{tok}</b> {t("presets.tokens")}{macroDelta > 0 ? ` ${t("presets.expanded")}` : ""}</>,
             () => (
               <>
                 <button className="edit-content" onClick={props.onExpand}>
                   <span className="ec-label t-label t-label-s">
                     <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />Edit in full screen
                   </span>
-                  <span className="ec-meta t-data">{s.content.length.toLocaleString()} ch raw</span>
+                  <span className="ec-meta t-data">{s.content.length.toLocaleString()} {t("presets.chRaw")}</span>
                 </button>
                 {props.desktop && (
                   <textarea className="ta is-mono is-fill" value={s.content} disabled={readOnly}
@@ -674,14 +701,19 @@ function SectionDetail(props: {
                 )}
                 {macroDelta > 0 && (
                   <p className="hint t-data">
-                    Macros expand to {expanded.length.toLocaleString()} ch (+{macroDelta.toLocaleString()}) — token count reflects the expansion.
+                    {t("presets.macroHint", {
+                      expanded: expanded.length.toLocaleString(),
+                      delta: macroDelta.toLocaleString(),
+                    })}
                   </p>
                 )}
               </>
             ))}
 
       {sub("advanced", "Advanced",
-        advNonDefault.length ? <>{advNonDefault.length} set</> : "all default",
+        advNonDefault.length
+          ? t("presets.advSet", { count: advNonDefault.length })
+          : "all default",
         () => (
           <>
             {([["injectionPosition", s.injectionPosition], ["injectionDepth", s.injectionDepth],
@@ -690,9 +722,9 @@ function SectionDetail(props: {
               <div key={k} className="advrow"><span className="an t-data">{k}</span><span className="av t-data">{String(v)}</span></div>
             ))}
             {!readOnly && !marker && (
-              <button className="dangerbtn" onClick={props.onDelete}>Delete section</button>
+              <button className="dangerbtn" onClick={props.onDelete}>{t("presets.deleteSection")}</button>
             )}
-            {marker && <p className="prose-note">Markers cannot be deleted — remove the feature upstream instead.</p>}
+            {marker && <p className="prose-note">{t("presets.markerUndeletable")}</p>}
           </>
         ))}
 

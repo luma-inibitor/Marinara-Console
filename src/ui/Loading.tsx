@@ -1,5 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { EmptyState } from "./EmptyState";
+import { t } from "../copy";
 import "./Loading.css";
 
 /** A view that has not arrived yet.
@@ -36,15 +37,15 @@ export function Loading(props: { what?: string; label?: string; onRetry?: () => 
     return () => { clearTimeout(slow); clearTimeout(stalled); };
   }, []);
 
-  const subject = props.what ?? "this view";
-  const line = props.label ?? `Loading ${subject}…`;
+  const subject = props.what ?? t("ui.loading.subject");
+  const line = props.label ?? t("ui.loading.line", { destination: subject });
 
   if (phase === "stalled") {
     return (
       <EmptyState
-        title={`Still waiting for ${subject}`}
-        body="The engine hasn’t responded in twelve seconds. It may be asleep, or the connection may have dropped."
-        actions={props.onRetry && <button className="dbtn is-primary" onClick={props.onRetry}>Try again</button>}
+        title={t("ui.loading.stalledTitle", { what: subject })}
+        body={t("ui.loading.stalledBody")}
+        actions={props.onRetry && <button className="dbtn is-primary" onClick={props.onRetry}>{t("ui.error.tryAgain")}</button>}
       />
     );
   }
@@ -52,7 +53,7 @@ export function Loading(props: { what?: string; label?: string; onRetry?: () => 
   return (
     <p className="loadingstate t-prose">
       {line}
-      {phase === "slow" && <span className="loading-slow"> Taking longer than usual.</span>}
+      {phase === "slow" && <span className="loading-slow"> {t("ui.loading.slow")}</span>}
     </p>
   );
 }

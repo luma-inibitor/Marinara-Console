@@ -10,12 +10,13 @@ import {
   type Entry, type Lorebook, type Evaluation,
   entryTokens, statusOf, percentile, evaluate, matchesQuery, tagStats,
   fetchBooks, fetchEntries, patchEntry, createEntry, deleteEntry, bulkPatch,
-  POS_COMPACT,
+  POS_COMPACT, UNTAGGED,
 } from "./data";
 import { EntryDrawer, type FullscreenCtx } from "./entries";
 import { useDraft } from "../../shell/draft";
 import { FullscreenText } from "../../ui/FullscreenText";
 import { Chip, EmptyState, ErrorState, IconButton, ListEmpty, Loading, NotFound, useIsDesktop, useRovingFocus } from "../../ui";
+import { t, tAny } from "../../copy";
 import { Add, Back, ICON_SIZE, SelectMode, Tags } from "../../ui/icons";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
@@ -23,7 +24,14 @@ type Mode = "find" | "test";
 /** Retained for the bulk-edit path, which still writes directly. */
 export type SavePill = "dirty" | "saved" | "err";
 
-const UNTAGGED = " untagged";
+/** Sort chip labels, as copy keys — a table, so it goes through t() by key. */
+const SORT_LABEL: Record<SortKey, string> = {
+  tokens: "lorebooks.unitTokens",
+  order: "lorebooks.field.order",
+  keys: "lorebooks.field.keys",
+  name: "lorebooks.sort.title",
+  updated: "lorebooks.sort.edited",
+};
 
 export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialEntryId?: string }) {
   const desktop = useIsDesktop();
@@ -140,7 +148,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     refetch: async () => {
       const fresh = await fetchEntries(bookId);
       const mine = fresh.find((e) => e.id === editingId);
-      if (!mine) throw new Error("Entry no longer exists");
+      if (!mine) throw new Error(t("lorebooks.entry.gone"));
       setEntries(fresh);
       return mine;
     },
@@ -160,7 +168,9 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
   const beginEdit = useCallback((id: string) => {
     if (id === editingId) return;
     if (draft.dirty) {
-      toast(`Save or discard your changes to "${editingEntry?.name || "this entry"}" first.`, { kind: "error" });
+      toast(t("lorebooks.record.saveOrDiscardFirst", {
+        name: editingEntry?.name || t("lorebooks.entry.thisEntry"),
+      }), { kind: "error" });
       return;
     }
     setEditingId(id);
@@ -168,7 +178,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
 
   const saveDraft = useCallback(async () => {
     const ok = await draft.save();
-    if (ok) toast("Entry saved");
+    if (ok) toast(t("lorebooks.entry.saved"));
     return ok;
   }, [draft]);
 
@@ -185,15 +195,15 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     setEntries((es) => (es ?? []).filter((e) => e.id !== entry.id));
     setOpen((s) => { const n = new Set(s); n.delete(entry.id); return n; });
     if (focusId === entry.id) setFocusId(null);
-    toast(`Deleted "${entry.name}".`, {
-      actionLabel: "Undo",
+    toast(t("lorebooks.record.deleted", { name: entry.name }), {
+      actionLabel: t("lorebooks.record.undo"),
       onAction: () => {
         // restore locally; entry still exists server-side (nothing sent yet)
         setEntries((es) => [...(es ?? []), entry]);
       },
       onExpire: () => {
         deleteEntry(bookId, entry.id).catch((err: Error) => {
-          toast(`Delete failed: ${err.message}`, { kind: "error" });
+          toast(t("lorebooks.record.deleteFailed", { message: err.message }), { kind: "error" });
           setEntries((es) => [...(es ?? []), entry]);
         });
       },
@@ -201,24 +211,24 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
   }, [bookId, focusId]);
 
   const addEntry = useCallback(async () => {
-    const name = prompt("Add Entry", "New Entry");
+    const name = prompt(t("lorebooks.entry.add"), t("lorebooks.entry.addDefaultName"));
     if (!name?.trim()) return;
     try {
       const created = await createEntry(bookId, { name: name.trim(), content: "", keys: [] });
       setEntries((es) => [...(es ?? []), created]);
       setFocusId(created.id);
       setOpen((s) => new Set(s).add(created.id));
-    } catch (err) { toast(`Failed to add entry: ${(err as Error).message}`, { kind: "error" }); }
+    } catch (err) { toast(t("lorebooks.entry.addFailed", { message: (err as Error).message }), { kind: "error" }); }
   }, [bookId]);
 
   const runBulk = useCallback(async (changes: Record<string, unknown>) => {
     const ids = [...selected];
-    if (!ids.length) return toast("Nothing selected", { kind: "error" });
+    if (!ids.length) return toast(t("lorebooks.bulk.nothingSelected"), { kind: "error" });
     try {
       await bulkPatch(bookId, ids, changes);
       setEntries(await fetchEntries(bookId));
-      toast(`Updated ${ids.length} ${ids.length === 1 ? "entry" : "entries"}`);
-    } catch (err) { toast(`Failed to update the selected entries: ${(err as Error).message}`, { kind: "error" }); }
+      toast(t("lorebooks.bulk.updated", { count: ids.length }));
+    } catch (err) { toast(t("lorebooks.bulk.updateFailed", { message: (err as Error).message }), { kind: "error" }); }
   }, [bookId, selected]);
 
   // The tag panel is a full-screen surface, not a `<Sheet>`, so it has to hold
@@ -305,35 +315,37 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       <div className="audit-list" ref={listRef} onKeyDown={onListKey}>
         <header className="console">
           <div className="hrow">
-            <IconButton label="Back to lorebooks" onClick={() => navigate("lorebooks")}>
+            <IconButton label={t("lorebooks.record.backToBooks")} onClick={() => navigate("lorebooks")}>
               <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
             </IconButton>
             <h1 className="console-title">{book.name}</h1>
-            <IconButton label="Tag distribution" onClick={() => setShowTags(true)}>
+            <IconButton label={t("lorebooks.tag.distribution")} onClick={() => setShowTags(true)}>
               <Tags size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
             </IconButton>
           </div>
 
           <div className="probe">
-            <div className="modeswap" role="group" aria-label="Search mode">
-              <button aria-pressed={mode === "find"} onClick={() => setMode("find")}>Find</button>
-              <button className="t" aria-pressed={mode === "test"} onClick={() => setMode("test")}>Test</button>
+            <div className="modeswap" role="group" aria-label={t("lorebooks.probe.modeGroup")}>
+              <button aria-pressed={mode === "find"} onClick={() => setMode("find")}>{t("lorebooks.probe.find")}</button>
+              <button className="t" aria-pressed={mode === "test"} onClick={() => setMode("test")}>{t("lorebooks.probe.test")}</button>
             </div>
             <div className="pwrap">
               <input
                 value={query}
-                placeholder={mode === "test" ? "Paste a paragraph or sample messages here…" : "Search entries…"}
-                aria-label={mode === "test" ? "Keyword test text" : "Search entries"}
+                placeholder={t(mode === "test" ? "lorebooks.probe.testPlaceholder" : "lorebooks.probe.findPlaceholder")}
+                aria-label={t(mode === "test" ? "lorebooks.probe.testLabel" : "lorebooks.probe.findLabel")}
                 onInput={(e) => setQuery(e.currentTarget.value)}
               />
               {query.trim() !== "" && (
-                <span className="res">{meter.testing ? `${meter.pool.length} match` : `${visible.length} match`}</span>
+                <span className="res">
+                  {t("ui.search.matches", { count: meter.testing ? meter.pool.length : visible.length })}
+                </span>
               )}
             </div>
           </div>
 
           <div className="meter">
-            <span className="t-label t-label-s">{meter.testing ? "Would activate" : "All active"}</span>
+            <span className="t-label t-label-s">{t(meter.testing ? "lorebooks.meter.wouldActivate" : "lorebooks.meter.allActive")}</span>
             <span className="mbar">
               <span className="m-a" style={{ width: `${Math.min(100, (meter.aTok / meter.budget) * 100)}%` }} />
               <span className="m-k" style={{ width: `${Math.min(100 - Math.min(100, (meter.aTok / meter.budget) * 100), (meter.kTok / meter.budget) * 100)}%` }} />
@@ -348,22 +360,25 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
             <div className="chiprail">
               {(["tokens", "order", "keys", "name", "updated"] as SortKey[]).map((k) => (
                 <Chip key={k} pressed={sort === k && !group} onClick={() => { setSort(k); setGroup(false); }}>
-                  {{ tokens: "Tokens", order: "Order", keys: "Keys", name: "Title", updated: "Edited" }[k]}
+                  {tAny(SORT_LABEL[k])}
                   {sort === k && !group && <span className="ar"> ↓</span>}
                 </Chip>
               ))}
-              <Chip pressed={group} onClick={() => setGroup(!group)}>Group by tag</Chip>
+              <Chip pressed={group} onClick={() => setGroup(!group)}>{t("lorebooks.filter.group")}</Chip>
               <Chip flag pressed={flaggedOnly} onClick={() => setFlaggedOnly(!flaggedOnly)}>
-                Flagged <b className="t-num">{flaggedN}</b>
+                {t("lorebooks.filter.flagged")} <b className="t-num">{flaggedN}</b>
               </Chip>
             </div>
           ) : (
             <div className="chiprail">
-              <span className="t-data selcount">{selected.size} selected</span>
-              <Chip onClick={() => runBulk({ enabled: true })}>Enable</Chip>
-              <Chip onClick={() => runBulk({ enabled: false })}>Disable</Chip>
-              <Chip onClick={() => { const t = prompt("Add tag… (blank to clear)"); if (t !== null) void runBulk({ tag: t.trim() }); }}>Add tag…</Chip>
-              <Chip onClick={() => { setSelecting(false); setSelected(new Set()); }}>Done</Chip>
+              <span className="t-data selcount">{t("lorebooks.bulk.selected", { count: selected.size })}</span>
+              <Chip onClick={() => runBulk({ enabled: true })}>{t("lorebooks.bulk.enable")}</Chip>
+              <Chip onClick={() => runBulk({ enabled: false })}>{t("lorebooks.bulk.disable")}</Chip>
+              <Chip onClick={() => {
+                const tag = prompt(t("lorebooks.bulk.addTagPrompt"));
+                if (tag !== null) void runBulk({ tag: tag.trim() });
+              }}>{t("lorebooks.bulk.addTag")}</Chip>
+              <Chip onClick={() => { setSelecting(false); setSelected(new Set()); }}>{t("lorebooks.bulk.done")}</Chip>
             </div>
           )}
         </header>
@@ -371,14 +386,16 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
         <main className="rows">
           {visible.length === 0 && (
             mode === "test"
-              ? <EmptyState title="Nothing would activate"
-                  body="No entry’s keys match this text, so none would be injected." />
+              ? <EmptyState title={t("lorebooks.empty.testTitle")}
+                  body={t("lorebooks.empty.testBody")} />
               : entries.length === 0
-                ? <ListEmpty kind="first-run" what="entries" action={{ label: "Add entry", run: addEntry }} />
+                ? <ListEmpty kind="first-run" what="entries" action={{ label: t("lorebooks.entry.add"), run: addEntry }} />
                 : <ListEmpty kind="filtered" what="entries"
                     filters={[
-                      ...(query.trim() ? [{ label: `search: ${query.trim()}`, clear: () => setQuery("") }] : []),
-                      ...(flaggedOnly ? [{ label: "flagged only", clear: () => setFlaggedOnly(false) }] : []),
+                      ...(query.trim()
+                        ? [{ label: t("memoryvault.filteredEmptySearch", { value1: query.trim() }), clear: () => setQuery("") }]
+                        : []),
+                      ...(flaggedOnly ? [{ label: t("lorebooks.filter.flaggedOnly"), clear: () => setFlaggedOnly(false) }] : []),
                     ]}
                     onClearAll={() => { setQuery(""); setFlaggedOnly(false); }} />
           )}
@@ -386,9 +403,9 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
             ? grouped.map(([tag, items]) => (
                 <div key={tag}>
                   <div className="grouphead">
-                    <span className="t-label t-label-s gn">{tag === UNTAGGED ? "untagged" : tag}</span>
+                    <span className="t-label t-label-s gn">{tag === UNTAGGED ? t("lorebooks.untagged") : tag}</span>
                     <span className="meta"><span>{items.length}</span><span>{items.reduce((a, e) => a + entryTokens(e), 0).toLocaleString()}t</span></span>
-                    <Chip onClick={() => { setSelecting(true); setSelected((s) => new Set([...s, ...items.map((e) => e.id)])); }}>Select</Chip>
+                    <Chip onClick={() => { setSelecting(true); setSelected((s) => new Set([...s, ...items.map((e) => e.id)])); }}>{t("lorebooks.bulk.select")}</Chip>
                   </div>
                   {rows(items)}
                 </div>
@@ -398,13 +415,13 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
 
         <nav className="dock-actions">
           <button className="dbtn" onClick={() => { setSelecting(!selecting); if (selecting) setSelected(new Set()); }}>
-            <SelectMode size={ICON_SIZE.md} stroke={1.75} aria-hidden />Select
+            <SelectMode size={ICON_SIZE.md} stroke={1.75} aria-hidden />{t("lorebooks.bulk.select")}
           </button>
           <button className="dbtn" onClick={() => setShowTags(true)}>
-            <Tags size={ICON_SIZE.md} stroke={1.75} aria-hidden />Tags
+            <Tags size={ICON_SIZE.md} stroke={1.75} aria-hidden />{t("lorebooks.tags")}
           </button>
           <button className="dbtn is-primary" onClick={addEntry}>
-            <Add size={ICON_SIZE.md} stroke={1.75} aria-hidden />Add Entry
+            <Add size={ICON_SIZE.md} stroke={1.75} aria-hidden />{t("lorebooks.entry.add")}
           </button>
         </nav>
       </div>
@@ -419,7 +436,8 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
               onDelete={() => removeWithUndo(focused)}
               onExpand={(field) => setFull({ id: focused.id, field })} />
           ) : (
-            <EmptyState title="Select an entry to edit it." body={<span className="t-data">j / k moves between entries.</span>} />
+            <EmptyState title={t("lorebooks.detail.selectPrompt")}
+              body={<span className="t-data">{t("lorebooks.detail.keyboardHint")}</span>} />
           )}
         </aside>
       )}
@@ -437,7 +455,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
         const e = full.id === editingId ? draft.value : entries.find((x) => x.id === full.id);
         return e ? (
           <FullscreenText
-            title={full.field === "content" ? "Edit content" : "Edit description"}
+            title={t(full.field === "content" ? "lorebooks.record.editContent" : "lorebooks.record.editDescription")}
             subtitle={e.name} initial={String(e[full.field] ?? "")} budget={book.tokenBudget}
             onDone={(value) => { beginEdit(full.id); draft.set(full.field, value); setFull(null); }}
             onCancel={() => setFull(null)}
@@ -458,7 +476,7 @@ function Row(props: {
   const status = statusOf(e);
   const idle = ev?.tested && !ev.fires;
   const keyline = e.constant
-    ? <span className="k-const">always injected — keys ignored</span>
+    ? <span className="k-const">{t("lorebooks.row.alwaysInjected")}</span>
     : e.keys.length
       ? e.keys.slice(0, 6).map((k, i) => (
           <span key={i}>
@@ -466,7 +484,7 @@ function Row(props: {
             <span className={ev?.hits.includes(k) ? "k-hit" : undefined}>{k}</span>
           </span>
         ))
-      : <span className="k-none">no keys — never fires</span>;
+      : <span className="k-none">{t("lorebooks.row.noKeys")}</span>;
 
   return (
     <article className={`row ${props.isOpen ? "is-open" : ""} ${props.isSelected ? "is-selected" : ""} ${idle ? "is-idle" : ""} ${props.isFocused ? "is-focused" : ""}`} data-s={status}>
@@ -479,19 +497,21 @@ function Row(props: {
       >
         <span className="rail-cell"><span className="dot" /><span className="ord t-data">{e.order}</span></span>
         <span className="mid">
-          <span className="nm">{e.name || "Untitled entry"}</span>
+          <span className="nm">{e.name || t("lorebooks.entry.untitled")}</span>
           <span className="metaline">
-            <span className={`tg ${!(e.tag ?? "").trim() ? "is-none" : ""}`}>{(e.tag ?? "").trim() || "untagged"}</span>
-            {ev?.tested && (ev.fires ? <span className="verdict is-fire">Would activate</span> : <span className="verdict">idle</span>)}
+            <span className={`tg ${!(e.tag ?? "").trim() ? "is-none" : ""}`}>{(e.tag ?? "").trim() || t("lorebooks.untagged")}</span>
+            {ev?.tested && (ev.fires
+              ? <span className="verdict is-fire">{t("lorebooks.meter.wouldActivate")}</span>
+              : <span className="verdict">{t("lorebooks.row.idle")}</span>)}
             {e.position !== 0 && <span className="tg">{POS_COMPACT[e.position] ?? ""}</span>}
-            {hotT && <span className="fl">bloated</span>}
-            {hotK && <span className="fl">key-heavy</span>}
+            {hotT && <span className="fl">{t("lorebooks.row.bloated")}</span>}
+            {hotK && <span className="fl">{t("lorebooks.row.keyHeavy")}</span>}
             <span className="keys t-data">{keyline}</span>
           </span>
         </span>
         <span className="num">
-          <b className={`tok t-num ${hotT ? "is-hot" : ""}`}>{entryTokens(e)}</b><span className="unit t-data">tokens</span>
-          <b className={`tok t-num ${hotK ? "is-hot" : ""}`}>{e.keys.length}</b><span className="unit t-data">keys</span>
+          <b className={`tok t-num ${hotT ? "is-hot" : ""}`}>{entryTokens(e)}</b><span className="unit t-data">{t("lorebooks.unitTokens")}</span>
+          <b className={`tok t-num ${hotK ? "is-hot" : ""}`}>{e.keys.length}</b><span className="unit t-data">{t("lorebooks.field.keys")}</span>
         </span>
       </button>
       {props.drawer}
@@ -509,26 +529,26 @@ function TagOverlay(props: {
   return (
     <div className="tagpanel">
       <div className="hrow">
-        <IconButton label="Back to entries" onClick={props.onClose}>
+        <IconButton label={t("lorebooks.tag.backToEntries")} onClick={props.onClose}>
           <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
         </IconButton>
-        <h2 className="console-title">Tags</h2>
-        <span className="meta"><span>{stats.length}</span><span>{props.entries.length} entries</span></span>
+        <h2 className="console-title">{t("lorebooks.tags")}</h2>
+        <span className="meta"><span>{stats.length}</span><span>{t("lorebooks.entryCount", { count: props.entries.length })}</span></span>
       </div>
       {stats.map((s) => (
         <div key={s.tag} className="trow">
           <div>
-            <div className={`tn ${s.tag === UNTAGGED ? "is-none" : ""}`}>{s.tag === UNTAGGED ? "untagged" : s.tag}</div>
+            <div className={`tn ${s.tag === UNTAGGED ? "is-none" : ""}`}>{s.tag === UNTAGGED ? t("lorebooks.untagged") : s.tag}</div>
             <div className="meta">
-              <span>{s.n} {s.n === 1 ? "entry" : "entries"}</span>
-              <span>{s.tokens.toLocaleString()} tokens (est.)</span>
-              {s.constant > 0 && <span>{s.constant} constant</span>}
-              {s.disabled > 0 && <span>{s.disabled} disabled</span>}
+              <span>{t("lorebooks.entryCount", { count: s.n })}</span>
+              <span>{s.tokens.toLocaleString()} {t("ui.editor.tokensEst")}</span>
+              {s.constant > 0 && <span>{t("lorebooks.tag.constantCount", { count: s.constant })}</span>}
+              {s.disabled > 0 && <span>{t("lorebooks.tag.disabledCount", { count: s.disabled })}</span>}
             </div>
           </div>
           <div className="tacts">
-            <Chip onClick={() => props.onShow(s.tag)}>Show</Chip>
-            <Chip onClick={() => props.onSelect(s.ids)}>Select</Chip>
+            <Chip onClick={() => props.onShow(s.tag)}>{t("lorebooks.tag.show")}</Chip>
+            <Chip onClick={() => props.onSelect(s.ids)}>{t("lorebooks.bulk.select")}</Chip>
           </div>
           <div className="tbar"><i style={{ width: `${(s.n / max) * 100}%` }} /></div>
         </div>

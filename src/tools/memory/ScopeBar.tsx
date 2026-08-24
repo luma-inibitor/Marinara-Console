@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { SCOPE_ICON } from "../../ui/icons";
 import { api } from "../../shell/api";
-import { t } from "./strings";
+import { t } from "../../copy";
 import { scopeChatId, scopeCharacterId, setScope, setScopeCharacter } from "./store";
 import { SearchDisclosure } from "../../ui";
 

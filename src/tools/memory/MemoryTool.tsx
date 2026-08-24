@@ -8,11 +8,12 @@ import { signal } from "@preact/signals";
 import { VIEW_ICON } from "../../ui/icons";
 import { ScopeBar, useScopeData } from "./ScopeBar";
 import { toast } from "../../shell/toast";
-import { t, OURS } from "./strings";
+import { t, tAny } from "../../copy";
 import { Review } from "./Review";
 import { Vault } from "./Vault";
 import { Sources } from "./Sources";
 import { NotePeek } from "./NotePeek";
+import { Copy } from "./Copy";
 import { activeFacets, pendingSources, review } from "./store";
 
 const status = signal<LtmStatus | null>(null);
@@ -47,14 +48,10 @@ function consumeFocusSource(): string | null {
 // vault = library because database is taken by the source-note type icon.)
 // Workflow order: material arrives in Sources, gets decided in Review, and
 // lands in the Vault. Activity comes last, when it is built.
-const VIEWS = [
-  { id: "sources", label: () => OURS.nav.sources },
-  { id: "review", label: () => OURS.nav.review },
-  { id: "vault", label: () => OURS.nav.vault },
-];
+const VIEWS = ["sources", "review", "vault"] as const;
 
 export function MemoryTool({ rest }: { rest: string[] }) {
-  const view = VIEWS.some((v) => v.id === rest[0]) ? rest[0] : "review";
+  const view = (VIEWS as readonly string[]).includes(rest[0]) ? rest[0] : "review";
   const { chats, characters } = useScopeData();
 
   useEffect(() => { void refreshLtmStatus(); }, [view]);
@@ -78,7 +75,7 @@ export function MemoryTool({ rest }: { rest: string[] }) {
     try {
       await rebuildIndexes();
       await refreshLtmStatus();
-      toast("Recall index rebuilt");
+      toast(t("longtermmemorydetail.reindexComplete"));
     } catch (error) {
       toast((error as Error).message, { kind: "error" });
     }
@@ -91,32 +88,32 @@ export function MemoryTool({ rest }: { rest: string[] }) {
           counts are badges on the tabs, and index health is an alert below
           rather than a word in the corner. */}
       <ScopeBar chats={chats} characters={characters} />
-      <nav className="mem-nav" aria-label="Memory views">
-        {VIEWS.map((v) => {
-          const I = VIEW_ICON[v.id];
-          const count = v.id === "review" ? (review.value?.counts.mutations ?? s?.notes.pendingDrafts ?? 0)
-            : v.id === "vault" ? (s?.notes.savedMemories ?? 0)
+      <nav className="mem-nav" aria-label={t("longtermmemorynavigation.longTermMemorySections")}>
+        {VIEWS.map((id) => {
+          const I = VIEW_ICON[id];
+          const count = id === "review" ? (review.value?.counts.mutations ?? s?.notes.pendingDrafts ?? 0)
+            : id === "vault" ? (s?.notes.savedMemories ?? 0)
             : (pendingSources.value ?? 0);
           return (
-            <button key={v.id} className="mem-tab t-label" aria-current={view === v.id ? "page" : undefined}
-              onClick={() => { if (v.id === "review") activeFacets.value = new Map(); navigate(`memory/${v.id}`); }}>
+            <button key={id} className="mem-tab t-label" aria-current={view === id ? "page" : undefined}
+              onClick={() => { if (id === "review") activeFacets.value = new Map(); navigate(`memory/${id}`); }}>
               <I size={15} stroke={1.75} aria-hidden />
-              {v.label()}
+              {tAny(`memory.nav.${id}`)}
               {count > 0 && <b className="mem-badge t-data">{count}</b>}
             </button>
           );
         })}
-        {statusFailed.value && <span className="mem-status t-data is-drop">status unavailable</span>}
+        {statusFailed.value && <span className="mem-status t-data is-drop">{t("longtermmemorydetail.statusUnavailable")}</span>}
       </nav>
       {(unhealthy || noEmbeddings) && (
         <div className="health-banner">
           <span className="t-prose">
-            {unhealthy && <>Recall index is <b>{health!.replaceAll("_", " ")}</b> — saved memories may not be searchable. </>}
-            {noEmbeddings && <>Semantic recall is unavailable on this engine (no embedding model) — retrieval runs on keywords and text matching only.</>}
+            {unhealthy && <><Copy k="memory.index.unhealthy" slots={{ state: <b>{health!.replaceAll("_", " ")}</b> }} />{" "}</>}
+            {noEmbeddings && t("memory.index.noEmbeddings")}
           </span>
           {unhealthy && (
             <button className="action-sec t-label" disabled={rebuilding.value} onClick={() => void runRebuild()}>
-              {rebuilding.value ? "Rebuilding…" : "Rebuild"}
+              {rebuilding.value ? t("memory.index.rebuilding") : t("activityview.phaseRebuild")}
             </button>
           )}
         </div>

@@ -1,4 +1,5 @@
 import type { ComponentChildren } from "preact";
+import { t } from "../copy";
 import { ChevronDown, ChevronRight } from "./icons";
 import "./ListGroup.css";
 
@@ -24,7 +25,8 @@ export function CollapseButton(props: {
       type="button"
       className={`gexp hit ${props.className ?? ""}`}
       aria-expanded={!props.collapsed}
-      aria-label={`${props.collapsed ? "Expand" : "Collapse"} ${props.label} (${props.count})`}
+      aria-label={t(props.collapsed ? "ui.group.expand" : "ui.group.collapse", {
+        label: props.label, count: props.count })}
       onClick={props.onToggle}
     >
       <Chevron size={props.size ?? 16} stroke={1.75} aria-hidden />

@@ -1,3 +1,250 @@
 {
-  "_readme": "ui area copy. Empty until src/ui is migrated onto the catalog — see src/copy/index.ts for the entry shapes and design/copycheck.mjs for what is enforced. Keys beginning with an underscore are metadata and are never copy."
+  "_readme": "ui area copy: the strings the SHARED components in src/ui own. A string a caller supplies stays a prop — see DESIGN.md §8. Anything here is a component's own fallback, its own structural label, or a sentence it assembles around a caller's noun. See src/copy/index.ts for the entry shapes and design/copycheck.mjs for what is enforced. Keys beginning with an underscore are metadata and are never copy.",
+
+  "ui.copy.copied": {
+    "use": "activityview.copied"
+  },
+  "ui.copy.json": {
+    "use": "activityview.copyJson"
+  },
+  "ui.copy.value": {
+    "text": "Copy {{what}}",
+    "despite": "transferworkbench.copyMemoryCount",
+    "note": "Accessible name of CopyableText's button, naming the value it takes. The catalog's only 'Copy {placeholder}' is transferworkbench.copyMemoryCount, 'Copy {{count}} {{memory}}', which is a bulk transfer button counting records; this copies one literal — an id, a hash, a path — to the clipboard, and borrowing it would announce a count that does not exist."
+  },
+  "ui.copy.failed": {
+    "text": "Could not copy — the clipboard is unavailable here",
+    "note": "Toasted when navigator.clipboard rejects, which in practice means the console is being served over plain http and the browser refuses the write. The catalog reports copy failures per subject (activityview.copyFailed, memoryvault.diagnosticsCopyFailed) and never names the cause, because upstream runs inside a secure host page where this cannot happen."
+  },
+
+  "ui.json.viewLabel": {
+    "text": "JSON view",
+    "note": "Accessible name of JsonView's control group, used when the caller names no subject. The catalog reaches JSON exactly twice, both as verbs on a record (activityview.copyJson, copyRawJsonForValue1); it has no viewer, so it has no noun for one."
+  },
+  "ui.json.folding": {
+    "text": "Folding view",
+    "note": "The tree/raw toggle's first segment. The catalog has no word for a collapsible rendering — 'fold' and 'collapse' appear nowhere in it, and 'expand' only inside one sentence about a conflict list."
+  },
+  "ui.json.plain": {
+    "text": "Plain text",
+    "note": "The tree/raw toggle's second segment, the literal pretty-printed text. The catalog's only nearby noun is mutationeditor.text, which is the name of a memory field rather than a rendering mode."
+  },
+  "ui.json.root": {
+    "text": "root",
+    "note": "Stands in for the node name in the fold control's accessible name when the node is the top of the document and therefore has no key. A JSON structural term the product never renders, because it never shows a JSON tree."
+  },
+
+  "ui.group.expand": {
+    "text": "Expand {{label}} ({{count}})",
+    "note": "Accessible name of a collapsed group header, in ListGroup and in JsonView's folds. Both say the same sentence about the same gesture, so they share one key. The catalog has no expand/collapse control at all; reviewqueue.moreConflicts uses 'expand' as a verb in running prose, not as a label."
+  },
+  "ui.group.collapse": {
+    "text": "Collapse {{label}} ({{count}})",
+    "note": "The counterpart to ui.group.expand, on an open group header and on JsonView's closing brace. Same absence upstream: the catalog contains the word 'collapse' in no key and no value."
+  },
+
+  "ui.error.tryAgain": {
+    "use": "activityview.retry",
+    "note": "Was 'Try again'. The catalog does hold that exact wording, but as `errors.tryAgain`, which sits outside the `ui.longTermMemory.` namespace the console can address — a mirror cannot point at it and a coinage of the same bytes is refused. So this points at the catalog's other retry affordance, which is also what the connection banner already renders (shell.conn.retry), and the two now agree."
+  },
+  "ui.error.notAllowed": {
+    "text": "Not allowed",
+    "note": "ErrorState's heading over a 403. The catalog has no vocabulary for authorisation at all — no 'allowed', 'permission', 'access denied' — because upstream runs inside the host app's own session and never sees one."
+  },
+  "ui.error.notFound": {
+    "text": "Not found",
+    "note": "ErrorState's heading over a 404, where the request itself named nothing that exists. Distinct from ui.notfound.title, which names a record the reader asked for. The catalog reports absence per subject ('Preview unavailable', 'The requested memory is no longer available') and has no bare status heading."
+  },
+  "ui.error.serverFault": {
+    "text": "The engine returned an error",
+    "note": "ErrorState's heading over a 5xx: the engine answered, and the answer was a fault. 'Engine' is the product's own noun (longtermmemorydetail.underTheHoodFingerprints) but upstream is co-located with it and has no string for it failing as a remote service."
+  },
+  "ui.error.rejected": {
+    "text": "That request was rejected",
+    "note": "ErrorState's heading over a non-403 4xx: the engine understood the request and refused it. The catalog's 'rejected' family is entirely about extraction candidates being binned (reviewqueue.rejectionReason*), never about an HTTP request."
+  },
+  "ui.error.unknown": {
+    "text": "Something failed",
+    "note": "ErrorState's heading when there is no status to derive one from — a thrown Error, a rejected promise. The catalog's bare 'Failed' (activityview.failed, sourceoperation.failed) is a status chip on a row, not a heading over a view that could not load."
+  },
+  "ui.error.adviceOffline": {
+    "text": "Check that the engine is running and that your connection is up.",
+    "note": "The one next move worth naming when the request never reached the engine. The console talks to an engine hosted over the network and upstream does not, so no catalog string can advise about reaching it."
+  },
+  "ui.error.adviceServer": {
+    "text": "This is a fault on the engine side, not in what you sent.",
+    "note": "Told over a 5xx so the reader stops re-checking their own input. The catalog never distinguishes a fault by side, because it has no client/server split to attribute one to."
+  },
+  "ui.error.adviceForbidden": {
+    "text": "Your account doesn’t have access to this.",
+    "note": "Told over a 403. Same absence as ui.error.notAllowed: the product has no account model in its copy, so it has nothing to say about one lacking access."
+  },
+  "ui.error.http": {
+    "text": "HTTP {{status}}",
+    "note": "The numeric status, printed under the cause so a report can quote it. A protocol readout the product has no reason to own — upstream never surfaces a transport status to a reader."
+  },
+
+  "ui.facets.title": {
+    "text": "Facets",
+    "note": "The filter drawer's heading and its sheet's accessible name. The catalog has no occurrence of 'facet' in any key or value: it filters by named dimension (status, mode, scope) and has no word for the set of dimensions itself."
+  },
+  "ui.facets.clear": {
+    "use": "activityview.clear"
+  },
+
+  "ui.sheet.close": {
+    "use": "memoryvault.close"
+  },
+
+  "ui.editor.cancel": {
+    "use": "memoryvault.cancel"
+  },
+  "ui.editor.done": {
+    "use": "memoryvault.done"
+  },
+  "ui.editor.keepEditing": {
+    "use": "memoryvault.keepEditing"
+  },
+  "ui.editor.discard": {
+    "use": "longtermmemorydetail.discardChanges"
+  },
+  "ui.editor.discardTitle": {
+    "use": "longtermmemorydetail.discardUnsavedChanges",
+    "note": "Was 'Discard changes?'. The catalog asks the same question with 'unsaved' in it, and the extra word is the part that is actually at stake, so the mirror is better copy than what it replaces."
+  },
+  "ui.editor.discardBody": {
+    "text": "{{delta}} characters since you opened this editor. Discarding cannot be undone.",
+    "note": "Quantifies what the discard costs, using the same signed delta the editor's counter shows. The catalog warns that a discard is final (memoryvault.thisCannotBeUndone) but never says how much work is on the table, because it has no live character counter to say it from."
+  },
+  "ui.editor.unsaved": {
+    "text": "unsaved",
+    "note": "The dirty marker beside the editor's subtitle. The catalog's 'unsaved' is always attributive inside a longer sentence ('Unsaved changes', 'unsaved edits will also be lost'); a bare lowercase flag is a form it has no instance of."
+  },
+  "ui.editor.wrap": {
+    "text": "↵ wrap",
+    "note": "The soft-wrap toggle, a key glyph welded to its verb in the same shape as the shell's key hints. 'Wrap' appears nowhere in the catalog — the product has no code-style editor and so no wrapping to toggle."
+  },
+  "ui.editor.charUnit": {
+    "text": "ch",
+    "note": "The unit on the editor's live character count, kept separate from the number so the figure can carry the numeric face while the unit does not. The catalog counts characters only as a limit in prose (reviewqueue.textExceedsLimit) and has no abbreviated unit."
+  },
+  "ui.editor.tokenUnit": {
+    "use": "activityview.tokens"
+  },
+  "ui.editor.tokensEst": {
+    "text": "tokens (est.)",
+    "note": "The unit on the editor's token count, which is a local estimate rather than the engine's own figure — the qualifier is the whole point and the catalog's bare 'tokens' would assert more than we know."
+  },
+  "ui.editor.ofBudget": {
+    "text": "{{pct}}% of budget",
+    "note": "The value's share of a token budget the caller supplies. The catalog names budgets as settings (memorysettings.recallBudgetTokens) but never reports consumption against one, because nothing upstream edits a value while showing its cost."
+  },
+
+  "ui.list.filteredTitle": {
+    "text": "No {{what}} match these filters",
+    "note": "ListEmpty's filtered heading. The catalog says this only about its own one noun (memoryvault.noMemoriesMatchTheseFilters, activityview.noActivityMatchesThisFilter); this component is shared across every list in the console, so the noun has to be the caller's."
+  },
+  "ui.list.filteredBody": {
+    "text": "Remove one to widen the search:",
+    "note": "Introduces the run of active filters as removable chips. The catalog's filtered-empty copy lists the filters as a read-only recital (memoryvault.filteredEmptyFilters) and never offers a way out of the state, so it has no sentence inviting one to be dropped."
+  },
+  "ui.list.clearFilters": {
+    "use": "memoryvault.clearFilters",
+    "note": "Was 'Clear all filters'. The catalog's own affordance drops the 'all', and the chips beside this button already make it plain that this one clears the lot."
+  },
+  "ui.list.clearedTitle": {
+    "text": "Nothing left",
+    "note": "ListEmpty's heading when a queue has been worked to the end — an achievement, not an absence. The catalog's empty states are all first-run or filtered; it has no state for a list that was full and has been finished."
+  },
+  "ui.list.clearedBody": {
+    "text": "Every {{what}} has been handled.",
+    "note": "The cleared state's body, naming what was finished. Same absence as ui.list.clearedTitle, and the noun is the caller's because the component is shared."
+  },
+  "ui.list.firstRunTitle": {
+    "text": "No {{what}} yet",
+    "note": "ListEmpty's first-run heading. The catalog's first-run lines are welded to their subject and their remedy in one sentence (memoryvault.noSavedMemoriesYetImportASourceOrCreate, reviewqueue.noProposedMemoriesNeedReviewYetImportASource); a shared component needs the bare heading with the noun as a hole."
+  },
+  "ui.list.firstRunBody": {
+    "text": "This is where {{what}} appear once you add them.",
+    "note": "Says what the empty region is for rather than what is missing from it. The catalog's equivalent sentences instruct (‘Import a character… or create a memory manually’); this one describes, because the action is a button the caller supplies and repeating it in prose would say it twice."
+  },
+
+  "ui.loading.subject": {
+    "text": "this view",
+    "note": "Stands in for the noun in Loading's sentence when the caller names none. The catalog never loads an unnamed thing — every one of its fourteen loading strings names its subject — so it has no generic stand-in."
+  },
+  "ui.loading.line": {
+    "use": "longtermmemorydetail.loadingDestination"
+  },
+  "ui.loading.slow": {
+    "text": "Taking longer than usual.",
+    "note": "Appended at three seconds, admitting the wait is not normal. The catalog has no degraded phase of loading at all: upstream either shows a loading line or an error, and 'slow' appears nowhere in it."
+  },
+  "ui.loading.stalledTitle": {
+    "text": "Still waiting for {{what}}",
+    "note": "At twelve seconds the indicator stops claiming to be loading and becomes a state you can act on. Nothing upstream times out a spinner, so nothing upstream has a heading for one that has."
+  },
+  "ui.loading.stalledBody": {
+    "text": "The engine hasn’t responded in twelve seconds. It may be asleep, or the connection may have dropped.",
+    "note": "Names both causes that actually occur here: the engine sleeps on its host, and the link to it can drop. Both are facts about this deployment, and the catalog has neither 'asleep' nor any string about a request that never came back."
+  },
+
+  "ui.mode.conversation": {
+    "use": "sourcesworkspace.conversation"
+  },
+  "ui.mode.roleplay": {
+    "use": "sourcesworkspace.roleplay"
+  },
+  "ui.mode.game": {
+    "use": "sourcesworkspace.game"
+  },
+  "ui.mode.filterLabel": {
+    "text": "Filter by mode",
+    "note": "Accessible name of the interactive mode pill when the caller names no subject. The catalog's sourcesworkspace.filterSourcesByMode is the same gesture over sources only; this pill is shared and filters whatever list it sits above, so naming sources would be wrong wherever it is not sources."
+  },
+  "ui.mode.readout": {
+    "text": "modes: {{list}}",
+    "note": "Accessible name of the non-interactive pill, which is an image of which modes are lit. The catalog labels mode controls (memoryvault.chatModes, availableModes) but has no read-out of a mode set, because it renders the set as checkboxes that announce themselves."
+  },
+  "ui.mode.none": {
+    "text": "none",
+    "note": "Fills ui.mode.readout when no mode is lit, so the pill announces an empty set rather than a dangling label. The catalog has no bare 'none' — its absences are always a full sentence about a specific missing thing."
+  },
+
+  "ui.notfound.title": {
+    "text": "{{what}} not found",
+    "note": "NotFound's heading, naming the kind of record the link pointed at. The catalog's missing-record strings are per subject and phrased as availability ('The requested memory is no longer available'), never as a heading with the noun as a hole."
+  },
+  "ui.notfound.body": {
+    "text": "It may have been deleted, or the link may be out of date.",
+    "note": "The two reasons a console link can point at nothing. The product has no addressable links between records — it navigates by panel — so it has no copy about one going stale."
+  },
+  "ui.notfound.id": {
+    "text": "The id was {{id}}.",
+    "note": "Prints the identifier that failed to resolve, so the reader can search for it or report it. The catalog shows ids to the model and never to the reader; nothing upstream quotes one back."
+  },
+  "ui.notfound.back": {
+    "text": "Back to lorebooks",
+    "note": "The default destination when a caller names none, in the catalog's own 'Back to {destination}' shape (longtermmemorydetail.backToAgents). The destination is a console tool, which upstream has no equivalent of."
+  },
+
+  "ui.rawjson.label": {
+    "text": "Raw record",
+    "note": "The summary of the fold that hides the underlying object. The catalog's 'record' is a memory's provenance panel (memoryvault.recordInfo) rather than the serialised object behind it, and it never offers the object itself."
+  },
+  "ui.rawjson.lines": {
+    "one": "1 line",
+    "other": "{{count}} lines",
+    "note": "How much the raw fold is hiding, shown on the closed summary so a fold never reads as missing content. The catalog measures sources in entries and chunks and has no line count, because it never shows serialised text."
+  },
+
+  "ui.search.what": {
+    "text": "Search {{what}}",
+    "note": "The search field inside a disclosure, named after whatever the disclosure chooses. The catalog has eight 'Search {noun}' strings (searchMemories, searchChats, searchStatuses…) and no parameterised one; a shared control cannot pick among them."
+  },
+  "ui.search.matches": {
+    "one": "1 match",
+    "other": "{{count}} matches",
+    "note": "The tally inside the search field, shown only while there is a query. The catalog counts results per subject in prose (reviewqueue.rejectedCount, sourcesworkspace.value1LorebooksValue2Entries…) and has no bare match count for a search box to carry."
+  }
 }

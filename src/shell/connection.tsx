@@ -10,6 +10,7 @@
 // being asleep — for that we watch actual request outcomes.
 import { signal, computed } from "@preact/signals";
 import { ApiError } from "./api";
+import { t } from "../copy";
 
 export type Reach = "ok" | "offline" | "engine-down";
 
@@ -76,13 +77,11 @@ export function ConnectionBanner() {
     <div className="connbar" role="status" aria-live="polite">
       <span className="connbar-dot" aria-hidden="true" />
       <span className="connbar-text">
-        <b>{offline ? "No network connection" : "Cannot reach the engine"}</b>
+        <b>{offline ? t("shell.conn.offlineTitle") : t("shell.conn.engineTitle")}</b>
         {" — "}
-        {offline
-          ? "you can read what's already loaded; edits can't be saved until you're back."
-          : "the engine may be asleep. Your unsaved edits are kept."}
+        {offline ? t("shell.conn.offlineBody") : t("shell.conn.engineBody")}
       </span>
-      <button className="connbar-btn" onClick={() => void probe()}>Retry now</button>
+      <button className="connbar-btn" onClick={() => void probe()}>{t("shell.conn.retry")}</button>
     </div>
   );
 }

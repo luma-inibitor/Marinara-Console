@@ -3,6 +3,7 @@ import { ChevronDown } from "./icons";
 import type { Icon } from "./icons";
 import { SearchBar } from "./SearchBar";
 import { fuzzyFilter } from "./fuzzy";
+import { t } from "../copy";
 import "./SearchDisclosure.css";
 
 export interface DisclosureOption { id: string; name: string; hint?: string }
@@ -65,7 +66,7 @@ export function SearchDisclosure(props: {
       </button>
       {open && (
         <div className="disclosure-pop" role="dialog" aria-label={props.label}>
-          <SearchBar className="disclosure-search" label={`Search ${props.label.toLowerCase()}`}
+          <SearchBar className="disclosure-search" label={t("ui.search.what", { what: props.label.toLowerCase() })}
             value={q} onInput={setQ} />
           <div className="disclosure-list">
             <button type="button" className={`disclosure-opt hit ${props.current === "" ? "is-on" : ""}`}

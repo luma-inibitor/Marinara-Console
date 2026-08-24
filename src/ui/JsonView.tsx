@@ -3,6 +3,7 @@ import {
   Preview, Raw, Copy, Copied, ChevronRight, ChevronDown,
 } from "./icons";
 import { toast } from "../shell/toast";
+import { t } from "../copy";
 import "./JsonView.css";
 
 type Mode = "tree" | "raw";
@@ -30,23 +31,23 @@ export function JsonView(props: { value: unknown; label?: string }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
     } catch {
-      toast("Could not copy — the clipboard is unavailable here", { kind: "error" });
+      toast(t("ui.copy.failed"), { kind: "error" });
     }
   };
 
   return (
     <div className="jsonview">
-      <div className="jsonview-tools" role="group" aria-label={props.label ?? "JSON view"}>
+      <div className="jsonview-tools" role="group" aria-label={props.label ?? t("ui.json.viewLabel")}>
         <button type="button" className="jsonview-t" aria-pressed={mode === "tree"}
-          aria-label="Folding view" title="Folding view" onClick={() => setMode("tree")}>
+          aria-label={t("ui.json.folding")} title={t("ui.json.folding")} onClick={() => setMode("tree")}>
           <Preview size={13} stroke={1.75} aria-hidden />
         </button>
         <button type="button" className="jsonview-t" aria-pressed={mode === "raw"}
-          aria-label="Plain text" title="Plain text" onClick={() => setMode("raw")}>
+          aria-label={t("ui.json.plain")} title={t("ui.json.plain")} onClick={() => setMode("raw")}>
           <Raw size={13} stroke={1.75} aria-hidden />
         </button>
-        <button type="button" className="jsonview-t" aria-label={copied ? "Copied" : "Copy JSON"}
-          title="Copy JSON" onClick={copy}>
+        <button type="button" className="jsonview-t" aria-label={copied ? t("ui.copy.copied") : t("ui.copy.json")}
+          title={t("ui.copy.json")} onClick={copy}>
           {copied
             ? <Copied size={13} stroke={2} aria-hidden />
             : <Copy size={13} stroke={1.75} aria-hidden />}
@@ -95,7 +96,8 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
         className="jn jn-head"
         style={{ paddingLeft: `${props.depth * 12}px` }}
         aria-expanded={open}
-        aria-label={`${open ? "Collapse" : "Expand"} ${props.name ?? "root"} (${entries.length})`}
+        aria-label={t(open ? "ui.group.collapse" : "ui.group.expand", {
+          label: props.name ?? t("ui.json.root"), count: entries.length })}
         onClick={() => setOpen(!open)}
       >
         <span className="jtoggle"><Chevron size={11} stroke={2} aria-hidden /></span>
@@ -116,7 +118,7 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
               other end, for when you have scrolled past the header */}
           <button type="button" className="jn jn-head jn-close"
             style={{ paddingLeft: `${props.depth * 12}px` }}
-            aria-label={`Collapse ${props.name ?? "root"} (${entries.length})`}
+            aria-label={t("ui.group.collapse", { label: props.name ?? t("ui.json.root"), count: entries.length })}
             onClick={() => setOpen(false)}>
             <span className="jb">{closeBrace}</span>{!props.last && <span className="jc">,</span>}
           </button>
@@ -129,7 +131,9 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
 /** Leaves are typed by hue as well as by shape, so a "42" and a 42 are not the
  *  same thing on screen — the difference is exactly what you open this for. */
 function Leaf({ value }: { value: unknown }) {
-  if (value === null) return <span className="jv jv-null">null</span>;
+  // `null` here is the JSON token itself, not copy — rendered through
+  // String() exactly like the boolean and number cases below it.
+  if (value === null) return <span className="jv jv-null">{String(value)}</span>;
   switch (typeof value) {
     case "string": return <span className="jv jv-str">"{value}"</span>;
     case "number": return <span className="jv jv-num">{String(value)}</span>;

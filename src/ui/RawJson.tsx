@@ -1,4 +1,5 @@
 import { JsonView } from "./JsonView";
+import { t } from "../copy";
 import "./RawJson.css";
 
 /** The underlying record, folded away.
@@ -12,10 +13,10 @@ export function RawJson(props: { value: unknown; label?: string }) {
   return (
     <details className="rawjson">
       <summary className="t-label t-label-s">
-        {props.label ?? "Raw record"}
-        <span className="rawjson-n t-data">{lines} lines</span>
+        {props.label ?? t("ui.rawjson.label")}
+        <span className="rawjson-n t-data">{t("ui.rawjson.lines", { count: lines })}</span>
       </summary>
-      <JsonView value={props.value} label={props.label ?? "Raw record"} />
+      <JsonView value={props.value} label={props.label ?? t("ui.rawjson.label")} />
     </details>
   );
 }

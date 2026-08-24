@@ -1,5 +1,6 @@
-import { Loading, ErrorState, EmptyState, ListEmpty } from "../../ui";
+import { Loading, ErrorState, ListEmpty } from "../../ui";
 import { useEffect, useState } from "preact/hooks";
+import { t } from "../../copy";
 import { navigate } from "../../shell/router";
 import { fetchBooks, fetchEntries, entryTokens, type Lorebook } from "./data";
 
@@ -45,8 +46,8 @@ export function Picker() {
   return (
     <div className="screen">
       <div className="screen-head">
-        <h1 className="screen-title">Lorebooks</h1>
-        <span className="meta"><span>{books.length} {books.length === 1 ? "book" : "books"}</span></span>
+        <h1 className="screen-title">{t("lorebooks.title")}</h1>
+        <span className="meta"><span>{t("lorebooks.bookCount", { count: books.length })}</span></span>
       </div>
       {books.length === 0 && <ListEmpty kind="first-run" what="lorebooks" />}
       {books.map((b) => {
@@ -62,7 +63,7 @@ export function Picker() {
               // Say the number is missing, and let the user get it back without
               // reloading the whole screen. Never invent a value.
               <div className="meta">
-                <span className="is-flag" title={failed.message}>Stats unavailable</span>
+                <span className="is-flag" title={failed.message}>{t("lorebooks.picker.statsUnavailable")}</span>
                 <span
                   role="button"
                   tabIndex={0}
@@ -71,20 +72,20 @@ export function Picker() {
                   onKeyDown={(ev) => {
                     if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.stopPropagation(); loadStats(b.id); }
                   }}
-                >Retry</span>
-                {!b.enabled && <span style={{ color: "var(--danger)" }}>disabled</span>}
+                >{t("lorebooks.retry")}</span>
+                {!b.enabled && <span style={{ color: "var(--danger)" }}>{t("lorebooks.picker.bookDisabled")}</span>}
               </div>
             ) : (
               <div className="meta">
-                <span><b className="t-num">{ok ? ok.n : "—"}</b> {ok?.n === 1 ? "entry" : "entries"}</span>
-                <span><b className="t-num">{ok ? ok.constant : "—"}</b> constant</span>
+                <span className="t-num">{t("lorebooks.entryCount", { count: ok ? ok.n : "—" })}</span>
+                <span className="t-num">{t("lorebooks.tag.constantCount", { count: ok ? ok.constant : "—" })}</span>
                 <span>
                   <b className="t-num" style={over ? { color: "var(--flag)" } : undefined}>
                     {ok ? ok.sum.toLocaleString() : "—"}
                   </b>
-                  {" "}/ {b.tokenBudget.toLocaleString()} tokens (est.)
+                  {" / "}{b.tokenBudget.toLocaleString()} {t("ui.editor.tokensEst")}
                 </span>
-                {!b.enabled && <span style={{ color: "var(--danger)" }}>disabled</span>}
+                {!b.enabled && <span style={{ color: "var(--danger)" }}>{t("lorebooks.picker.bookDisabled")}</span>}
               </div>
             )}
             {/* no bar until there is a real number to draw — a 0% bar is a claim */}
