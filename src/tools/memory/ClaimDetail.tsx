@@ -17,7 +17,7 @@ import { useState, type ReactNode } from "react";
 import { ChevronRight, Preview as PreviewIcon, Flag, ValidationOk, Edit, EditedMark, Forward, Remove, Add } from "../../ui/icons";
 import { toast } from "../../shell/toast";
 import { KEYWORD_CAP, type Mutation, SECTION_CAP } from "./api/types";
-import type { Row } from "./model/review";
+import { sectionTextOf, type Row } from "./model/review";
 import type { SectionPressure } from "./model/pressure";
 import { t, tAny } from "../../copy";
 import { Copy } from "./Copy";
@@ -138,7 +138,7 @@ export function ClaimDetail({ row }: { row: Row }) {
     m.kind === "create_note"
       ? Object.entries(m.note?.sections ?? {}).map(([key, s]) => ({ id: key, label: key, text: s.text ?? "" }))
       : (m.kind === "append_section" || m.kind === "update_section")
-        ? [{ id: "__text", label: m.sectionKey ?? "text", text: m.text ?? m.section?.text ?? "" }]
+        ? [{ id: "__text", label: m.sectionKey ?? "text", text: sectionTextOf(m) ?? "" }]
         : [];
 
   const save = () => {
@@ -159,7 +159,7 @@ export function ClaimDetail({ row }: { row: Row }) {
       if (s.id === "__text") {
         if (next.kind === "update_section" && next.section) next.section.text = v;
         else next.text = v;
-        changed ||= v !== (r.mutation.text ?? r.mutation.section?.text ?? "");
+        changed ||= v !== (sectionTextOf(r.mutation) ?? "");
       } else {
         next.note!.sections[s.id] = { ...next.note!.sections[s.id], text: v };
         changed ||= v !== (r.mutation.note?.sections?.[s.id]?.text ?? "");
@@ -290,6 +290,11 @@ function Preview(props: {
   // starting with an icon read wrong), keeping its education tooltip in the pane.
   const opTag = <Term tip={OP_TIP[m.kind]}><span className="z-opi"><OpIcon kind={m.kind} size={13} /></span></Term>;
 
+  // What the editor seeds and what the save writes, in one precedence order.
+  // The diff's after-value below prefers the review change; the editor must
+  // not, or one keystroke stages the change's text over the mutation's own.
+  const secText = sectionTextOf(m) ?? "";
+
   const area = (id: string, text: string) => (
     <textarea className="edit-area t-prose" rows={Math.min(10, Math.max(3, Math.ceil(text.length / 60)))}
       value={props.drafts[id] ?? text}
@@ -317,7 +322,7 @@ function Preview(props: {
     const head = storedLines.slice(0, Math.max(0, storedLines.length - STORED_CONTEXT));
     const tail = storedLines.slice(Math.max(0, storedLines.length - STORED_CONTEXT));
     const addCh = (m.text ?? "").length;
-    const addLines = editing ? area("__text", m.text ?? "") : adds.map((l, i) => <Line key={i} mode="add">{l}</Line>);
+    const addLines = editing ? area("__text", secText) : adds.map((l, i) => <Line key={i} mode="add">{l}</Line>);
     return (
       <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<Skey k={key} /> · {t(editing ? "memory.zoneEditing" : "memory.zonePreview")}</span>{props.controls}</>}
         foot={<><span className="dim">+{addCh.toLocaleString()} · {(stored.length + addCh).toLocaleString()} {t("ui.editor.charUnit")}</span>{capNote(sectionPressure, r.targetId, key)}</>}>
@@ -347,7 +352,7 @@ function Preview(props: {
       <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<Skey k={key} /> · {t(editing ? "memory.zoneEditing" : "memory.zoneDiff")}</span>{props.controls}</>}
         foot={<><span className="dim">{after.length >= before.length ? "+" : "−"}{Math.abs(after.length - before.length).toLocaleString()} · {after.length.toLocaleString()} {t("ui.editor.charUnit")}</span>{capNote(sectionPressure, r.targetId, key)}</>}>
         {editing
-          ? <>{splitLines(before).map((l, i) => <Line key={i} mode="del">{l}</Line>)}{area("__text", after)}</>
+          ? <>{splitLines(before).map((l, i) => <Line key={i} mode="del">{l}</Line>)}{area("__text", secText)}</>
           : whole
             ? wholeSections(key, <DiffLines before={before} after={after} fold={false} />)
             : <DiffLines before={before} after={after} />}

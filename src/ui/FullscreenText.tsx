@@ -2,11 +2,12 @@
 // with delta, wrap toggle, markdown symbol row. Generic: callers supply the
 // title/subtitle and receive the final value on Done.
 //
-// It owns its own Escape, offers Cancel, guards a dirty discard, and pushes a
-// history entry, so neither Escape nor the Android back gesture can reach the
-// list behind it and silently discard the edit.
+// It owns its own Escape, offers Cancel, guards a dirty discard, and registers
+// with the overlay stack, so neither Escape nor the Android back gesture can
+// reach the list behind it and silently discard the edit.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { tokensOf } from "../shell/api";
+import { openOverlay } from "../shell/overlays";
 import { Chip } from "./Chip";
 import { t } from "../copy";
 
@@ -64,20 +65,31 @@ export function FullscreenText(props: {
     };
   }, []);
 
-  // A history entry of our own, so the phone's back gesture closes the editor
-  // rather than unwinding to the list behind it with the edit dropped.
+  // One overlay entry, owned by the stack, so the phone's back gesture closes
+  // the editor rather than unwinding to the list behind it with the edit
+  // dropped. This effect must stay AFTER the one above: the focus the stack
+  // captures for restore is whatever is focused at registration time, and by
+  // then that is our own textarea — which is gone by the time a real close
+  // restores, so the stack's restore goes inert and the `restoreTo` above
+  // wins. After a back the editor stays open, the textarea is still there,
+  // and the stack puts focus back into it, which is what we want anyway.
   useEffect(() => {
-    history.pushState({ fsEditor: true }, "");
-    const onPop = () => { live.current.dirty ? setConfirming(true) : props.onCancel(); };
-    window.addEventListener("popstate", onPop);
-    return () => {
-      window.removeEventListener("popstate", onPop);
-      // Unmounting without a back gesture — saved, canceled, or the parent
-      // re-rendered it away — leaves our entry on the stack. Rewind it, but
-      // only while it is still the current one: after a real back it is gone,
-      // and after any other navigation it is not ours to eat.
-      if (history.state?.fsEditor) history.back();
+    let alive = true;
+    let dispose: (() => void) | null = null;
+    const register = () => {
+      dispose = openOverlay(() => {
+        dispose = null; // the stack already removed this entry before closing us
+        if (!live.current.dirty) { props.onCancel(); return; }
+        setConfirming(true);
+        // Staying open spends the entry, so the editor needs a fresh one or the
+        // next back escapes to the list. Re-register off a microtask: the
+        // stack's hashchange teardown drains synchronously, and pushing back
+        // into that drain would loop forever.
+        queueMicrotask(() => { if (alive && !dispose) register(); });
+      });
     };
+    register();
+    return () => { alive = false; dispose?.(); dispose = null; };
   }, []);
 
   const insert = (tok: string) => {

@@ -346,13 +346,13 @@
     "text": "A new memory with no keywords — keyword matching cannot find it.",
     "note": "The no-keywords flag as a sentence, naming the consequence rather than the condition, because the condition alone reads as a stylistic quibble."
   },
-  "memory.flag.keywordCap": {
-    "text": "target near keyword cap",
-    "note": "Flag label and facet value: the memory this claim targets is close to the 30-keyword ceiling. The catalog states the cap only as a rejection message after the fact (manualKeywordLimit)."
+  "memory.flag.keywordCapFull": {
+    "text": "target at keyword cap",
+    "note": "Flag label and facet value: the memory this claim targets already holds the full 30 keywords, so the next one is refused. The catalog names this state only by rejecting a write after the fact (manualKeywordLimit), which is not a label a reviewer can read beforehand."
   },
-  "memory.flag.keywordCapSentence": {
-    "text": "The target memory is near its {{cap}}-keyword cap.",
-    "note": "The keyword-cap flag as a sentence. Interpolates the cap rather than spelling it, so the sentence cannot drift from KEYWORD_CAP the way the catalog's hardcoded \"at most 30\" would."
+  "memory.flag.keywordCapFullSentence": {
+    "text": "The target memory has filled its {{cap}}-keyword cap — another keyword is refused.",
+    "note": "The at-cap keyword flag as a sentence. Interpolates the cap rather than spelling it, so the sentence cannot drift from KEYWORD_CAP the way the catalog's hardcoded \"at most 30\" would, and names the consequence because \"at the cap\" alone does not say the next write fails."
   },
   "memory.flag.sectionNearCap": {
     "text": "The section is close to its cap.",

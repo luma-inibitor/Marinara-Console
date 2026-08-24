@@ -13,7 +13,7 @@
 // filter can name a flag without re-deriving its text.
 
 import { KEYWORD_CAP, type Note, SECTION_CAP } from "../api/types";
-import type { Row } from "./review";
+import { type Row, sectionTextOf } from "./review";
 import { capPercent, rowOverflows, type SectionPressure } from "./pressure";
 import { t } from "../../../copy";
 
@@ -37,7 +37,7 @@ export const FLAG = {
   long: t("memory.flag.long"),
   undated: t("memory.flag.undatedEvent"),
   noKeywords: t("memory.flag.noKeywords"),
-  keywordCap: t("memory.flag.keywordCap"),
+  keywordCapFull: t("memory.flag.keywordCapFull"),
 };
 
 /** `${risk} risk` as one token, for the row's readline and the risk flags. */
@@ -66,7 +66,7 @@ export interface RowFlag {
 export function contributionChars(r: Row): number {
   const m = r.mutation;
   if (m.kind === "append_section" || m.kind === "update_section") {
-    return (m.text ?? m.section?.text ?? "").length;
+    return (sectionTextOf(m) ?? "").length;
   }
   if (m.kind === "create_note") {
     return Object.values(m.note?.sections ?? {}).reduce((n, s) => n + (s?.text ?? "").length, 0);
@@ -130,10 +130,11 @@ export function flagsOf(r: Row, ctx: FlagContext): RowFlag[] {
   if (r.mutation.kind === "create_note" && !(r.mutation.note?.keywords ?? []).length) {
     f.push({ label: FLAG.noKeywords, severity: "warn", sentence: t("memory.flag.noKeywordsSentence") });
   }
-  if (((ctx.notesById.get(r.targetId) as Note | undefined)?.keywords ?? []).length >= 25) {
+  const targetKeywords = ((ctx.notesById.get(r.targetId) as Note | undefined)?.keywords ?? []).length;
+  if (targetKeywords >= KEYWORD_CAP) {
     f.push({
-      label: FLAG.keywordCap, severity: "warn",
-      sentence: t("memory.flag.keywordCapSentence", { cap: KEYWORD_CAP }),
+      label: FLAG.keywordCapFull, severity: "warn",
+      sentence: t("memory.flag.keywordCapFullSentence", { cap: KEYWORD_CAP }),
     });
   }
   return f;

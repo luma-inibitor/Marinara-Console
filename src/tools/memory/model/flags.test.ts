@@ -23,8 +23,8 @@ vi.mock("../../../copy", () => ({
   joinList: (items: readonly string[]) => items.join(", "),
 }));
 
-import { KEYWORD_CAP, type Note, SECTION_CAP } from "../api/types";
-import type { Row } from "./review";
+import { KEYWORD_CAP, type Mutation, type Note, type ReviewResponse, SECTION_CAP } from "../api/types";
+import { flattenReview, type Row, sectionTextOf } from "./review";
 import type { SectionPressure } from "./pressure";
 import { FLAG, LOW_CONFIDENCE, contributionChars, flagsOf, worstSeverity } from "./flags";
 import { chars, makeMutation, makeNote, makeRow, section } from "../test/factories";
@@ -64,9 +64,11 @@ describe("contributionChars", () => {
     expect(contributionChars(cleanRow({ mutation }))).toBe(7);
   });
 
-  it("prefers text over section.text when both are present", () => {
+  it("prefers section.text over text when both are present", () => {
+    // section.text is the field the console's own edit path writes, so on a
+    // mutation carrying both it is the newer of the two.
     const mutation = makeMutation({ kind: "update_section", text: chars(3), section: section(chars(50)) });
-    expect(contributionChars(cleanRow({ mutation }))).toBe(3);
+    expect(contributionChars(cleanRow({ mutation }))).toBe(50);
   });
 
   it("falls back to section.text on update_section", () => {
@@ -89,6 +91,69 @@ describe("contributionChars", () => {
   it("is 0, not NaN, when the text is missing entirely", () => {
     expect(contributionChars(cleanRow({ mutation: makeMutation({ kind: "append_section" }) }))).toBe(0);
     expect(contributionChars(cleanRow({ mutation: makeMutation({ kind: "create_note" }) }))).toBe(0);
+  });
+});
+
+// The long-claim flag, the row's readline and the cap projection all read the
+// text a mutation writes. They read it through one helper, so a mutation
+// carrying both fields cannot measure one string and display another.
+describe("one section-text reader", () => {
+  /** The row `flattenReview` builds for a single mutation against one target. */
+  function flatten(m: Mutation): Row {
+    const data: ReviewResponse = {
+      generatedAt: "",
+      sources: [
+        {
+          sourceNoteId: "s1",
+          modes: [],
+          drafts: [
+            {
+              draft: { id: "d1", status: "pending", mutations: [m] },
+              freshness: "fresh",
+              blockReasons: [],
+              diagnostics: [],
+              candidateRejections: [],
+            },
+          ],
+          targets: [
+            {
+              noteId: "n1",
+              noteType: "world",
+              rows: [{ draftId: "d1", mutation: m, disposition: "new", diagnostics: [], changes: [] }],
+            },
+          ],
+        },
+      ],
+      counts: { sources: 1, drafts: 1, mutations: 1, blockedDrafts: 0, candidateRejections: 0, deduplications: 0 },
+    };
+    return flattenReview(data, new Map()).rows[0]!;
+  }
+
+  it("measures one string across the flag, the readline and the parts", () => {
+    const m = makeMutation({
+      kind: "update_section", sectionKey: "history", text: chars(3), section: section(chars(50)),
+    });
+    const row = flatten(m);
+    expect(sectionTextOf(m)).toBe(chars(50));
+    expect(row.text).toBe(chars(50));
+    expect(row.parts).toEqual([{ key: "history", text: chars(50) }]);
+    expect(contributionChars(row)).toBe(row.parts[0]!.text.length);
+  });
+
+  it("measures an append that carries its text only in section.text", () => {
+    const m = makeMutation({ kind: "append_section", sectionKey: "history", section: section(chars(40)) });
+    const row = flatten(m);
+    expect(row.text).toBe(chars(40));
+    expect(row.parts).toEqual([{ key: "history", text: chars(40) }]);
+    expect(contributionChars(row)).toBe(40);
+  });
+
+  it("is undefined for kinds that write no section text", () => {
+    // create_note carries a whole section map instead, which each reader takes
+    // apart its own way.
+    for (const kind of ["create_note", "add_link", "set_keywords", "set_status", "set_subjects"] as const) {
+      expect(sectionTextOf(makeMutation({ kind, text: chars(9) }))).toBeUndefined();
+    }
   });
 });
 
@@ -282,25 +347,31 @@ describe("flagsOf — one branch at a time", () => {
     expect(labels(cleanRow({ mutation }))).toEqual([]);
   });
 
-  // SUSPECT: the trigger is a hard-coded 25 but the sentence interpolates
-  // KEYWORD_CAP (30), so the warning fires five keywords before the number it
-  // shows the reader. That is either a deliberate early warning with a
-  // misleading sentence or an off-by-five bug; these tests only record that 25
-  // is what the code compares against today.
-  it("flags a target note at 25 keywords, while the sentence still quotes KEYWORD_CAP", () => {
-    const notes = new Map([["n1", makeNote({ id: "n1", keywords: Array.from({ length: 25 }, (_, i) => `k${i}`) })]]);
-    const row = cleanRow({ targetId: "n1" });
-    expect(flagsOf(row, ctx({ notesById: notes }))).toEqual([
-      {
-        label: FLAG.keywordCap,
-        severity: "warn",
-        sentence: `memory.flag.keywordCapSentence|cap=${KEYWORD_CAP}`,
-      },
-    ]);
-    expect(KEYWORD_CAP).toBe(30);
+  it("does not flag a target note one keyword below the cap", () => {
+    const keywords = Array.from({ length: KEYWORD_CAP - 1 }, (_, i) => `k${i}`);
+    const notes = new Map([["n1", makeNote({ id: "n1", keywords })]]);
+    expect(flagsOf(cleanRow({ targetId: "n1" }), ctx({ notesById: notes }))).toEqual([]);
   });
 
-  it("does not flag a target note at 24 keywords", () => {
+  it("says the target is AT the cap once it holds KEYWORD_CAP keywords", () => {
+    const keywords = Array.from({ length: KEYWORD_CAP }, (_, i) => `k${i}`);
+    const notes = new Map([["n1", makeNote({ id: "n1", keywords })]]);
+    expect(flagsOf(cleanRow({ targetId: "n1" }), ctx({ notesById: notes }))).toEqual([
+      {
+        label: FLAG.keywordCapFull,
+        severity: "warn",
+        sentence: `memory.flag.keywordCapFullSentence|cap=${KEYWORD_CAP}`,
+      },
+    ]);
+  });
+
+  it("keeps the at-cap wording above the cap", () => {
+    const keywords = Array.from({ length: KEYWORD_CAP + 5 }, (_, i) => `k${i}`);
+    const notes = new Map([["n1", makeNote({ id: "n1", keywords })]]);
+    expect(labels(cleanRow({ targetId: "n1" }), ctx({ notesById: notes }))).toEqual([FLAG.keywordCapFull]);
+  });
+
+  it("does not flag a target note well below the cap", () => {
     const notes = new Map([["n1", makeNote({ id: "n1", keywords: Array.from({ length: 24 }, (_, i) => `k${i}`) })]]);
     expect(labels(cleanRow({ targetId: "n1" }), ctx({ notesById: notes }))).toEqual([]);
   });
@@ -348,7 +419,7 @@ describe("the flags array itself", () => {
       FLAG.long,
       FLAG.undated,
       FLAG.noKeywords,
-      FLAG.keywordCap,
+      FLAG.keywordCapFull,
     ]);
   });
 

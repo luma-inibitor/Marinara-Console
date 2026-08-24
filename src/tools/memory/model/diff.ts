@@ -30,6 +30,10 @@ const EDGE_WS = /^(\s*)([\s\S]*?)(\s*)$/;
 /** Common word prefix/suffix of a del/add pair. Null when the lines share too
  *  little for word emphasis to help — the caller falls back to plain lines. */
 export function wordEmphasis(del: string, add: string): { pre: string; delMid: string; addMid: string; post: string } | null {
+  // Identical lines have nothing to emphasize, and the length guard below
+  // cannot catch them: it would compare the whole common prefix against 30% of
+  // itself, and for two empty strings it compares 0 < 0.
+  if (del === add) return null;
   const aw = del.split(/(\s+)/), bw = add.split(/(\s+)/);
   let p = 0;
   while (p < aw.length && p < bw.length && aw[p] === bw[p]) p++;

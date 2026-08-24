@@ -1,6 +1,6 @@
 // Prompt preset browser + editor. Order is THE attribute of a prompt preset,
 // so the status rail carries the ordinal.
-import { Chip, EmptyState, IconButton, Loading, ErrorState, ListEmpty, NotFound } from "../../ui";
+import { Chip, EmptyState, IconButton, Loading, ErrorState, ListEmpty, NotFound, useIsDesktop } from "../../ui";
 import { Add, Back, Duplicate, Fullscreen, ICON_SIZE, SetDefault } from "../../ui/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
@@ -22,17 +22,6 @@ import {
 export function PresetsTool({ rest }: { rest: string[] }) {
   const id = rest[0];
   return id ? <Editor presetId={id} key={id} /> : <Browser />;
-}
-
-function useIsDesktop(): boolean {
-  const [is, setIs] = useState(() => window.matchMedia("(min-width: 900px)").matches);
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 900px)");
-    const fn = () => setIs(mq.matches);
-    mq.addEventListener("change", fn);
-    return () => mq.removeEventListener("change", fn);
-  }, []);
-  return is;
 }
 
 // ── copy shared with the lorebook tool, deliberately NOT routed here ──

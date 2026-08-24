@@ -459,13 +459,49 @@ describe("dedupeLines", () => {
     expect(out).toEqual({ text: [a, b].join("\n"), dropped: 1 });
   });
 
-  it("compares a long line only against lines it has already kept", () => {
-    // SUSPECT: the scan breaks at the first cluster hit and, when a longer line
-    // replaces the survivor, the earlier comparisons are not redone. So cluster
-    // membership depends on line order: a third line similar to the *original*
-    // survivor but not to its replacement stays. Pinned here as the mechanism,
-    // not as a claim that it is right.
+  it("collapses a cluster whose members all match the first line kept", () => {
+    // A single pass suffices here: words(10) is shorter than words(13), so it
+    // never replaces the survivor and no comparison is invalidated.
     const out = dedupeLines([words(13), words(10), words(13)].join("\n"));
     expect(out).toEqual({ text: words(13), dropped: 2 });
+  });
+
+  describe("re-runs the pass until it drops nothing", () => {
+    // A pass breaks at the first cluster hit, and when a longer line replaces
+    // the survivor the comparisons already made against the old survivor are
+    // not redone — so one pass leaves behind a line that matched the replaced
+    // survivor but not its replacement. These three are that shape: b and c are
+    // each a plus a tail, and only a~c falls under the threshold.
+    const a = words(12); // 9 shingles
+    const b = words(14); // 11 shingles
+    const c = words(17); // 14 shingles
+
+    it("has the similarities the escape depends on", () => {
+      expect(jaccard(shingles(a), shingles(b))).toBeCloseTo(9 / 11); // 0.82
+      expect(jaccard(shingles(b), shingles(c))).toBeCloseTo(11 / 14); // 0.79
+      expect(jaccard(shingles(a), shingles(c))).toBeCloseTo(9 / 14); // 0.64
+      expect(9 / 14).toBeLessThan(DUPLICATE_THRESHOLD);
+      expect(11 / 14).toBeGreaterThan(DUPLICATE_THRESHOLD);
+    });
+
+    it("collapses a cluster the first pass would leave two lines of", () => {
+      // One pass keeps a, then replaces it with b (0.82), then keeps c because
+      // c~b was never scored — leaving two survivors 0.79 apart, which the same
+      // function calls a duplicate. The second pass takes c.
+      expect(dedupeLines([a, c, b].join("\n"))).toEqual({ text: c, dropped: 2 });
+    });
+
+    it("reaches the same result when the cluster arrives in ascending order", () => {
+      expect(dedupeLines([a, b, c].join("\n"))).toEqual({ text: c, dropped: 2 });
+    });
+
+    it("reports the total dropped across every pass, not the last pass's count", () => {
+      // Pass one drops b, pass two drops c: a single-pass count would say 1.
+      expect(dedupeLines([a, c, b].join("\n"))?.dropped).toBe(2);
+    });
+
+    it("still returns null when the first pass drops nothing", () => {
+      expect(dedupeLines([a, "an unrelated sentence that stands alone entirely"].join("\n"))).toBeNull();
+    });
   });
 });

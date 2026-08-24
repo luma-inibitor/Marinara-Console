@@ -39,12 +39,24 @@ export interface BlockedDraft {
 
 export interface Rejection { sourceNoteId: string; sourceTitle: string; reason: string; message?: string; snippet?: string }
 
+/** The section text a section-writing mutation carries, from whichever of the
+ *  two fields holds it. Both are optional on the wire and neither is narrowed
+ *  by `kind`, so a mutation may arrive with either or both; `section.text` wins
+ *  because that is the field the console's own edit path writes and the field
+ *  the diff renders. Undefined for kinds that write no section text —
+ *  `create_note` carries a whole section map instead, which each caller reads
+ *  its own way. */
+export function sectionTextOf(m: Mutation): string | undefined {
+  if (m.kind !== "append_section" && m.kind !== "update_section") return undefined;
+  return m.section?.text ?? m.text;
+}
+
 function mutationText(m: Mutation): string {
   if (m.kind === "create_note") {
     const first = Object.values(m.note?.sections ?? {})[0];
     return first?.text ?? m.summary;
   }
-  if (m.kind === "append_section" || m.kind === "update_section") return m.text ?? m.section?.text ?? m.summary;
+  if (m.kind === "append_section" || m.kind === "update_section") return sectionTextOf(m) ?? m.summary;
   return m.summary;
 }
 
@@ -53,8 +65,9 @@ function mutationParts(m: Mutation): Array<{ key: string; text: string }> {
   if (m.kind === "create_note") {
     return Object.entries(m.note?.sections ?? {}).map(([key, s]) => ({ key, text: s.text ?? "" }));
   }
-  if (m.kind === "append_section") return [{ key: m.sectionKey!, text: m.text ?? "" }];
-  if (m.kind === "update_section") return [{ key: m.sectionKey!, text: m.section?.text ?? m.text ?? "" }];
+  if (m.kind === "append_section" || m.kind === "update_section") {
+    return [{ key: m.sectionKey!, text: sectionTextOf(m) ?? "" }];
+  }
   return [];
 }
 

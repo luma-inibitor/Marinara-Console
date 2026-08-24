@@ -112,8 +112,31 @@ export function computeDerived(rows: Row[], lines: VaultLine[]): void {
 
 /** Collapse near-identical lines inside one section's text, keeping the
  *  longest of each cluster — the vault only ever drops byte-identical lines.
- *  Returns null when nothing was collapsed. */
+ *  Returns null when nothing was collapsed.
+ *
+ *  Runs the pass repeatedly until one drops nothing. A single pass is
+ *  order-dependent: it breaks at the first cluster it matches, and when a
+ *  longer line replaces the survivor the comparisons already made against the
+ *  old survivor are not redone, so a line similar to the replaced survivor but
+ *  not to its replacement escapes. Re-running catches it, because the escapee
+ *  and its replacement are now both in the kept list from the start.
+ *
+ *  It terminates: a pass returns non-null only when it removed at least one
+ *  line, so each iteration strictly shortens the input. */
 export function dedupeLines(text: string): { text: string; dropped: number } | null {
+  let current = text;
+  let total = 0;
+  for (;;) {
+    const pass = dedupePass(current);
+    if (!pass) break;
+    total += pass.dropped;
+    current = pass.text;
+  }
+  if (!total) return null;
+  return { text: current, dropped: total };
+}
+
+function dedupePass(text: string): { text: string; dropped: number } | null {
   const raw = text.split("\n");
   const keep: string[] = [];
   const sh: Array<Set<string> | null> = [];

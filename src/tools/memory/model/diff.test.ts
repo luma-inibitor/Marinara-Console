@@ -106,23 +106,21 @@ describe("wordEmphasis", () => {
     expect(wordEmphasis("alpha beta", "gamma delta")).toBeNull();
   });
 
-  // SUSPECT: identical inputs do NOT return null. The whole string becomes `pre`
-  // and both mids come back empty, so the caller gets a "changed line" record
-  // describing no change at all. Callers that treat a non-null result as proof
-  // something differs would render an empty del/add pair. Pinned as-is.
-  it("returns a whole-string pre with empty mids for identical inputs, not null", () => {
-    expect(wordEmphasis("the quick fox", "the quick fox")).toEqual({
-      pre: "the quick fox",
-      delMid: "",
-      addMid: "",
-      post: "",
-    });
+  // A non-null result means something differs. The `< min(...) * 0.3` length
+  // guard cannot enforce that on its own: for identical inputs the whole string
+  // becomes `pre` and it compares that against 30% of itself, and for two empty
+  // strings it compares 0 < 0. Both are false, so an explicit equality check is
+  // what keeps the null contract true.
+  it("returns null for identical inputs rather than a record describing no change", () => {
+    expect(wordEmphasis("the quick fox", "the quick fox")).toBeNull();
   });
 
-  // SUSPECT: same shape for two empty strings — the `< min(...) * 0.3` guard
-  // compares 0 < 0, which is false, so the null path is unreachable here.
-  it("returns an all-empty record for two empty strings, not null", () => {
-    expect(wordEmphasis("", "")).toEqual({ pre: "", delMid: "", addMid: "", post: "" });
+  it("returns null for two empty strings", () => {
+    expect(wordEmphasis("", "")).toBeNull();
+  });
+
+  it("returns null for identical inputs that are pure whitespace", () => {
+    expect(wordEmphasis("   ", "   ")).toBeNull();
   });
 
   type Case = {
