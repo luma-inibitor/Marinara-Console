@@ -45,20 +45,26 @@
 // shared-fixture directory declares no layer in §2's table and holds no domain
 // direction.
 //
-// ── Deliberately out of scope ─────────────────────────────────────────────
-// Presentation reaching `api/` directly is downward, so it passes here, though
-// §1 calls it wrong for a different reason: the screen bypassed the data layer
-// rather than risking a cycle. That is a rule about who owns a fetch, not about
-// direction, and it wants its own check rather than a special case in this one.
+// ── The second check: who may own a fetch ─────────────────────────────────
+// Presentation reaching `api/` directly is DOWNWARD, so the direction rule
+// above passes it — and §1 still calls it wrong, for a different reason: the
+// screen bypassed the data layer instead of calling a hook (§3, "No component
+// calls fetch"). That is a rule about ownership rather than direction, so it
+// runs as a separate check below with its own heading, and its findings are
+// never mixed into the upward-import list.
 //
-// Exit codes: 0 clean · 1 one or more upward value imports.
+// It is reported but does not fail by default. Three screens do this today
+// (§1 says so), and they are a refactor rather than a lint fix; a check that
+// fails on every run from the day it lands gets muted, and then it is not a
+// check. `--strict` makes it fail, and is what the rule should run as once the
+// screens are moved onto hooks. The non-failing default is a temporary
+// baseline, not the intended end state.
+//
+// Exit codes: 0 clean · 1 one or more upward value imports (or, with --strict,
+// one or more ownership violations).
 
-import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
-import { join, relative, dirname, sep } from "node:path";
-import { fileURLToPath } from "node:url";
-import * as babel from "@babel/parser";
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+import { join } from "node:path";
+import { ROOT, rel, listSources, parseModule, valueSpecifiers } from "./lib/imports.mjs";
 
 // ── layers ────────────────────────────────────────────────────────────────
 // Rank is the only thing compared: an import is legal when it lands at a rank
@@ -99,88 +105,77 @@ function layerOf(rel) {
   return "unclassified";
 }
 
-// ── resolution ────────────────────────────────────────────────────────────
-// Relative specifiers only; a bare specifier is a package and has no layer.
-const EXTS = ["", ".ts", ".tsx", "/index.ts", "/index.tsx"];
-
-function resolve(fromAbs, spec) {
-  if (!spec.startsWith(".")) return null;
-  const base = join(dirname(fromAbs), spec);
-  for (const e of EXTS) {
-    const p = base + e;
-    if (existsSync(p) && statSync(p).isFile()) return p;
-  }
-  return null; // .css, .json, or a path that does not exist
-}
-
-// ── parsing ───────────────────────────────────────────────────────────────
-// The same babel front end copycheck uses. A regex cannot answer the question
-// this check asks — `import { a, type B }` needs per-specifier kinds, and the
-// list may wrap across as many lines as it likes.
-function valueEdges(absPath) {
-  const src = readFileSync(absPath, "utf8");
-  let ast;
-  try {
-    ast = babel.parse(src, {
-      sourceType: "module",
-      plugins: ["typescript", "jsx", "decorators-legacy", "explicitResourceManagement"],
-    });
-  } catch (e) {
-    return { parseError: e.message, edges: [] };
-  }
-
+// ── edges ─────────────────────────────────────────────────────────────────
+// The shared parse gives per-specifier kinds; the direction rule only cares
+// about the specifiers that survive to runtime.
+function valueEdges(mod) {
   const edges = [];
-  for (const n of ast.program.body) {
-    if (n.type === "ImportDeclaration") {
-      if (n.importKind === "type") continue; // `import type {…}` — no runtime edge
-      const named = [];
-      let bare = true;
-      for (const s of n.specifiers) {
-        bare = false;
-        if (s.importKind === "type") continue; // `import { type X }`
-        named.push(
-          s.type === "ImportDefaultSpecifier" ? "default"
-          : s.type === "ImportNamespaceSpecifier" ? `* as ${s.local.name}`
-          : s.imported.name ?? s.imported.value
-        );
-      }
-      // A side-effect import (`import "./x"`) has no specifiers and is still an
-      // edge — the module runs.
-      if (!named.length && !bare) continue;
-      edges.push({ line: n.loc.start.line, spec: n.source.value, names: named, kind: "imports" });
-      continue;
-    }
-    // A re-export runs the module it names, exactly like an import.
-    if (n.type === "ExportNamedDeclaration" && n.source) {
-      if (n.exportKind === "type") continue;
-      const named = n.specifiers
-        .filter((s) => s.exportKind !== "type")
-        .map((s) => s.local?.name ?? s.exported?.name ?? "*");
-      if (!named.length) continue;
-      edges.push({ line: n.loc.start.line, spec: n.source.value, names: named, kind: "re-exports" });
-      continue;
-    }
-    if (n.type === "ExportAllDeclaration" && n.exportKind !== "type") {
-      edges.push({ line: n.loc.start.line, spec: n.source.value, names: ["*"], kind: "re-exports" });
-    }
+  for (const e of mod.imports) {
+    const names = valueSpecifiers(e).map((s) =>
+      s.star ? `* as ${s.local}` : s.imported
+    );
+    // A side-effect import (`import "./x"`) names nothing and is still an edge
+    // — the module runs. An import whose every specifier was type-only is not.
+    if (!names.length && !e.bare) continue;
+    edges.push({ line: e.line, spec: e.spec, resolved: e.resolved, names, kind: e.kind });
   }
-  return { parseError: null, edges };
+  return edges;
 }
 
-// ── file discovery ────────────────────────────────────────────────────────
-function listSources(roots) {
-  const out = [];
-  const visit = (p) => {
-    const st = statSync(p);
-    if (st.isDirectory()) {
-      if (/(^|\/)(node_modules|dist|\.git|vendor)$/.test(p.split(sep).join("/"))) return;
-      for (const f of readdirSync(p).sort()) visit(join(p, f));
-      return;
+// ── ownership (the second check) ───────────────────────────────────────────
+// A different question from direction: not "may this file reach that layer?"
+// but "is this file allowed to own a fetch at all?" §3: no component calls
+// `fetch`; a screen gets data by calling a hook.
+const OWNERSHIP_STRICT = process.argv.includes("--strict");
+
+// The same notion of presentation the direction check uses, so one file cannot
+// be presentation to one rule and something else to the other.
+function isPresentation(from) {
+  const parts = from.split("/");
+  if (parts[parts.length - 1].endsWith(".tsx")) return true;
+  return parts.slice(0, -1).some((d) => d === "components" || d === "screens");
+}
+
+// An `api/` DIRECTORY, per §2 — not a file that happens to be named api.ts.
+// The resolved path is the fact; the specifier is the fallback for a target
+// this tree does not contain.
+function isEndpointsModule(edge) {
+  if (edge.resolved) return rel(edge.resolved).split("/").slice(0, -1).includes("api");
+  return /(^|\/)api\//.test(edge.spec);
+}
+
+const TRANSPORT_DIR = "src/shell/";
+const TRANSPORT_CLIENT = "src/shell/api.ts";
+
+// `api()` is a request, so importing it into a component is the same defect as
+// calling `fetch` there. The rest of that module is not: `ApiError` is a shape
+// an error boundary has to name, and `tokensOf` is a pure estimate. Naming the
+// binding rather than the module is what keeps this from firing on all of them.
+// The app frame is exempt — src/shell is the transport, `.tsx` and all.
+const TRANSPORT_REQUEST = new Set(["api", "default"]);
+
+function isTransportClient(edge, from) {
+  if (from.startsWith(TRANSPORT_DIR)) return false;
+  if (!edge.resolved || rel(edge.resolved) !== TRANSPORT_CLIENT) return false;
+  return edge.names.some((n) => TRANSPORT_REQUEST.has(n) || n.startsWith("* as "));
+}
+
+// `fetch` as a free identifier. `opts.refetch()` and `client.fetch` are not it:
+// a member name is a property, not the global.
+function fetchSites(mod) {
+  const lines = new Set();
+  const walk = (n) => {
+    if (Array.isArray(n)) { for (const c of n) walk(c); return; }
+    if (!n || typeof n !== "object" || typeof n.type !== "string") return;
+    if (n.type === "Identifier" && n.name === "fetch" && n.loc) lines.add(n.loc.start.line);
+    for (const k of Object.keys(n)) {
+      if (k === "loc" || k.endsWith("Comments")) continue;
+      if (!n.computed && (k === "property" || k === "key")) continue;
+      walk(n[k]);
     }
-    if (/\.tsx?$/.test(p) && !/\.d\.ts$/.test(p)) out.push(p);
   };
-  for (const r of roots) if (existsSync(r)) visit(r);
-  return out;
+  walk(mod.ast.program.body);
+  return [...lines].sort((a, b) => a - b);
 }
 
 // ── main ──────────────────────────────────────────────────────────────────
@@ -188,9 +183,9 @@ const paths = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const roots = paths.length ? paths.map((p) => join(ROOT, p)) : [join(ROOT, "src")];
 const files = listSources(roots);
 
-const rel = (p) => relative(ROOT, p).split(sep).join("/");
 const perDir = new Map();
 const violations = [];
+const ownership = [];
 const unclassified = [];
 const parseErrors = [];
 let checked = 0;
@@ -206,15 +201,37 @@ for (const abs of files) {
   perDir.set(dir, agg);
 
   if (layer === "unclassified") unclassified.push(from);
+
+  const mod = parseModule(abs);
+  if (mod.parseError) { parseErrors.push(`${from}: ${mod.parseError}`); continue; }
+  const edges = valueEdges(mod);
+
+  // Ownership runs on every file whatever its layer: an unclassified module
+  // still may not own a fetch, and that is exactly where some of them are.
+  if (isPresentation(from)) {
+    for (const e of edges) {
+      const rule =
+        isEndpointsModule(e) ? "endpoints"
+        : isTransportClient(e, from) ? "transport"
+        : null;
+      if (!rule) continue;
+      ownership.push({
+        file: from, line: e.line, rule,
+        text: `${e.kind} { ${e.names.join(", ")} } from "${e.spec}"`,
+      });
+    }
+  }
+  if (!from.startsWith(TRANSPORT_DIR)) {
+    for (const line of fetchSites(mod)) {
+      ownership.push({ file: from, line, rule: "fetch", text: "calls the global fetch()" });
+    }
+  }
+
   if (layer === null || layer === "unclassified") continue;
 
-  const { parseError, edges } = valueEdges(abs);
-  if (parseError) { parseErrors.push(`${from}: ${parseError}`); continue; }
-
   for (const e of edges) {
-    const target = resolve(abs, e.spec);
-    if (!target) continue;
-    const tLayer = layerOf(rel(target));
+    if (!e.resolved) continue;
+    const tLayer = layerOf(rel(e.resolved));
     if (tLayer === null || tLayer === "unclassified") continue;
     checked++;
     agg.edges++;
@@ -249,16 +266,47 @@ if (parseErrors.length) {
   for (const m of parseErrors) console.log("  " + m);
 }
 
+// ── rule 1 · direction ────────────────────────────────────────────────────
+console.log("\n──── RULE 1 · imports point downward (§1) ────");
 if (violations.length) {
-  console.log("\nUPWARD VALUE IMPORTS — imports point downward only (§1):");
+  console.log("\nUPWARD VALUE IMPORTS:");
   for (const v of violations) {
     console.log(`  ${v.file}:${v.line}  ${v.from} → ${v.to}   ${v.text}`);
   }
 }
-
 console.log(
   violations.length
     ? `\n${violations.length} upward value import(s) — every import points downward or not at all`
     : "\nevery value import points downward"
 );
-process.exit(violations.length ? 1 : 0);
+
+// ── rule 2 · ownership ────────────────────────────────────────────────────
+const RULE_TEXT = {
+  endpoints: "presentation reaches api/ directly — a screen gets data from a hook",
+  transport: "presentation reaches the transport client — api() is a fetch by another name",
+  fetch: "the global fetch() outside the transport layer (src/shell/)",
+};
+console.log("\n──── RULE 2 · no component owns a fetch (§3) ────");
+if (ownership.length) {
+  for (const rule of ["endpoints", "transport", "fetch"]) {
+    const hits = ownership
+      .filter((o) => o.rule === rule)
+      .sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line);
+    if (!hits.length) continue;
+    console.log(`\n  ${RULE_TEXT[rule]}:`);
+    let last = null;
+    for (const o of hits) {
+      if (o.file !== last) { console.log(`    ${o.file}`); last = o.file; }
+      console.log(`      :${String(o.line).padStart(4)}  ${o.text}`);
+    }
+  }
+  const inFiles = new Set(ownership.map((o) => o.file)).size;
+  console.log(
+    `\n${ownership.length} ownership violation(s) across ${inFiles} file(s)` +
+    (OWNERSHIP_STRICT ? " — FAILING under --strict" : " — reported only; --strict makes this fail")
+  );
+} else {
+  console.log("\nno component owns a fetch");
+}
+
+process.exit(violations.length || (OWNERSHIP_STRICT && ownership.length) ? 1 : 0);
