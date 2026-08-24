@@ -245,7 +245,7 @@ export function Sources() {
               label={heading} count={group.length}
               head={<>
                 <span className="ki"><KI size={15} stroke={1.75} aria-hidden /></span>
-                <span className="gname t-prose">{heading}</span>
+                <span className="gname">{heading}</span>
                 <span className="gn t-data">{group.length}</span>
                 <span className="gsp" />
                 {bulk && eligible.length > 0 && (
@@ -331,7 +331,7 @@ function SourceLine({ row, bulk, selected, onToggle, onReload }: {
           </button>
         )}
         <span className="ki"><KI size={14} stroke={1.75} aria-hidden /></span>
-        <span className="stitle t-prose">{row.title}</span>
+        <span className="stitle">{row.title}</span>
         <StateMark state={row.state} />
         {row.kind === "lorebooks" && (
           <button className="jumpb hit" aria-label={t("memory.sources.openInLorebooks", { title: row.title })}
@@ -361,7 +361,7 @@ function ProducedPanel({ row }: { row: SourceRow }) {
         {head.map((m) => (
           <div key={m.id} className="mrow2">
             <TypeIcon type={m.type} size={13} />
-            <span className="stitle t-prose">{m.title}</span>
+            <span className="stitle">{m.title}</span>
           </div>
         ))}
         {row.derived.length > 3 && !showAll && (
@@ -551,7 +551,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
       <div className="reshead2">
         <AllClear className="s-ok" size={17} stroke={1.75} aria-hidden />
         <div>
-          <div className="restitle t-prose">{t("sourcesworkspace.sourceImportComplete")}</div>
+          <div className="restitle">{t("sourcesworkspace.sourceImportComplete")}</div>
           <div className="ressub t-prose dim">
             {t("memory.sources.reportSummary", { ok: ok.length, total: rows.length, kept })}
           </div>
@@ -565,7 +565,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
       {bad.map((r) => (
         <div key={r.title} className="failblock">
           <div className="failhead"><Failure size={15} stroke={1.75} aria-hidden />
-            <span className="failname t-prose">{r.title}</span></div>
+            <span className="failname">{r.title}</span></div>
           <p className="failwhy t-prose dim">{t("sourcesworkspace.sourceSavedExtractionFailed")}</p>
         </div>
       ))}

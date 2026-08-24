@@ -24,7 +24,7 @@ export function EmptyState(props: {
           {props.icon}
         </span>
       )}
-      <div className="es-title t-prose">{props.title}</div>
+      <div className="es-title">{props.title}</div>
       {props.body && <p className="es-body t-prose dim">{props.body}</p>}
       {props.actions && <div className="es-acts">{props.actions}</div>}
     </div>
