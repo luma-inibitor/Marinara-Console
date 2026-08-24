@@ -1,41 +1,12 @@
 {
   "_areas": {
-    "src/shell": "baselined",
+    "src/shell": "clean",
     "src/ui": "baselined",
     "src/tools": "baselined",
     "src/tools/memory": "baselined",
     "src/tools/lorebooks": "baselined",
     "src/tools/presets": "baselined"
   },
-  "src/shell/App.tsx": [
-    "marinara\u0000console",
-    "tools"
-  ],
-  "src/shell/api.ts": [
-    "restore point failed — this write proceeded without a backup. check the server log"
-  ],
-  "src/shell/connection.tsx": [
-    "cannot reach the engine",
-    "no network connection",
-    "retry now",
-    "the engine may be asleep. your unsaved edits are kept",
-    "you can read what's already loaded; edits can't be saved until you're back"
-  ],
-  "src/shell/hotkeys.tsx": [
-    "keyboard shortcuts"
-  ],
-  "src/shell/palette.tsx": [
-    "command palette",
-    "esc close",
-    "no matches",
-    "search commands",
-    "search tools, books, entries",
-    "↑↓ move",
-    "↵ open"
-  ],
-  "src/shell/toast.tsx": [
-    "dismiss"
-  ],
   "src/tools/PlaceholderTool.tsx": [
     "unknown tool"
   ],
@@ -60,7 +31,6 @@
     "edit content",
     "edit description",
     "enable",
-    "entries",
     "entry",
     "entry saved",
     "failed to add entry: \u0000",
@@ -95,7 +65,6 @@
     "book",
     "books",
     "disabled",
-    "entries",
     "entry",
     "stats unavailable"
   ],
@@ -197,7 +166,6 @@
     "could not load",
     "decided",
     "decision: \u0000. tap to cycle",
-    "dismiss",
     "drop \u0000 undecided",
     "drop all \u0000 undecided in \u0000",
     "drop shown",
@@ -400,7 +368,6 @@
     "of context",
     "on",
     "position",
-    "presets",
     "re-apply mine over theirs",
     "reverted — could not reorder: \u0000",
     "role",

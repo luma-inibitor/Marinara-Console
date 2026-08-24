@@ -1,0 +1,3 @@
+{
+  "_readme": "presets area copy. Empty until src/tools/presets is migrated onto the catalog — see src/copy/index.ts for the entry shapes and design/copycheck.mjs for what is enforced. Keys beginning with an underscore are metadata and are never copy."
+}

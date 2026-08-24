@@ -1,0 +1,152 @@
+{
+  "memory.keep": {
+    "text": "keep",
+    "note": "Decision vocabulary. The product's Accept/Skip are immediate server actions; keep/drop/undecided name a local judgment that is only transmitted on Apply, which is a genuinely different thing."
+  },
+  "memory.drop": {
+    "text": "drop",
+    "note": "Decision vocabulary, the counterpart to memory.keep. The product's Accept/Skip are immediate server actions; keep/drop/undecided name a local judgment that is only transmitted on Apply."
+  },
+  "memory.undecided": {
+    "text": "undecided",
+    "note": "Decision vocabulary: the third state, a claim the reviewer has not judged yet. The product has no such state — upstream a proposal is pending until an immediate Accept or Skip resolves it."
+  },
+  "memory.applying": {
+    "text": "Applying…",
+    "note": "The commit's busy state. The catalog's reviewqueue.accepting (\"Accepting...\") speaks the server vocabulary, but this button commits a local keep/drop judgment and reads \"Apply decided\" at rest — the busy state must not switch vocabularies mid-press."
+  },
+  "memory.dropped": {
+    "text": "Dropped",
+    "note": "Result of a commit, in the local vocabulary. The catalog's reviewqueue.skipped is \"Proposals skipped\" — Skip is the product's own immediate server action, while this count is the reviewer's drops the engine confirmed removed. Same number, our word for it."
+  },
+  "memory.draftsWillApply": {
+    "one": "{{count}} draft will be applied",
+    "other": "{{count}} drafts will be applied",
+    "note": "Apply-dock forecast. The dock used to say drafts \"will be sent\", a fourth verb for the commit beside keep/drop and Apply; the catalog only reports per draft after the fact (\"Applied\") and has no forward-looking phrase to borrow. Counts drafts, not claims."
+  },
+  "memory.nearLimit": {
+    "text": "near a limit",
+    "note": "The product ships caps and a binary budget rejection, nothing for approaching one; extended from its \"Limits:\" label."
+  },
+  "memory.overLimit": {
+    "text": "over the limit",
+    "note": "The product ships caps and a binary budget rejection, nothing for approaching one; extended from its \"Limits:\" label. This is the far side of memory.nearLimit."
+  },
+  "memory.restorePoint": {
+    "text": "Take a restore point first",
+    "note": "Restore-point framing over the product's existing backup export. The catalog offers the file operation (exportBackup) but never the pre-flight habit of taking one before a destructive batch."
+  },
+  "memory.restorePointDone": {
+    "text": "Restore point saved",
+    "note": "Restore-point framing over the product's existing backup export; the confirmation half of memory.restorePoint. memorysettings.memoryBackupExported names the file, not the safety net."
+  },
+  "memory.facetsComputed": {
+    "text": "computed",
+    "note": "Facet-rail provenance heading (the review study's grouping): a facet the console derives itself. The catalog has no facet rail and so nothing that groups fields by where they came from."
+  },
+  "memory.facetsFromModel": {
+    "text": "from the model",
+    "note": "Facet-rail provenance heading (the review study's grouping): a facet the extraction model asserted. See memory.facetsComputed for why the group names are ours."
+  },
+  "memory.facetsYours": {
+    "text": "yours",
+    "note": "Facet-rail provenance heading (the review study's grouping): a facet the reviewer set by hand. See memory.facetsComputed for why the group names are ours."
+  },
+  "memory.autoIncluded": {
+    "text": "{{count}} added as dependencies",
+    "note": "Batch reporting: the product reports per draft; we report per batch. Not plural-selected on purpose — the line only renders when the count is two or more, because one dependency is reported inline on its own row."
+  },
+  "memory.queueEmpty": {
+    "text": "Nothing is waiting on review.",
+    "note": "Empty queue: the product has no string for this state (its own empty state names the Sources screen's condition)."
+  },
+  "memory.disposition.new": {
+    "text": "new",
+    "despite": "sourcesworkspace.new",
+    "note": "Disposition names: schema values the product computes but never labels. The catalog's \"New\" is a source-status chip in the sources workspace; this is one of a lowercase triad with merge and rewrite, and borrowing a capitalised word for one of three breaks the set."
+  },
+  "memory.disposition.merge": {
+    "text": "merge",
+    "note": "Disposition names: schema values the product computes but never labels. `merge` folds new material into a memory that already exists."
+  },
+  "memory.disposition.rewrite": {
+    "text": "rewrite",
+    "note": "Disposition names: schema values the product computes but never labels. `rewrite` replaces the stored section text instead of adding to it."
+  },
+  "memory.nav.sources": {
+    "use": "longtermmemorynavigation.sources"
+  },
+  "memory.nav.vault": {
+    "text": "Vault",
+    "note": "Navigation label. The catalog names this view in full (\"Memory Vault\"); the console's own nav uses one word each so the four fit as equal targets on a phone without truncating. Owner's call, 2026-08-22 — the full catalog name still heads the screen."
+  },
+  "memory.nav.review": {
+    "use": "longtermmemorynavigation.review",
+    "note": "The catalog's short navigation label happens to be exactly the one word the console's rail needs; the longer longtermmemorynavigation.reviewQueue still heads the screen itself."
+  },
+  "memory.nav.activity": {
+    "text": "Activity",
+    "note": "Navigation label. The catalog has an activityview namespace but no label for the view — upstream reaches it from a menu the console does not have. One word, per the memory.nav.vault rule."
+  },
+  "memory.sourcesPending": {
+    "text": "Pending",
+    "note": "Sources not yet imported; the catalog counts them but never labels the set. The Sources screen's state vocabulary is otherwise the product's (New / Already imported / Update available / Context changed / Extraction incomplete)."
+  },
+  "memory.sourcesBlocked": {
+    "text": "Blocked",
+    "note": "Drafts held before review; the catalog says \"blocked\" only inside sentences and never as a label for the set of them."
+  },
+  "memory.sourcesReviewEach": {
+    "text": "Review each",
+    "note": "The per-kind affordance for sources that must be curated, not bulk-imported. The catalog's verbs here are Import and extract / Re-extract / Select all / Refresh — all bulk, none for opting out of bulk."
+  },
+  "memory.extractionText": {
+    "text": "Extraction text",
+    "note": "The editable text extraction reads; the override is new to this console. Upstream extraction always reads the source note verbatim, so there is nothing to name."
+  },
+  "memory.noMatchingSources": {
+    "text": "No matching sources.",
+    "note": "The catalog has the whole family — \"No matching chats/characters/branches/personas/places\" — but not sources, and the Sources search was borrowing the chats one while its own body text said \"sources\". Same sentence shape, right noun."
+  },
+  "memory.zonePreview": {
+    "text": "preview",
+    "note": "Detail-pane zone label (v5), anchored to catalog vocabulary: \"preview\" from reviewqueue.evidenceAndPreview / previewUnavailable, where it only ever appears inside a longer phrase. Lowercase because eyebrows uppercase in CSS."
+  },
+  "memory.zoneDiff": {
+    "text": "existing → proposed",
+    "note": "Detail-pane zone label (v5), built from reviewqueue.existingValue / proposedValue, which are whole interpolated sentences carrying the value. The arrow pairing them as one eyebrow is ours. Lowercase because eyebrows uppercase in CSS."
+  },
+  "memory.zoneEvidence": {
+    "use": "reviewqueue.evidence"
+  },
+  "memory.zoneNewMemory": {
+    "text": "new memory",
+    "despite": "memoryvault.newMemory",
+    "note": "Detail-pane zone label (v5), from reviewqueue.newMemory. Kept lowercase because zone eyebrows uppercase in CSS and this same string also renders in the zone's foot line, which does not — the catalog's title-cased \"New memory\" would read as a heading there."
+  },
+  "memory.zoneExtraction": {
+    "text": "extraction",
+    "despite": "memorysettings.extraction",
+    "note": "Detail-pane zone label (v5), from the extractiondetails namespace. Lowercase for the same reason as memory.zonePreview; the catalog's \"Extraction\" is a settings-section heading, which is the one place this word is NOT an eyebrow."
+  },
+  "memory.claim": {
+    "text": "claim",
+    "note": "The single reviewable item in the queue. The catalog has zero occurrences of \"claim\" in any key or value: the product's vocabulary is a five-word lifecycle — candidate (at extraction) → proposal / mutation (in review, inside a draft) → suggestion (once rejected) — and none of those five names the thing a reviewer holds one of. The console keeps \"claim\" because the wire schema already does: `claimKind: \"static\" | \"change\"` on interface Mutation (data.ts:40), so an object whose kind is a claimKind is a claim. ClaimDetail.tsx is named for that field and glossary.tsx anchors the term to it. Note \"claim kind\" itself is domain vocabulary, not a coinage — it names the schema field verbatim. Only the bare noun is ours."
+  },
+  "memory.batch": {
+    "text": "batch",
+    "note": "The set of claims applied in one go, which may span drafts. Distinct from \"draft\", which is the container the engine returns claims in and which the catalog does have a word for. The product reports per draft; the console reports per batch, and the catalog has no word for the user's own apply-unit."
+  },
+  "memory.section": {
+    "text": "section",
+    "note": "The note sub-part. Unlike everything else here, the product DOES have a word for this and we are deliberately not using it: memoryvault renames the sub-part to \"detail\" user-visibly (memoryvault.addSection = \"Create detail\", newSection = \"New detail\", detailRequired, detailNameExample), so \"detail\" there really does mean the sub-part, not a detail pane. But the product contradicts itself: reviewqueue still says section (addToSection = \"Add to section\", updateSection = \"Update section\", sectionTextCannotBeEmpty). The schema and wire format do not contradict themselves at all — `sections: Record<string, NoteSection>`, mutation kinds `append_section` / `update_section`, `SECTION_CAP` (data.ts). The console keeps \"section\" because it matches the schema, the wire format, and one of the two product surfaces; memoryvault's \"detail\" is the outlier. Owner's call — recorded here so the divergence is a decision, not a drift."
+  },
+  "memory.existing": {
+    "text": "existing",
+    "note": "Diff-zone eyebrow label, rendered on its own as well as inside memory.zoneDiff. Derived from reviewqueue.existingValue (\"Existing: {{value}}\"), a whole interpolated sentence carrying the value — it cannot be used as a bare label, so the catalog has no string for the label alone. Lowercase because eyebrows uppercase in CSS."
+  },
+  "memory.proposed": {
+    "text": "proposed",
+    "note": "Diff-zone eyebrow label, rendered on its own as well as inside memory.zoneDiff. Derived from reviewqueue.proposedValue (\"Proposed: {{value}}\"), a whole interpolated sentence carrying the value — it cannot be used as a bare label, so the catalog has no string for the label alone. Lowercase because eyebrows uppercase in CSS."
+  }
+}
