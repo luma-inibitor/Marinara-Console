@@ -42,25 +42,30 @@
   "dtsPropsFor": {
     "EmptyState": "icon?: React.ReactNode;\n    title: React.ReactNode;\n    body?: React.ReactNode;\n    actions?: React.ReactNode;\n    tone?: \"ok\" | \"danger\";",
     "ModePill": "/** Mode ids that are lit. */\n    modes: string[] | Set<string>;\n    /** Present makes the pill interactive. */\n    onToggle?: (id: string) => void;\n    label?: string;",
-    "Sheet": "label: string;\n    onClose: () => void;\n    children: React.ReactNode;\n    /** Extra classes on the panel \u2014 `option-sheet` caps its height, for one. */\n    className?: string;",
+    "Sheet": "label: string;\n    onClose: () => void;\n    children: React.ReactNode;\n    /** Extra classes on the panel — `option-sheet` caps its height, for one. */\n    className?: string;",
     "Modal": "label: string;\n    onClose: () => void;\n    children: React.ReactNode;\n    className?: string;",
-    "SheetHead": "title: React.ReactNode;\n    /** Sits before the title \u2014 a type glyph, usually. */\n    icon?: React.ReactNode;\n    /** Sits between the title and the close button. */\n    children?: React.ReactNode;\n    /** Focused on open, so the dialog receives focus without stealing a field. */\n    autoFocus?: boolean;",
+    "SheetHead": "title: React.ReactNode;\n    /** Sits before the title — a type glyph, usually. */\n    icon?: React.ReactNode;\n    /** Sits between the title and the close button. */\n    children?: React.ReactNode;\n    /** Focused on open, so the dialog receives focus without stealing a field. */\n    autoFocus?: boolean;",
     "Term": "tip: string;\n    children: React.ReactNode;\n    chip?: boolean;\n    /** -1 takes it out of the tab order, for a Term inside a roving composite. */\n    tabIndex?: number;",
     "RawJson": "value: unknown;\n    label?: string;",
     "Loading": "what?: string;\n    label?: string;\n    onRetry?: () => void;",
     "ListEmpty": "kind: \"first-run\" | \"filtered\" | \"cleared\";\n    what: string;\n    /** Active filters, for the diagnostic treatment. */\n    filters?: Array<{\n        label: string;\n        clear: () => void;\n    }>;\n    onClearAll?: () => void;\n    action?: {\n        label: string;\n        run: () => void;\n    };",
-    "Chip": "children: React.ReactNode;\n    onClick?: () => void;\n    /** Present makes this a toggle and renders the pressed state. */\n    pressed?: boolean;\n    /** Computed-outlier hue, reserved for flag filters (DESIGN.md \u00a72). */\n    flag?: boolean;\n    disabled?: boolean;\n    title?: string;\n    className?: string;",
+    "Chip": "children: React.ReactNode;\n    onClick?: () => void;\n    /** Present makes this a toggle and renders the pressed state. */\n    pressed?: boolean;\n    /** Computed-outlier hue, reserved for flag filters (DESIGN.md §2). */\n    flag?: boolean;\n    disabled?: boolean;\n    title?: string;\n    className?: string;",
     "Tag": "children: React.ReactNode;\n    className?: string;",
     "DetailSection": "sectionKey: string;\n    meta?: React.ReactNode;\n    meter?: React.ReactNode;\n    children: React.ReactNode;\n    className?: string;",
     "FacetDrawer": "groups: FacetGroup[];\n    onToggle: (facetId: string, value: string) => void;\n    onClear: () => void;\n    onClose: () => void;\n    emptyText: string;",
-    "ListGroup": "collapsed: boolean;\n    onToggle: () => void;\n    label: string;\n    count: number;\n    /** Everything in the header after the chevron \u2014 icon, title, controls. */\n    head: React.ReactNode;\n    children: React.ReactNode;\n    className?: string;\n    chevronSize?: number;",
+    "ListGroup": "collapsed: boolean;\n    onToggle: () => void;\n    label: string;\n    count: number;\n    /** Everything in the header after the chevron — icon, title, controls. */\n    head: React.ReactNode;\n    children: React.ReactNode;\n    className?: string;\n    chevronSize?: number;",
     "CopyableText": "value: string;\n    label?: string;\n    className?: string;",
     "NotFound": "what: string;\n    id?: string;\n    backTo?: string;\n    backLabel?: string;",
-    "SearchBar": "value: string;\n    onInput: (v: string) => void;\n    /** Placeholder and accessible name \u2014 the field has no visible label. */\n    label: string;\n    count?: number;\n    className?: string;",
+    "SearchBar": "value: string;\n    onInput: (v: string) => void;\n    /** Placeholder and accessible name — the field has no visible label. */\n    label: string;\n    count?: number;\n    className?: string;",
     "Picker": "open: boolean;\n    label: string;\n    options: PickerOption[];\n    current: string;\n    onPick: (id: string) => void;\n    onClose: () => void;",
     "IconButton": "children: React.ReactNode;\n    label: string;\n    onClick?: () => void;\n    href?: string;\n    download?: boolean;\n    disabled?: boolean;\n    className?: string;",
     "ErrorState": "title?: string;\n    message?: string;\n    error?: unknown;\n    actions?: React.ReactNode;\n    onRetry?: () => void;",
     "SearchDisclosure": "label: string;\n    value: string;\n    icon: Icon;\n    options: DisclosureOption[];\n    /** The clear-the-filter row, always first and always present. */\n    allLabel: string;\n    current: string;\n    onPick: (id: string) => void;\n    /** Shown when the search matches nothing. Name the right noun. */\n    emptyText: string;",
     "Edu": "children: React.ReactNode;"
+  },
+  "overrides": {
+    "SheetHead": {
+      "cardMode": "column"
+    }
   }
 }
