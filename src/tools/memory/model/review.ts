@@ -50,28 +50,40 @@ export interface Rejection { sourceNoteId: string; sourceTitle: string; reason: 
  *  because that is the field the console's own edit path writes and the field
  *  the diff renders. Undefined for kinds that write no section text —
  *  `create_note` carries a whole section map instead, which each caller reads
- *  its own way. */
+ *  its own way.
+ *
+ *  Empty counts as absent, in both fields: the two are alternatives holding the
+ *  same string, so an empty one is a field that was not filled in rather than a
+ *  write of nothing. Letting "" through renders a blank row where the summary
+ *  belongs and, on a replacing section, projects the target down to zero. */
 export function sectionTextOf(m: Mutation): string | undefined {
   if (m.kind !== "append_section" && m.kind !== "update_section") return undefined;
-  return m.section?.text ?? m.text;
+  return m.section?.text || m.text || undefined;
 }
 
 function mutationText(m: Mutation): string {
   if (m.kind === "create_note") {
     const first = Object.values(m.note?.sections ?? {})[0];
-    return first?.text ?? m.summary;
+    return first?.text || m.summary;
   }
   if (m.kind === "append_section" || m.kind === "update_section") return sectionTextOf(m) ?? m.summary;
   return m.summary;
 }
 
-/** [{key, text}] of section text this mutation writes, for pressure math. */
+/** [{key, text}] of section text this mutation writes, for pressure math.
+ *
+ *  A section write with no key, or with no text, writes nothing that can be
+ *  charged: there is no section to project onto, or nothing to project. Both
+ *  yield no parts rather than a part keyed `undefined` or holding "", either of
+ *  which the pressure pass would enter into its map as a real section. */
 function mutationParts(m: Mutation): Array<{ key: string; text: string }> {
   if (m.kind === "create_note") {
     return Object.entries(m.note?.sections ?? {}).map(([key, s]) => ({ key, text: s.text ?? "" }));
   }
   if (m.kind === "append_section" || m.kind === "update_section") {
-    return [{ key: m.sectionKey!, text: sectionTextOf(m) ?? "" }];
+    const text = sectionTextOf(m);
+    if (!m.sectionKey || text === undefined) return [];
+    return [{ key: m.sectionKey, text }];
   }
   return [];
 }
@@ -113,7 +125,11 @@ export function flattenReview(data: ReviewResponse, sourceTitles: Map<string, st
           mutation: m,
           disposition: row.disposition,
           changes: row.changes,
-          conflicts: m.kind === "create_note" ? (m.note?.conflicts ?? []) : [],
+          // Conflicts are a field of a note, and the only note a mutation
+          // carries is the one `create_note` drafts — so this reads whatever
+          // note is there rather than testing the kind, which could only ever
+          // discard conflicts that were on the wire.
+          conflicts: m.note?.conflicts ?? [],
           text: mutationText(m),
           parts: mutationParts(m),
         });

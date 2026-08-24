@@ -15,7 +15,7 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { Mutation, ReviewResponse } from "../api/types";
+import type { Mutation, NoteSection, ReviewResponse } from "../api/types";
 import { flattenReview, sectionTextOf } from "./review";
 import { chars, makeMutation, makeNote, resetIds, section } from "../test/factories";
 
@@ -209,10 +209,25 @@ describe("flattenReview — conflicts", () => {
     expect(oneRow(makeMutation({ kind: "create_note" })).conflicts).toEqual([]);
   });
 
-  it("ignores conflicts hanging off a non-create mutation's note", () => {
-    // The kind gate, not the field's absence, is what empties this.
+  it("takes conflicts off a non-create mutation's note too", () => {
+    // Conflicts belong to a note, so the note the mutation carries is the only
+    // thing consulted. In a live payload only create_note carries one.
     const m = makeMutation({ kind: "append_section", note: makeNote({ conflicts: [{ field: "status" }] }) });
-    expect(oneRow(m).conflicts).toEqual([]);
+    expect(oneRow(m).conflicts).toEqual([{ field: "status" }]);
+  });
+
+  it("does not drop conflicts on a mutation kind that is not create_note", () => {
+    const conflicts = [{ field: "status", existing: "active", proposed: "resolved" }];
+    for (const kind of ["append_section", "update_section", "add_link", "set_keywords", "set_status", "set_subjects"] as const) {
+      const m = makeMutation({ kind, note: makeNote({ conflicts }) });
+      expect(oneRow(m).conflicts).toEqual(conflicts);
+    }
+  });
+
+  it("is an empty array for a mutation of any kind carrying no note", () => {
+    for (const kind of ["append_section", "add_link", "set_status"] as const) {
+      expect(oneRow(makeMutation({ kind })).conflicts).toEqual([]);
+    }
   });
 });
 
@@ -422,12 +437,23 @@ describe("row.text and row.parts — create_note", () => {
     expect(row.parts).toEqual([]);
   });
 
-  it("reads an empty first section as the row's text rather than the summary", () => {
-    // SUSPECT: the fallback is `??`, so a section that exists with empty text
-    // wins over the summary and the row renders blank. `||` would show the
-    // summary; the two readers disagree about whether "" is a value.
+  it("falls back to the summary when the first section is present but empty", () => {
+    // An empty section is not text to show, so the row does not render blank
+    // while a summary sentence is available.
     const note = makeNote({ sections: { core: section(""), history: section("real") } });
-    expect(oneRow(makeMutation({ kind: "create_note", note, summary: "the summary" })).text).toBe("");
+    expect(oneRow(makeMutation({ kind: "create_note", note, summary: "the summary" })).text).toBe("the summary");
+  });
+
+  it("never renders a blank row while the mutation carries a summary", () => {
+    const cases: Array<Record<string, NoteSection>> = [
+      {},
+      { core: section("") },
+      { core: { text: undefined as unknown as string } },
+    ];
+    for (const sections of cases) {
+      const m = makeMutation({ kind: "create_note", note: makeNote({ sections }), summary: "the summary" });
+      expect(oneRow(m).text).toBe("the summary");
+    }
   });
 
   it("treats a section with no text as an empty part rather than dropping it", () => {
@@ -462,32 +488,76 @@ describe("row.text and row.parts — section writes", () => {
     expect(row.parts[0]!.text).toBe(row.text);
   });
 
-  it("shows the summary but charges nothing when a section write carries no text", () => {
-    // SUSPECT: text and parts disagree here. `mutationText` falls back to the
-    // summary while `mutationParts` records "", so the row displays a sentence
-    // the pressure pass is not charging for.
+  it("shows the summary and charges nothing when a section write carries no text", () => {
+    // A write with nothing to write projects nothing; the summary is only what
+    // the row has left to display.
     const m = makeMutation({ kind: "append_section", sectionKey: "history", summary: "the summary" });
     const row = oneRow(m);
     expect(row.text).toBe("the summary");
-    expect(row.parts).toEqual([{ key: "history", text: "" }]);
+    expect(row.parts).toEqual([]);
   });
 
-  it("keeps an explicitly empty section text as empty, not as the summary", () => {
-    // SUSPECT: same `??` split as create_note — "" is a value here, so the row
-    // renders blank rather than falling back to the summary.
+  it("treats an explicitly empty section text as no text at all", () => {
     const m = makeMutation({ kind: "append_section", sectionKey: "history", text: "", summary: "the summary" });
-    expect(oneRow(m).text).toBe("");
+    const row = oneRow(m);
+    expect(row.text).toBe("the summary");
+    expect(row.parts).toEqual([]);
   });
 
-  it("emits a part with an undefined key when sectionKey is missing", () => {
-    // SUSPECT: `m.sectionKey!` asserts a field the wire type marks optional, so
-    // the part's `key` is undefined despite being typed `string`. Downstream
-    // this keys pressure as "n1 undefined".
-    const m = makeMutation({ kind: "append_section", text: "added" });
+  it("reads through an empty section.text to the text field", () => {
+    // The two fields hold the same string, so an empty one is unfilled rather
+    // than a write of nothing.
+    const m = makeMutation({ kind: "update_section", sectionKey: "voice", section: section(""), text: "wire" });
     const row = oneRow(m);
-    expect(row.parts).toHaveLength(1);
-    expect(row.parts[0]!.key).toBeUndefined();
-    expect(row.parts[0]!.text).toBe("added");
+    expect(row.text).toBe("wire");
+    expect(row.parts).toEqual([{ key: "voice", text: "wire" }]);
+  });
+
+  it("emits no part at all when sectionKey is missing", () => {
+    // A part keyed `undefined` would be charged against the literal section
+    // "n1 undefined", which no lookup can ever match.
+    const m = makeMutation({ kind: "append_section", text: "added" });
+    expect(oneRow(m).parts).toEqual([]);
+  });
+
+  it("never emits a part whose key or text is empty for a section write", () => {
+    const cases = [
+      { sectionKey: undefined, text: "added" },
+      { sectionKey: "history", text: undefined },
+      { sectionKey: "history", text: "" },
+      { sectionKey: "", text: "added" },
+      { sectionKey: undefined, text: undefined },
+    ];
+    for (const over of cases) {
+      for (const kind of ["append_section", "update_section"] as const) {
+        for (const p of oneRow(makeMutation({ kind, ...over })).parts) {
+          expect(p.key).toBeTruthy();
+          expect(p.text).toBeTruthy();
+        }
+      }
+    }
+  });
+
+  it("charges parts for exactly the string the row displays, or charges nothing", () => {
+    // The queue and the pressure pass must never describe different writes: a
+    // part exists only when the row is showing the text that part carries.
+    const cases = [
+      { sectionKey: "history", text: "added" },
+      { sectionKey: "history", section: section("edited"), text: "wire" },
+      { sectionKey: "history", summary: "the summary" },
+      { sectionKey: "history", text: "", summary: "the summary" },
+      // A keyless write is the one case that shows text it cannot charge:
+      // there is no section to charge it against, and the proposed text is
+      // still more use to a reviewer than the summary.
+      { text: "added", summary: "the summary" },
+    ];
+    for (const over of cases) {
+      const row = oneRow(makeMutation({ kind: "append_section", ...over }));
+      expect(row.parts.map((p) => p.text)).toEqual(row.parts.length ? [row.text] : []);
+    }
+    for (const over of cases.filter((c) => !c.text && !("section" in c))) {
+      expect(oneRow(makeMutation({ kind: "append_section", ...over })).text).toBe("the summary");
+    }
   });
 });
 

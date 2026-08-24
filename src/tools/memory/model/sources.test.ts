@@ -24,6 +24,7 @@ import {
   isSelectable,
   partition,
 } from "./sources";
+import { flattenReview } from "./review";
 import { makeMutation, makeNote } from "../test/factories";
 
 const STATES: SourceState[] = [
@@ -370,20 +371,50 @@ describe("buildSources — joining the note, its memories and its queue", () => 
     expect(out[0].pending).toBe(5);
   });
 
-  it("counts claims from a HELD draft as pending too", () => {
-    // SUSPECT: flattenReview drops rows whose draft is blocked, so the review
-    // queue never shows these — but the source row still advertises them as
-    // waiting. The count and the queue disagree for exactly the blocked case.
+  it("does NOT count claims from a HELD draft as pending", () => {
+    // flattenReview drops rows whose draft is blocked, so the review queue
+    // never shows these. Counting them would advertise work that opening the
+    // queue does not produce.
     const out = buildSources(
       previews(["chats", [sample({ freshness: "current", existingNoteId: "note-src" })]]),
       review(wireSource("note-src", {
+        // wireSource numbers its rows' draftIds d0..dn and its drafts d0..dn,
+        // so this holds d0 and leaves d1, d2, d3 waiting.
         targets: [{ noteId: "t1", rows: 4 }],
         drafts: [["source_stale"]],
       })),
       [],
     );
-    expect(out[0].pending).toBe(4);
+    expect(out[0].pending).toBe(3);
     expect(out[0].blocked).toEqual(["source_stale"]);
+  });
+
+  it("agrees with the number of rows flattenReview will actually emit", () => {
+    // The count and the queue are two readings of one payload; if they drift,
+    // a source advertises N and the queue shows fewer.
+    const data = review(wireSource("note-src", {
+      targets: [{ noteId: "t1", rows: 3 }, { noteId: "t2", rows: 2 }],
+      drafts: [["source_stale"], []],
+    }));
+    const out = buildSources(
+      previews(["chats", [sample({ freshness: "current", existingNoteId: "note-src" })]]),
+      data,
+      [],
+    );
+    const queued = flattenReview(data, new Map()).rows.filter((r) => r.sourceNoteId === "note-src");
+    expect(out[0].pending).toBe(queued.length);
+  });
+
+  it("counts nothing pending when every draft of the source is held", () => {
+    const out = buildSources(
+      previews(["chats", [sample({ freshness: "current", existingNoteId: "note-src" })]]),
+      review(wireSource("note-src", {
+        targets: [{ noteId: "t1", rows: 2 }],
+        drafts: [["source_stale"], ["source_missing"]],
+      })),
+      [],
+    );
+    expect(out[0].pending).toBe(0);
   });
 
   it("collects every block code from every held draft, in order", () => {

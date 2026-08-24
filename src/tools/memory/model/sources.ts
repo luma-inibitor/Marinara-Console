@@ -71,11 +71,18 @@ export function buildSources(
   const pendingBySource = new Map<string, number>();
   const blockedBySource = new Map<string, string[]>();
   for (const s of review?.sources ?? []) {
-    let n = 0;
-    for (const t of s.targets) n += t.rows.length;
-    pendingBySource.set(s.sourceNoteId, n);
     const codes: string[] = [];
-    for (const d of s.drafts) for (const b of d.blockReasons) codes.push(b.code);
+    // A held draft's rows never reach the queue (flattenReview drops them), so
+    // counting them here would advertise work that opening the queue does not
+    // show. Both passes suppress on the same set, scoped to this source.
+    const held = new Set<string>();
+    for (const d of s.drafts) {
+      if (d.blockReasons.length) held.add(d.draft.id);
+      for (const b of d.blockReasons) codes.push(b.code);
+    }
+    let n = 0;
+    for (const t of s.targets) for (const r of t.rows) if (!held.has(r.draftId)) n += 1;
+    pendingBySource.set(s.sourceNoteId, n);
     if (codes.length) blockedBySource.set(s.sourceNoteId, codes);
   }
 
