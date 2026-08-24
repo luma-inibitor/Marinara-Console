@@ -13,8 +13,9 @@ import type { BlockedDraft, Rejection, Row } from "./model/review";
 import { t } from "../../copy";
 import { Copy } from "./Copy";
 import {
-  activeFacets, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, droppedDependencyWarnings, edited, facetSheetOpen, groupBy, loadError, loading, notesById, preflight, preflightPending, preflightRowState, readyToSend, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, tally, undo,
+  activeFacets, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, edited, facetSheetOpen, groupBy, loadError, loading, notesById, preflight, preflightPending, preflightRowState, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, undo,
 } from "./store";
+import { droppedDependencyWarnings, readyToSend, tally } from "./store/tally";
 import { applyDecided, applying, applyProgress, lastFailures } from "./store/apply";
 import { pressure } from "./store/pressure";
 import { SECTION_CAP as CAP } from "./model/caps";
@@ -708,7 +709,7 @@ function ApplyDock() {
   // reset (the keyboard has `u`; the dock is the only touch path).
   if (!c.keep && !c.drop && !undoable) return null;
   // ready-after-drops, not the raw engine count, or a dropped dependency
-  // preflight auto-included is counted twice (store.ts readyToSend)
+  // preflight auto-included is counted twice (store/tally.ts readyToSend)
   const applyCount = ready + c.drop;
   const offerRestore = c.keep + c.drop >= RESTORE_POINT_THRESHOLD;
   const rowByKey = new Map(allRows.map((row) => [row.key, row]));
