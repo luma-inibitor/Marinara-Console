@@ -17,9 +17,14 @@ const diff = process.argv.includes("--diff");
 // The book audit needs a real book id — it is the densest screen in the
 // console and the one most likely to break silently.
 const BOOK = process.env.MC_BOOK ?? "JZzGg_2NjFx1hFP_G4Yeq";
+// The detail card is a route of its own, so it is invisible to a vault-only
+// snapshot — and it is the screen a component extraction is most likely to
+// disturb, since every duplicated field rendering has a copy here.
+const NOTE = process.env.MC_NOTE ?? "source_lorebook_d81a750ad0c1a6d7";
 const PAGES = [
   ["sources", "#/memory/sources"], ["review", "#/memory/review"],
-  ["vault", "#/memory/vault"], ["lore", "#/lorebooks"],
+  ["vault", "#/memory/vault"], ["detail", `#/memory/vault/${NOTE}`],
+  ["lore", "#/lorebooks"],
   ["book", `#/lorebooks/${BOOK}`],
 ];
 const VPS = [{ n: "phone", w: 486, h: 1085 }, { n: "desktop", w: 1280, h: 800 }];

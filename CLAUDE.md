@@ -13,8 +13,20 @@
 - **Read `design/DESIGN.md` before writing or changing any UI.** It is the
   authoritative framework: tokens, patterns, owner preferences, decision rules.
   If a session decision contradicts it, update DESIGN.md in the same change.
-- Validate: `npx tsc --noEmit && npm run build`, then the checks in DESIGN.md §7
-  (screenshot at 390/768/1280, zero console errors, contrast + tap-target floors).
+- **`design/ARCHITECTURE.md`** is the code layout: the layers, which directory
+  carries which, and the rules a module has to obey. Read it before adding a
+  file or deciding where one goes.
+- **Queue choices in `.decisions/`** instead of asking inline or fixing on a
+  hunch. The directory is the index, `.decisions/README.md` is the format, and
+  a defect found while doing something else belongs there rather than in the
+  diff that found it. A decision that changes is rewritten correct at the top,
+  never appended to.
+- Validate: `npx tsc --noEmit && npm test && npm run build`, then the checks in
+  DESIGN.md §7 (screenshot at 390/768/1280, zero console errors, contrast +
+  tap-target floors).
+- Model code gets Vitest tests beside it. Pin every copy of a duplicated
+  computation *before* merging them, and assert catalog keys rather than English
+  so a copy rewording cannot break a test.
 - Shared UI goes in `src/ui/` with a co-located stylesheet; see DESIGN.md §8.
   Before claiming a refactor renders identically, prove it:
   `node design/domsnap.mjs before` then `... after --diff`.
