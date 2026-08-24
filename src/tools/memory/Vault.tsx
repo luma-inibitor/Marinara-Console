@@ -4,16 +4,16 @@
 // destructive default (undoable); permanent delete confirms.
 
 import { useEffect, useMemo, useState } from "react";
+import { useStore } from "../../lib/store";
 import { navigate } from "../../shell/router";
 import { refreshLtmStatus } from "./MemoryTool";
 import { toast } from "../../shell/toast";
-import { type Note, type NoteType } from "./api/types";
+import { type Note, type NoteSection, type NoteType } from "./api/types";
 import { KEYWORD_CAP, SECTION_CAP } from "./model/caps";
-import { deleteNote, fetchNotes, patchNote } from "./api/notes";
 import { t } from "../../copy";
 import { dedupeLines } from "./model/derived";
 import { NoteRef } from "./NotePeek";
-import { notesById } from "./store";
+import { allNotes, archiveNote, discardNote, loadNotes, notesError, notesLoaded, saveNoteSections, setNoteStatus } from "./store/notes";
 import { isScoped, noteInScope } from "./model/scope";
 import { useScope } from "./store/scope";
 import { Back, ICON_SIZE, NoMatches } from "../../ui/icons";
@@ -36,8 +36,11 @@ function pressureOf(n: Note): number {
  *  the route IS the history entry now, and keeping both would push two. */
 export function Vault(props: { noteId?: string }) {
   const desktop = useIsDesktop();
-  const [notes, setNotes] = useState<Note[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // The records live in the notes store, which is their one owner; only the
+  // filters, the sort and the editor's drafts are this screen's own.
+  const notes = useStore(allNotes);
+  const loaded = useStore(notesLoaded);
+  const error = useStore(notesError);
   const [query, setQuery] = useState("");
   const [showSources, setShowSources] = useState(false);
   const [typeFilter, setTypeFilter] = useState<NoteType | null>(null);
@@ -52,23 +55,13 @@ export function Vault(props: { noteId?: string }) {
   const openDetail = (id: string) => navigate(`memory/vault/${id}`);
   const closeDetail = () => navigate("memory/vault");
 
-  // The vault's own fetch also feeds the shared note index, so a link in the
-  // detail card resolves to a title even when the review queue never loaded.
-  // Merged rather than replaced: the queue's index is the same map, and the
-  // vault must not evict entries it did not fetch.
-  const load = () => fetchNotes({ limit: 500 })
-    .then((fetched) => {
-      setNotes(fetched);
-      notesById.set(new Map([...notesById.get(), ...fetched.map((n) => [n.id, n] as const)]));
-    })
-    .catch((e: Error) => setError(e.message));
-  useEffect(() => { void load(); }, []);
+  useEffect(() => { void loadNotes(); }, []);
 
   // Scope decides what this view is about, so it narrows the list BEFORE the
   // chips count it — a scoped list beside a global tally is a header that
   // contradicts its own rows.
   const inScope = useMemo(
-    () => (notes ?? []).filter((n) => noteInScope(n, scope)),
+    () => notes.filter((n) => noteInScope(n, scope)),
     // Scope is a fresh object each render, so depending on it would refilter
     // every time. Its two fields ARE the whole of it, and noteInScope reads
     // nothing else, so listing them covers the object exactly.
@@ -106,7 +99,7 @@ export function Vault(props: { noteId?: string }) {
   }, [inScope]);
 
   if (error) return <div className="screen"><ErrorState title={t("memoryvault.memoriesCouldNotLoad")} message={error} /></div>;
-  if (!notes) return <div className="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
+  if (!loaded) return <div className="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
 
   const memoriesN = inScope.filter((n) => n.type !== "source").length;
   const sourcesN = inScope.length - memoriesN;
@@ -124,7 +117,7 @@ export function Vault(props: { noteId?: string }) {
           </IconButton>
           <h1 className="console-title">{open.title ?? open.id}</h1>
         </div></header>
-        <NoteEditor note={open} onChanged={load} onClose={closeDetail} />
+        <NoteEditor note={open} onClose={closeDetail} />
       </>
     )
     : <MemoryDetail note={open} onBack={closeDetail} onEdit={() => setEditing(true)} />);
@@ -214,36 +207,29 @@ function NoteRow(props: { note: Note; isOpen: boolean; onOpen: () => void }) {
   );
 }
 
-function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; onClose: () => void }) {
+function NoteEditor(props: { note: Note; onClose: () => void }) {
   const n = props.note;
   const [drafts, setDrafts] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState(n.status);
   const [busy, setBusy] = useState(false);
 
-  // One tap changes status immediately (optimistic; low-risk + recoverable).
+  // One tap changes status immediately (optimistic in the store; low-risk +
+  // recoverable).
   const changeStatus = (next: Note["status"]) => {
-    if (next === status) return;
-    const previous = status;
-    setStatus(next);
-    patchNote(n.id, { status: next })
-      .then(() => props.onChanged())
-      .catch((e: Error) => { setStatus(previous); toast(e.message, { kind: "error" }); });
+    if (next === n.status) return;
+    setNoteStatus(n.id, next).catch((e: Error) => toast(e.message, { kind: "error" }));
   };
 
   const save = async () => {
-    const patch: Record<string, unknown> = {};
-    const sections: Record<string, unknown> = {};
+    const sections: Record<string, NoteSection> = {};
     for (const [key, s] of Object.entries(n.sections ?? {})) {
       const v = drafts[key];
       if (v !== undefined && v !== s.text) sections[key] = { ...s, text: v };
     }
-    if (Object.keys(sections).length) patch.sections = { ...n.sections, ...sections };
-    if (!Object.keys(patch).length) { toast(t("memory.noChanges")); return; }
+    if (!Object.keys(sections).length) { toast(t("memory.noChanges")); return; }
     setBusy(true);
     try {
-      await patchNote(n.id, patch);
+      await saveNoteSections(n.id, { ...n.sections, ...sections });
       toast(t("memoryvault.saved"));
-      await props.onChanged();
       void refreshLtmStatus(); // a vault save triggers an index rebuild
     } catch (error) {
       toast((error as Error).message, { kind: "error" });
@@ -254,14 +240,11 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
   const archive = async () => {
     const previous = n.status;
     try {
-      await patchNote(n.id, { status: "archived" });
-      await props.onChanged();
+      await archiveNote(n.id);
       toast(t("memory.vault.archived", { title: n.title ?? n.id }), {
         actionLabel: t("memoryvault.undo"),
         onAction: () => {
-          patchNote(n.id, { status: previous })
-            .then(() => props.onChanged())
-            .catch((e: Error) => toast(e.message, { kind: "error" }));
+          setNoteStatus(n.id, previous).catch((e: Error) => toast(e.message, { kind: "error" }));
         },
       });
     } catch (error) {
@@ -275,10 +258,9 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
       : t("memory.vault.deleteConfirm", { title: n.title ?? n.id });
     if (!confirm(message)) return;
     try {
-      await deleteNote(n.id);
+      await discardNote(n.id);
       toast(t("memory.vault.deleted", { title: n.title ?? n.id }));
       props.onClose();
-      await props.onChanged();
     } catch (error) {
       toast((error as Error).message, { kind: "error" });
     }
@@ -303,7 +285,7 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
         <div><span className="k">status</span>
           <span className="segset" role="group" aria-label="Status">
             {(["active", "resolved", "archived"] as const).map((st) => (
-              <button key={st} className={`seg st-${st} t-data`} aria-pressed={status === st} onClick={() => changeStatus(st)}>{st}</button>
+              <button key={st} className={`seg st-${st} t-data`} aria-pressed={n.status === st} onClick={() => changeStatus(st)}>{st}</button>
             ))}
           </span>
         </div>

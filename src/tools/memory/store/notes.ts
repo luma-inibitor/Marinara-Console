@@ -1,17 +1,103 @@
 // Owns the notes: the loaded memories keyed by id, the vault lines derived
 // from them, and the fetch that produces both. One owner, so two screens
 // cannot each hold a copy of the same record and disagree about it.
+//
+// Every write to a note goes through an action here, which performs the
+// request and then updates the map, so anything showing the record follows.
+// Actions throw on failure; the copy for the toast belongs to the screen.
 
-import { createStore } from "../../../lib/store";
-import type { Note } from "../api/types";
-import { fetchNotes } from "../api/notes";
+import { createStore, derived } from "../../../lib/store";
+import type { Note, NoteSection } from "../api/types";
+import { deleteNote, fetchNote, fetchNotes, patchNote } from "../api/notes";
 import type { VaultLine } from "../model/derived";
 
 export const notesById = createStore<Map<string, Note>>(new Map());
 export const lines = createStore<VaultLine[]>([]);
 
+/** Every loaded memory, unscoped: a screen narrows this to its own scope, and
+ *  the tallies beside it read the same unscoped set. */
+export const allNotes = derived([notesById], (byId) => [...byId.values()]);
+
+export const notesLoaded = createStore(false);
+export const notesError = createStore<string | null>(null);
+
+/** The memory a reference was followed into. Read-only, and deliberately not
+ *  merged into `notesById`: a peek can reach a note the vault never fetched. */
+export const peeked = createStore<Note | null>(null);
+
 /** Returns the promise rather than awaiting it, so a caller loading notes
  *  alongside the review queue can still run both requests concurrently. */
 export function loadAllNotes(): Promise<Note[]> {
   return fetchNotes({ limit: 500 }).catch(() => [] as Note[]);
+}
+
+/** Merged rather than replaced: the review queue's index is the same map, and
+ *  a note fetched elsewhere must not be evicted by this write. */
+function putNote(note: Note) {
+  notesById.set(new Map(notesById.get()).set(note.id, note));
+}
+
+function dropNote(id: string) {
+  const next = new Map(notesById.get());
+  next.delete(id);
+  notesById.set(next);
+}
+
+/** Load every memory into the index. Reloading never clears `notesLoaded`, so
+ *  a refresh after a write does not throw the screen back to its spinner. */
+export async function loadNotes(): Promise<void> {
+  try {
+    const fetched = await fetchNotes({ limit: 500 });
+    notesById.set(new Map([...notesById.get(), ...fetched.map((n) => [n.id, n] as const)]));
+    notesError.set(null);
+    notesLoaded.set(true);
+  } catch (error) {
+    notesError.set((error as Error).message);
+  }
+}
+
+async function writeNote(id: string, patch: Record<string, unknown>): Promise<void> {
+  putNote(await patchNote(id, patch));
+  await loadNotes();
+}
+
+/** Replace the edited section text on one memory. */
+export function saveNoteSections(id: string, sections: Record<string, NoteSection>): Promise<void> {
+  return writeNote(id, { sections });
+}
+
+/** Optimistic: the new status shows before the request settles, and the old
+ *  one goes back if it fails. Low risk, and recoverable either way. */
+export async function setNoteStatus(id: string, status: Note["status"]): Promise<void> {
+  const previous = notesById.get().get(id);
+  if (previous) putNote({ ...previous, status });
+  try {
+    await writeNote(id, { status });
+  } catch (error) {
+    if (previous) putNote(previous);
+    throw error;
+  }
+}
+
+/** The destructive default, and undoable: pass the old status back to
+ *  `setNoteStatus` to put the memory back where it was. */
+export function archiveNote(id: string): Promise<void> {
+  return setNoteStatus(id, "archived");
+}
+
+/** Permanent, and unlike archiving it cannot be undone. */
+export async function discardNote(id: string): Promise<void> {
+  await deleteNote(id);
+  dropNote(id);
+}
+
+export async function openPeek(id: string): Promise<void> {
+  // A chained peek replaces content inside the same <Sheet>, which stays
+  // mounted, so it does not push a second history entry — one back closes
+  // the peek however deep you followed the links.
+  peeked.set(await fetchNote(id));
+}
+
+export function closePeek() {
+  peeked.set(null);
 }
