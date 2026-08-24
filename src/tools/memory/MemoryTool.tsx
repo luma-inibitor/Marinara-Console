@@ -1,7 +1,7 @@
 // Long-Term Memory tool shell: Review Queue / Memory Vault / Sources, with
 // the package's own navigation vocabulary. Routes: #/memory/review|vault|sources.
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { navigate } from "../../shell/router";
 import { ltmStatus, rebuildIndexes, type LtmStatus } from "./data";
 import { VIEW_ICON } from "../../ui/icons";
@@ -13,7 +13,8 @@ import { Vault } from "./Vault";
 import { Sources } from "./Sources";
 import { NotePeek } from "./NotePeek";
 import { Copy } from "./Copy";
-import { activeFacets, pendingSources, review } from "./store";
+import { activeFacets, notesById, pendingSources, review, rows } from "./store";
+import { isScoped, noteInScope, useScope } from "./scope";
 import { createStore, useStore } from "../../lib/store";
 
 const status = createStore<LtmStatus | null>(null);
@@ -53,6 +54,13 @@ export function MemoryTool({ rest }: { rest: string[] }) {
   const isRebuilding = useStore(rebuilding);
   const reviewData = useStore(review);
   const pending = useStore(pendingSources);
+  const scope = useScope();
+  const scoped = isScoped(scope);
+  const scopedRows = useStore(rows); // already narrowed to scope by the store
+  const loadedNotes = useStore(notesById);
+  const scopedMemories = useMemo(
+    () => [...loadedNotes.values()].filter((n) => n.type !== "source" && noteInScope(n, scope)).length,
+    [loadedNotes, scope.characterId, scope.chatId]);
 
   useEffect(() => { void refreshLtmStatus(); }, [view]);
 
@@ -87,8 +95,17 @@ export function MemoryTool({ rest }: { rest: string[] }) {
       <nav className="mem-nav" aria-label={t("longtermmemorynavigation.longTermMemorySections")}>
         {VIEWS.map((id) => {
           const I = VIEW_ICON[id];
-          const count = id === "review" ? (reviewData?.counts.mutations ?? s?.notes.pendingDrafts ?? 0)
-            : id === "vault" ? (s?.notes.savedMemories ?? 0)
+          // A badge names how much is behind the tab, so it counts what that
+          // tab actually lists — the same records, through the same scope.
+          //
+          // The review badge reads the live row set rather than the response's
+          // `counts.mutations`, which is a server total that also counts claims
+          // held inside blocked drafts: it read 190 over a queue listing 77.
+          // /status is likewise a server-wide aggregate that cannot see scope.
+          // Both remain the fallback for the moment before anything has loaded,
+          // where the alternative is a badge reading zero over a full vault.
+          const count = id === "review" ? (reviewData ? scopedRows.length : s?.notes.pendingDrafts ?? 0)
+            : id === "vault" ? (scoped && loadedNotes.size ? scopedMemories : s?.notes.savedMemories ?? 0)
             : (pending ?? 0);
           return (
             <button key={id} className="mem-tab t-label" aria-current={view === id ? "page" : undefined}

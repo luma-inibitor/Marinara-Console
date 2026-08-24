@@ -14,6 +14,7 @@ import {
   flattenReview, computePressure, SECTION_CAP,
 } from "./data";
 import { vaultLines, computeDerived, type VaultLine } from "./derived";
+import { currentScope, isScoped, rowInScope, scopeCharacterId, scopeChatId } from "./scope";
 import { t, tAny } from "../../copy";
 import { toast } from "../../shell/toast";
 
@@ -41,23 +42,6 @@ export const activeFacets = createStore<Map<string, Set<string>>>(new Map());
 export const cursor = createStore<string | null>(null);
 export const detailKey = createStore<string | null>(null); // open detail panel/screen
 export const facetSheetOpen = createStore(false);
-/** Import scope: one value read by every memory screen, tool-level rather than
- *  console-wide. Scope is not only a filter: the engine
- *  records it into a draft's extraction context, so changing it after an
- *  extraction is what makes drafts go stale. */
-export const scopeChatId = createStore<string>(localStorage.getItem("mc-ltm-chat") ?? "");
-export const scopeCharacterId = createStore<string>(localStorage.getItem("mc-ltm-character") ?? "");
-export function setScope(id: string) {
-  scopeChatId.set(id);
-  localStorage.setItem("mc-ltm-chat", id);
-}
-/** Choosing a character narrows the chats below it, so a chat that no longer
- *  belongs to the scope cannot stay selected. */
-export function setScopeCharacter(id: string) {
-  scopeCharacterId.set(id);
-  localStorage.setItem("mc-ltm-character", id);
-  if (id) setScope("");
-}
 export const saveState = createStore<"saved" | "saving" | "failed">("saved");
 export const applying = createStore(false);
 export const preflight = createStore<{ ready: number; blockedN: number; auto: number; perDraft: Array<{ draftId: string; pf: PreflightResponse }>; error?: string } | null>(null);
@@ -308,6 +292,24 @@ function recomputePressure() {
   pressure.set(computePressure(rows.get(), (k) => decisions.get().get(k), notesById.get()));
 }
 
+// Every live row the last refresh produced, before scope narrows them. `rows`
+// holds only what the current scope shows, so the tally, the facets, the
+// groups and the apply dock all speak about the same set — scoping the list
+// but not the counts beside it is how a header ends up contradicting its rows.
+let rowsBeforeScope: Row[] = [];
+
+function applyScope() {
+  const scope = currentScope();
+  const byId = notesById.get();
+  rows.set(isScoped(scope) ? rowsBeforeScope.filter((r) => rowInScope(r, byId, scope)) : rowsBeforeScope);
+  recomputePressure();
+}
+
+// Scope is a location, not a filter you re-apply by hand: changing it changes
+// what the queue is, immediately and everywhere.
+scopeCharacterId.subscribe(applyScope);
+scopeChatId.subscribe(applyScope);
+
 export async function refresh(first = false) {
   const focus = sessionStorage.getItem("mc-ltm-focus-source");
   if (focus) sessionStorage.removeItem("mc-ltm-focus-source");
@@ -327,7 +329,8 @@ export async function refresh(first = false) {
     const flat = flattenReview(data, sourceTitles);
     const live = flat.rows.filter((r) => !appliedThisSession.has(r.key));
     computeDerived(live, lines.get());
-    rows.set(live);
+    rowsBeforeScope = live;
+    applyScope();
     blocked.set(flat.blocked);
     rejections.set(flat.rejections);
     // prune decisions for claims that no longer exist

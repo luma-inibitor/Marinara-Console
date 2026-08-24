@@ -15,6 +15,7 @@ import { t } from "../../copy";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
 import { notesById } from "./store";
+import { isScoped, noteInScope, useScope } from "./scope";
 import { Back, ICON_SIZE, NoMatches } from "../../ui/icons";
 import { Chip, DetailSection, EmptyState, ErrorState, IconButton, Loading, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
 import { MemoryDetail } from "./detail/MemoryDetail";
@@ -41,6 +42,7 @@ export function Vault(props: { noteId?: string }) {
   const [showSources, setShowSources] = useState(false);
   const [typeFilter, setTypeFilter] = useState<NoteType | null>(null);
   const [sort, setSort] = useState<SortKey>("updated");
+  const scope = useScope();
   const openId = props.noteId ?? null;
   // The card is read-only; editing is a mode you enter from it. Leaving the
   // record leaves the mode with it, so a different memory never opens in a
@@ -62,8 +64,15 @@ export function Vault(props: { noteId?: string }) {
     .catch((e: Error) => setError(e.message));
   useEffect(() => { void load(); }, []);
 
+  // Scope decides what this view is about, so it narrows the list BEFORE the
+  // chips count it — a scoped list beside a global tally is a header that
+  // contradicts its own rows.
+  const inScope = useMemo(
+    () => (notes ?? []).filter((n) => noteInScope(n, scope)),
+    [notes, scope.characterId, scope.chatId]);
+
   const visible = useMemo(() => {
-    let list = (notes ?? []).filter((n) => (showSources ? n.type === "source" : n.type !== "source"));
+    let list = inScope.filter((n) => (showSources ? n.type === "source" : n.type !== "source"));
     if (typeFilter) list = list.filter((n) => n.type === typeFilter);
     if (query.trim()) {
       // Fuzzy on the title, plain substring in the body. Subsequence matching
@@ -81,22 +90,22 @@ export function Vault(props: { noteId?: string }) {
       status: (a, b) => (statusRank[a.status] ?? 9) - (statusRank[b.status] ?? 9),
     };
     return [...list].sort(cmp[sort]);
-  }, [notes, showSources, typeFilter, query, sort]);
+  }, [inScope, showSources, typeFilter, query, sort]);
 
   const types = useMemo(() => {
     const m = new Map<NoteType, number>();
-    for (const n of notes ?? []) {
+    for (const n of inScope) {
       if (n.type === "source") continue;
       m.set(n.type, (m.get(n.type) ?? 0) + 1);
     }
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
-  }, [notes]);
+  }, [inScope]);
 
   if (error) return <div className="screen"><ErrorState title={t("memoryvault.memoriesCouldNotLoad")} message={error} /></div>;
   if (!notes) return <div className="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
 
-  const memoriesN = notes.filter((n) => n.type !== "source").length;
-  const sourcesN = notes.length - memoriesN;
+  const memoriesN = inScope.filter((n) => n.type !== "source").length;
+  const sourcesN = inScope.length - memoriesN;
   const open = openId ? notes.find((n) => n.id === openId) ?? null : null;
 
   // One detail, two projections: a right-hand pane on a wide screen, a pushed
@@ -153,7 +162,11 @@ export function Vault(props: { noteId?: string }) {
               ? <EmptyState
                   icon={<NoMatches size={22} stroke={1.75} aria-hidden />}
                   title={t("memoryvault.filteredEmptyDescription", { value1: query.trim() ? t("memoryvault.filteredEmptySearch", { value1: query.trim() }) : (typeFilter ?? "") })} />
-              : <EmptyState title={t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")} />
+              // Scope hid them, not the vault being empty. Saying "no memories
+              // yet" over a full vault sends the reader off to import more.
+              : isScoped(scope)
+                ? <EmptyState title={t("memory.vault.emptyScoped")} body={t("memory.vault.emptyScopedBody")} />
+                : <EmptyState title={t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")} />
           )}
           {visible.map((n) => <NoteRow key={n.id} note={n} isOpen={openId === n.id} onOpen={() => openDetail(n.id)} />)}
         </main>

@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import { SCOPE_ICON } from "../../ui/icons";
 import { api } from "../../shell/api";
 import { t } from "../../copy";
-import { scopeChatId, scopeCharacterId, setScope, setScopeCharacter } from "./store";
+import { scopeChatId, scopeCharacterId, setScope, setScopeCharacter } from "./scope";
 import { SearchDisclosure } from "../../ui";
 import { useStore } from "../../lib/store";
 
