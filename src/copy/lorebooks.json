@@ -141,7 +141,7 @@
   },
   "lorebooks.probe.find": {
     "text": "Find",
-    "note": "First segment: filter the entry list by text. The catalog's search affordances are all labelled 'Search {noun}'; the bare verb is needed here because the segment sits beside 'Test' and the pair has to read as two modes of one field."
+    "note": "First segment: filter the entry list by text. The catalog's search affordances are all labeled 'Search {noun}'; the bare verb is needed here because the segment sits beside 'Test' and the pair has to read as two modes of one field."
   },
   "lorebooks.probe.test": {
     "text": "Test",
@@ -181,7 +181,7 @@
   },
   "lorebooks.row.bloated": {
     "text": "bloated",
-    "note": "Outlier flag: this entry's token count is above the book's 90th percentile. A console-computed judgement about the author's own writing, which the product has no cause to make — it measures sources against a hard limit (memorysettings.rejectsASourceWhenItsEstimatedSizeExceedsThis), never against their siblings."
+    "note": "Outlier flag: this entry's token count is above the book's 90th percentile. A console-computed judgment about the author's own writing, which the product has no cause to make — it measures sources against a hard limit (memorysettings.rejectsASourceWhenItsEstimatedSizeExceedsThis), never against their siblings."
   },
   "lorebooks.row.keyHeavy": {
     "text": "key-heavy",
@@ -273,7 +273,7 @@
   "lorebooks.entry.fieldUpdated": {
     "text": "updated",
     "despite": "memoryvault.updated",
-    "note": "Row name in the advanced dump for the entry's modification time. The catalog has the word as memoryvault.updated, but capitalised as a metadata heading; this row sits in a column of literal engine field names (selectiveLogic, groupWeight, excludeRecursion) and a capital would read as the only prose in a table of identifiers."
+    "note": "Row name in the advanced dump for the entry's modification time. The catalog has the word as memoryvault.updated, but capitalized as a metadata heading; this row sits in a column of literal engine field names (selectiveLogic, groupWeight, excludeRecursion) and a capital would read as the only prose in a table of identifiers."
   },
   "lorebooks.entry.updatedAtUtc": {
     "text": "{{timestamp}} UTC",

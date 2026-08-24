@@ -4,7 +4,7 @@ import "./RawJson.css";
 
 /** The underlying record, folded away.
  *
- *  Closed by default and labelled with how much it hides, so the fold never
+ *  Closed by default and labeled with how much it hides, so the fold never
  *  reads as missing content. This is an escape hatch: when the rendered view
  *  and the engine disagree, this is where you find out which one is lying. It
  *  is not a substitute for rendering the data properly. */

@@ -7,7 +7,7 @@ import "./IconButton.css";
  *  invisible to a screen reader and unnameable by voice control.
  *
  *  Pass `href` to render an anchor instead — a download link that looks like a
- *  button is still a link, and should keep a link's behaviours. */
+ *  button is still a link, and should keep a link's behaviors. */
 export function IconButton(props: {
   children: ReactNode;
   label: string;

@@ -51,7 +51,7 @@ which means the markup asserts one face and the page renders another.
 ### Color — semantic first, chrome second
 
 - Status vocabulary mirrors the engine and is **reserved**: `--ok` (emerald) /
-  `--warn` (yellow) / `--danger` (red) / `--off` (grey). Pair every status color with
+  `--warn` (yellow) / `--danger` (red) / `--off` (gray). Pair every status color with
   a shape, icon, or text — never color alone (WCAG 1.4.1).
 - `--accent` (blue) is for interactive chrome only — focus, selection, primary
   buttons, links. It must never collide with the status hues.
@@ -289,7 +289,7 @@ exists, use it; if it needs a new one, add it here in the same change.
   only box on the screen, so *boxed means metadata, unboxed means content*. A
   second card — especially around a section body — collapses that distinction and
   was the single biggest failure of the directions that lost.
-  **One section, one row, one behaviour.** Every section expands in place, however
+  **One section, one row, one behavior.** Every section expands in place, however
   long it is, so the chevron has only one thing it can mean. An earlier pass
   routed oversized sections to a bottom-sheet peek and made the glyph predict
   which of the two you would get (chevron vs diagonal arrow); Luma retired it —
@@ -381,7 +381,7 @@ something was clickable by clicking it. Accent means interactive (§2); a
 component that is not interactive should not be able to reach for it.
 
 The same split runs through `EmptyState` / `Loading` / `ErrorState`. They are
-one shape — centred text in a blank pane — and three roles, and a single
+one shape — centered text in a blank pane — and three roles, and a single
 `kind` prop would have kept the shape and lost the roles. A loading state must
 not be allowed a title in the label face, because half a second of latency
 announced in bold reads as a verdict; an error state must not be allowed to
@@ -419,7 +419,7 @@ including the presets tool.
 | `Picker` | choose one, short fixed list, bottom sheet | `SearchDisclosure` if long |
 | `SearchDisclosure` | choose one, long list, anchored popover | `Picker` on a thumb rail |
 | `FacetDrawer` | every facet in a slice, with counts, as toggles | — |
-| `ListGroup` / `CollapseButton` | collapse behaviour and its accessible name | — |
+| `ListGroup` / `CollapseButton` | collapse behavior and its accessible name | — |
 | `DetailSection` | a §section heading and its body | — |
 | `JsonView` / `RawJson` | a JSON value, folding or literal | — |
 | `CopyableText` | a value meant to be taken elsewhere | — |
@@ -437,7 +437,7 @@ including the presets tool.
 Two rules the inventory encodes. **Split by role, not by shape**: `Chip` and
 `Tag` look alike and are separate components, because one is pressable and the
 other is not, and that had been something you found out by clicking. **Own the
-behaviour, slot the shape**: `ListGroup` owns the chevron and its accessible
+behavior, slot the shape**: `ListGroup` owns the chevron and its accessible
 name, while the review queue and the sources list keep their own header
 layouts — one shares a grid with its rows, one does not, and forcing a single
 shape would have invented a layout neither wanted.

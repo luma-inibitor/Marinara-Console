@@ -431,7 +431,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .sig { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; font-size: 13px; }
 .sig svg { flex: 0 0 auto; margin-top: 2px; }
 /* The passed-validation branch of the confidence row. Only the glyph takes the
-   colour: the sentence stays body text, so a reassuring row never shouts as
+   color: the sentence stays body text, so a reassuring row never shouts as
    loudly as the warn/danger rows below it. */
 .sig-ok svg { color: var(--ok); }
 .sig[data-sev="warn"] { color: var(--warn); }
@@ -442,7 +442,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 
 /* ══ SOURCES — browse to import ══
    The spine is one dense line per source carrying title and state only.
-   State is glyph + word: the word is the channel that survives colour
+   State is glyph + word: the word is the channel that survives color
    blindness, a screen reader, and a phone with no hover. "New" is the
    majority state and carries no mark at all. Rows expand in place — chat
    summaries to their extraction text, imported sources to what they made —

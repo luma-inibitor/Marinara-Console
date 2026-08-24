@@ -13,7 +13,7 @@ import "./SectionRow.css";
  *  A long section is made navigable by the row itself: while its body is open
  *  the row sticks under the card's head, so the control that closes it is on
  *  screen the whole way down instead of a hundred lines back up. That is a CSS
- *  behaviour, and it costs nothing for a short section — a header with less
+ *  behavior, and it costs nothing for a short section — a header with less
  *  body than viewport never reaches its sticky offset.
  *
  *  Section keys are arbitrary suggestions rather than an enum: the row renders

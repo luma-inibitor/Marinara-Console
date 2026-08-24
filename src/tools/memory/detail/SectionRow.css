@@ -99,7 +99,7 @@
 }
 
 /* --text-faint is restricted to decorative / ≥12px non-essential: a 14px
-   glyph whose meaning is also carried by the row's behaviour qualifies. */
+   glyph whose meaning is also carried by the row's behavior qualifies. */
 .mdc-row-glyph {
   display: inline-flex;
   color: var(--text-faint);

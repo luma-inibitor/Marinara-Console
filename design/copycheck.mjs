@@ -18,7 +18,7 @@
 //   clean      no baseline entries permitted there at all; an entry under a
 //              clean directory is an INTEGRITY failure, not a copy failure —
 //              it means the baseline is lying about a finished area.
-//   baselined  the baseline is honoured PER STRING and may only shrink. Any
+//   baselined  the baseline is honored PER STRING and may only shrink. Any
 //              untraced string not already listed for that file fails, even
 //              if another string in the same file was routed the same day,
 //              so a swap cannot pass as progress.
@@ -80,7 +80,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE_PATH = join(ROOT, "design", "copy-baseline.json");
 const SENT = "\u0000";
 
-// ── normalisation ─────────────────────────────────────────────────────────
+// ── normalization ─────────────────────────────────────────────────────────
 // Matching is EXACT, never substring: under substring matching almost every
 // string finds some catalog entry containing it, and a check that never fails
 // is not a check.
@@ -249,7 +249,7 @@ function checkCatalog(entries, vendoredData) {
   const product = vendoredData;
   const has = (k) => typeof product[PREFIX + k] === "string";
 
-  // normalised product text -> first key that carries it
+  // normalized product text -> first key that carries it
   const byText = new Map();
   for (const [k, v] of Object.entries(product)) {
     if (typeof v !== "string") continue;
@@ -401,7 +401,7 @@ const TEXT_ATTRS = new Set([
   "aria-label", "aria-description", "aria-placeholder", "aria-valuetext",
   "aria-roledescription", "title", "placeholder", "alt",
 ]);
-// Our own components (capitalised) take copy through props.
+// Our own components (capitalized) take copy through props.
 const COMPONENT_ATTRS = new Set([
   "label", "title", "body", "heading", "hint", "caption", "tip", "summary", "empty", "note",
 ]);
@@ -528,7 +528,7 @@ function extractFile(absPath) {
     });
   }
 
-  // de-duplicate by normalised form
+  // de-duplicate by normalized form
   const seen = new Map();
   for (const h of hits) if (!seen.has(h.norm)) seen.set(h.norm, h);
   return { file: rel, parseError: null, hits: [...seen.values()], strict };

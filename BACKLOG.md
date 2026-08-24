@@ -119,7 +119,7 @@ owner decision after explanation.
   visible across all views. The shoehorned status line is dismantled: counts
   attach to scope, index health becomes an alert that says nothing when fine,
   and the engine instance sits beside the tool name. Upstream comparison from
-  Luma's screenshot: their picker is three stacked labelled menus
+  Luma's screenshot: their picker is three stacked labeled menus
   (wireframe C) with the counts line beneath, and their bottom nav carries
   **Settings** as a peer view with counts as badges.
   - **Undo — backlog by owner request.** Needs durable job history first;
@@ -173,10 +173,10 @@ owner decision after explanation.
   imported / Update available / Context changed / Extraction incomplete /
   Source missing; "Import and extract", "Re-extract", "Select all {n}",
   "Retry original selection"); rail made a real partition (117 + 96 = 213)
-  with blocked drafts as a separately-labelled unit; the running-import
+  with blocked drafts as a separately-labeled unit; the running-import
   state added (progress + Stop with stated consequences, using
   savingAndExtracting); state word rendered beside every glyph so state is
-  not colour-only; Context changed moved off the warn hue; the edit mode
+  not color-only; Context changed moved off the warn hue; the edit mode
   drawn with an autosave-draft / explicit-spend save model, dirty marker and
   resumable counter; curate path given a 390px projection with 44px targets;
   3B/3C reordered to match the real sequence.

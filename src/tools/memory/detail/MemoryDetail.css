@@ -95,7 +95,7 @@
 .mdc-allglyph { display: inline-flex; transition: transform var(--t-fast); }
 .mdc-allglyph.is-open { transform: rotate(180deg); }
 
-/* The record. Unlabelled on purpose for now — provenance moved into the
+/* The record. Unlabeled on purpose for now — provenance moved into the
    retrieval block and this is the one element with no settled home, so it is
    kept isolated rather than dressed up. */
 .mdc-record {

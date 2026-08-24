@@ -34,5 +34,5 @@
   color: var(--text);
   background: var(--accent-wash);
 }
-/* the tick, so selection is not carried by colour alone */
+/* the tick, so selection is not carried by color alone */
 .facet-chip[aria-pressed="true"]::before { content: "✓"; color: var(--accent); font-size: 10px; }

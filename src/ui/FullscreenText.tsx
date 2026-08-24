@@ -72,7 +72,7 @@ export function FullscreenText(props: {
     window.addEventListener("popstate", onPop);
     return () => {
       window.removeEventListener("popstate", onPop);
-      // Unmounting without a back gesture — saved, cancelled, or the parent
+      // Unmounting without a back gesture — saved, canceled, or the parent
       // re-rendered it away — leaves our entry on the stack. Rewind it, but
       // only while it is still the current one: after a real back it is gone,
       // and after any other navigation it is not ours to eat.

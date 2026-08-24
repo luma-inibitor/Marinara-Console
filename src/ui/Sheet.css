@@ -39,7 +39,7 @@
   border-bottom: var(--hairline);
 }
 .sheet-title { flex: 1; min-width: 0; font-weight: 600; }
-/* grid/place-items so the close ICON centres in the 38px box; a bare button
+/* grid/place-items so the close ICON centers in the 38px box; a bare button
    baseline-aligns its svg and the mark sits low. Same recipe as .toast-x. */
 .sheet-x { display: grid; place-items: center; color: var(--text-dim); width: 38px; height: 38px; }
 

@@ -230,12 +230,12 @@
 
   "ui.rawjson.label": {
     "text": "Raw record",
-    "note": "The summary of the fold that hides the underlying object. The catalog's 'record' is a memory's provenance panel (memoryvault.recordInfo) rather than the serialised object behind it, and it never offers the object itself."
+    "note": "The summary of the fold that hides the underlying object. The catalog's 'record' is a memory's provenance panel (memoryvault.recordInfo) rather than the serialized object behind it, and it never offers the object itself."
   },
   "ui.rawjson.lines": {
     "one": "1 line",
     "other": "{{count}} lines",
-    "note": "How much the raw fold is hiding, shown on the closed summary so a fold never reads as missing content. The catalog measures sources in entries and chunks and has no line count, because it never shows serialised text."
+    "note": "How much the raw fold is hiding, shown on the closed summary so a fold never reads as missing content. The catalog measures sources in entries and chunks and has no line count, because it never shows serialized text."
   },
 
   "ui.search.what": {

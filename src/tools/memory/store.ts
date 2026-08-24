@@ -76,7 +76,7 @@ export const preflightRowState = derived([preflight], (pf) => {
  *  The subtraction is load-bearing: preflight can auto-include a dependency the
  *  reviewer explicitly dropped, and `applyDecided` filters those out before
  *  sending. Anything stating a send count must apply the same rule or it will
- *  quote a figure Apply does not honour. */
+ *  quote a figure Apply does not honor. */
 export const readyToSend = derived([preflight, rows, decisions], (pf, allRows, dec) => {
   if (!pf) return 0;
   const droppedByDraft = new Map<string, Set<string>>();

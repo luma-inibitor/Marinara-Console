@@ -36,7 +36,7 @@ export function CollapseButton(props: {
 /** A collapsible group of rows: a header, and the rows when it is open.
  *
  *  The header's shape is the caller's — pass `className` to pick it. This owns
- *  the behaviour only: the chevron, its accessible name, and not rendering
+ *  the behavior only: the chevron, its accessible name, and not rendering
  *  children while collapsed. */
 export function ListGroup(props: {
   collapsed: boolean;

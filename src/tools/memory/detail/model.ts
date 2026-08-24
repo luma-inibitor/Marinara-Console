@@ -4,7 +4,7 @@
 // There is no size threshold here and no second surface to route long sections
 // to, so nothing has to predict how tall a body will render. A long section is
 // handled by its row sticking to the top of the screen while you read it, which
-// is a CSS behaviour rather than a decision this module makes.
+// is a CSS behavior rather than a decision this module makes.
 
 import { SECTION_CAP, type Note } from "../data";
 import { t } from "../../../copy";
@@ -14,7 +14,7 @@ const NEAR_CAP = 0.8;
 
 /** Stored section text as display lines: blank lines are separators rather
  *  than content, and a leading bullet marker is punctuation the row re-adds.
- *  The same normalisation `derived.ts` uses to read the vault line by line. */
+ *  The same normalization `derived.ts` uses to read the vault line by line. */
 export function sectionLines(text: string): string[] {
   return (text ?? "")
     .split(/\n+/)
@@ -70,7 +70,7 @@ export function sectionMeta(view: SectionView): string {
 }
 
 /** Catalog labels for every link relation the product names, so a link reads
- *  as English instead of as a wire value. An unrecognised relation humanises
+ *  as English instead of as a wire value. An unrecognized relation humanizes
  *  rather than falling through to `snake_case`: the target's title is the
  *  point of the row and the relation is only its preposition. */
 const RELATION_KEY = {

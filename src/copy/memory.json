@@ -63,7 +63,7 @@
   "memory.disposition.new": {
     "text": "new",
     "despite": "sourcesworkspace.new",
-    "note": "Disposition names: schema values the product computes but never labels. The catalog's \"New\" is a source-status chip in the sources workspace; this is one of a lowercase triad with merge and rewrite, and borrowing a capitalised word for one of three breaks the set."
+    "note": "Disposition names: schema values the product computes but never labels. The catalog's \"New\" is a source-status chip in the sources workspace; this is one of a lowercase triad with merge and rewrite, and borrowing a capitalized word for one of three breaks the set."
   },
   "memory.disposition.merge": {
     "text": "merge",
@@ -171,7 +171,7 @@
   },
   "memory.stop": {
     "text": "Stop",
-    "note": "Halts a running import batch between sources. Upstream import is one request that either completes or is cancelled by the transport (importCancelledSelectionRetained); there is no user-facing verb for stopping a batch part-way."
+    "note": "Halts a running import batch between sources. Upstream import is one request that either completes or is canceled by the transport (importCancelledSelectionRetained); there is no user-facing verb for stopping a batch part-way."
   },
   "memory.save.autosaving": {
     "text": "Autosaving…",
@@ -440,7 +440,7 @@
   },
   "memory.peek.id": {
     "text": "the memory id",
-    "note": "Accessible name for the copy control on the peek's id footer, phrased as the object being copied because the control's own verb is supplied by the shared component. The catalog never exposes a note id as a labelled, copyable field."
+    "note": "Accessible name for the copy control on the peek's id footer, phrased as the object being copied because the control's own verb is supplied by the shared component. The catalog never exposes a note id as a labeled, copyable field."
   },
   "memory.backToQueue": {
     "text": "Back to queue",
@@ -720,7 +720,7 @@
   },
   "memory.vault.id": {
     "text": "id",
-    "note": "Key in the editor's key/value header. The catalog never exposes a note id as a labelled field — upstream ids live in diagnostics — so the one word this column needs has no source. Lowercase to match the column, whose other keys are catalog words rendered lowercase."
+    "note": "Key in the editor's key/value header. The catalog never exposes a note id as a labeled field — upstream ids live in diagnostics — so the one word this column needs has no source. Lowercase to match the column, whose other keys are catalog words rendered lowercase."
   },
   "memory.vault.links": {
     "text": "links",

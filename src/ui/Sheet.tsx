@@ -25,7 +25,7 @@ export function Sheet(props: {
   return <Overlay {...props} surface={`sheet ${props.className ?? ""}`} />;
 }
 
-/** A centred dialog. The surface for a question the reviewer has to answer
+/** A centered dialog. The surface for a question the reviewer has to answer
  *  before anything else happens — an import that will spend model calls, say.
  *
  *  A Modal sits in the middle because it interrupts, where a Sheet arrives from
