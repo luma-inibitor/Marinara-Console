@@ -115,7 +115,7 @@ export function MemoryTool({ rest }: { rest: string[] }) {
         </div>
       )}
       {view === "review" && <Review />}
-      {view === "vault" && <Vault />}
+      {view === "vault" && <Vault noteId={rest[1]} />}
       {view === "sources" && <Sources />}
       <NotePeek />
     </div>

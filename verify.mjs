@@ -33,6 +33,10 @@ const AUDITS = `((rowSel) => {
   // tap targets
   for (const el of document.querySelectorAll("button, a, input, select, [role=button]")) {
     if (!vis(el) || el.closest("[data-verify-exempt]")) continue;
+    // .hit (base.css) pads a control's hit area out to --tap with a positioned
+    // ::after, by construction — the visual box stays small on purpose. Reading
+    // the box would fail every one of them for a target that is really 44px.
+    if (el.classList.contains("hit")) continue;
     const r = el.getBoundingClientRect();
     const min = Math.min(r.width, r.height);
     if (min < 40) out.taps.push({
@@ -119,6 +123,18 @@ const presetId = await (async () => {
   return presets[0]?.id;
 })();
 
+// The detail card is a route of its own, so the list screen below never
+// exercises it. Prefer a memory with a section big enough to overflow the
+// preview budget: that is the row that carries the arrow glyph and the peek,
+// and a note whose sections all fit would check only half the screen.
+const noteId = await (async () => {
+  const res = await fetch(`${URL}/api/long-term-memory/notes?limit=500`);
+  const notes = await res.json().catch(() => []);
+  const saved = notes.filter?.((n) => n.type !== "source") ?? [];
+  const big = saved.find((n) => Object.values(n.sections ?? {}).some((s) => (s.text?.length ?? 0) > 700));
+  return (big ?? saved[0])?.id;
+})();
+
 // rows: the collapsed list row each screen actually renders, one entry per item.
 // Screens genuinely differ — lorebooks/vault use .row, the review queue uses
 // .mem-row, sources uses .srow — so density is measured per screen rather than
@@ -131,6 +147,7 @@ const SCREENS = [
   ...(presetId ? [{ name: "preset-editor", path: `/#/presets/${presetId}`, waitFor: ".row", rows: ".row" }] : []),
   { name: "memory-review", path: "/#/memory/review", waitFor: ".mem-rows", rows: ".mem-row" },
   { name: "memory-vault", path: "/#/memory/vault", waitFor: ".mem-rows", rows: ".row" },
+  ...(noteId ? [{ name: "memory-detail", path: `/#/memory/vault/${noteId}`, waitFor: ".mdc-row", rows: ".mdc-row-wrap" }] : []),
   { name: "memory-sources", path: "/#/memory/sources", waitFor: ".mem-rows", rows: ".srow" },
 ];
 

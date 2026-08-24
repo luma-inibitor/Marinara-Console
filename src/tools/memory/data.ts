@@ -29,6 +29,11 @@ export interface Note {
   sections: Record<string, NoteSection>;
   conflicts?: Conflict[];
   updatedAt?: string;
+  /** Bumped by the engine on every write; the detail card's meta line shows it. */
+  version?: number;
+  /** Note ids this memory is about. Always names the note itself on a character
+   *  memory, where it carries nothing; on a relationship it names both people. */
+  subjects?: string[];
   [extra: string]: unknown;
 }
 

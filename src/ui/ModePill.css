@@ -14,7 +14,10 @@
   background: none;
   border: 0;
   border-right: var(--hairline);
-  color: var(--text-faint);
+  /* An unlit segment still has to be READ: which modes a memory is missing is
+     half of what the pill reports. --text-faint is restricted to decorative or
+     non-essential text (§1) and measured 3.3–3.6:1 here, under the floor. */
+  color: var(--text-dim);
 }
 .mseg:last-child { border-right: none; }
 

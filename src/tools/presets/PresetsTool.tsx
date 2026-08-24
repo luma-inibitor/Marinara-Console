@@ -49,7 +49,7 @@ type BrowserSort = "tokens" | "sections" | "name";
 /** Sort chips, by the copy key that labels each. */
 const SORT_KEY: Record<BrowserSort, string> = {
   tokens: "presets.tokens",
-  sections: "presets.sections",
+  sections: "ui.sections",
   name: "presets.name",
 };
 
@@ -138,7 +138,7 @@ function Browser() {
                 ? <p className="preset-desc">{p.description}</p>
                 : <p className="preset-desc is-empty">{t("presets.noDescription")}</p>}
               <div className="meta">
-                <span><b className="t-num">{known ? known.totalSections : "—"}</b> {t("presets.sections")}</span>
+                <span><b className="t-num">{known ? known.totalSections : "—"}</b> {t("ui.sections")}</span>
                 {known && known.enabled !== known.totalSections && (
                   <span><b className="t-num" style={{ color: "var(--text-dim)" }}>{known.totalSections - known.enabled}</b> {t("presets.off")}</span>
                 )}

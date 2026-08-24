@@ -847,5 +847,103 @@
   "memory.sources.thisChat": {
     "use": "longtermmemorydetail.thisChat",
     "note": "Stands in for the scoped chat's name in the search-empty sentence when the chat has no name to show. The catalog has this verbatim; an earlier pass declined currentChat (\"Current chat\", a picker option that reads as a proper noun mid-sentence) but missed that thisChat is byte-identical to what we wanted."
+  },
+
+  "memory.detail.retrieval": {
+    "use": "activityview.phaseRetrieval",
+    "note": "Heading over the one bordered block on the detail card. The catalog names the retrieval phase in the activity view; this is the same concept — whether the engine reaches this memory at all — over the fields that decide it."
+  },
+
+  "memory.detail.retrievalWhat": {
+    "text": "What retrieval means",
+    "note": "Accessible name of the info button beside the retrieval heading. The catalog explains retrieval inside settings copy but never names a control that opens the explanation."
+  },
+
+  "memory.detail.retrievalHelp": {
+    "text": "Keywords and modes decide whether the engine ever reaches this memory in a chat.",
+    "note": "The retrieval popover's sentence, covering both fields in the block at once. longtermmemorydetail.underTheHoodKeywords explains how keyword matching works; this says what the block is FOR, and says it about modes as well."
+  },
+
+  "memory.detail.modes": {
+    "text": "modes",
+    "despite": "reviewqueue.modes",
+    "note": "Key in the retrieval block's two-column grid. reviewqueue.modes is \"Modes:\" — the colon is part of the string, for a run-on readline — so it cannot be a grid label whose colon would read as a second separator. Lowercase to match the column."
+  },
+
+  "memory.detail.sectionMeta": {
+    "one": "{{count}} line · {{chars}} ch",
+    "other": "{{count}} lines · {{chars}} ch",
+    "note": "A section row's size read-out, in the same shape as memory.detail.moreLines and memory.detail.earlierLines. The product has no line-level view of stored text, so nothing upstream measures a section this way."
+  },
+
+  "memory.detail.expandAll": {
+    "text": "expand all",
+    "note": "The control that opens every section at once. memory.expand names one row's chevron; this acts on the whole set and carries a different glyph, so it must not borrow the row's word."
+  },
+
+  "memory.detail.collapseAll": {
+    "text": "collapse all",
+    "note": "The counterpart to memory.detail.expandAll, and the card's manifest state: every section becomes a bare row. memory.collapse names one row's chevron."
+  },
+
+  "memory.detail.keywordsMore": {
+    "text": "+{{count}} more",
+    "note": "How many keywords the single-line rail is holding back. The catalog folds hidden conflicts (moreConflicts) in a full sentence; this is a rail counter that has to fit beside the tally. Not plural-selected: the rail only shows it above one."
+  },
+
+  "memory.detail.keywordsFewer": {
+    "text": "show fewer",
+    "note": "Refolds the keyword rail to one line; the counterpart to memory.detail.keywordsMore. The catalog has no expandable rail and so no word for closing one."
+  },
+
+  "memory.detail.keywordRail": {
+    "text": "Keywords, tap to unfold",
+    "note": "Accessible name of the keyword rail, which is one tap target holding many keywords. The visible +N more counter is not a name, and the rail has to announce that tapping it does something."
+  },
+
+  "memory.detail.flagWhy": {
+    "text": "Why this section is flagged",
+    "note": "Accessible name of a section row's flag button. The catalog has no per-section exception signal, so nothing upstream names the control that explains one."
+  },
+
+  "memory.detail.sectionNearCap": {
+    "text": "§{{key}} is at {{pct}}% of its {{cap}}-character cap.",
+    "note": "A stored section approaching its cap. memory.flag.sectionNearCapNamed says the same of a PROJECTION over a review batch and ends \"after this batch\", which is false of a memory already sitting in the vault."
+  },
+
+  "memory.detail.sectionOverCap": {
+    "text": "§{{key}} is at {{pct}}% of its {{cap}}-character cap and over the limit.",
+    "note": "The far side of memory.detail.sectionNearCap for a stored section, ending in the console's own memory.overLimit phrase."
+  },
+
+  "memory.detail.relationRelatedTo": {
+    "text": "Related to",
+    "note": "The one link relation the catalog does not label. It ships relationExtractedFrom, relationOccurredIn, relationCausedBy and nine more in this exact sentence-case shape; related_to appears in stored payloads with no string beside it, so this fills the single gap in an otherwise complete set."
+  },
+
+  "memory.detail.edited": {
+    "text": "edited {{when}}",
+    "note": "The meta line's edit stamp. memoryvault.updated is the bare column heading \"Updated\"; this is the phrase in a running meta line, where the verb has to carry its timestamp."
+  },
+
+  "memory.detail.version": {
+    "text": "v{{n}}",
+    "note": "The memory's version in the meta line, abbreviated because the line is mono data separated by ·. The catalog exposes a version only inside backup-validation prose."
+  },
+
+  "memory.detail.peekLabel": {
+    "text": "Section §{{key}}",
+    "note": "Accessible name of the sheet holding one section's full text. §key is the console's section typography; the sheet needs a spoken name that says what kind of thing it is."
+  },
+
+  "memory.detail.edit": {
+    "use": "longtermmemorydetail.reviewEdit",
+    "note": "Opens the vault's editor from the read-only detail card. The catalog's own one-word Edit action."
+  },
+
+  "memory.detail.sectionCount": {
+    "one": "{{count}} section",
+    "other": "{{count}} sections",
+    "note": "How many sections the memory has, as the spoken name of the count beside the sections heading. The heading already renders the noun, so the visible figure stays bare and this carries the noun for a screen reader."
   }
 }

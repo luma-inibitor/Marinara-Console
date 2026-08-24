@@ -246,5 +246,10 @@
     "one": "1 match",
     "other": "{{count}} matches",
     "note": "The tally inside the search field, shown only while there is a query. The catalog counts results per subject in prose (reviewqueue.rejectedCount, sourcesworkspace.value1LorebooksValue2Entries…) and has no bare match count for a search box to carry."
+  },
+
+  "ui.sections": {
+    "text": "sections",
+    "note": "The count-of-sections label: the presets browser's section count and its sort chip, and the memory detail card's heading over a memory's section list. The catalog's memorySections is a memory's own detail list and renders as \"Memory details\" — a different thing under a colliding key name. Lowercase because both call sites uppercase in CSS."
   }
 }

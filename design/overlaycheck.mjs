@@ -32,6 +32,13 @@ const CASES = [
       await p.locator(".row-summary").first().click();
       await p.waitForTimeout(500);
       await p.locator(".notelink").first().click(); }, sel: ".sheet" },
+  // The detail card's section peek. Opened from the row whose body overflows
+  // the preview budget, which is the only row that carries the arrow glyph —
+  // selected by that glyph rather than by index, so the case does not silently
+  // start testing a different row if the seeded note gains a section.
+  { name: "section peek", hash: "#/memory/vault/char_devi_okonkwo", w: 486, open: async (p) => {
+      await p.locator('.mdc-row:has(.mdc-row-glyph path[d^="M16 4l4 0"])').first().click(); },
+    sel: ".sheet.mdc-peek" },
   // The lorebook tag panel. Every case above is a memory-tool surface, so this
   // is the one non-memory surface the check covers. Opened from the dock so it
   // exercises the phone path.
@@ -52,6 +59,10 @@ for (const c of CASES) {
       await p.waitForTimeout(700);
       const opened = await p.locator(c.sel).count();
       if (!opened) { console.log(`FAIL ${c.name} / ${how}: never opened`); fails++; await p.close(); continue; }
+      // "The screen they were reading" is wherever opening the surface left
+      // them, not the route the case started at: reaching a record can itself
+      // be a navigation, and the peek opens over that record, not over the list.
+      const base = new URL(p.url()).hash;
       if (how === "scrim") await p.locator(".peek-scrim").click({ position: { x: 5, y: 5 } });
       if (how === "escape") await p.keyboard.press("Escape");
       if (how === "back") await p.goBack();
@@ -61,7 +72,7 @@ for (const c of CASES) {
       if (still) { console.log(`FAIL ${c.name} / ${how}: still open`); fails++; }
       // Closing the surface is only half of it: a dismissal that also unwinds
       // the route has thrown the reader out of the screen they were reading.
-      else if (hash !== c.hash) { console.log(`FAIL ${c.name} / ${how}: left the screen (hash "${hash}")`); fails++; }
+      else if (hash !== base) { console.log(`FAIL ${c.name} / ${how}: left the screen (hash "${hash}", expected "${base}")`); fails++; }
       else console.log(`ok   ${c.name} / ${how}`);
     } catch (e) {
       console.log(`FAIL ${c.name} / ${how}: ${String(e).split("\n")[0].slice(0, 90)}`); fails++;

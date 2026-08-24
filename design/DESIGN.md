@@ -265,6 +265,27 @@ exists, use it; if it needs a new one, add it here in the same change.
   is a contradiction). Collapsed exception chips ([flag] n) tint by worst
   severity; the kinds stay filterable, not re-taxonomized per row.
 
+- **Memory detail card** (`src/tools/memory/detail/`) — a read-only screen for one
+  stored record. Three rules carry it, and all three are load-bearing:
+  **One bordered surface.** The retrieval block (modes · keywords · links) is the
+  only box on the screen, so *boxed means metadata, unboxed means content*. A
+  second card — especially around a section body — collapses that distinction and
+  was the single biggest failure of the directions that lost.
+  **The glyph must never lie.** One section = one row = one tap target. A body that
+  fits the preview budget gets a chevron and expands in place; a body that exceeds
+  it gets a diagonal arrow and opens a peek, and never expands inline. Both the
+  glyph and the tap read the same computed value (`model.ts`, `SectionView.fits`),
+  so they cannot drift. Fit is *estimated* from the text, never measured from the
+  DOM: a measurement can only run after first paint, so the glyph would render as
+  a chevron and then become an arrow — the drift the rule forbids, as a flicker.
+  **No truncation notices.** No "141 lines between", no dashed count boxes, no
+  "show rest". The row states the size, the fade shows there is more, the glyph
+  says where to get it. Every notice tried here read as noise.
+  Collapse-all is the manifest state — every section becomes a bare row — which is
+  why a long memory needs no separate overflow design, only `defaultCollapsed`.
+  The limit meter belongs in the peek and nowhere else: in the row list it
+  competed with content for attention.
+
 ## 6. Layout recipes (with mobile collapse)
 
 - **Triage queue** (LTM review): left keyboard list + right detail; single-key
@@ -304,6 +325,13 @@ real bugs every time it was applied — treat it as part of the build, not QA.
 Shared components live in `src/ui/`, one folder-level, each with its own
 co-located stylesheet (`Chip.tsx` + `Chip.css`). Anything used by more than one
 screen belongs there; anything used by one screen belongs beside that screen.
+
+A screen kept beside its tool may co-locate its stylesheet the same way when it
+is a *family* rather than a single component — `src/tools/memory/detail/` is
+four components and four stylesheets. The rule it answers to is the one above:
+deleting the folder deletes its rules. A tool's one-off screens still belong in
+that tool's global sheet (`src/styles/memory.css`); the split is worth it only
+when the alternative is a 200-line unrelated block in a 600-line file.
 
 **Why co-located plain CSS**, and not utility classes in the JSX or CSS
 modules. The rules in this repo carry explanations that utility strings cannot

@@ -1,0 +1,106 @@
+/* The detail card's shell: sticky head, one scrolling body, and the section
+   list's own header. The retrieval block and the rows bring their own rules.
+
+   Nothing here draws a border except the head's seam and the section header's
+   — the card's one bordered surface is the retrieval block, and a second box
+   on this screen would break "boxed means metadata, unboxed means content". */
+
+/* The ground the card is painted on. Anything that has to blend into the page
+   — the preview fade, above all — reads it rather than assuming --canvas, so
+   the card can be mounted in the desktop detail pane (--surface-1) or as a
+   pushed screen (--canvas) without a seam appearing. */
+.mdc { --mdc-ground: var(--canvas); height: 100%; overflow-y: auto; }
+.audit-detail .mdc { --mdc-ground: var(--surface-1); }
+/* The retrieval block is one step up from the ground, not one specific token:
+   on a --surface-1 pane its own --surface-1 fill would sit flat and the block
+   would read as a hairline rectangle rather than a raised surface. */
+.audit-detail .mdc-ret { background: var(--surface-2); }
+
+/* .console supplies the sticky seam and the padding; the ground comes from the
+   card so the sticky head matches the pane it is sticking to. */
+.mdc-head { padding-bottom: 0; background: var(--mdc-ground); }
+
+/* Square, quiet, and flat: the back control is chrome, not an action, so it
+   drops .icon-btn's raised surface and border. */
+.mdc-back.icon-btn {
+  background: none;
+  border: 0;
+  color: var(--text-dim);
+  border-radius: var(--r-s);
+}
+
+.mdc-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-label);
+  font-variation-settings: "wdth" 106;
+  font-weight: 600;
+  font-size: var(--fs-head);
+  /* The title is the last thing on this screen that may be cut, so it wraps
+     instead of truncating — the house rule, and the reason this heading does
+     not reuse .console-title, which ellipsises. */
+  overflow-wrap: anywhere;
+}
+
+.mdc-status { flex: 0 0 auto; font-size: var(--fs-data-s); }
+
+/* Indented past the back button so the meta reads as belonging to the title
+   rather than to the control beside it. */
+.mdc-meta {
+  display: flex;
+  align-items: center;
+  /* Wraps so the edit control drops to its own line at narrow widths rather
+     than squeezing the stamp — a squeezed stamp breaks mid-value and leaves a
+     · orphaned at the head of the next line. */
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0 0 var(--s2) 52px;
+  font-size: var(--fs-data-s);
+  color: var(--text-dim);
+}
+.mdc-type { color: var(--tc); }
+.mdc-sep { font-style: normal; color: var(--edge-strong); }
+.mdc-edit { margin-left: auto; }
+
+.mdc-body { padding: var(--panel-pad); }
+
+.mdc-sechead {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  min-height: var(--tap);
+  border-bottom: var(--hairline);
+}
+.mdc-sectally { font-size: 10.5px; color: var(--text-dim); }
+/* The meta line spaces its separators with flex gap; this one is inline, so
+   without a margin the section count and the char count run together and read
+   as a single figure. */
+.mdc-sectally .mdc-sep { margin: 0 5px; }
+
+/* The set control, not a row control: it carries the vertical double-chevron
+   and an outline, so it cannot be mistaken for one more section row. */
+.mdc-all {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: var(--tap-2);
+  padding: 0 9px;
+  border: var(--hairline);
+  border-radius: var(--r-s);
+  color: var(--text-dim);
+}
+.mdc-all:hover { color: var(--text); border-color: var(--edge-strong); }
+.mdc-allglyph { display: inline-flex; transition: transform var(--t-fast); }
+.mdc-allglyph.is-open { transform: rotate(180deg); }
+
+/* The record. Unlabelled on purpose for now — provenance moved into the
+   retrieval block and this is the one element with no settled home, so it is
+   kept isolated rather than dressed up. */
+.mdc-record {
+  margin-top: var(--s3);
+  font-size: 10.5px;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+}

@@ -17,10 +17,6 @@
   "presets.tokens": {
     "use": "activityview.tokens"
   },
-  "presets.sections": {
-    "text": "sections",
-    "note": "Unit for a preset's section count, and the label of the sort chip that orders by it. The catalog's `memorySections` is a memory's own detail list and renders as 'Memory details' — a different thing under a colliding key name."
-  },
   "presets.name": {
     "use": "extractionprompttemplates.name"
   },

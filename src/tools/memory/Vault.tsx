@@ -4,7 +4,7 @@
 // destructive default (undoable); permanent delete confirms.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { openOverlay, closeTopOverlay } from "../../shell/overlays";
+import { navigate } from "../../shell/router";
 import { refreshLtmStatus } from "./MemoryTool";
 import { toast } from "../../shell/toast";
 import {
@@ -14,8 +14,10 @@ import {
 import { t } from "../../copy";
 import { dedupeLines } from "./derived";
 import { NoteRef } from "./NotePeek";
+import { notesById } from "./store";
 import { Back, ICON_SIZE, NoMatches } from "../../ui/icons";
 import { Chip, DetailSection, EmptyState, ErrorState, IconButton, Loading, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
+import { MemoryDetail } from "./detail/MemoryDetail";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
 
@@ -27,7 +29,11 @@ function pressureOf(n: Note): number {
   return Math.max(worst, (n.keywords?.length ?? 0) / KEYWORD_CAP);
 }
 
-export function Vault() {
+/** The open memory is route state (`#/memory/vault/:id`), not component state,
+ *  so a detail view is linkable and the browser's own back button leaves it.
+ *  That also replaces the overlay-stack registration this screen used to make:
+ *  the route IS the history entry now, and keeping both would push two. */
+export function Vault(props: { noteId?: string }) {
   const desktop = useIsDesktop();
   const [notes, setNotes] = useState<Note[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -35,9 +41,25 @@ export function Vault() {
   const [showSources, setShowSources] = useState(false);
   const [typeFilter, setTypeFilter] = useState<NoteType | null>(null);
   const [sort, setSort] = useState<SortKey>("updated");
-  const [openId, setOpenId] = useState<string | null>(null);
+  const openId = props.noteId ?? null;
+  // The card is read-only; editing is a mode you enter from it. Leaving the
+  // record leaves the mode with it, so a different memory never opens in a
+  // state the reader did not ask for.
+  const [editing, setEditing] = useState(false);
+  useEffect(() => { setEditing(false); }, [openId]);
+  const openDetail = (id: string) => navigate(`memory/vault/${id}`);
+  const closeDetail = () => navigate("memory/vault");
 
-  const load = () => fetchNotes({ limit: 500 }).then(setNotes).catch((e: Error) => setError(e.message));
+  // The vault's own fetch also feeds the shared note index, so a link in the
+  // detail card resolves to a title even when the review queue never loaded.
+  // Merged rather than replaced: the queue's index is the same map, and the
+  // vault must not evict entries it did not fetch.
+  const load = () => fetchNotes({ limit: 500 })
+    .then((fetched) => {
+      setNotes(fetched);
+      notesById.set(new Map([...notesById.get(), ...fetched.map((n) => [n.id, n] as const)]));
+    })
+    .catch((e: Error) => setError(e.message));
   useEffect(() => { void load(); }, []);
 
   const visible = useMemo(() => {
@@ -70,18 +92,29 @@ export function Vault() {
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [notes]);
 
-  const stackOpen = !desktop && Boolean(openId);
-  useEffect(() => {
-    if (!stackOpen) return;
-    return openOverlay(() => setOpenId(null));
-  }, [stackOpen]);
-
   if (error) return <div className="screen"><ErrorState title={t("memoryvault.memoriesCouldNotLoad")} message={error} /></div>;
   if (!notes) return <div className="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
 
   const memoriesN = notes.filter((n) => n.type !== "source").length;
   const sourcesN = notes.length - memoriesN;
   const open = openId ? notes.find((n) => n.id === openId) ?? null : null;
+
+  // One detail, two projections: a right-hand pane on a wide screen, a pushed
+  // screen on a phone. The editor keeps its own header in both, because it has
+  // no head of its own and needs a way back to the card.
+  const detail = open && (editing
+    ? (
+      <>
+        <header className="console"><div className="hrow">
+          <IconButton className="hit" label={t("memory.backToVault")} onClick={() => setEditing(false)}>
+            <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+          </IconButton>
+          <h1 className="console-title">{open.title ?? open.id}</h1>
+        </div></header>
+        <NoteEditor note={open} onChanged={load} onClose={closeDetail} />
+      </>
+    )
+    : <MemoryDetail note={open} onBack={closeDetail} onEdit={() => setEditing(true)} />);
 
   return (
     <div className={`audit ${desktop ? "is-desktop" : ""}`}>
@@ -122,27 +155,15 @@ export function Vault() {
                   title={t("memoryvault.filteredEmptyDescription", { value1: query.trim() ? t("memoryvault.filteredEmptySearch", { value1: query.trim() }) : (typeFilter ?? "") })} />
               : <EmptyState title={t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")} />
           )}
-          {visible.map((n) => <NoteRow key={n.id} note={n} isOpen={openId === n.id} onOpen={() => setOpenId(n.id)} />)}
+          {visible.map((n) => <NoteRow key={n.id} note={n} isOpen={openId === n.id} onOpen={() => openDetail(n.id)} />)}
         </main>
       </div>
       {desktop && (
         <aside className="audit-detail">
-          {open
-            ? <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />
-            : <EmptyState title={t("memory.vault.noneOpen")} body={t("memory.vault.selectToEdit")} />}
+          {detail ?? <EmptyState title={t("memory.vault.noneOpen")} body={t("memory.vault.selectToEdit")} />}
         </aside>
       )}
-      {!desktop && open && (
-        <div className="stack-screen">
-          <header className="console"><div className="hrow">
-            <IconButton className="hit" label={t("memory.backToVault")} onClick={closeTopOverlay}>
-              <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
-            </IconButton>
-            <h1 className="console-title">{open.title ?? open.id}</h1>
-          </div></header>
-          <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />
-        </div>
-      )}
+      {!desktop && detail && <div className="stack-screen">{detail}</div>}
     </div>
   );
 }

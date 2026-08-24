@@ -1,0 +1,205 @@
+/* Retrieval card — the detail screen's only bordered surface.
+   Every rule here is scoped under .mdc-ret so the card can never restyle the
+   unboxed content around it. */
+
+.mdc-ret {
+  border: var(--hairline);
+  border-radius: var(--r-m);
+  background: var(--surface-1);
+  padding: var(--s2) var(--s3);
+}
+
+/* ══ heading ══ */
+.mdc-ret-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-bottom: 6px;
+  color: var(--text-dim);
+  font-family: var(--font-label);
+  font-variation-settings: "wdth" 110;
+  font-weight: 600;
+  font-size: var(--fs-label-s);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Positioning context for the popover: it anchors to this, not to the card, so
+   the button can move without the popover leaving the card's right edge. */
+.mdc-ret-info {
+  position: relative;
+  margin-left: auto;
+  display: inline-flex;
+}
+
+.mdc-ret-infobtn {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+/* right:0, never left — anchored to the far edge the popover grows inward and
+   cannot run off the card no matter how narrow the viewport is. */
+.mdc-ret-tip {
+  position: absolute;
+  top: calc(100% + var(--s1));
+  right: 0;
+  z-index: 70;
+  width: max-content;
+  max-width: 250px;
+  background: var(--surface-3);
+  color: var(--text);
+  border: 1px solid var(--edge-strong);
+  border-radius: var(--r-s);
+  padding: 6px 9px;
+  box-shadow: var(--shadow-pop);
+  /* It sits inside the label row, which is caps, tracked and 600. This is a
+     sentence, so every one of those has to be undone rather than inherited. */
+  font-family: var(--font-prose);
+  font-size: 11.5px;
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ══ body grid ══ */
+.mdc-ret-grid {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 7px var(--s3);
+  align-items: center;
+  font-family: var(--font-data);
+  font-size: var(--fs-data-s);
+}
+
+/* The catalog strings are sentence case; the key column is lowercase, so the
+   case is a property of the column rather than of the copy. */
+.mdc-ret-key {
+  color: var(--text-dim);
+  text-transform: lowercase;
+}
+/* A key beside a multi-line value sits on the value's first line rather than in
+   the middle of the block. The offsets differ because the two values start on
+   different baselines: a 28px chip rail against a 12.5px prose relation. */
+.mdc-ret-key-kw { align-self: start; padding-top: 5px; }
+.mdc-ret-key-links { align-self: start; padding-top: 2px; }
+
+.mdc-ret-val { display: inline-flex; min-width: 0; }
+.mdc-ret-none { color: var(--text-dim); }
+
+/* ══ keyword rail ══
+   One button holding many keywords: one tap target, one thing to explain.
+   Collapsed it is a fixed 28px, so the card's height is the same whether the
+   note carries three keywords or thirty. */
+.mdc-ret-rail {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  width: 100%;
+  min-width: 0;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  flex-wrap: nowrap;
+  height: 28px;
+  overflow: hidden;
+  /* Fade, never a hard cut: a sliced glyph reads as a rendering fault, while a
+     fade reads as "there is more". no-repeat because a repeating mask would
+     tile the opaque stop back over the overflow it is meant to hide. */
+  mask-image: linear-gradient(90deg, #000 calc(100% - 52px), transparent);
+  mask-repeat: no-repeat;
+}
+
+/* The mask dims the element's own focus ring along with its content, so drop it
+   while focused — the ring has to be fully visible to do its job. */
+.mdc-ret-rail:focus-visible { mask-image: none; }
+
+.mdc-ret-rail.is-open {
+  flex-wrap: wrap;
+  height: auto;
+  overflow: visible;
+  mask-image: none;
+}
+
+/* Tag's 34px floor is a spaced, tappable minimum; these are static labels
+   inside a control that is itself the tap target, and they have to fit one
+   28px line. Silhouette unchanged — only the floor moves.
+
+   A keyword is DATA, not a label: the engine matches the stored string
+   literally, so it is set in the data face at the case it is stored in.
+   Tag's label face would render `quartermaster` as QUARTERMASTER and show a
+   value the vault does not hold. */
+.mdc-ret-rail .tag {
+  min-height: 26px;
+  font-family: var(--font-data);
+  font-size: var(--fs-data-s);
+  font-variation-settings: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+}
+
+.mdc-ret-kwfoot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  margin-top: -2px;
+}
+.mdc-ret-more {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: var(--font-data);
+  font-size: var(--fs-data-s);
+}
+.mdc-ret-tally { font-variant-numeric: tabular-nums; }
+
+/* ══ links ══ */
+/* 8px, not the 5px the rest of the block uses: these rows hold the only tap
+   targets in the card besides the rail, and a secondary target needs both its
+   24px and ≥8px of separation from its neighbour (§2). */
+.mdc-ret-links { display: flex; flex-direction: column; gap: var(--s2); }
+.mdc-ret-linkrow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+/* The relation is the row's preposition, the target's title is its point. */
+.mdc-ret-rel {
+  color: var(--text-dim);
+  font-family: var(--font-prose);
+  font-size: 12.5px;
+}
+.mdc-ret-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.mdc-ret-target .notelink {
+  font-family: var(--font-label);
+  font-variation-settings: "wdth" 106;
+  font-weight: 600;
+  font-size: 13px;
+  /* A 13px line box is 20px tall, under the 24px floor for a secondary target.
+     Grown rather than padded with .hit: two link rows sit close enough that
+     44px hit areas would overlap and the lower row would swallow taps meant
+     for the upper one. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
