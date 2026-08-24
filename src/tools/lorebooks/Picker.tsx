@@ -72,23 +72,23 @@ export function Picker() {
                     if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.stopPropagation(); loadStats(b.id); }
                   }}
                 >Retry</span>
-                {!b.enabled && <span style="color: var(--danger)">disabled</span>}
+                {!b.enabled && <span style={{ color: "var(--danger)" }}>disabled</span>}
               </div>
             ) : (
               <div className="meta">
                 <span><b className="t-num">{ok ? ok.n : "—"}</b> {ok?.n === 1 ? "entry" : "entries"}</span>
                 <span><b className="t-num">{ok ? ok.constant : "—"}</b> constant</span>
                 <span>
-                  <b className="t-num" style={over ? "color: var(--flag)" : undefined}>
+                  <b className="t-num" style={over ? { color: "var(--flag)" } : undefined}>
                     {ok ? ok.sum.toLocaleString() : "—"}
                   </b>
                   {" "}/ {b.tokenBudget.toLocaleString()} tokens (est.)
                 </span>
-                {!b.enabled && <span style="color: var(--danger)">disabled</span>}
+                {!b.enabled && <span style={{ color: "var(--danger)" }}>disabled</span>}
               </div>
             )}
             {/* no bar until there is a real number to draw — a 0% bar is a claim */}
-            {ok && <div className="bar"><i className={over ? "is-over" : ""} style={`width:${pct}%`} /></div>}
+            {ok && <div className="bar"><i className={over ? "is-over" : ""} style={{ width: `${pct}%` }} /></div>}
           </button>
         );
       })}

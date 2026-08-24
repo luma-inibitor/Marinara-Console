@@ -335,11 +335,11 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
           <div className="meter">
             <span className="t-label t-label-s">{meter.testing ? "Would activate" : "All active"}</span>
             <span className="mbar">
-              <span className="m-a" style={`width:${Math.min(100, (meter.aTok / meter.budget) * 100)}%`} />
-              <span className="m-k" style={`width:${Math.min(100 - Math.min(100, (meter.aTok / meter.budget) * 100), (meter.kTok / meter.budget) * 100)}%`} />
+              <span className="m-a" style={{ width: `${Math.min(100, (meter.aTok / meter.budget) * 100)}%` }} />
+              <span className="m-k" style={{ width: `${Math.min(100 - Math.min(100, (meter.aTok / meter.budget) * 100), (meter.kTok / meter.budget) * 100)}%` }} />
             </span>
             <span className="t-data mval">
-              <b style={meter.over ? "color: var(--flag)" : undefined}>{meter.total.toLocaleString()}</b>
+              <b style={meter.over ? { color: "var(--flag)" } : undefined}>{meter.total.toLocaleString()}</b>
               <span className="of"> / {meter.budget.toLocaleString()}</span>
             </span>
           </div>
@@ -530,7 +530,7 @@ function TagOverlay(props: {
             <Chip onClick={() => props.onShow(s.tag)}>Show</Chip>
             <Chip onClick={() => props.onSelect(s.ids)}>Select</Chip>
           </div>
-          <div className="tbar"><i style={`width:${(s.n / max) * 100}%`} /></div>
+          <div className="tbar"><i style={{ width: `${(s.n / max) * 100}%` }} /></div>
         </div>
       ))}
     </div>

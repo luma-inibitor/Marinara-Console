@@ -70,7 +70,7 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
 
   if (!isArray && !isObject) {
     return (
-      <div className="jn" style={`padding-left:${props.depth * 12}px`}>
+      <div className="jn" style={{ paddingLeft: `${props.depth * 12}px` }}>
         {props.name !== undefined && <span className="jk">{props.name}:</span>}
         <Leaf value={value} />
         {!props.last && <span className="jc">,</span>}
@@ -93,7 +93,7 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
       <button
         type="button"
         className="jn jn-head"
-        style={`padding-left:${props.depth * 12}px`}
+        style={{ paddingLeft: `${props.depth * 12}px` }}
         aria-expanded={open}
         aria-label={`${open ? "Collapse" : "Expand"} ${props.name ?? "root"} (${entries.length})`}
         onClick={() => setOpen(!open)}
@@ -115,7 +115,7 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
           {/* the closing brace closes the group too — the same target, at the
               other end, for when you have scrolled past the header */}
           <button type="button" className="jn jn-head jn-close"
-            style={`padding-left:${props.depth * 12}px`}
+            style={{ paddingLeft: `${props.depth * 12}px` }}
             aria-label={`Collapse ${props.name ?? "root"} (${entries.length})`}
             onClick={() => setOpen(false)}>
             <span className="jb">{closeBrace}</span>{!props.last && <span className="jc">,</span>}

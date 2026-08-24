@@ -127,17 +127,17 @@ function Browser() {
               <div className="meta">
                 <span><b className="t-num">{known ? known.totalSections : "—"}</b> sections</span>
                 {known && known.enabled !== known.totalSections && (
-                  <span><b className="t-num" style="color: var(--text-dim)">{known.totalSections - known.enabled}</b> off</span>
+                  <span><b className="t-num" style={{ color: "var(--text-dim)" }}>{known.totalSections - known.enabled}</b> off</span>
                 )}
                 {known && known.markers > 0 && <span><b className="t-num">{known.markers}</b> runtime</span>}
-                {l === "error" && <span style="color: var(--danger)">could not load detail</span>}
+                {l === "error" && <span style={{ color: "var(--danger)" }}>could not load detail</span>}
               </div>
             </div>
             <div className="preset-card-gutter">
               <b className="tok t-num">{known ? known.total.toLocaleString() : "—"}</b>
               <span className="unit t-data">tokens</span>
             </div>
-            {known && <div className="bar"><i style={`width:${(known.total / maxSeen) * 100}%`} /></div>}
+            {known && <div className="bar"><i style={{ width: `${(known.total / maxSeen) * 100}%` }} /></div>}
           </button>
         );
       })}
@@ -432,7 +432,7 @@ function Editor({ presetId }: { presetId: string }) {
             <div className="meter">
               <span className="t-label t-label-s">of context</span>
               <span className="mbar">
-                <span className="m-k" style={`width:${Math.min(100, (conv.total / budget) * 100)}%`} />
+                <span className="m-k" style={{ width: `${Math.min(100, (conv.total / budget) * 100)}%` }} />
               </span>
               <span className="mval t-data"><b>{Math.round((conv.total / budget) * 100)}%</b><span className="of"> of {budget.toLocaleString()}</span></span>
             </div>
@@ -504,7 +504,7 @@ function Editor({ presetId }: { presetId: string }) {
           })}
         </main>
 
-        <nav className="dock-actions" style={`grid-template-columns: repeat(${dockButtons.length}, 1fr)`}>
+        <nav className="dock-actions" style={{ gridTemplateColumns: `repeat(${dockButtons.length}, 1fr)` }}>
           {dockButtons}
         </nav>
       </div>
