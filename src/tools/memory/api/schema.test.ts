@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 import * as v from "valibot";
-import { MutationSchema, NoteSchema, ReviewResponseSchema } from "./schema";
+import { ExtractResponseSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteWriteSchema, ReviewResponseSchema } from "./schema";
 
 const ok = (schema: Parameters<typeof v.safeParse>[0], value: unknown) => v.safeParse(schema, value).success;
 
@@ -199,5 +199,75 @@ describe("ReviewResponseSchema", () => {
     const bad = review();
     bad.sources[0].targets[0].rows[0].disposition = "replace";
     expect(ok(ReviewResponseSchema, bad)).toBe(false);
+  });
+});
+
+// The write fixtures are the live dev-engine replies with contents replaced.
+// `rebuild` is verbatim: nothing reads it, and a change to it must still not
+// fail a write.
+const rebuild = () => ({ status: "complete", root: "/data/long-term-memory", generatedAt: "2026-08-25T08:22:31.487Z", noteCount: 31, chunkCount: 27, embeddedChunkCount: 0, embeddingsAvailable: false });
+
+describe("NoteWriteSchema", () => {
+  it("accepts the envelope PATCH actually sends", () => {
+    expect(ok(NoteWriteSchema, { note: note(), rebuild: rebuild() })).toBe(true);
+  });
+
+  it("rejects a bare note sent without the envelope", () => {
+    expect(ok(NoteWriteSchema, note())).toBe(false);
+  });
+
+  it("rejects a saved memory with no id, which is what poisoned the store", () => {
+    const { id, ...rest } = note();
+    void id;
+    expect(ok(NoteWriteSchema, { note: rest, rebuild: rebuild() })).toBe(false);
+  });
+
+  it("rejects a saved memory whose id is empty", () => {
+    expect(ok(NoteWriteSchema, { note: { ...note(), id: "" }, rebuild: rebuild() })).toBe(false);
+  });
+});
+
+describe("NoteArchiveSchema", () => {
+  const archive = () => ({ archived: true, note: note(), notes: [note(), { ...note(), id: "world_example", type: "world" }], rebuild: rebuild() });
+
+  it("accepts the cascade DELETE actually sends", () => {
+    expect(ok(NoteArchiveSchema, archive())).toBe(true);
+  });
+
+  it("accepts a cascade of one, where the target is the whole set", () => {
+    expect(ok(NoteArchiveSchema, { ...archive(), notes: [note()] })).toBe(true);
+  });
+
+  it("rejects a reply carrying only the target and no set", () => {
+    const { notes, ...rest } = archive();
+    void notes;
+    expect(ok(NoteArchiveSchema, rest)).toBe(false);
+  });
+
+  it("rejects the whole reply when one note in the cascade does not parse", () => {
+    expect(ok(NoteArchiveSchema, { ...archive(), notes: [note(), { ...note(), status: "deleted" }] })).toBe(false);
+  });
+});
+
+describe("ExtractResponseSchema", () => {
+  const extraction = () => ({
+    operationId: "5c9b3f22-0a7e-4a1e-9d2f-6d6a1b4c8e01",
+    draft: { id: "d4dba4df-d77f-4afe-a142-0149e55c0e0f", status: "pending", mutations: [mutation()], source: { sourceNoteId: "source_example" } },
+    diagnostics: [],
+    outcome: { state: "draft_created", totalCandidates: 4, keptUnits: 3, droppedUnits: 1 },
+    appliedMutationIds: [],
+    skippedMutationIds: [],
+  });
+
+  it("accepts the extraction result the engine sends", () => {
+    expect(ok(ExtractResponseSchema, extraction())).toBe(true);
+  });
+
+  it("accepts an extraction that produced no draft", () => {
+    expect(ok(ExtractResponseSchema, { ...extraction(), draft: null })).toBe(true);
+  });
+
+  it("rejects the note envelope this route was wrongly typed as", () => {
+    expect(ok(ExtractResponseSchema, { note: note(), rebuild: rebuild() })).toBe(false);
   });
 });

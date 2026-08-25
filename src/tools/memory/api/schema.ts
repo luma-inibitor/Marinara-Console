@@ -1,5 +1,5 @@
-// Validates GET /notes, GET /notes/:id and GET /drafts/review; `types.ts`
-// infers its types from here.
+// Validates the note read paths, the note write paths and GET /drafts/review;
+// `types.ts` infers its types from here.
 //
 // Every object is loose, so the fields the engine sends and the console never
 // reads pass through unnamed. A field is required below only where the console
@@ -89,13 +89,15 @@ export const ReviewChangeSchema = v.looseObject({
   after: v.string(),
 });
 
+const DraftSchema = v.looseObject({
+  id,
+  status: v.string(),
+  mutations: v.array(MutationSchema),
+  source: v.optional(v.looseObject({ sourceNoteId: v.optional(v.string()), chatId: v.optional(v.string()) })),
+});
+
 const DraftEntrySchema = v.looseObject({
-  draft: v.looseObject({
-    id,
-    status: v.string(),
-    mutations: v.array(MutationSchema),
-    source: v.optional(v.looseObject({ sourceNoteId: v.optional(v.string()), chatId: v.optional(v.string()) })),
-  }),
+  draft: DraftSchema,
   freshness: v.string(),
   blockReasons: v.array(v.looseObject({ code: v.string(), message: v.string() })),
   diagnostics: v.array(v.unknown()),
@@ -136,4 +138,29 @@ export const ReviewResponseSchema = v.looseObject({
     candidateRejections: v.number(),
     deduplications: v.number(),
   }),
+});
+
+/** PATCH wraps the saved memory beside the index rebuild it kicked off, never
+ *  a bare note. `rebuild` is unnamed here because nothing reads it. */
+export const NoteWriteSchema = v.looseObject({
+  note: NoteSchema,
+});
+
+/** DELETE archives the memory together with everything extracted from it.
+ *  `notes` leads with the target, so the target is in the array as well as in
+ *  `note`, and a caller counting the cascade has to subtract it. */
+export const NoteArchiveSchema = v.looseObject({
+  archived: v.boolean(),
+  note: NoteSchema,
+  notes: v.array(NoteSchema),
+});
+
+/** Extraction answers with the draft it produced and never with a note: the
+ *  vault is untouched until the review queue accepts. Nothing here is read, so
+ *  `operationId` is required only to prove the reply is an extraction result —
+ *  which is the check that would have caught this route being typed as a note
+ *  write for as long as it was. */
+export const ExtractResponseSchema = v.looseObject({
+  operationId: v.string(),
+  draft: v.nullish(DraftSchema),
 });
