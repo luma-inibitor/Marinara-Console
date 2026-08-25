@@ -50,6 +50,11 @@ focus, selection, primary. The status four mean *state*. The `--type-*` hues mea
 in text. Never use a status hue for chrome, or `--accent` for anything
 non-interactive.
 
+The `--type-*` hues are **tokens for your own CSS, not classes this system
+ships**. There is no `.type-character` rule in the stylesheet — the console
+applies these through its own tool CSS, which is outside the design system. To
+tint something by object type, write the rule yourself against the token.
+
 ## Three type faces, strict roles
 
 | token | use for |
@@ -103,7 +108,7 @@ icon and tone you would otherwise have to get right yourself.
                                borderBottom: "var(--hairline)" }}>
         <span className="t-data">{r.id}</span>
         <span style={{ flex: 1 }}>{r.title}</span>
-        <Tag className="type-character">character</Tag>
+        <Tag>character</Tag>
       </div>
     ))}
   </ListGroup>
