@@ -26,7 +26,7 @@ Five roles. A file belongs to exactly one.
 | Role | Knows about | May not |
 |---|---|---|
 | **transport** | HTTP, the proxy | the domain |
-| **endpoints** | routes, wire types | transforms, stores, React |
+| **endpoints** | routes, wire types, wire validation | transforms, stores, React |
 | **model** | the domain, as pure functions | React, `fetch`, stores |
 | **state** | stores, orchestration, invalidation | JSX |
 | **presentation** | JSX, tokens, copy | `fetch` |
@@ -70,7 +70,7 @@ The exemption is narrow enough to have caught something. `SECTION_CAP` and `KEYW
 
 | Directory | Layer | Holds |
 |---|---|---|
-| `api/` | endpoints | one module per route family; wire types only |
+| `api/` | endpoints | one module per route family; wire types and the schemas that check them |
 | `model/` | model | pure functions; no React, no `fetch`, no stores |
 | `store/` | state | stores, orchestration, invalidation; no JSX |
 | `components/` | presentation | this tool's components |
