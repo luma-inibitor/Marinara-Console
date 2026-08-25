@@ -7,23 +7,12 @@
 // and `markerConfig`/`defaultChoices`/`parameters` arrive as JSON strings.
 // `"false"` is truthy, so every raw truthiness test silently passes. The
 // engine's own client normalizes the same way (PresetEditor.tsx: `enabled ===
-// "true" || enabled === true`). Everything here is normalized at the fetch
+// "true" || enabled === true`). Everything here is decoded at the wire
 // boundary; components only ever see real booleans and parsed objects.
+import * as v from "valibot";
 import { api, tokensOf } from "../../shell/api";
+import { parseItems, parseWire, parseWrite } from "../../shell/wire";
 import { tAny } from "../../copy";
-
-const bool = (v: unknown): boolean => v === true || v === "true";
-const parseJson = <T,>(v: unknown, fallback: T): T => {
-  if (v == null) return fallback;
-  if (typeof v !== "string") return v as T;
-  try { return JSON.parse(v) as T; } catch { return fallback; }
-};
-
-type MarkerType =
-  | "character" | "persona" | "lorebook" | "chat_history" | "chat_summary"
-  | "dialogue_examples" | "agent_data" | "id_macro_cards" | string;
-
-interface MarkerConfig { type: MarkerType; [extra: string]: unknown; }
 
 // Marker types the engine's assembler actually handles (packages/server/src/
 // services/prompt/{assembler,marker-expander}.ts). Do not invent entries here:
@@ -42,86 +31,91 @@ const MARKER_LABEL_KEYS: Record<string, string> = {
   id_macro_cards: "presets.marker.id_macro_cards",
 };
 
-export interface PromptPreset {
-  id: string;
-  name: string;
-  description: string;
-  conversationPrompt: string;
-  gamePrompt: string;
-  sectionOrder: string[];
-  wrapFormat: "xml" | "markdown" | "none";
-  isDefault: boolean;
-  author: string;
-  systemKey: string | null;
-  defaultChoices: Record<string, string | string[]>;
-  parameters: { maxContext?: number; [k: string]: unknown };
-  updatedAt: string;
-}
+// ── wire ──
+// The schema is the normalization: `wireBool` and `jsonText` decode the TEXT
+// columns, and the tool's types are what comes out the far side. What is new
+// is the third case — a value that is neither shape used to fall back to
+// `false` or to an empty object, and now fails the record instead.
 
-export interface PromptSection {
-  id: string;
-  presetId: string;
-  identifier: string;
-  name: string;
-  content: string;
-  role: "system" | "user" | "assistant";
-  enabled: boolean;
-  isMarker: boolean;
-  markerConfig: MarkerConfig | null;
-  groupId: string | null;
-  injectionPosition: string;
-  injectionDepth: number;
-  injectionOrder: number;
-  forbidOverrides: boolean;
-}
+/** Exactly the two strings the engine writes, and the two booleans a JSON
+ *  column would have given. `1`, `"yes"` and `""` are none of those. */
+const wireBool = v.pipe(
+  v.union([v.boolean(), v.picklist(["true", "false"])]),
+  v.transform((raw) => raw === true || raw === "true"),
+);
 
-interface PromptGroup { id: string; name: string; enabled: boolean; }
+/** A JSON string, or the value already decoded — POST replies are not observed
+ *  read-only, so both are taken. The decoded value still has to satisfy
+ *  `inner`: `sectionOrder` is mapped over and `parameters.maxContext` is
+ *  divided by, so an object where a list belongs is not a survivable shape. */
+const jsonText = <S extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>(inner: S) =>
+  v.pipe(v.unknown(), v.rawTransform<unknown, v.InferOutput<S>>(({ dataset, addIssue, NEVER }) => {
+    let decoded = dataset.value;
+    if (typeof decoded === "string") {
+      try { decoded = JSON.parse(decoded); } catch { addIssue({ expected: "json" }); return NEVER; }
+    }
+    const result = v.safeParse(inner, decoded);
+    if (!result.success) { addIssue({ expected: "json", received: result.issues[0].message }); return NEVER; }
+    return result.output;
+  }));
 
-export interface PresetFull {
-  preset: PromptPreset;
-  sections: PromptSection[];
-  groups: PromptGroup[];
-  choiceBlocks: ChoiceBlock[];
-}
+const id = v.pipe(v.string(), v.minLength(1));
 
-interface ChoiceBlock {
-  id: string;
-  variableName: string;
-  question: string;
-  options: Array<{ id: string; label: string; value: string }>;
-}
-
-// ── normalization ──
-function normPreset(raw: Record<string, unknown>): PromptPreset {
-  return {
-    ...(raw as unknown as PromptPreset),
-    isDefault: bool(raw.isDefault),
-    sectionOrder: parseJson<string[]>(raw.sectionOrder, []),
-    defaultChoices: parseJson<Record<string, string | string[]>>(raw.defaultChoices, {}),
-    parameters: parseJson<Record<string, unknown>>(raw.parameters, {}),
-    systemKey: (raw.systemKey as string) || null,
-  };
-}
-
-function normSection(raw: Record<string, unknown>): PromptSection {
-  return {
-    ...(raw as unknown as PromptSection),
-    enabled: bool(raw.enabled),
-    isMarker: bool(raw.isMarker),
-    forbidOverrides: bool(raw.forbidOverrides),
-    markerConfig: parseJson<MarkerConfig | null>(raw.markerConfig, null),
-  };
-}
-
-const normGroup = (raw: Record<string, unknown>): PromptGroup => ({
-  ...(raw as unknown as PromptGroup),
-  enabled: bool(raw.enabled),
+/** `wrapFormat` and `role` are rendered as themselves rather than looked up in
+ *  the catalog, so an unknown member draws correctly and stays a string. */
+export const PresetSchema = v.looseObject({
+  id,
+  name: v.string(),
+  description: v.string(),
+  conversationPrompt: v.string(),
+  gamePrompt: v.string(),
+  sectionOrder: jsonText(v.array(v.string())),
+  wrapFormat: v.string(),
+  isDefault: wireBool,
+  author: v.string(),
+  systemKey: v.nullable(v.string()),
+  defaultChoices: jsonText(v.record(v.string(), v.union([v.string(), v.array(v.string())]))),
+  parameters: jsonText(v.looseObject({ maxContext: v.optional(v.number()) })),
+  updatedAt: v.string(),
 });
 
-const normChoice = (raw: Record<string, unknown>): ChoiceBlock => ({
-  ...(raw as unknown as ChoiceBlock),
-  options: parseJson<ChoiceBlock["options"]>(raw.options, []),
+export const SectionSchema = v.looseObject({
+  id,
+  presetId: v.string(),
+  identifier: v.string(),
+  name: v.string(),
+  content: v.string(),
+  role: v.string(),
+  enabled: wireBool,
+  isMarker: wireBool,
+  markerConfig: v.nullable(jsonText(v.looseObject({ type: v.string() }))),
+  groupId: v.nullable(v.string()),
+  injectionPosition: v.string(),
+  injectionDepth: v.number(),
+  injectionOrder: v.number(),
+  forbidOverrides: wireBool,
 });
+
+const GroupSchema = v.looseObject({ id, name: v.string(), enabled: wireBool });
+
+const ChoiceBlockSchema = v.looseObject({
+  id,
+  variableName: v.string(),
+  question: v.string(),
+  options: jsonText(v.array(v.looseObject({ id: v.string(), label: v.string(), value: v.string() }))),
+});
+
+export const PresetFullSchema = v.looseObject({
+  preset: PresetSchema,
+  sections: v.array(SectionSchema),
+  groups: v.array(GroupSchema),
+  choiceBlocks: v.array(ChoiceBlockSchema),
+});
+
+export type PromptPreset = v.InferOutput<typeof PresetSchema>;
+export type PromptSection = v.InferOutput<typeof SectionSchema>;
+type PromptGroup = v.InferOutput<typeof GroupSchema>;
+export type PresetFull = v.InferOutput<typeof PresetFullSchema>;
 
 // ── derived ──
 
@@ -156,9 +150,9 @@ export function effectivelyEnabled(s: PromptSection, groups: PromptGroup[]): boo
 /** Expand {{macros}} from the preset's saved choices/variables. */
 export function expand(content: string, preset: PromptPreset): string {
   return content.replace(/\{\{([a-z0-9_]+)\}\}/gi, (whole, key: string) => {
-    const v = preset.defaultChoices[key];
-    if (v == null) return whole;                       // {{user}} etc. resolve at runtime
-    return Array.isArray(v) ? v.join(", ") : String(v);
+    const choice = preset.defaultChoices[key];
+    if (choice == null) return whole;                  // {{user}} etc. resolve at runtime
+    return Array.isArray(choice) ? choice.join(", ") : choice;
   });
 }
 
@@ -213,33 +207,33 @@ export function groupRunBoundaries(sections: PromptSection[]): Map<string, "star
 }
 
 // ── API ──
-export const fetchPresets = async (): Promise<PromptPreset[]> =>
-  (await api<Record<string, unknown>[]>("/prompts")).map(normPreset);
 
-export const fetchFull = async (id: string): Promise<PresetFull> => {
-  const raw = await api<{
-    preset: Record<string, unknown>;
-    sections: Record<string, unknown>[];
-    groups: Record<string, unknown>[];
-    choiceBlocks: Record<string, unknown>[];
-  }>(`/prompts/${id}/full`);
-  return {
-    preset: normPreset(raw.preset),
-    sections: (raw.sections ?? []).map(normSection),
-    groups: (raw.groups ?? []).map(normGroup),
-    choiceBlocks: (raw.choiceBlocks ?? []).map(normChoice),
-  };
-};
+/** The route a wire mismatch is reported under, as a pattern rather than an
+ *  instance. Method and path stay separate arguments because this file is
+ *  @copy-strict, where a letter and a space make a string copy. */
+const wire = (method: string, path: string) => `${method} ${path}`;
 
-export const patchPreset = (id: string, patch: Record<string, unknown>) =>
-  api(`/prompts/${id}`, { method: "PATCH", body: patch });
-export const patchSection = (presetId: string, sectionId: string, patch: Record<string, unknown>) =>
-  api(`/prompts/${presetId}/sections/${sectionId}`, { method: "PATCH", body: patch });
+export const fetchPresets = async () =>
+  parseItems(PresetSchema, await api("/prompts"), wire("GET", "/prompts"));
+
+export const fetchFull = async (presetId: string) =>
+  parseWire(PresetFullSchema, await api(`/prompts/${presetId}/full`), wire("GET", "/prompts/:id/full"));
+
+export const patchPreset = (presetId: string, patch: Record<string, unknown>) =>
+  api(`/prompts/${presetId}`, { method: "PATCH", body: patch });
+
+/** The saved section, or nothing: the editor merges the reply over its draft,
+ *  and both a row and an empty 204 leave that merge correct. Before it was
+ *  parsed the raw row went into the merge, which put `"false"` back into
+ *  `enabled` and a JSON string back into `markerConfig` — the very coercion
+ *  this file was written to keep out, re-entering one save later. */
+export const patchSection = async (presetId: string, sectionId: string, patch: Record<string, unknown>) =>
+  parseWrite(v.nullish(SectionSchema), await api(`/prompts/${presetId}/sections/${sectionId}`, { method: "PATCH", body: patch }), wire("PATCH", "/prompts/:id/sections/:sectionId"));
 export const createSection = async (presetId: string, body: Record<string, unknown>) =>
-  normSection(await api<Record<string, unknown>>(`/prompts/${presetId}/sections`, { method: "POST", body }));
+  parseWrite(SectionSchema, await api(`/prompts/${presetId}/sections`, { method: "POST", body }), wire("POST", "/prompts/:id/sections"));
 export const deleteSection = (presetId: string, sectionId: string) =>
   api<null>(`/prompts/${presetId}/sections/${sectionId}`, { method: "DELETE" });
-export const duplicatePreset = async (id: string) =>
-  normPreset(await api<Record<string, unknown>>(`/prompts/${id}/duplicate`, { method: "POST" }));
+export const duplicatePreset = async (presetId: string) =>
+  parseWrite(PresetSchema, await api(`/prompts/${presetId}/duplicate`, { method: "POST" }), wire("POST", "/prompts/:id/duplicate"));
 export const setDefaultPreset = (id: string) =>
   api(`/prompts/${id}/set-default`, { method: "POST" });
