@@ -53,15 +53,13 @@
 // runs as a separate check below with its own heading, and its findings are
 // never mixed into the upward-import list.
 //
-// It is reported but does not fail by default. Three screens do this today
-// (§1 says so), and they are a refactor rather than a lint fix; a check that
-// fails on every run from the day it lands gets muted, and then it is not a
-// check. `--strict` makes it fail, and is what the rule should run as once the
-// screens are moved onto hooks. The non-failing default is a temporary
-// baseline, not the intended end state.
+// It failed nothing while the screens that predated the rule were still being
+// moved onto hooks — a check that goes red on every run from the day it lands
+// gets muted, and then it is not a check. That baseline is spent: the last of
+// them is on a hook, the count is zero, and the rule fails like any other.
+// Anything this reports is a defect to fix, not a number to watch.
 //
-// Exit codes: 0 clean · 1 one or more upward value imports (or, with --strict,
-// one or more ownership violations).
+// Exit codes: 0 clean · 1 one or more violations of either rule.
 
 import { join } from "node:path";
 import { ROOT, rel, listSources, parseModule, valueSpecifiers } from "./lib/imports.mjs";
@@ -126,7 +124,6 @@ function valueEdges(mod) {
 // A different question from direction: not "may this file reach that layer?"
 // but "is this file allowed to own a fetch at all?" §3: no component calls
 // `fetch`; a screen gets data by calling a hook.
-const OWNERSHIP_STRICT = process.argv.includes("--strict");
 
 // The same notion of presentation the direction check uses, so one file cannot
 // be presentation to one rule and something else to the other.
@@ -301,12 +298,9 @@ if (ownership.length) {
     }
   }
   const inFiles = new Set(ownership.map((o) => o.file)).size;
-  console.log(
-    `\n${ownership.length} ownership violation(s) across ${inFiles} file(s)` +
-    (OWNERSHIP_STRICT ? " — FAILING under --strict" : " — reported only; --strict makes this fail")
-  );
+  console.log(`\n${ownership.length} ownership violation(s) across ${inFiles} file(s)`);
 } else {
   console.log("\nno component owns a fetch");
 }
 
-process.exit(violations.length || (OWNERSHIP_STRICT && ownership.length) ? 1 : 0);
+process.exit(violations.length || ownership.length ? 1 : 0);

@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../../lib/store";
 import { navigate } from "../../shell/router";
-import { refreshLtmStatus } from "./MemoryTool";
+import { refreshLtmStatus } from "./store/status";
 import { toast } from "../../shell/toast";
 import { type Note, type NoteSection, type NoteType } from "./api/types";
 import { KEYWORD_CAP, SECTION_CAP } from "./model/caps";

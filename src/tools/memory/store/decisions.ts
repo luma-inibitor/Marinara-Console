@@ -11,7 +11,9 @@
 //
 // Persistence stays in this module rather than in one of its own. `persist` is
 // called by every setter and reads exactly these two stores; splitting it out
-// would need the ledger back and buy a cycle for nothing.
+// would need the ledger back and buy a cycle for nothing. The request itself is
+// not this module's to own — `api/ledger.ts` knows the key and the record, and
+// the transport under it knows that console state does not go through /api.
 //
 // This module imports NOTHING from `store/`. That is the edge that keeps the
 // state layer acyclic: `store/review.ts` reads this module, and `derived()`
@@ -25,6 +27,7 @@
 // silently lose the last ~700ms of decisions on tab close, with no type error.
 
 import { createStore } from "../../../lib/store";
+import { fetchLedger, saveLedger } from "../api/ledger";
 import { type Mutation } from "../api/types";
 import { type Decision, type Row } from "../model/review";
 import { t } from "../../../copy";
@@ -60,18 +63,13 @@ async function persistNow(keepalive = false) {
   clearTimeout(persistTimer);
   persistTimer = undefined;
   try {
-    const res = await fetch("/console/state/ltm-review", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      keepalive,
-      body: JSON.stringify({
-        dec: Object.fromEntries(decisions.get()),
-        edited: Object.fromEntries(edited.get()),
-        savedAt: new Date().toISOString(),
-      }),
-    });
-    if (res.ok) ledgerDirty = false;
-    saveState.set(res.ok ? "saved" : "failed");
+    const ok = await saveLedger({
+      dec: Object.fromEntries(decisions.get()),
+      edited: Object.fromEntries(edited.get()),
+      savedAt: new Date().toISOString(),
+    }, keepalive);
+    if (ok) ledgerDirty = false;
+    saveState.set(ok ? "saved" : "failed");
   } catch {
     saveState.set("failed");
   }
@@ -103,7 +101,7 @@ export async function loadPersisted() {
   // the debounce window).
   if (ledgerDirty) return;
   try {
-    const s = await (await fetch("/console/state/ltm-review")).json();
+    const s = await fetchLedger();
     decisions.set(new Map(Object.entries(s.dec ?? {})));
     edited.set(new Map(Object.entries(s.edited ?? {})));
   } catch { /* fresh start */ }

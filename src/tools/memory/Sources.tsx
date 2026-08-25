@@ -20,7 +20,8 @@ import { toast } from "../../shell/toast";
 import type { ImportResult } from "./api/types";
 import { t } from "../../copy";
 import { Copy } from "./Copy";
-import { focusSource, refreshLtmStatus } from "./MemoryTool";
+import { focusSource } from "./MemoryTool";
+import { refreshLtmStatus } from "./store/status";
 import { TypeIcon } from "./icons";
 import {
   blockedDrafts, chats as chatsStore, importSource, importSources, loadChats, loadSources,
