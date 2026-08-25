@@ -1,7 +1,5 @@
-// Fixtures are shaped from real dev-engine responses with the contents
-// replaced, so an "accepts" case failing means the schema drifted, not the
-// fixture. The string booleans and JSON strings below are verbatim: that is
-// what a TEXT column gives back.
+// Fixtures are real dev-engine responses with the contents replaced. The
+// string booleans and JSON strings are verbatim: that is what a TEXT column gives back.
 
 import { describe, expect, it } from "vitest";
 import * as v from "valibot";
@@ -80,7 +78,6 @@ describe("PresetSchema", () => {
     expect(ok(PresetSchema, { ...preset(), systemKey: null })).toBe(true);
   });
 
-  // "false" is the value that broke four things at once; these are its neighbours.
   it("rejects a flag that is neither of the two strings nor a boolean", () => {
     for (const bad of ["yes", "", "0", 1, null]) {
       expect(ok(PresetSchema, { ...preset(), isDefault: bad })).toBe(false);
@@ -95,7 +92,6 @@ describe("PresetSchema", () => {
     expect(ok(PresetSchema, { ...preset(), parameters: "not json" })).toBe(false);
   });
 
-  // The editor divides the section cost by this to draw the budget bar.
   it("rejects a context window sent as a string", () => {
     expect(ok(PresetSchema, { ...preset(), parameters: "{\"maxContext\":\"8192\"}" })).toBe(false);
   });
@@ -126,7 +122,6 @@ describe("SectionSchema", () => {
     expect(ok(SectionSchema, { ...section(), markerConfig: "{}" })).toBe(false);
   });
 
-  // Two chips read off these directly, and neither comparison is string-safe.
   it("rejects an injection number sent as a string", () => {
     for (const field of ["injectionDepth", "injectionOrder"]) {
       expect(ok(SectionSchema, { ...section(), [field]: "0" })).toBe(false);
@@ -155,8 +150,6 @@ describe("PresetFullSchema", () => {
     expect(ok(PresetFullSchema, { ...full(), groups: [], choiceBlocks: [] })).toBe(true);
   });
 
-  // One envelope, one verdict: a screen showing most of an editor is worse
-  // than a screen saying it could not read one.
   it("rejects the whole payload when one section does not parse", () => {
     expect(ok(PresetFullSchema, { ...full(), sections: [section(), { ...section(), id: "second", enabled: "yes" }] })).toBe(false);
   });

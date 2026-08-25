@@ -32,22 +32,18 @@ const MARKER_LABEL_KEYS: Record<string, string> = {
 };
 
 // ── wire ──
-// The schema is the normalization: `wireBool` and `jsonText` decode the TEXT
-// columns, and the tool's types are what comes out the far side. What is new
-// is the third case — a value that is neither shape used to fall back to
-// `false` or to an empty object, and now fails the record instead.
 
-/** Exactly the two strings the engine writes, and the two booleans a JSON
- *  column would have given. `1`, `"yes"` and `""` are none of those. */
+/** A plain `v.boolean()` rejects every live preset: the TEXT columns send
+ *  `"true"` and `"false"`. This takes those two strings and the two booleans a
+ *  JSON column would have given, and nothing else. */
 const wireBool = v.pipe(
   v.union([v.boolean(), v.picklist(["true", "false"])]),
   v.transform((raw) => raw === true || raw === "true"),
 );
 
-/** A JSON string, or the value already decoded — POST replies are not observed
- *  read-only, so both are taken. The decoded value still has to satisfy
- *  `inner`: `sectionOrder` is mapped over and `parameters.maxContext` is
- *  divided by, so an object where a list belongs is not a survivable shape. */
+/** A JSON string, or the value already decoded, checked against `inner` either
+ *  way. The tool maps over `sectionOrder` and divides by
+ *  `parameters.maxContext`, so a decode is not enough on its own. */
 const jsonText = <S extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>(inner: S) =>
   v.pipe(v.unknown(), v.rawTransform<unknown, v.InferOutput<S>>(({ dataset, addIssue, NEVER }) => {
     let decoded = dataset.value;
@@ -61,8 +57,7 @@ const jsonText = <S extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>
 
 const id = v.pipe(v.string(), v.minLength(1));
 
-/** `wrapFormat` and `role` are rendered as themselves rather than looked up in
- *  the catalog, so an unknown member draws correctly and stays a string. */
+/** `wrapFormat` and `role` render as themselves, not through the catalog. */
 export const PresetSchema = v.looseObject({
   id,
   name: v.string(),
@@ -208,9 +203,7 @@ export function groupRunBoundaries(sections: PromptSection[]): Map<string, "star
 
 // ── API ──
 
-/** The route a wire mismatch is reported under, as a pattern rather than an
- *  instance. Method and path stay separate arguments because this file is
- *  @copy-strict, where a letter and a space make a string copy. */
+/** Two arguments because @copy-strict reads "GET /x" as copy. */
 const wire = (method: string, path: string) => `${method} ${path}`;
 
 export const fetchPresets = async () =>
@@ -222,11 +215,7 @@ export const fetchFull = async (presetId: string) =>
 export const patchPreset = (presetId: string, patch: Record<string, unknown>) =>
   api(`/prompts/${presetId}`, { method: "PATCH", body: patch });
 
-/** The saved section, or nothing: the editor merges the reply over its draft,
- *  and both a row and an empty 204 leave that merge correct. Before it was
- *  parsed the raw row went into the merge, which put `"false"` back into
- *  `enabled` and a JSON string back into `markerConfig` — the very coercion
- *  this file was written to keep out, re-entering one save later. */
+/** `nullish` because the route may answer 204 rather than the saved section. */
 export const patchSection = async (presetId: string, sectionId: string, patch: Record<string, unknown>) =>
   parseWrite(v.nullish(SectionSchema), await api(`/prompts/${presetId}/sections/${sectionId}`, { method: "PATCH", body: patch }), wire("PATCH", "/prompts/:id/sections/:sectionId"));
 export const createSection = async (presetId: string, body: Record<string, unknown>) =>

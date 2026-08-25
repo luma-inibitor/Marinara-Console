@@ -1,7 +1,5 @@
-// Fixtures are shaped from real dev-engine responses with the contents
-// replaced, so an "accepts" case failing means the schema drifted, not the
-// fixture. Unlike the preset tables, a lorebook row is stored as JSON: its
-// booleans and numbers arrive as booleans and numbers.
+// Fixtures are real dev-engine responses with the contents replaced, so an
+// "accepts" case failing means the schema drifted, not the fixture.
 
 import { describe, expect, it } from "vitest";
 import * as v from "valibot";
@@ -69,7 +67,6 @@ describe("LorebookSchema", () => {
     expect(v.parse(LorebookSchema, book()).scope).toEqual({ mode: "all", chatIds: [] });
   });
 
-  // The picker divides by tokenBudget and calls toLocaleString on it.
   it("rejects a budget sent as a string", () => {
     expect(ok(LorebookSchema, { ...book(), tokenBudget: "1000" })).toBe(false);
   });
@@ -92,7 +89,6 @@ describe("EntrySchema", () => {
     expect(ok(EntrySchema, { ...entry(), somethingNewUpstream: { nested: true } })).toBe(true);
   });
 
-  // server.mjs adds it in place of the vector; the engine itself never sends it.
   it("accepts an entry that never reached the embedding swap", () => {
     const { hasEmbedding, ...rest } = entry();
     void hasEmbedding;
@@ -105,8 +101,6 @@ describe("EntrySchema", () => {
     }
   });
 
-  // order is added to and sorted on, position is compared to a code, depth is
-  // rendered beside it.
   it("rejects a number sent as a string", () => {
     for (const field of ["order", "position", "depth"]) {
       expect(ok(EntrySchema, { ...entry(), [field]: "0" })).toBe(false);
