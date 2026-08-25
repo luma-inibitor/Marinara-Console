@@ -11,7 +11,7 @@
 /* ── head ── */
 .fs-back { display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap-2);
   padding: 0 4px 0 0; background: none; border: 0; color: var(--accent); cursor: pointer; }
-.fs-meta { margin-left: auto; font-size: 10.5px; color: var(--text-dim); white-space: nowrap; }
+.fs-meta { margin-left: auto; font-size: var(--fs-label); color: var(--text-dim); white-space: nowrap; }
 .fs-clear { min-height: var(--tap-2); padding: 0 6px; background: none; border: 0;
   color: var(--text-dim); cursor: pointer; }
 .fs-clear:hover { color: var(--text); }
@@ -36,7 +36,7 @@
 
 /* The unnarrowed summary is a secondary reading — it says what the filter
    would accept, and must never crowd out the label it sits beside. */
-.fs-sum { flex: 1; min-width: 0; font-size: 10.5px; color: var(--text-dim);
+.fs-sum { flex: 1; min-width: 0; font-size: var(--fs-label); color: var(--text-dim);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ── plain rows: the source drill-in and the More disclosure ── */
@@ -62,7 +62,7 @@
    a row without now reserve the same trailing width, so the numbers line up
    whether or not the row leads anywhere. `margin-left: auto` covers the rows
    that have no flexible sibling to push the count over. */
-.fs-n { flex: none; margin-left: auto; font-size: 10px; color: var(--text-dim);
+.fs-n { flex: none; margin-left: auto; font-size: var(--fs-label); color: var(--text-dim);
   font-variant-numeric: tabular-nums; }
 .fs-n.is-on { color: var(--accent); }
 .fs-chev { flex: none; }
@@ -78,7 +78,7 @@
 .fs-check:hover:not(:disabled) { background: var(--surface-2); }
 .fs-check.is-on { background: var(--accent-wash); }
 .fs-check:disabled { opacity: 0.45; cursor: not-allowed; }
-.fs-check-l { flex: 1; min-width: 0; font-size: 11px; color: var(--text-dim);
+.fs-check-l { flex: 1; min-width: 0; font-size: var(--fs-data-s); color: var(--text-dim);
   line-height: 1.3; overflow-wrap: anywhere; }
 .fs-check.is-on .fs-check-l { color: var(--text); }
 
@@ -109,20 +109,20 @@
 .fs-tile:hover:not(:disabled) { border-color: var(--edge-strong); }
 .fs-tile.is-on { background: var(--accent-wash); border-color: var(--accent); }
 .fs-tile:disabled { opacity: 0.45; cursor: not-allowed; }
-.fs-tile-l { flex: 1; min-width: 0; font-size: 10.5px; color: var(--text-dim);
+.fs-tile-l { flex: 1; min-width: 0; font-size: var(--fs-label); color: var(--text-dim);
   line-height: 1.25; overflow-wrap: anywhere; }
 .fs-tile.is-on .fs-tile-l { color: var(--text); }
 
 /* ── source search ── */
 .fs-search { padding: var(--s2) var(--s3); border-bottom: var(--hairline); }
-.fs-empty { padding: 20px var(--s3); font-size: 12px; }
+.fs-empty { padding: 20px var(--s3); font-size: var(--fs-data); }
 
 /* ── foot ──
    The running result sits with the Done that dismisses the sheet, so the
    selection states its effect at the moment you leave it. */
 .fs-foot { display: flex; align-items: center; gap: var(--s2);
   padding: var(--s2) var(--s3); border-top: var(--hairline); background: var(--canvas); }
-.fs-shown { flex: 1; font-size: 11px; color: var(--text);
+.fs-shown { flex: 1; font-size: var(--fs-data-s); color: var(--text);
   font-variant-numeric: tabular-nums; }
 .fs-done { min-height: var(--tap-2); padding: 0 var(--s3);
   border: 1px solid var(--edge-strong); border-radius: var(--r-s);
