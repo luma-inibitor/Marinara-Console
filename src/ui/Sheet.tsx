@@ -43,13 +43,7 @@ export function Modal(props: {
 /** Scrim, dialog semantics, and the overlay-stack registration that every
  *  layered surface needs.
  *
- *  Radix's dialog supplies what `aria-modal="true"` has always promised and
- *  the hand-rolled version never delivered: a focus trap, a scroll lock, and
- *  `aria-hidden` on everything behind. It owns none of the dismissal —
- *  `overlays.ts` does, because dismissal here is a history traversal so the
- *  Android back gesture reaches every layer. Every Radix dismissal route is
- *  therefore cancelled and re-routed through the stack, or the two would each
- *  close a layer for one gesture. */
+ *  Radix owns the focus trap. `overlays.ts` owns dismissal and history. */
 function Overlay(props: {
   label: string;
   onClose: () => void;
@@ -62,9 +56,8 @@ function Overlay(props: {
   close.current = props.onClose;
   useEffect(() => openOverlay(() => close.current()), []);
 
-  // The opener has to be read during this render: by the time any effect runs,
-  // the trap below has already moved focus into the surface, so the stack entry
-  // records a control that is about to be removed and restores nothing.
+  // Read during render. By the first effect the trap has already moved focus
+  // into the surface.
   const [opener] = useState(() => document.activeElement as HTMLElement | null);
 
   return (
@@ -72,15 +65,13 @@ function Overlay(props: {
       <Dialog.Overlay className="peek-scrim">
         <Dialog.Content
           asChild
-          // Escape already has a handler: overlays.ts's document listener, which
-          // runs in the same capture phase and cannot be stopped from here
-          // (stopPropagation does not reach a listener on the same node). Both
-          // firing pops two history entries for one press.
+          // overlays.ts handles Escape on the same node in the same phase, where
+          // stopPropagation cannot reach it, so both would close a layer.
           onEscapeKeyDown={(e) => e.preventDefault()}
+          // Routed through the stack so state and history stay in step.
           onPointerDownOutside={(e) => { e.preventDefault(); closeTopOverlay(); }}
-          // Restoring on unmount rather than letting the stack entry do it: the
-          // entry restores during dismissal, while the trap is still up, and the
-          // trap pulls focus straight back in.
+          // The stack restores focus while the trap is still up and the trap
+          // takes it back. On unmount it holds.
           onCloseAutoFocus={(e) => { e.preventDefault(); if (opener?.isConnected) opener.focus(); }}
         >
           <aside className={props.surface} aria-modal="true" aria-label={props.label}>
