@@ -16,6 +16,7 @@ export function IconButton(props: {
   download?: boolean;
   disabled?: boolean;
   className?: string;
+  autoFocus?: boolean;
 }) {
   const shared = {
     className: `icon-btn ${props.className ?? ""}`,
@@ -26,7 +27,7 @@ export function IconButton(props: {
     return <a {...shared} href={props.href} download={props.download}>{props.children}</a>;
   }
   return (
-    <button {...shared} type="button" disabled={props.disabled} onClick={props.onClick}>
+    <button {...shared} type="button" autoFocus={props.autoFocus} disabled={props.disabled} onClick={props.onClick}>
       {props.children}
     </button>
   );

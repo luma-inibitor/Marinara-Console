@@ -28,7 +28,7 @@ import { Term, OP_TIP } from "./glossary";
 import { flagsOf, worstSeverity, contributionChars, FLAG } from "./model/flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./model/facets";
 import { ClaimDetail } from "./ClaimDetail";
-import { NoteRef, peekNote } from "./NotePeek";
+import { NoteRef, peekNote } from "./components/NoteRef";
 import { Chip, collapsedGroups, EmptyState, ErrorState, FacetDrawer, IconButton, ListGroup, Loading, Picker, useIsDesktop, useRovingFocus } from "../../ui";
 import { createStore, useStore } from "../../lib/store";
 
