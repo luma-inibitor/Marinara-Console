@@ -28,7 +28,7 @@ import {
 } from "./store/sources";
 import { scopeChatId, setScope } from "./store/scope";
 import {
-  isSelectable, isImported, partition,
+  importReportRows, isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,
 } from "./model/sources";
 import { collapsedGroups, Edu, EmptyState, IconButton, ListGroup, Loading, Modal, ModePill, MODES, SearchBar, fuzzyFilter } from "../../ui";
@@ -512,12 +512,7 @@ function ConfirmSheet({ n, chats, onCancel, onGo }: {
 // ── what came back ──────────────────────────────────────────────────
 function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismiss: () => void }) {
   const [openDetail, setOpenDetail] = useState(false);
-  const rows = results.flatMap((res) => res.imported.map((item) => {
-    const a = item.draft?.accounting;
-    const cands = a ? a.providerCandidates + a.normalizedAdditions : 0;
-    const failed = res.batchStatus === "failed" || (!item.draft && !item.note);
-    return { title: item.title, kept: a?.keptUnits ?? 0, rejected: a ? cands - a.keptUnits : 0, failed };
-  }));
+  const rows = importReportRows(results);
   const ok = rows.filter((r) => !r.failed);
   const bad = rows.filter((r) => r.failed);
   const kept = ok.reduce((n, r) => n + r.kept, 0);

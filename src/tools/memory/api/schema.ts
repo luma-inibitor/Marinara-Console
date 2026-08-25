@@ -206,7 +206,7 @@ export const ImportPreviewSchema = v.looseObject({
   samples: v.array(ImportSampleSchema),
 });
 
-/** The engine sends this tally twice, on the imported entry and on its draft. */
+/** The engine sends this tally twice: required on the imported entry, optional on its draft. */
 const AccountingSchema = v.looseObject({
   providerCandidates: v.number(),
   normalizedAdditions: v.number(),
