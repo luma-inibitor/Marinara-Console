@@ -32,5 +32,4 @@
   Before claiming a refactor renders identically, prove it:
   `node scripts/domsnap.mjs before` then `... after --diff`.
 - Engine logic (keyword matching, token estimates) is vendored, never reimplemented.
-- The engine repo lives at `~/code/Marinara-Engine`; UI copy should reuse its
-  en.json vocabulary where a concept exists upstream.
+- The engine repo lives at `~/Documents/code/luma/Marinara-Engine`; UI copy should reuse its en.json vocabulary where a concept exists upstream. There is a decoy `~/code/Marinara-Engine` holding game assets only — it has a `packages/` directory, so its emptiness of engine source is not obvious. The capability source is under `packages/server/data/capability-packages/versions/long-term-memory/`.
