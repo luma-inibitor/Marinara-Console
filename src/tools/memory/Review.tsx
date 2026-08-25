@@ -422,9 +422,9 @@ function FacetSheet() {
 // which names the table its own key reads, so an enum lane shows the same mark
 // its rows do. Object affordances (dot, aggregates, pressure, open-note) exist
 // only when the group key IS an object; enum lanes get label + count + tally +
-// bulk and nothing else. At
-// narrow width the header wraps to two lines and the aggregates drop
-// (priority order, CSS).
+// bulk and nothing else. The header
+// is one line at every width: the aggregates drop below 900px and the title
+// truncates into whatever the controls leave it (priority order, CSS).
 function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key: string) => void; tabbable: (key: string) => boolean }) {
   const g = props.group;
   const dec = useStore(decisions);
