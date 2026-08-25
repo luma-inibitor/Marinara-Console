@@ -88,17 +88,13 @@ export function Palette() {
   return useStore(paletteOpen) ? <PaletteBody /> : null;
 }
 
-/** Mounted only while the palette is open, so the overlay stack gets one entry
- *  per opening and the focus it captures for restore is the opener. */
 function PaletteBody() {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<Item[]>(BASE);
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Running an item navigates, so it goes through the stack rather than beside
-  // it: the closer runs inside popstate, after the rewind has landed, where a
-  // route push cannot be undone by it.
+  // Deferred into popstate. A route pushed before the rewind is what it eats.
   const pending = useRef<Item | null>(null);
   useEffect(() => openOverlay(() => { paletteOpen.set(false); pending.current?.run(); }), []);
 
@@ -119,8 +115,7 @@ function PaletteBody() {
   const run = (it: Item) => { pending.current = it; closeTopOverlay(); };
 
   // On the panel, not the field: the trap keeps Tab inside the palette, so a
-  // result button can hold focus and still has to answer these keys. Escape is
-  // absent because the stack owns it.
+  // result button can hold focus and still has to answer these keys.
   const onKey = (ev: KeyboardEvent<HTMLDivElement>) => {
     if (ev.key === "ArrowDown") { ev.preventDefault(); setActive((a) => Math.min(results.length - 1, a + 1)); }
     else if (ev.key === "ArrowUp") { ev.preventDefault(); setActive((a) => Math.max(0, a - 1)); }

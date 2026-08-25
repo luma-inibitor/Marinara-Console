@@ -1,35 +1,25 @@
-// Radix's focus trap and background aria-hiding, with dismissal left to the
-// caller. A surface that renders `aria-modal` must keep Tab inside itself, and
-// this is the only way that is done here (DESIGN.md §8).
+// The trap and the background aria-hiding for any surface that renders
+// `aria-modal`. Dismissal and history stay with the caller and `overlays.ts`.
 import type { ReactNode } from "react";
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 
 export function FocusTrap(props: {
-  /** The trapped surface. One element, forwarding props to a DOM node. */
   children: ReactNode;
-  /** Class for the scrim Radix renders behind the surface. Omit for a surface
-   *  that fills the viewport. */
+  /** Omit for a surface that fills the viewport and has no scrim. */
   scrim?: string;
-  /** Runs on a pointer-down outside the surface. Omit where there is nothing
-   *  outside to press. */
   onOutside?: () => void;
 }) {
-  // Read during render. By the first effect the trap has already moved focus
-  // into the surface.
   const [opener] = useState(() => document.activeElement as HTMLElement | null);
 
   const content = (
     <Dialog.Content
       asChild
-      // Radix listens for Escape on document in capture, where the surface's own
-      // handler already sits and stopPropagation cannot reach it, so both would
-      // close a layer.
+      // Radix's listener shares document/capture with the caller's, where
+      // stopPropagation cannot reach it, so both would close a layer.
       onEscapeKeyDown={(e) => e.preventDefault()}
-      // Routed through the caller so state and history stay in step.
       onPointerDownOutside={(e) => { e.preventDefault(); props.onOutside?.(); }}
-      // A caller that restores focus itself does it while the trap is still up
-      // and the trap takes it back. On unmount this holds.
+      // A caller's own restore is taken back while the trap is up. This one holds.
       onCloseAutoFocus={(e) => { e.preventDefault(); if (opener?.isConnected) opener.focus(); }}
     >
       {props.children}

@@ -42,9 +42,9 @@ export function FullscreenText(props: {
   const live = useRef({ value, dirty, confirming });
   live.current = { value, dirty, confirming };
 
-  // Own Escape at the capture phase so it never reaches the list behind us. On
-  // window rather than document, so propagation stops before the trap's own
-  // Escape listener and only the dirty guard below can answer the key.
+  // Own Escape at the capture phase so it never reaches the list behind us. It
+  // must stay on window: one node ahead of the trap's document listener is what
+  // leaves the dirty guard below as the only thing Escape can reach.
   useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
       const st = live.current;

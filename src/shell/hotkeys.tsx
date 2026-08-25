@@ -21,9 +21,7 @@ const isTyping = (t: EventTarget | null) =>
 export function useHotkeys() {
   useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
-      // Cmd/Ctrl-K works everywhere, including inputs. Both toggles below close
-      // through the stack rather than by flipping the signal: each surface owns
-      // a history entry, and dropping it any other way desyncs the two.
+      // Cmd/Ctrl-K works everywhere, including inputs
       if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "k") {
         ev.preventDefault();
         if (paletteOpen.get()) closeTopOverlay(); else paletteOpen.set(true);
@@ -76,8 +74,6 @@ export function CheatSheet() {
   return useStore(cheatOpen) ? <CheatBody /> : null;
 }
 
-/** Mounted only while the sheet is open, so the overlay stack gets one entry
- *  per opening and the focus it captures for restore is the opener. */
 function CheatBody() {
   useEffect(() => openOverlay(() => cheatOpen.set(false)), []);
   return (
