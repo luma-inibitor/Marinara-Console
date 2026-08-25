@@ -6,8 +6,14 @@
 // The stores live here rather than in the review store because scope is not
 // review state: the vault and the sources workspace answer to it too.
 
+import { useEffect, useState } from "react";
 import { createStore, useStore } from "../../../lib/store";
+import { fetchChats, type Chat } from "../api/chats";
+import { fetchCharacters } from "../api/characters";
+import { parseCharacter, type Character } from "../model/character";
 import type { Scope } from "../model/scope";
+
+export type { Chat, Character };
 
 /** Import scope: one value read by every memory screen, tool-level rather than
  *  console-wide. */
@@ -30,6 +36,20 @@ export function setScopeCharacter(id: string) {
 /** The scope every memory view reads. */
 export function useScope(): Scope {
   return { characterId: useStore(scopeCharacterId), chatId: useStore(scopeChatId) };
+}
+
+/** The names scope can be chosen from. A hook rather than a store: the lists
+ *  are the picker's options, wanted only while a scope bar is on screen, and
+ *  nothing else in the tool reads them. Either request failing leaves its list
+ *  empty — a picker with no names is still a usable screen. */
+export function useScopeData(): { chats: Chat[]; characters: Character[] } {
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [characters, setCharacters] = useState<Character[]>([]);
+  useEffect(() => {
+    fetchChats().then(setChats).catch(() => setChats([]));
+    fetchCharacters().then((r) => setCharacters(r.map(parseCharacter))).catch(() => setCharacters([]));
+  }, []);
+  return { chats, characters };
 }
 
 export function currentScope(): Scope {

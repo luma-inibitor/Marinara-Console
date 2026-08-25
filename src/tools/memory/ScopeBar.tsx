@@ -9,35 +9,12 @@
 // character above it. The search field never autofocuses — opening a picker
 // should not take the keyboard from someone who came to click.
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { SCOPE_ICON } from "../../ui/icons";
-import { api } from "../../shell/api";
 import { t } from "../../copy";
-import { scopeChatId, scopeCharacterId, setScope, setScopeCharacter } from "./store/scope";
+import { scopeChatId, scopeCharacterId, setScope, setScopeCharacter, type Chat, type Character } from "./store/scope";
 import { SearchDisclosure } from "../../ui";
 import { useStore } from "../../lib/store";
-
-export interface Chat { id: string; name?: string; mode?: string; characterIds?: string[] }
-export interface Character { id: string; name: string }
-
-/** Characters arrive with their card JSON in a string field. */
-function parseCharacter(c: { id: string; data?: string; name?: string }): Character {
-  if (c.name) return { id: c.id, name: c.name };
-  try { return { id: c.id, name: (JSON.parse(c.data ?? "{}") as { name?: string }).name ?? c.id }; }
-  catch { return { id: c.id, name: c.id }; }
-}
-
-export function useScopeData() {
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [characters, setCharacters] = useState<Character[]>([]);
-  useEffect(() => {
-    api<Chat[] | { items: Chat[] }>("/chats")
-      .then((r) => setChats(Array.isArray(r) ? r : r.items ?? [])).catch(() => setChats([]));
-    api<Array<{ id: string; data?: string; name?: string }>>("/characters")
-      .then((r) => setCharacters((Array.isArray(r) ? r : []).map(parseCharacter))).catch(() => setCharacters([]));
-  }, []);
-  return { chats, characters };
-}
 
 export function ScopeBar({ chats, characters }: { chats: Chat[]; characters: Character[] }) {
   const charId = useStore(scopeCharacterId);

@@ -8,7 +8,7 @@
 
 import { createStore, derived } from "../../../lib/store";
 import type { Note, NoteSection } from "../api/types";
-import { deleteNote, fetchNote, fetchNotes, patchNote } from "../api/notes";
+import { deleteNote, extractNote, fetchNote, fetchNotes, patchNote } from "../api/notes";
 import type { VaultLine } from "../model/derived";
 
 export const notesById = createStore<Map<string, Note>>(new Map());
@@ -98,6 +98,14 @@ export function archiveNote(id: string): Promise<void> {
 export async function discardNote(id: string): Promise<void> {
   await deleteNote(id);
   dropNote(id);
+}
+
+/** Run extraction over a source memory again. What it produces is drafts, which
+ *  belong to the review queue rather than to this index — so nothing here
+ *  changes, and the caller refreshes the queue when its batch is done. Throws;
+ *  the copy for the toast belongs to the screen. */
+export async function reextractSource(id: string): Promise<void> {
+  await extractNote(id);
 }
 
 export async function openPeek(id: string): Promise<void> {

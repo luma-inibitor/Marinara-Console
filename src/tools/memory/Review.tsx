@@ -7,14 +7,13 @@
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { toast } from "../../shell/toast";
-import { extractNote } from "./api/notes";
-import { backupExportUrl } from "./api/backup";
 import type { BlockedDraft, Rejection, Row } from "./model/review";
 import { t } from "../../copy";
 import { Copy } from "./Copy";
 import { bulkDecide, canUndo, cycleDecision, decisions, edited, retryPersist, saveState, setDecision, undo } from "./store/decisions";
 import { blocked, loadError, loading, refresh, rejections, review, rows } from "./store/review";
-import { notesById } from "./store/notes";
+import { notesById, reextractSource } from "./store/notes";
+import { backupExportUrl } from "./store/backup";
 import { activeFacets, cursor, detailKey, facetSheetOpen, groupBy, sortBy, sortDir } from "./store/view";
 import { preflight, preflightPending, preflightRowState } from "./store/preflight";
 import { droppedDependencyWarnings, readyToSend, tally } from "./store/tally";
@@ -619,7 +618,7 @@ function Obligations() {
     if (extracting) return;
     for (let i = 0; i < items.length; i++) {
       setExtracting(`${i + 1}/${items.length}`);
-      try { await extractNote(items[i].sourceNoteId); } catch (error) { toast((error as Error).message, { kind: "error" }); }
+      try { await reextractSource(items[i].sourceNoteId); } catch (error) { toast((error as Error).message, { kind: "error" }); }
     }
     setExtracting(null);
     await refresh();

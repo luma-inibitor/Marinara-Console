@@ -14,7 +14,7 @@ The console has no layering problem at its edges and a real one in its middle.
 - Inside `src/`, four things were tangled. Three are now resolved, and the fourth is narrowed:
   - `store.ts` did six jobs—state, derived selectors, persistence I/O, the decision ledger, load orchestration, preflight, and apply. Each now has its own module under `store/`.
   - `data.ts` mixed wire types and endpoint functions with domain transforms. It is gone: routes and wire shapes live in `api/`, transforms in `model/`.
-  - Screens called the API directly, so there was no data boundary. `Vault` and `NotePeek` no longer do; `scripts/layercheck.mjs` RULE 2 tracks what remains.
+  - Screens called the API directly, so there was no data boundary. None do now: the status record, the scope picker's names, re-extraction, the restore-point URL and the decision ledger's own persistence all sit in the layer that owns them, and `scripts/layercheck.mjs` RULE 2 fails the build if one comes back.
   - Notes had two owners, so two copies of the same record could disagree. `store/notes.ts` is now the only writer.
 
 A framework migration would have replaced the layer that was already clean and left all four untouched. This document was the alternative, and the work is most of the way through it.
@@ -56,7 +56,7 @@ Imports point **downward only**:
 Two directions are always wrong:
 
 - **`model` importing `state`** risks a cycle. This has already happened here: the scope predicate needed the scope stores, so we moved the stores down beside the predicate rather than importing upward.
-- **presentation importing `endpoints`** means a screen bypassed the data layer. `layercheck.mjs` RULE 2 checks this directly, because the direction rule cannot see it: presentation importing `api/` is *downward*, so it passes rule 1 while still being the violation named here.
+- **presentation importing `endpoints`** means a screen bypassed the data layer. `layercheck.mjs` RULE 2 checks this directly, because the direction rule cannot see it: presentation importing `api/` is *downward*, so it passes rule 1 while still being the violation named here. It is at zero and enforced.
 
 **Type-only imports are exempt, and point anywhere.** The wire types live in `api/` because they describe the wire — that is the endpoints layer's own vocabulary. The model has to name those shapes to transform them, which is an upward import by the rule above. It is allowed, because `import type` erases at compile time: it creates no runtime edge and therefore no cycle. `layercheck.mjs` checks value imports and ignores type-only ones.
 
@@ -90,6 +90,7 @@ src/
   copy/                     the catalog (unchanged)
   styles/                   tokens + one sheet per tool (unchanged)
   shell/                    app frame: router, overlays, toast, palette, transport
+                            api.ts is the engine proxy; state.ts is the console's own state
   ui/                       shared presentational, domain-unaware, cross-tool
   tools/
     memory/
@@ -99,8 +100,13 @@ src/
         import.ts           preview, source-notes
         backup.ts
         status.ts
+        chats.ts            the host's chats
+        characters.ts       the host's characters
+        ledger.ts           the review ledger, in console state
       model/
         note.ts             shape, status, id
+        character.ts        the card's name
+        character.test.ts
         section.ts          lines, meta, cap flag
         section.test.ts
         pressure.ts         THE cap computation
@@ -121,7 +127,9 @@ src/
         notes.ts            THE owner of notes
         review.ts           THE owner of the queue
         decisions.ts        the keep/drop ledger
-        scope.ts            the two scope stores
+        scope.ts            the two scope stores, and the names to pick from
+        status.ts           THE owner of engine health
+        backup.ts           where a screen reads the restore point
       components/
         NoteRef.tsx         the one link-target renderer
         StatusPill.tsx
@@ -173,7 +181,7 @@ The cost of layer-first: seeing everything about "sections" means looking in thr
 
 The house habit is to encode a rule in a script rather than trust a convention—`copycheck` for copy, `deadcss` for CSS, `overlaycheck` for dismissal.
 
-- **`scripts/layercheck.mjs`** carries two rules. RULE 1 reads every import and fails when a *value* import points upward; type-only imports are exempt, per §1. The directory gives it the layer without a manifest to maintain, and without a default that silently claims files nobody classified. RULE 2 checks the ownership rule rule 1 cannot express — a component reaching the endpoints layer, the transport client, or the global `fetch`. It reports without failing; `--strict` makes it fail. That default is deliberate and temporary: a check that goes red on day one and stays red teaches people to ignore it.
+- **`scripts/layercheck.mjs`** carries two rules, and both fail the build. RULE 1 reads every import and fails when a *value* import points upward; type-only imports are exempt, per §1. The directory gives it the layer without a manifest to maintain, and without a default that silently claims files nobody classified. RULE 2 checks the ownership rule rule 1 cannot express — a component reaching the endpoints layer, the transport client, or the global `fetch`. It reported without failing while the pre-rule screens were being moved onto hooks, because a check that goes red on day one and stays red teaches people to ignore it; that baseline is spent, the count is zero, and the `--strict` flag is gone with it.
 - **`scripts/deadexports.mjs`** finds symbols exported but used only where they are declared. Informational, never fails — over-exporting makes a module's real surface unreadable, but the list is for triage rather than enforcement.
 
 A module in no layer directory is **unchecked**, which is a gap rather than a pass. `layercheck` prints those under `UNCLASSIFIED` rather than defaulting them into a layer, for the same reason §2 rejects the filename-suffix scheme.

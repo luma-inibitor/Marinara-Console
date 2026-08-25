@@ -3,10 +3,8 @@
 
 import { useEffect, useMemo } from "react";
 import { navigate } from "../../shell/router";
-import type { LtmStatus } from "./api/types";
-import { ltmStatus, rebuildIndexes } from "./api/status";
 import { VIEW_ICON } from "../../ui/icons";
-import { ScopeBar, useScopeData } from "./ScopeBar";
+import { ScopeBar } from "./ScopeBar";
 import { toast } from "../../shell/toast";
 import { t, tAny } from "../../copy";
 import { Review } from "./Review";
@@ -19,21 +17,9 @@ import { notesById } from "./store/notes";
 import { pendingSources } from "./store/sources";
 import { activeFacets } from "./store/view";
 import { isScoped, noteInScope } from "./model/scope";
-import { useScope } from "./store/scope";
-import { createStore, useStore } from "../../lib/store";
-
-const status = createStore<LtmStatus | null>(null);
-const statusFailed = createStore(false);
-const rebuilding = createStore(false);
-
-export async function refreshLtmStatus() {
-  try {
-    status.set(await ltmStatus());
-    statusFailed.set(false);
-  } catch {
-    statusFailed.set(true);
-  }
-}
+import { useScope, useScopeData } from "./store/scope";
+import { rebuildIndexes, rebuilding, refreshLtmStatus, status, statusFailed } from "./store/status";
+import { useStore } from "../../lib/store";
 
 /** Sources → Review handoff: land on the queue pre-filtered to one source. */
 let pendingFocusSource: string | null = null;
@@ -87,15 +73,12 @@ export function MemoryTool({ rest }: { rest: string[] }) {
   const unhealthy = Boolean(s && health !== "healthy" && health !== "not_built");
   const noEmbeddings = Boolean(s && !s.indexes.embeddingsAvailable);
   const runRebuild = async () => {
-    rebuilding.set(true);
     try {
       await rebuildIndexes();
-      await refreshLtmStatus();
       toast(t("longtermmemorydetail.reindexComplete"));
     } catch (error) {
       toast((error as Error).message, { kind: "error" });
     }
-    rebuilding.set(false);
   };
   return (
     <div className="memory-tool">
