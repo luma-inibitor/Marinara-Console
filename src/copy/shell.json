@@ -134,5 +134,19 @@
   "shell.api.restorePointFailed": {
     "text": "Restore point FAILED — this write proceeded without a backup. Check the server log.",
     "note": "Raised when the server reports x-ltm-restore-point: failed. The catalog's backup strings all report success after the fact (memoryBackupExported, appliedIdentityRepairs '…A backup was created.') and it has nothing for a write that went ahead unprotected."
+  },
+
+  "shell.wire.mismatch": {
+    "text": "The engine sent {{context}} in a shape this console does not recognise. Check the browser console.",
+    "note": "Raised when a whole response fails its schema. The product is compiled against its own engine and cannot be out of step with it, so it has no string for the two halves disagreeing; its nearest words (longtermmemorydetail.vaultCorrupt, memorysettings.quarantineMalformedNotes) blame stored data rather than the wire."
+  },
+  "shell.wire.dropped": {
+    "one": "1 record in {{context}} did not match what this console expects and was left out. Check the browser console.",
+    "other": "{{count}} records in {{context}} did not match what this console expects and were left out. Check the browser console.",
+    "note": "Raised when elements of a list fail their schema and the rest still render, so the reader is told the list is short before they notice something missing. Upstream quarantines malformed notes on the server and reports a count afterwards (memorysettings.resultNoMalformedNotes); nothing there describes a client declining to display them."
+  },
+  "shell.wire.notAList": {
+    "text": "expected a list",
+    "note": "The single issue line recorded when a route that returns a collection returned something else. Reads as a schema issue beside valibot's own, not as a sentence to a person, and the catalog has no vocabulary at that level."
   }
 }

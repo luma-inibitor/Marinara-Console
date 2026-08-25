@@ -57,6 +57,7 @@
   "dependencies": {
     "@tabler/icons-react": "^3.46.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "valibot": "^1.4.2"
   }
 }

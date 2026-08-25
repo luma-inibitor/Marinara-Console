@@ -1,14 +1,23 @@
 // Stored memories: read, correct, archive, re-extract.
 
 import { api } from "../../../shell/api";
+import { parseItems, parseWire } from "../../../shell/wire";
 import { LTM } from "./routes";
+import { NoteSchema } from "./schema";
 import type { Note } from "./types";
 
-export const fetchNotes = (query: Record<string, string | number> = {}) => {
+/** A memory that fails its schema is dropped and reported, and the rest of the
+ *  vault still loads — the alternative is an empty screen because one record
+ *  out of thirty-one grew a shape we do not know. `parseWire` below is the
+ *  other half of that: one memory is the whole response, so there is nothing
+ *  left to show and it throws. */
+export const fetchNotes = async (query: Record<string, string | number> = {}): Promise<Note[]> => {
   const qs = new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString();
-  return api<Note[]>(`${LTM}/notes${qs ? `?${qs}` : ""}`);
+  const path = `${LTM}/notes${qs ? `?${qs}` : ""}`;
+  return parseItems(NoteSchema, await api(path), `GET ${LTM}/notes`);
 };
-export const fetchNote = (id: string) => api<Note>(`${LTM}/notes/${id}`);
+export const fetchNote = async (id: string): Promise<Note> =>
+  parseWire(NoteSchema, await api(`${LTM}/notes/${id}`), `GET ${LTM}/notes/:id`);
 
 /** Every write route wraps the saved note beside the index rebuild it kicked
  *  off — `{note, rebuild}`, never a bare note. Unwrapping here keeps the

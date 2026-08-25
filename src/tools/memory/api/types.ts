@@ -8,88 +8,44 @@
 // 1.2.9); nothing engine-side is invented. Caps and section-additivity rules
 // mirror the package schema and draft-projector — fidelity beats elegance. The
 // caps themselves are rules rather than payload, and live in model/caps.ts.
+//
+// The shapes the read paths carry — a memory, a mutation, the review queue —
+// are INFERRED from the schemas in `schema.ts` that check them at runtime, so
+// there is one description of each and it is the one that runs. Everything
+// below `PreflightResponse` is still a hand-written interface asserted with
+// `as T`, and is listed as remaining work in BACKLOG.md.
 
+import type * as v from "valibot";
+import type { ConflictSchema, MutationSchema, NoteSchema, NoteSectionSchema, NOTE_TYPES, ReviewChangeSchema, ReviewResponseSchema } from "./schema";
 
-export type NoteType = "source" | "timeline_event" | "character" | "relationship" | "scene" | "thread" | "world" | "tone";
-type NoteStatus = "active" | "resolved" | "archived";
+export type NoteType = (typeof NOTE_TYPES)[number];
 export type Disposition = "new" | "merge" | "rewrite";
-type Risk = "low" | "medium" | "high";
 
-export interface NoteSection { text: string; importance?: string; [extra: string]: unknown }
+/** One block of a memory's body. `text` is the block; the engine's scoring
+ *  fields ride through unnamed rather than being described here. */
+export type NoteSection = v.InferOutput<typeof NoteSectionSchema>;
 
-export interface Note {
-  id: string;
-  type: NoteType;
-  title?: string;
-  status: NoteStatus;
-  modes: string[];
-  tags?: string[];
-  /** What the engine derived. Not the whole recall list, and not the list the
-   *  30 cap is measured against — see `model/keywords.ts`. */
-  keywords?: string[];
-  /** What a person typed. Absent on notes written before the engine split the
-   *  arrays, which is why its absence has to be distinguished from empty. */
-  manualKeywords?: string[];
-  /** Derived keywords a person removed; recall skips them. */
-  suppressedKeywords?: string[];
-  /** Where an imported source note came from. Only source notes carry it. */
-  provenance?: { kind?: string; sourceId?: string };
-  links: Array<{ target: string; relation: string }>;
-  sections: Record<string, NoteSection>;
-  conflicts?: Conflict[];
-  updatedAt?: string;
-  /** Bumped by the engine on every write; the detail card's meta line shows it. */
-  version?: number;
-  /** Note ids this memory is about. Always names the note itself on a character
-   *  memory, where it carries nothing; on a relationship it names both people. */
-  subjects?: string[];
-  [extra: string]: unknown;
-}
+/**
+ * A stored memory. Beyond the fields `schema.ts` names:
+ * `keywords` is what the engine derived — not the whole recall list, and not
+ * the list the 30 cap is measured against (`model/keywords.ts`).
+ * `manualKeywords` is what a person typed, and is absent rather than empty on
+ * notes written before the engine split the two arrays.
+ * `suppressedKeywords` are derived keywords a person removed; recall skips them.
+ * `provenance` says where an imported source note came from, and only source
+ * notes carry it. `version` is bumped by the engine on every write.
+ * `subjects` names who a memory is about — one entry on a character memory,
+ * two on a relationship — as scoped identity keys, not note ids.
+ */
+export type Note = v.InferOutput<typeof NoteSchema>;
 
-export interface Conflict { field?: string; existing?: unknown; proposed?: unknown; resolution?: string; policy?: string }
+export type Conflict = v.InferOutput<typeof ConflictSchema>;
 
-export interface Mutation {
-  id: string;
-  kind: "create_note" | "append_section" | "update_section" | "add_link" | "set_keywords" | "set_status" | "set_subjects";
-  claimKind: "static" | "change";
-  risk: Risk;
-  confidence: number;
-  summary: string;
-  evidence: string[];
-  note?: Note; // create_note
-  noteId?: string;
-  sectionKey?: string;
-  text?: string;
-  section?: NoteSection; // update_section
-  link?: { target: string; relation: string };
-  keywords?: string[];
-  status?: string;
-  [extra: string]: unknown;
-}
+export type Mutation = v.InferOutput<typeof MutationSchema>;
 
-export interface ReviewChange { kind: "section" | "link" | "keywords" | "status" | "subjects"; key: string; before?: string; after: string }
+export type ReviewChange = v.InferOutput<typeof ReviewChangeSchema>;
 
-export interface ReviewResponse {
-  generatedAt: string;
-  sources: Array<{
-    sourceNoteId: string;
-    modes: string[];
-    drafts: Array<{
-      draft: { id: string; status: string; mutations: Mutation[]; source?: { sourceNoteId?: string; chatId?: string } };
-      freshness: string;
-      blockReasons: Array<{ code: string; message: string }>;
-      diagnostics: unknown[];
-      candidateRejections: Array<{ reason: string; message?: string; snippet?: string; recovery?: { noteId?: string } }>;
-    }>;
-    targets: Array<{
-      noteId: string;
-      title?: string;
-      noteType: NoteType;
-      rows: Array<{ draftId: string; mutation: Mutation; disposition: Disposition; diagnostics: unknown[]; changes: ReviewChange[] }>;
-    }>;
-  }>;
-  counts: { sources: number; drafts: number; mutations: number; blockedDrafts: number; candidateRejections: number; deduplications: number };
-}
+export type ReviewResponse = v.InferOutput<typeof ReviewResponseSchema>;
 
 export interface PreflightResponse {
   draftId: string;
