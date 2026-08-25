@@ -27,12 +27,12 @@ import { Back, ChevronRight, ChevronDown, Confirm, Flag, ICON_SIZE } from "../..
 import { TypeIcon, DecisionIcon } from "../icons";
 import "./FilterSheet.css";
 
-export interface SheetValue { value: string; label: string; count: number; on: boolean }
+interface SheetValue { value: string; label: string; count: number; on: boolean }
 export interface SheetFacet { id: string; label: string; values: SheetValue[]; selected: number }
 
 /** Everything the sheet renders, computed by the caller — it is the screen
  *  that holds the stores, and a facet count read here would not subscribe. */
-export interface FilterSheetModel {
+interface FilterSheetModel {
   facets: Map<string, SheetFacet>;
   /** Rows carrying at least one flag, counted as if no flag filter applied. */
   anyFlagCount: number;

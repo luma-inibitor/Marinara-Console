@@ -12,7 +12,7 @@ import { Sheet, SheetHead } from "../../../ui/Sheet";
 import { SortDown, SortUp, ICON_SIZE } from "../../../ui/icons";
 import "./ViewSheet.css";
 
-export interface ViewOption {
+interface ViewOption {
   id: string;
   label: string;
   /** Groups this option would produce. Absent where the number is not a fact

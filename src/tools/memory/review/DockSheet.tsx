@@ -31,7 +31,7 @@ import type { Row } from "../model/review";
 import { backupExportUrl } from "../store/backup";
 import "./DockSheet.css";
 
-export interface DockSheetModel {
+interface DockSheetModel {
   undecided: number;
   edited: number;
   /** Drafts that survive Apply because they still hold undecided claims. */
