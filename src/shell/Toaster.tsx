@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useStore } from "../lib/store";
 import { Close, ICON_SIZE } from "../ui/icons";
 import { t } from "../copy";
-import { dismissToast, toasts, type Toast } from "./toast";
+import { dismissToast, isUndoable, toasts, type Toast } from "./toast";
 
 /** Seconds left, ticking, so a pending delete shows its own deadline. */
 function useCountdown(expiresAt: number): number {
@@ -17,7 +17,7 @@ function useCountdown(expiresAt: number): number {
 }
 
 function ToastRow({ t: item }: { t: Toast }) {
-  const undoable = !!item.onExpire;
+  const undoable = isUndoable(item);
   const left = useCountdown(item.expiresAt);
   return (
     <div className={`toast ${item.kind === "error" ? "is-error" : ""} ${undoable ? "is-undoable" : ""}`}>
@@ -30,9 +30,10 @@ function ToastRow({ t: item }: { t: Toast }) {
           {item.actionLabel}{undoable && left > 0 && <span className="toast-left t-data">{left}s</span>}
         </button>
       )}
-      {/* No dismiss on an undoable toast: dismissing it would have to either
-          commit or cancel, and a "×" reads as cancel while committing. */}
-      {!undoable && (
+      {/* No dismiss while a commit is pending: dismissing it would have to
+          either commit or cancel, and a "×" reads as cancel while committing.
+          A toast whose write already landed has no such ambiguity. */}
+      {!item.onExpire && (
         <button className="toast-x" aria-label={t("shell.toast.dismiss")} onClick={() => dismissToast(item.id)}>
           <Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
         </button>
