@@ -19,7 +19,7 @@ import {
   IconDotsVertical, IconEye, IconCode,
   // signals
   IconInfoCircle, IconFlag, IconAlertCircle, IconAlertTriangle, IconSparkles,
-  IconProgressX, IconProgressAlert, IconZoomCheck,
+  IconProgressX, IconProgressAlert, IconZoomCheck, IconLoader2,
   // the decision family — reserved interiors: tick / cross / dotted edge
   IconCircleCheck, IconCircleX, IconCircleDotted,
   // empty states
@@ -156,8 +156,16 @@ export const ValidationOk = IconZoomCheck;      // an *inspection* passed — no
                                                 // `Confirm`'s "you ticked this"
                                                 // nor `AllClear`'s "nothing is
                                                 // left"
-// loading → no icon. Loading.tsx carries none: a spinner that is also a glyph
-//           reads as a state you can act on, and you cannot.
+export const Working = IconLoader2;             // a control's own action is in
+                                                // flight. Spun by Button.css;
+                                                // placeholder glyph, owner to
+                                                // revisit. NOT `Pending`, which
+                                                // is work waiting on the user —
+                                                // this is work the user already
+                                                // started.
+// A *pane* waiting on data still carries no icon — Loading.tsx has none, and a
+// spinner standing in for content reads as a state you can act on. Pending is
+// the narrower case: the control the user just pressed, reporting on itself.
 
 // the decision family — the reserved interiors (see header)
 export const DECISION_ICON: Record<"keep" | "drop" | "undecided", Icon> = {

@@ -31,7 +31,7 @@ import {
   isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,
 } from "./model/sources";
-import { collapsedGroups, Edu, EmptyState, IconButton, ListGroup, Loading, Modal, ModePill, MODES, SearchBar, fuzzyFilter } from "../../ui";
+import { Button, collapsedGroups, Edu, EmptyState, ListGroup, Loading, Modal, ModePill, MODES, SearchBar, fuzzyFilter } from "../../ui";
 import { closeTopOverlay } from "../../shell/overlays";
 
 /** Above this many sources, spending model calls raises a confirm first. */
@@ -532,9 +532,8 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
           </div>
         </div>
         <span className="gsp" />
-        <IconButton className="hit" label="Dismiss report" onClick={onDismiss}>
-          <Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
-        </IconButton>
+        <Button iconOnly className="hit" label="Dismiss report" onClick={onDismiss}
+          icon={<Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />} />
       </div>
 
       {bad.map((r) => (

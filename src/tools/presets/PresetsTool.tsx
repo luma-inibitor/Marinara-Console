@@ -1,6 +1,6 @@
 // Prompt preset browser + editor. Order is THE attribute of a prompt preset,
 // so the status rail carries the ordinal.
-import { Chip, EmptyState, IconButton, Loading, ErrorState, ListEmpty, NotFound, SaveBar, useIsDesktop } from "../../ui";
+import { Button, Chip, EmptyState, Loading, ErrorState, ListEmpty, NotFound, SaveBar, useIsDesktop } from "../../ui";
 import { Add, Back, Duplicate, Fullscreen, ICON_SIZE, SetDefault } from "../../ui/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
@@ -413,9 +413,8 @@ function Editor({ presetId }: { presetId: string }) {
       <div className="audit-list" ref={listRef} onKeyDown={onListKey}>
         <header className="console">
           <div className="hrow">
-            <IconButton label={t("presets.back")} onClick={() => navigate("presets")}>
-              <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
-            </IconButton>
+            <Button iconOnly label={t("presets.back")} onClick={() => navigate("presets")}
+              icon={<Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />} />
             <h1 className="console-title is-wrapping">{full.preset.name}</h1>
             <span className={`savepill is-${sectionDraft.dirty || presetDraft.dirty ? "dirty" : pill}`}>
               {sectionDraft.dirty || presetDraft.dirty ? t("presets.unsavedChanges")

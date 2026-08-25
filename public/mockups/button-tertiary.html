@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Button — the tertiary band</title>
+<link rel="stylesheet" href="/mockups/kit.css">
+<style>
+  /* Candidate Button CSS, written the way it would ship: tokens only, no
+     literals. Every candidate differs from the others in exactly two
+     declarations — border-color and color — so the specimen isolates the
+     variable it claims to test. */
+  .btn {
+    min-height: var(--tap); padding: 0 var(--s4);
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
+    border: var(--hairline); border-radius: var(--r-m);
+    background: none; color: var(--text);
+    font-family: var(--font-label); font-variation-settings: "wdth" 110;
+    font-weight: 600; font-size: var(--fs-label);
+    letter-spacing: 0.09em; text-transform: uppercase;
+    cursor: pointer;
+  }
+  .btn svg { flex: none; }
+  .btn-sm { min-height: var(--tap-2); padding: 0 var(--s3); font-size: var(--fs-label-s); }
+
+  .v-primary   { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .v-secondary { background: var(--surface-1); color: var(--text); border-color: var(--edge); }
+  .v-ghost     { background: none; color: var(--text-dim); border-color: transparent; }
+
+  .t1 { background: none;             color: var(--accent); border-color: transparent; }
+  .t2 { background: none;             color: var(--accent); border-color: var(--accent); }
+  .t3 { background: var(--accent-wash); color: var(--accent); border-color: var(--accent); }
+  .t4 { background: none;             color: var(--accent); border-color: var(--edge-strong); }
+
+  /* ── specimen staging ── */
+  .stage { background: var(--canvas); border: 1px solid var(--edge-strong);
+    border-radius: var(--r-l); padding: var(--s4); }
+  .ladder { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
+  .ladder .arrow { color: var(--text-faint); font-family: var(--font-data); font-size: 11px; }
+
+  /* A decision bar and a mobile dock: the two places a tertiary would land. */
+  .decbar { display: flex; align-items: center; gap: var(--s2);
+    border-top: var(--hairline); padding: var(--s2) 0; background: var(--surface-1); }
+  .decbar .spacer { margin-left: auto; font-family: var(--font-data);
+    font-size: var(--fs-data-s); color: var(--text-dim); }
+  .dock { display: grid; grid-template-columns: 1fr 1fr 1.1fr; gap: 5px;
+    padding: var(--s1) var(--s2); border-top: var(--hairline); background: var(--canvas); }
+  .dock .btn { padding: 0 var(--s2); }
+  .phone { width: 390px; max-width: 100%; background: var(--canvas);
+    border: 1px solid var(--edge-strong); border-radius: var(--r-l); overflow: hidden; }
+  .phone-body { padding: var(--s3); color: var(--text-dim);
+    font-family: var(--font-prose); font-size: 13px; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--s5); }
+
+  /* Pending: tabler loader-2, spun. Placeholder glyph — the motion is the
+     part being tested, not the silhouette.
+     The label keeps its box and only loses its ink, so the button cannot
+     change width mid-request; the spinner is laid over the space it left. */
+  @keyframes btn-spin { to { transform: rotate(360deg); } }
+  .btn-spin { animation: btn-spin 900ms linear infinite; }
+  @media (prefers-reduced-motion: reduce) { .btn-spin { animation-duration: 2400ms; } }
+  .btn[aria-busy="true"] { position: relative; pointer-events: none; }
+  .btn[aria-busy="true"] .btn-label { visibility: hidden; }
+  .btn[aria-busy="true"] .btn-spin { position: absolute; inset: 0; margin: auto; }
+
+  /* Long selector names in captions must not push the page wider than the
+     viewport; the specimen is screenshotted at 390px. */
+  .mk-list code, .mk-caption code, .mk-intro code, .mk-note code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<div class="mk-page">
+
+  <header>
+    <h1 class="mk-h1">Button — the tertiary band</h1>
+    <p class="mk-sub">Where a fourth emphasis sits between a hairline box and no chrome at all.</p>
+    <span class="mk-band">4 candidates · tokens only · 44px / 34px</span>
+  </header>
+
+  <section class="mk-sec">
+    <h2 class="mk-h2">1 · The problem</h2>
+    <p class="mk-intro">
+      <b>Primary</b> is an accent fill and <b>secondary</b> is a hairline box on <code>--surface-1</code>;
+      both already exist in the codebase as <code>.dbtn.is-primary</code> and <code>.dbtn</code>.
+      <b>Ghost</b> is the floor — no border, no fill, dim ink — which is what
+      <code>.fold-btn</code> and <code>.toast-action</code> already draw.
+      Tertiary has to be legibly <i>between</i> secondary and ghost, and the only
+      currency left is accent ink and how much chrome carries it.
+    </p>
+
+    <div class="mk-spec">
+      <p class="mk-label"><b>00</b> the three settled tiers</p>
+      <div class="mk-stage stage">
+        <div class="ladder">
+          <button class="btn v-primary">Apply decisions</button>
+          <span class="arrow">→</span>
+          <button class="btn v-secondary">Rebuild index</button>
+          <span class="arrow">→</span>
+          <button class="btn v-ghost">Show unchanged</button>
+        </div>
+      </div>
+      <p class="mk-caption">The gap between the hairline box and the bare label is where tertiary goes.</p>
+    </div>
+  </section>
+
+  <section class="mk-sec">
+    <h2 class="mk-h2">2 · Candidates, in the ladder</h2>
+    <p class="mk-intro">
+      Each row is the full hierarchy with one candidate spliced into third position.
+      Read each row left to right and ask whether the fourth step is still a step down.
+    </p>
+
+    <div class="mk-spec">
+      <p class="mk-label"><b>T1</b> accent ink · no chrome</p>
+      <div class="mk-stage stage">
+        <div class="ladder">
+          <button class="btn v-primary">Apply decisions</button>
+          <button class="btn v-secondary">Rebuild index</button>
+          <button class="btn t1">Export backup</button>
+          <button class="btn v-ghost">Show unchanged</button>
+        </div>
+      </div>
+      <p class="mk-caption">A bare accent label. This is what <code>.toast-action</code> already is.</p>
+      <ul class="mk-list">
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Quietest option that still reads as accent, so the step down from secondary is unmistakable.</span></li>
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Costs no horizontal space — survives the 3-column dock and a dense row.</span></li>
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>Only one declaration separates it from ghost: ink color. On a busy surface that is a thin distinction.</span></li>
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>Accent-on-canvas with no border reads as a link, and DESIGN.md §1 already spends accent on links.</span></li>
+      </ul>
+    </div>
+
+    <div class="mk-spec">
+      <p class="mk-label"><b>T2</b> accent ink · accent outline · no fill</p>
+      <div class="mk-stage stage">
+        <div class="ladder">
+          <button class="btn v-primary">Apply decisions</button>
+          <button class="btn v-secondary">Rebuild index</button>
+          <button class="btn t2">Export backup</button>
+          <button class="btn v-ghost">Show unchanged</button>
+        </div>
+      </div>
+      <p class="mk-caption">The primary's color, drawn as outline instead of fill.</p>
+      <ul class="mk-list">
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Unambiguously a button, and unambiguously not the primary — one axis (fill vs outline) carries the whole difference.</span></li>
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Same box geometry as secondary, so siblings align without special-casing.</span></li>
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>Louder than secondary, not quieter — it inverts the ladder it is supposed to extend.</span></li>
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>Collides with <code>.zbtn[aria-pressed="true"]</code> and <code>.dbtn2.save-on</code>, which already mean <i>selected</i>, not <i>tertiary</i>.</span></li>
+      </ul>
+    </div>
+
+    <div class="mk-spec">
+      <p class="mk-label"><b>T3</b> accent ink · accent outline · accent wash</p>
+      <div class="mk-stage stage">
+        <div class="ladder">
+          <button class="btn v-primary">Apply decisions</button>
+          <button class="btn v-secondary">Rebuild index</button>
+          <button class="btn t3">Export backup</button>
+          <button class="btn v-ghost">Show unchanged</button>
+        </div>
+      </div>
+      <p class="mk-caption">Byte-identical to today's <code>.dbtn2.save-on</code>.</p>
+      <ul class="mk-list">
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Reads as a distinct, deliberate tier at a glance.</span></li>
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>Louder than both secondary and T2 — it is nearly a second primary.</span></li>
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>The wash is the established <i>pressed</i> signal across <code>.zbtn</code>, <code>.dbtn2</code> and <code>.segbtn.is-pos</code>. Spending it on a variant means a pressed tertiary has nothing left to say.</span></li>
+      </ul>
+    </div>
+
+    <div class="mk-spec">
+      <p class="mk-label"><b>T4</b> accent ink · neutral outline · no fill</p>
+      <div class="mk-stage stage">
+        <div class="ladder">
+          <button class="btn v-primary">Apply decisions</button>
+          <button class="btn v-secondary">Rebuild index</button>
+          <button class="btn t4">Export backup</button>
+          <button class="btn v-ghost">Show unchanged</button>
+        </div>
+      </div>
+      <p class="mk-caption">Secondary's box, but the label is accent instead of <code>--text</code>. Note the border is <code>--edge-strong</code>, one step up from secondary's <code>--edge</code>, so the box itself does not disappear against the accent ink.</p>
+      <ul class="mk-list">
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Genuinely between secondary and ghost: keeps the box, spends only the ink.</span></li>
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Leaves the accent fill and the accent wash unspent, so primary and pressed both keep their meaning.</span></li>
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>Secondary and tertiary differ by ink alone at a distance; in a group of two the tier may not register.</span></li>
+        <li><span class="mk-tag mk-tag-n">note</span> <span>Accent ink means interactive (§1), which every button already is — so the ink is doing emphasis work here, not category work.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="mk-sec">
+    <h2 class="mk-h2">3 · In the two places it lands</h2>
+    <p class="mk-intro">
+      A ladder on a blank stage flatters every candidate. These are the real
+      surfaces: the sticky decision bar, and the 3-column mobile dock where
+      horizontal space is the binding constraint.
+    </p>
+
+    <div class="grid2">
+      <div class="mk-spec">
+        <p class="mk-label"><b>T1</b> in context</p>
+        <div class="mk-stage stage">
+          <div class="decbar">
+            <button class="btn v-primary">Apply</button>
+            <button class="btn v-secondary">Keep all</button>
+            <button class="btn t1">Export backup</button>
+            <span class="spacer">18 decided</span>
+          </div>
+          <div class="phone" style="margin-top:16px">
+            <div class="phone-body">Review queue · 18 of 42 decided</div>
+            <div class="dock">
+              <button class="btn v-secondary">Keep</button>
+              <button class="btn t1">Skip</button>
+              <button class="btn v-primary">Apply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label"><b>T4</b> in context</p>
+        <div class="mk-stage stage">
+          <div class="decbar">
+            <button class="btn v-primary">Apply</button>
+            <button class="btn v-secondary">Keep all</button>
+            <button class="btn t4">Export backup</button>
+            <span class="spacer">18 decided</span>
+          </div>
+          <div class="phone" style="margin-top:16px">
+            <div class="phone-body">Review queue · 18 of 42 decided</div>
+            <div class="dock">
+              <button class="btn v-secondary">Keep</button>
+              <button class="btn t4">Skip</button>
+              <button class="btn v-primary">Apply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="mk-note">
+      In the dock, T1's missing border is the whole point — three bordered boxes in
+      a 390px row is where <code>.dock-actions</code> already feels tight. In the
+      decision bar, T4's box is the whole point — a bare label beside two boxes
+      reads as a caption rather than a control.
+    </p>
+  </section>
+
+  <section class="mk-sec">
+    <h2 class="mk-h2">4 · Tone × variant, and pending</h2>
+    <p class="mk-intro">
+      Danger as a <b>tone</b> crossed with each variant, using the chosen tertiary
+      in both candidate treatments — plus the pending state with tabler
+      <code>loader-2</code> spinning, as a placeholder glyph.
+    </p>
+
+    <div class="mk-spec">
+      <p class="mk-label"><b>05</b> tone="danger" across the ladder</p>
+      <div class="mk-stage stage">
+        <div class="ladder">
+          <button class="btn" style="background:var(--danger);color:var(--accent-ink);border-color:var(--danger)">Delete book</button>
+          <button class="btn" style="background:var(--surface-1);color:var(--danger);border-color:color-mix(in srgb, var(--danger) 40%, transparent)">Delete book</button>
+          <button class="btn" style="color:var(--danger);border-color:var(--edge-strong)">Delete book</button>
+          <button class="btn" style="color:var(--danger);border-color:transparent">Delete book</button>
+        </div>
+      </div>
+      <p class="mk-caption">Left to right: primary · secondary · tertiary (T4) · ghost, each with <code>tone="danger"</code>. The middle two are what <code>.dangerbtn</code> and <code>.action-sec.is-danger-act</code> already draw.</p>
+    </div>
+
+    <div class="mk-spec">
+      <p class="mk-label"><b>06</b> pending · 1s delay, then the spinner replaces the label</p>
+      <div class="mk-stage stage">
+        <div class="ladder">
+          <button class="btn v-primary"><span class="btn-label">Import 4 sources</span></button>
+          <span class="arrow">→ 1s →</span>
+          <button class="btn v-primary" aria-busy="true">
+            <span class="btn-label">Import 4 sources</span>
+            <svg class="btn-spin" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M12 3a9 9 0 1 0 9 9"/>
+            </svg>
+          </button>
+          <span class="arrow">·</span>
+          <button class="btn v-secondary btn-sm" aria-busy="true">
+            <span class="btn-label">Rebuild</span>
+            <svg class="btn-spin" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M12 3a9 9 0 1 0 9 9"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <p class="mk-caption">
+        The button keeps its pressed width while pending, so a decision bar does not
+        reflow mid-request. <code>sm</code> (34px, <code>--tap-2</code>) shown at right.
+      </p>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
