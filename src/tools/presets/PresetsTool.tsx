@@ -11,13 +11,15 @@ import { ApiError } from "../../shell/api";
 import { tokensOf } from "../../shell/api";
 import { FullscreenText } from "../../ui/FullscreenText";
 import { joinList, t, tAny } from "../../copy";
+import type { PresetFull, PromptPreset, PromptSection } from "./api/schema";
+import { expand } from "./model/macros";
+import { isMarker, markerLabel } from "./model/marker";
+import { effectivelyEnabled, groupRunBoundaries, orderedSections, sectionTokens } from "./model/section";
+import { presetLoad, type PresetLoad } from "./model/load";
 import {
-  type PresetFull, type PromptPreset, type PromptSection, type PresetLoad,
   fetchPresets, fetchFull, patchPreset, patchSection, createSection, deleteSection,
   duplicatePreset, setDefaultPreset,
-  orderedSections, presetLoad, sectionTokens, isMarker, markerLabel,
-  effectivelyEnabled, expand, groupRunBoundaries,
-} from "./data";
+} from "./store/presets";
 
 export function PresetsTool({ rest }: { rest: string[] }) {
   const id = rest[0];
