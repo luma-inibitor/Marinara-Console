@@ -76,6 +76,62 @@ export async function openPage(browser, { viewport, hash = "", url = DEV_URL + h
   return page;
 }
 
+// Open a surface a URL cannot reach: an overlay, a selected row, an expanded
+// editor. `open` drives the app there. Without a `sel` to wait for, a click
+// that did nothing reads as a reached surface.
+export async function openSurface(browser, { open, sel, ...rest }) {
+  const page = await openPage(browser, rest);
+  try {
+    if (open) await open(page);
+    if (sel) await page.locator(sel).first().waitFor({ state: "attached", timeout: 15000 });
+    if (open) await quiet(page, rest.settle ?? 800);
+  } catch (e) {
+    await page.close();
+    throw new Error(`${sel ?? "surface"} not reached: ${String(e).split("\n")[0]}`);
+  }
+  return page;
+}
+
+// Component names that produced DOM on this page, read off React's fiber tree.
+// A component that rendered null is not counted: NotePeek stays mounted on every
+// memory screen and renders nothing until a note is peeked. Throws on a
+// production bundle, where the names are minified.
+export async function renderedComponents(page) {
+  const names = await page.evaluate(() => {
+    const root = document.getElementById("app");
+    const key = Object.keys(root).find((k) => k.startsWith("__reactContainer$"));
+    if (!key) return null;
+    const nameOf = (t) => {
+      if (typeof t === "function") return t.displayName || t.name || null;
+      if (t && typeof t === "object") return t.displayName || t.render?.name || t.type?.name || null;
+      return null;
+    };
+    // The container property keeps the root fiber from mount. React
+    // double-buffers, so `stateNode.current` is the tree on screen now.
+    const fibers = [];
+    const seen = new Set();
+    const stack = [root[key].stateNode?.current ?? root[key]];
+    while (stack.length) {
+      const f = stack.pop();
+      if (!f || seen.has(f)) continue;
+      seen.add(f);
+      fibers.push(f);
+      if (f.child) stack.push(f.child);
+      if (f.sibling) stack.push(f.sibling);
+    }
+    const rendered = new Set();
+    for (const f of fibers) {
+      if (!(f.stateNode instanceof Element)) continue;
+      for (let a = f.return; a && !rendered.has(a); a = a.return) rendered.add(a);
+    }
+    const out = new Set();
+    for (const f of rendered) { const n = nameOf(f.type); if (n) out.add(n); }
+    return [...out];
+  });
+  if (!names) throw new Error("no React fiber tree on the page — component coverage needs a dev build");
+  return names.sort();
+}
+
 /** True once #app has gone `span` ms without a mutation, false if it never
  *  does. Attributes count: a flipped class is a change worth catching. */
 function quiet(page, span, cap = Math.max(span * 4, 8000)) {

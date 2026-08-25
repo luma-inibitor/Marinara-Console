@@ -12,7 +12,7 @@
 // that constant in Sources.tsx to 0, select one source, and confirm the modal
 // closes on scrim tap, Escape, back and Cancel — and that dismissing it does
 // not import. Put the constant back afterwards.
-import { launch, openPage, VIEWPORTS } from "./lib/browser.mjs";
+import { launch, openSurface, VIEWPORTS } from "./lib/browser.mjs";
 
 // Every case runs at one page height rather than its viewport's own, so the
 // amount of page behind a surface is constant across cases. Only the width
@@ -54,13 +54,10 @@ for (const c of CASES) {
   for (const how of c.dismiss ?? ALL) {
     let p;
     try {
-      p = await openPage(browser, {
+      p = await openSurface(browser, {
         viewport: { width: c.vp.width, height: HEIGHT }, hash: c.hash, settle: 1500,
+        open: c.open, sel: c.sel,
       });
-      await c.open(p);
-      await p.waitForTimeout(700);
-      const opened = await p.locator(c.sel).count();
-      if (!opened) { console.log(`FAIL ${c.name} / ${how}: never opened`); fails++; await p.close(); continue; }
       // "The screen they were reading" is wherever opening the surface left
       // them, not the route the case started at: reaching a record can itself
       // be a navigation, and the peek opens over that record, not over the list.
