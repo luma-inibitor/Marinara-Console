@@ -53,6 +53,7 @@
     ".gname → 13px",
     ".health-banner → 13px",
     ".hl .skey → 13px",
+    ".hl → 14.5px",
     ".lg → 11.5px",
     ".ln → 13px",
     ".lt-i → 12.5px",
@@ -71,8 +72,7 @@
     ".tag[class*=\"type-\"] → 10.5px",
     ".tbar-n → 11px",
     ".xtext → 13px",
-    ".zbtn → 10.5px",
-    "the gutter glyph carries the meaning when color fails. The create card's green inset edge is the same new-target channel as the list's group headers. Editing is a mode: accent border on the zone, save/discard replace keep/drop in the decide bar. */ .hl → 14.5px"
+    ".zbtn → 10.5px"
   ],
   "src/styles/presets.css": [
     ".connbar → 13px",
