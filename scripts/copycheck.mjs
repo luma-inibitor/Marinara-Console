@@ -72,7 +72,7 @@
 // about the design, not product copy; those are skipped by class in HTML mode.
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "node:fs";
-import { join, relative, dirname, sep } from "node:path";
+import { join, relative, resolve, dirname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as babel from "@babel/parser";
 
@@ -631,8 +631,20 @@ if (htmlArgs.length) {
   process.exit(code);
 }
 
-const roots = paths.length ? paths.map((p) => join(ROOT, p)) : [join(ROOT, "src")];
-const files = listSources(roots);
+// Resolved against ROOT, never joined onto it: `join(ROOT, "/abs/path")`
+// concatenates, and the agent instructions in this repo say to use absolute
+// paths. A path argument that matches no source file is an error, because a
+// gate that scanned nothing must not report success.
+const args = paths.length ? paths : ["src"];
+const groups = args.map((arg) => ({ arg, files: listSources([resolve(ROOT, arg)]) }));
+const unmatched = groups.filter((g) => !g.files.length);
+if (unmatched.length) {
+  for (const g of unmatched) {
+    console.error(`NOTHING TO CHECK — "${g.arg}" matched no .ts/.tsx source file`);
+  }
+  process.exit(2);
+}
+const files = groups.flatMap((g) => g.files);
 const baseline = loadBaseline();
 const areas = baseline._areas || {};
 

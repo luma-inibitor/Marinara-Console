@@ -68,8 +68,7 @@
 //
 // Informational. Exit code is always 0.
 
-import { join } from "node:path";
-import { ROOT, rel, listSources, parseModule } from "./lib/imports.mjs";
+import { rel, sourceFiles, parseModule } from "./lib/imports.mjs";
 
 const JSON_MODE = process.argv.includes("--json");
 
@@ -240,8 +239,7 @@ const TRANSPORT_REQUEST = new Set(["api", "default", "*"]);
 
 // ── gather ────────────────────────────────────────────────────────────────
 const paths = process.argv.slice(2).filter((a) => !a.startsWith("--"));
-const roots = paths.length ? paths.map((p) => join(ROOT, p)) : [join(ROOT, "src")];
-const files = listSources(roots);
+const files = sourceFiles(paths);
 
 const modules = [];
 const parseErrors = [];

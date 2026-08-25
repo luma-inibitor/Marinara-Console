@@ -13,7 +13,7 @@
 // script and stay there — a shared module that accumulates one-offs is the
 // tangle this is meant to prevent.
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
-import { join, relative, dirname, sep } from "node:path";
+import { join, relative, resolve, dirname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as babel from "@babel/parser";
 
@@ -39,6 +39,28 @@ export function listSources(roots) {
   };
   for (const r of roots) if (existsSync(r)) visit(r);
   return out;
+}
+
+/**
+ * The source files named by a check's command-line path arguments, or by
+ * `fallback` when there are none. Paths are resolved against ROOT, so an
+ * absolute path names the file it spells rather than being concatenated onto
+ * ROOT and landing nowhere.
+ *
+ * An argument that matches no source file exits 2 instead of returning an
+ * empty list: a check that scanned nothing must not be able to report success.
+ */
+export function sourceFiles(paths, fallback = "src") {
+  const args = paths.length ? paths : [fallback];
+  const groups = args.map((arg) => ({ arg, files: listSources([resolve(ROOT, arg)]) }));
+  const empty = groups.filter((g) => !g.files.length);
+  if (empty.length) {
+    for (const g of empty) {
+      console.error(`NOTHING TO CHECK — "${g.arg}" matched no .ts/.tsx source file`);
+    }
+    process.exit(2);
+  }
+  return groups.flatMap((g) => g.files);
 }
 
 // ── resolution ────────────────────────────────────────────────────────────
