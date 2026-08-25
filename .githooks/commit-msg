@@ -1,0 +1,11 @@
+#!/bin/sh
+# Checks the commit subject. Installed by the `prepare` script (core.hooksPath),
+# skippable with `git commit --no-verify`, which CI then catches.
+
+# Without node on PATH this warns rather than blocking every GUI client.
+if ! command -v node >/dev/null 2>&1; then
+	echo "commit-msg hook: no node on PATH, commit message not checked (CI still will)." >&2
+	exit 0
+fi
+
+exec node "$(git rev-parse --show-toplevel)/scripts/commitmsg.mjs" "$1"
