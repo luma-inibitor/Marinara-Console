@@ -267,8 +267,6 @@ describe("ExtractResponseSchema", () => {
     expect(ok(ExtractResponseSchema, { ...extraction(), draft: null })).toBe(true);
   });
 
-  // This route was typed as a note write for as long as it existed, and the
-  // console reads none of the reply, so nothing else could have caught it.
   it("rejects the note envelope this route was wrongly typed as", () => {
     expect(ok(ExtractResponseSchema, { note: note(), rebuild: rebuild() })).toBe(false);
   });
