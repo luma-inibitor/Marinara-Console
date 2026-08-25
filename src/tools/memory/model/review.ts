@@ -19,10 +19,8 @@ export interface Row {
   draftId: string;
   sourceNoteId: string;
   sourceTitle: string;
-  /** Which kind of material the source note holds — the engine's own singular
-   *  names (`lorebook` / `character` / `chat_summary`), so a source keys the
-   *  same icon table the Sources workspace uses. Absent on a source note
-   *  written before the engine recorded its provenance. */
+  /** The engine's singular source-kind name: `lorebook`, `character`,
+   *  `chat_summary`. Absent when the source note recorded no provenance. */
   sourceKind?: string;
   targetId: string;
   targetTitle: string;
@@ -93,9 +91,8 @@ function mutationParts(m: Mutation): Array<{ key: string; text: string }> {
   return [];
 }
 
-/** `sourceNotes` is the vault's source memories keyed by id. The review payload
- *  names its sources by id alone, so the title and the kind of material both
- *  come from the note the id points at. */
+/** The payload names its sources by id, so `sourceNotes` supplies the title and
+ *  the kind. */
 export function flattenReview(data: ReviewResponse, sourceNotes: Map<string, Note>) {
   const rows: Row[] = [];
   const blocked: BlockedDraft[] = [];

@@ -177,18 +177,15 @@
 /* the chevron itself is <CollapseButton>, src/ui/ListGroup.css — this is the
    cell it sits in, which belongs to this list's grid */
 .mem-ghead .gexp { grid-column: 1; min-height: 40px; align-self: start; }
-/* nowrap: the header is one row tall at every width. Wrapping put the controls
-   on a second line and cost a phone screen two list rows. */
+/* nowrap keeps the header one row tall at every width. */
 .ghead-body { grid-column: 3; min-width: 0; min-height: 40px;
   display: flex; align-items: center; flex-wrap: nowrap; gap: var(--s2);
   padding: 5px var(--s3) 5px 0; }
-/* one line, ellipsis (DESIGN.md §2). min-width: 0 is what lets a flex item
-   shrink below its text, and without it the ellipsis never appears. */
+/* Without min-width: 0 the title cannot shrink and the ellipsis never appears. */
 .ghead-body .gn { flex: 1 1 auto; min-width: 0; color: var(--text);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ghead-agg { color: var(--text-dim); font-size: 11px; white-space: nowrap; }
-/* the control cluster is atomic, right-anchored and never shrinks: the title
-   beside it gives up the width instead, by truncating */
+/* the control cluster never shrinks; the title gives up the width instead */
 .ghead-ctl { display: inline-flex; align-items: center; gap: var(--s2);
   margin-left: auto; flex: 0 0 auto; }
 /* label-only headers (sources sections, rejections) skip the grid */

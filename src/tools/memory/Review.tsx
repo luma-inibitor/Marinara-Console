@@ -418,13 +418,7 @@ function FacetSheet() {
 
 // Group header: one line — identity · aggregates (chars added) · cap flag only
 // when real · bar tally · keep-all/drop-all as icon buttons (undecided rows
-// only) · kebab for the rare object actions. The glyph comes from the grouper,
-// which names the table its own key reads, so an enum lane shows the same mark
-// its rows do. Object affordances (dot, aggregates, pressure, open-note) exist
-// only when the group key IS an object; enum lanes get label + count + tally +
-// bulk and nothing else. The header
-// is one line at every width: the aggregates drop below 900px and the title
-// truncates into whatever the controls leave it (priority order, CSS).
+// only) · kebab for the rare object actions. The glyph comes from the grouper.
 function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key: string) => void; tabbable: (key: string) => boolean }) {
   const g = props.group;
   const dec = useStore(decisions);
@@ -433,10 +427,8 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   // state — asking a helper that closed over the store would not subscribe it.
   const collapsed = collapse.useCollapsed().has(g.id);
   const grouping = useStore(groupBy);
+  // Object affordances exist only when the group key is an object.
   const isTarget = grouping === "target";
-  // A source group's key is a source note, so it gets the object affordances a
-  // target group gets — the glyph for what kind of material it is, and the way
-  // into it.
   const isSource = grouping === "source";
   const kept = g.rows.filter((r) => dec.get(r.key) === "keep").length;
   const dropped = g.rows.filter((r) => dec.get(r.key) === "drop").length;
@@ -445,7 +437,7 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   const chars = isTarget ? g.rows.reduce((n, r) => n + contributionChars(r), 0) : 0;
   return (
     /* Same grid as the rows: chevron in the rail (the control column gets a
-       control), the grouper's own glyph in the kind column, words in the body. The
+       control), the grouper's glyph in the kind column, words in the body. The
        new-target marker is the 2a green edge (owner call, color-only tradeoff
        accepted) — an edge, so nothing in the title line shifts. */
     <ListGroup className={`mem-ghead ${isNew ? "is-new" : ""}`}
@@ -491,9 +483,8 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   );
 }
 
-/** The kebab: rare object actions only — open the memory the group is keyed on,
- *  clear this group's decisions. The group key is a note id under both object
- *  groupers, so one peek serves both and `openLabel` says which note it is. */
+/** The kebab: open the note the group is keyed on, or clear its decisions.
+ *  `openLabel` names which note that is. */
 function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: boolean; openLabel: string }) {
   const [open, setOpen] = useState(false);
   const g = props.group;

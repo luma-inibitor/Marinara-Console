@@ -81,14 +81,8 @@ export function facetCounts(list: Row[], active: Map<string, Set<string>>, ctx: 
   return counts;
 }
 
-/** The glyph a group header wears, named as a table and a key into it rather
- *  than as a component — this layer draws nothing. `family` picks the same
- *  table the rows already read for that value, so a header and the rows under
- *  it can never show two different glyphs for one thing.
- *
- *  A grouper carries its own icon, which is what makes a header show one: a
- *  grouper whose key is a value rather than an object states no icon and gets
- *  none, and a grouper added later either names a table or renders bare. */
+/** The glyph a group header shows: a glyph table and a key into it. This layer
+ *  names an icon rather than drawing one. */
 export interface GroupIconRef { family: "type" | "sourceKind" | "op"; value: string }
 
 interface Grouper { label: string; key: (r: Row) => { id: string; label: string; icon?: GroupIconRef } }
@@ -102,12 +96,9 @@ export const GROUPERS: Record<string, Grouper> = {
       icon: r.sourceKind ? { family: "sourceKind", value: r.sourceKind } : undefined,
     }),
   },
-  // Disposition names how a proposal lands, not a thing with a glyph: the
-  // console draws no icon for new/merge/rewrite anywhere, and inventing three
-  // here would put unexplained marks in the one place they appear.
+  // No glyph: the console draws none for new, merge or rewrite anywhere.
   disposition: { label: "disposition", key: (r) => ({ id: r.disposition, label: r.disposition }) },
   kind: { label: "change kind", key: (r) => ({ id: r.mutation.kind, label: r.mutation.kind.replaceAll("_", " "), icon: { family: "op", value: r.mutation.kind } }) },
-  // One synthetic bucket holding everything, keyed on nothing.
   none: { label: "nothing", key: () => ({ id: "all", label: "all proposals" }) },
 };
 

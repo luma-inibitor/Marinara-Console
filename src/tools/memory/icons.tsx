@@ -25,17 +25,14 @@ export function TypeIcon(props: { type: string; size?: number }) {
   );
 }
 
-/** The glyph in a group header's icon column, for whichever grouper is on.
- *  Each family resolves through the same table the rows under the header read,
- *  and a value no table knows draws nothing — a missing glyph costs less than a
- *  wrong one. `.ti` is what puts it in the header's icon column. */
+/** The glyph in a group header's icon column. A value no table knows draws
+ *  nothing. `.ti` is what places it in that column. */
 export function GroupIcon(props: { icon: GroupIconRef }) {
   const { family, value } = props.icon;
   if (family === "type") return <TypeIcon type={value} />;
   const I = family === "sourceKind" ? SOURCE_KIND_ICON[value] : OP_ICON[value];
   if (!I) return null;
-  // Every source note shares one neutral hue, which is the hue the vault gives
-  // them; a change kind is not a categorical object and takes no hue.
+  // type-source is the one neutral hue every source note carries.
   return (
     <span className={family === "sourceKind" ? "ti type-source" : "ti"} aria-hidden="true">
       <I size={15} stroke={1.75} />

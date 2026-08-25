@@ -277,8 +277,6 @@ describe("buildGroups — groupers", () => {
     expect(groups.map((g) => [g.id, g.label])).toEqual([["merge", "merge"], ["new", "new"]]);
   });
 
-  // Disposition and `none` key on nothing the console draws a glyph for, and
-  // the header shows an icon only when its grouper names one.
   it("gives disposition and the `none` bucket no icon", () => {
     expect(buildGroups([row({ disposition: "merge" })], "disposition", "risk")[0].icon).toBeUndefined();
     expect(buildGroups([row({})], "none", "risk")[0].icon).toBeUndefined();
