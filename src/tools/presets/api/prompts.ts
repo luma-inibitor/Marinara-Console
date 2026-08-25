@@ -14,8 +14,8 @@ export const fetchPresets = async () =>
 export const fetchFull = async (presetId: string) =>
   parseWire(PresetFullSchema, await api(`/prompts/${presetId}/full`), wire("GET", "/prompts/:id/full"));
 
-export const patchPreset = (presetId: string, patch: Record<string, unknown>) =>
-  api(`/prompts/${presetId}`, { method: "PATCH", body: patch });
+export const patchPreset = async (presetId: string, patch: Record<string, unknown>) =>
+  parseWrite(PresetSchema, await api(`/prompts/${presetId}`, { method: "PATCH", body: patch }), wire("PATCH", "/prompts/:id"));
 
 /** `nullish` because the route may answer 204 rather than the saved section. */
 export const patchSection = async (presetId: string, sectionId: string, patch: Record<string, unknown>) =>
