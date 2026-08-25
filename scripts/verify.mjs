@@ -55,15 +55,13 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
     // ::after, by construction — the visual box stays small on purpose. Reading
     // the box would fail every one of them for a target that is really 44px.
     if (el.classList.contains("hit")) continue;
-    // A wrapping <label> forwards its own clicks to the control, so the label
-    // is the target and the control's own box understates it.
+    // A wrapping <label> forwards its clicks, so the label is the target.
     const host = (el.matches("input, select, textarea") && el.closest("label")) || el;
     targets.push({ el, r: host.getBoundingClientRect(), group: el.closest("[role=group]") });
   }
   // Edge-to-edge distance to the nearest other target. Two members of one
-  // [role=group] are segments of a single control, not competing targets, and
-  // whatever happens to scroll up against a nav landmark is a scroll offset
-  // rather than a layout — neither pairing is a spacing violation.
+  // [role=group] are segments of one control. A cross-<nav> pair reflects
+  // scroll position, not layout.
   const clearance = (a) => {
     let best = Infinity;
     const aNav = !!a.el.closest("nav");
