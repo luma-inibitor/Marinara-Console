@@ -208,9 +208,13 @@
 /* quiet boxes, colored glyphs — the header must not out-shout its rows */
 .gib.gk { color: var(--ok); }
 .gib.gd { color: var(--danger); }
+/* The sticky header is a stacking context, so the open header must be lifted
+   to the popover's layer. Scrim and popover share this number. */
+.mem-ghead { --z-gmenu: 45; }
+.mem-ghead:has(.gmenu-pop) { z-index: var(--z-gmenu); }
 .gmenu-wrap { position: relative; display: inline-flex; }
-.gmenu-scrim { position: fixed; inset: 0; z-index: 44; }
-.gmenu-pop { position: absolute; top: calc(100% + 4px); right: 0; z-index: 45;
+.gmenu-scrim { position: fixed; inset: 0; z-index: calc(var(--z-gmenu) - 1); }
+.gmenu-pop { position: absolute; top: calc(100% + 4px); right: 0; z-index: var(--z-gmenu);
   min-width: 180px; background: var(--surface-2); border: 1px solid var(--edge-strong);
   border-radius: var(--r-m); padding: 4px; box-shadow: var(--shadow-pop);
   display: flex; flex-direction: column; }

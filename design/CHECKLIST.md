@@ -105,6 +105,12 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
       them.)*
 - [ ] **Run the mechanical checks**: `copycheck.mjs`, and `verify.mjs` for app
       code (contrast, tap targets, keyboard walk).
+- [ ] **Read every comment the diff adds**, and delete the ones that fail
+      DESIGN.md §8: rationale, narrative about the bug being fixed, restating
+      the declaration below, or an alternative that was rejected. Keep a file
+      header, a section divider, the derivation of a magic number, and a real
+      gotcha. `git diff | grep -E '^\+.*(//|/\*)'` lists them.
+      *(Six PRs in one session were sent back for this.)*
 - [ ] **Ask what Luma will catch in five seconds.** It is almost always one of:
       a repeated number, a truncated name, a wrapped button, a coined word, or
       two things that should share an edge and do not.
