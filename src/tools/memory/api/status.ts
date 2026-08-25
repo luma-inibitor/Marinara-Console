@@ -9,6 +9,5 @@ import type { LtmStatus } from "./types";
 export const ltmStatus = async (): Promise<LtmStatus> =>
   parseWire(LtmStatusSchema, await api(`${LTM}/status`), `GET ${LTM}/status`);
 
-/** Unchecked: nothing reads the reply, and the caller takes a fresh /status
- *  afterwards rather than believing what the rebuild said about itself. */
+/** Unparsed: nothing reads the reply, and the caller retakes /status after. */
 export const rebuildIndexes = () => api(`${LTM}/rebuild`, { method: "POST", body: {} });

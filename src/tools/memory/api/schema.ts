@@ -1,6 +1,5 @@
 // Validates every long-term-memory route the console calls; `types.ts` infers
-// its types from here. The host's own routes are checked beside their fetchers
-// in `chats.ts` and `characters.ts`, and the console's ledger in `ledger.ts`.
+// its types from here.
 //
 // Every object is loose, so the fields the engine sends and the console never
 // reads pass through unnamed. A field is required below only where the console
@@ -166,9 +165,7 @@ export const ExtractResponseSchema = v.looseObject({
   draft: v.nullish(DraftSchema),
 });
 
-/** `health` and `rebuildState` are closed sets upstream but open here: the
- *  banner compares them rather than labelling them, and a picklist would drop
- *  the record every screen's counts fall back to. */
+/** Open sets: the banner compares these two rather than labelling them. */
 export const LtmStatusSchema = v.looseObject({
   notes: v.looseObject({
     total: v.number(),
@@ -186,8 +183,8 @@ export const LtmStatusSchema = v.looseObject({
   }),
 });
 
-/** A sample is one of two shapes upstream, split on `status`: an imported one
- *  names the source note it became, a pending one has no note yet. */
+/** Two shapes upstream, split on `status`. An imported sample names the source
+ *  note it became; a pending one has no note yet. */
 const ImportSampleSchema = v.looseObject({
   sourceId: v.string(),
   title: v.string(),
@@ -209,8 +206,7 @@ export const ImportPreviewSchema = v.looseObject({
   samples: v.array(ImportSampleSchema),
 });
 
-/** The extraction's tally, sent twice: on the imported entry and again on its
- *  draft. It is named only where the import report reads it, the draft's. */
+/** The engine sends this tally twice, on the imported entry and on its draft. */
 const AccountingSchema = v.looseObject({
   providerCandidates: v.number(),
   normalizedAdditions: v.number(),
@@ -249,8 +245,7 @@ export const PreflightResponseSchema = v.looseObject({
   })),
 });
 
-/** The reply names the index rebuild twice — once beside the draft and once on
- *  it — and the console reads the copy that survives into the stored draft. */
+/** The reply names the index rebuild twice. Only the draft's copy is stored. */
 export const AcceptResponseSchema = v.looseObject({
   draft: v.looseObject({
     id,
@@ -263,7 +258,7 @@ export const AcceptResponseSchema = v.looseObject({
   autoIncludedMutationIds: v.optional(strings),
 });
 
-/** `deleted` is true on every reply that gets this far: a draft that was not
+/** `deleted` is true on every reply that gets this far. A draft that was not
  *  pending, or a mutation that was not there, answers 409 or 404 instead. */
 export const SkipResponseSchema = v.looseObject({
   deleted: v.boolean(),

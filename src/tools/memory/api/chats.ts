@@ -1,6 +1,5 @@
 // The host's chats. Not a long-term-memory route — scope names a chat the
-// engine already knows about, so this hangs off the app's own API root — and
-// so its schema lives here rather than with the memory ones.
+// engine already knows about, so this hangs off the app's own API root.
 
 import * as v from "valibot";
 import { api } from "../../../shell/api";
@@ -8,7 +7,7 @@ import { parseItems } from "../../../shell/wire";
 
 /** `characterIds` is what the scope cascade narrows on: choosing a character
  *  leaves only the chats that name it. The host writes an absent field as
- *  `null` rather than leaving it off, which `v.optional` alone would reject. */
+ *  `null` rather than leaving it off. */
 export const ChatSchema = v.looseObject({
   id: v.pipe(v.string(), v.minLength(1)),
   name: v.nullish(v.string()),

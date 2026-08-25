@@ -9,8 +9,7 @@
 // mirror the package schema and draft-projector — fidelity beats elegance. The
 // caps themselves are rules rather than payload, and live in model/caps.ts.
 //
-// Every type here is inferred from the schema in schema.ts that checks it, so
-// nothing in this file can claim a shape nothing validates.
+// Every type here is inferred from the schema in schema.ts that checks it.
 
 import type * as v from "valibot";
 import type { AcceptResponseSchema, ConflictSchema, DISPOSITIONS, ExtractResponseSchema, ImportPreviewSchema, ImportResultSchema, LtmStatusSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteSectionSchema, NOTE_TYPES, PreflightResponseSchema, ReviewChangeSchema, ReviewResponseSchema, SkipResponseSchema } from "./schema";

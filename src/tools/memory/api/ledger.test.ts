@@ -1,6 +1,4 @@
-// The ledger is read through its endpoint rather than against the schema
-// directly: what matters is that a document nobody has written yet still
-// resumes a review, and that a corrupted one does not.
+// Read through the endpoint rather than against the schema directly.
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchLedger } from "./ledger";
@@ -26,8 +24,6 @@ describe("fetchLedger", () => {
     expect((await fetchLedger()).dec).toEqual(record().dec);
   });
 
-  // The first read of every fresh install: the server answers `{}` for a key
-  // nothing has written, and that has to be a resumable empty review.
   it("accepts the empty document a key nothing has written returns", async () => {
     answers({});
     expect(await fetchLedger()).toEqual({});

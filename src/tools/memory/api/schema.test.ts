@@ -335,7 +335,6 @@ describe("ImportPreviewSchema", () => {
     expect(ok(ImportPreviewSchema, { source: "chats", scanned: 0, draftable: 0, importedCount: 0, samples: [] })).toBe(true);
   });
 
-  // The pending half of the union: no note exists yet, so neither field is sent.
   it("accepts a sample that has not been imported", () => {
     const { existingNoteId, existingNoteTitle, ...rest } = sample();
     void existingNoteId; void existingNoteTitle;
@@ -520,8 +519,6 @@ describe("SkipResponseSchema", () => {
     expect(ok(SkipResponseSchema, skip())).toBe(true);
   });
 
-  // Without the list the apply pass marks nothing dropped and the ledger keeps
-  // rows the engine has already deleted.
   it("rejects a reply that does not say which claims went", () => {
     const { mutationIds, ...rest } = skip();
     void mutationIds;
@@ -549,8 +546,6 @@ describe("ChatSchema", () => {
     expect(ok(ChatSchema, chat())).toBe(true);
   });
 
-  // The host writes an absent field as null rather than leaving it off, and a
-  // dropped row is a chat the scope picker can never name.
   it("accepts a row whose name and mode are null", () => {
     expect(ok(ChatSchema, { ...chat(), name: null, mode: null })).toBe(true);
   });
@@ -575,7 +570,6 @@ describe("CharacterRowSchema", () => {
     embedding: null,
   });
 
-  // The live host never hoists the name; every row is read out of `data`.
   it("accepts the character row the live host sends, with no hoisted name", () => {
     expect(ok(CharacterRowSchema, character())).toBe(true);
   });

@@ -5,9 +5,8 @@ import * as v from "valibot";
 import { api } from "../../../shell/api";
 import { parseItems } from "../../../shell/wire";
 
-/** As the endpoint answers: the card's own JSON arrives as a string field, and
- *  `name` is only sometimes hoisted out of it — the live host never does, so
- *  every row goes through `model/character.ts` to get one. */
+/** The card's own JSON arrives as a string field. The live host never hoists
+ *  `name` out of it, so every row reaches one through `model/character.ts`. */
 export const CharacterRowSchema = v.looseObject({
   id: v.pipe(v.string(), v.minLength(1)),
   data: v.optional(v.string()),

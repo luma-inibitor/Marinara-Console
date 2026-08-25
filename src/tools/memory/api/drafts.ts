@@ -2,7 +2,6 @@
 //
 // Preflight is a dry run — it reports what an accept would do without doing it
 // — but it is still a POST, so it counts as a write against a real instance.
-// It parses as a read: nothing moved, so a mismatch must not say one did.
 
 import { api } from "../../../shell/api";
 import { parseWire, parseWrite } from "../../../shell/wire";

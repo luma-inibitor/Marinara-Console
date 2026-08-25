@@ -1,7 +1,5 @@
 // Turning outside material into source notes the engine can extract from.
-//
-// The preview is a read in POST clothing, so it parses as one; the import
-// itself is all or nothing.
+// The preview is a POST that scans and writes nothing, so it parses as a read.
 
 import { api } from "../../../shell/api";
 import { parseWire, parseWrite } from "../../../shell/wire";

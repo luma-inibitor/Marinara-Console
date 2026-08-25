@@ -1,8 +1,6 @@
 // The review ledger's record: what the reviewer decided, kept by the console
 // rather than by the engine. It is console state, so it hangs off
 // /console/state rather than off LTM — one key, keyed by engine target.
-// It is still a wire shape, read whole or not at all: a half-trusted ledger
-// would resume a review on decisions nobody made.
 
 import * as v from "valibot";
 import { readConsoleState, writeConsoleState } from "../../../shell/state";
@@ -12,8 +10,6 @@ import type { Decision } from "../model/review";
 
 const KEY = "ltm-review";
 
-/** `satisfies` pins these to the model's union across a boundary only type
- *  imports may cross, so a third decision cannot land in one of them alone. */
 const DECISIONS = ["keep", "drop"] as const satisfies readonly Decision[];
 
 /** Every field optional: `{}` is what a key nothing has written answers with. */
