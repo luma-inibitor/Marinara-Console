@@ -372,6 +372,18 @@ describe("flagsOf — one branch at a time", () => {
     expect(labels(cleanRow({ targetId: "n1" }), ctx({ notesById: notes }))).toEqual([FLAG.keywordCapFull]);
   });
 
+  it("does not flag a target whose cap-worth of keywords is all engine-derived", () => {
+    const keywords = Array.from({ length: KEYWORD_CAP }, (_, i) => `k${i}`);
+    const notes = new Map([["n1", makeNote({ id: "n1", keywords, manualKeywords: [] })]]);
+    expect(labels(cleanRow({ targetId: "n1" }), ctx({ notesById: notes }))).toEqual([]);
+  });
+
+  it("flags a target whose MANUAL list is at the cap, however few are derived", () => {
+    const manualKeywords = Array.from({ length: KEYWORD_CAP }, (_, i) => `m${i}`);
+    const notes = new Map([["n1", makeNote({ id: "n1", keywords: ["derived"], manualKeywords })]]);
+    expect(labels(cleanRow({ targetId: "n1" }), ctx({ notesById: notes }))).toEqual([FLAG.keywordCapFull]);
+  });
+
   it("does not flag a target note well below the cap", () => {
     const notes = new Map([["n1", makeNote({ id: "n1", keywords: Array.from({ length: 24 }, (_, i) => `k${i}`) })]]);
     expect(labels(cleanRow({ targetId: "n1" }), ctx({ notesById: notes }))).toEqual([]);
