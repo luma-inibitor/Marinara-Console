@@ -451,30 +451,56 @@ describe("buildSources — joining the note, its memories and its queue", () => 
 });
 
 describe("partition", () => {
-  it("puts `new` on the pending side and everything else on the imported side", () => {
+  // Every state is listed by hand so a state added upstream cannot fall into
+  // the rail untested.
+  it.each([
+    ["new", true, false],
+    ["current", false, true],
+    ["source_updated", true, true],
+    ["context_updated", true, true],
+    ["extraction_incomplete", true, true],
+    ["source_missing", false, true],
+  ] as Array<[SourceState, boolean, boolean]>)(
+    "%s is ready=%s imported=%s",
+    (state, ready, imported) => {
+      const p = partition([row({ sourceId: state, state })]);
+      expect(p.ready).toHaveLength(ready ? 1 : 0);
+      expect(p.imported).toHaveLength(imported ? 1 : 0);
+    });
+
+  it("covers every state the model declares", () => {
+    // Fails when a state is added, so the table above cannot go stale.
+    expect(STATES).toHaveLength(6);
+  });
+
+  it("lists a source under `ready` exactly when it is selectable", () => {
     const rows = STATES.map((state) => row({ sourceId: state, state }));
-    const { pending, imported } = partition(rows);
-    expect(pending.map((r) => r.state)).toEqual(["new"]);
-    expect(imported.map((r) => r.state)).toEqual(STATES.filter((s) => s !== "new"));
+    expect(partition(rows).ready).toEqual(rows.filter(isSelectable));
   });
 
-  it("lands every row in exactly one side — the totals reconcile", () => {
+  it("puts a re-extractable source in both `ready` and `imported`", () => {
+    const r = row({ sourceId: "a", state: "source_updated" });
+    const { ready, imported, all } = partition([r]);
+    expect(ready).toEqual([r]);
+    expect(imported).toEqual([r]);
+    expect(ready.length + imported.length).toBeGreaterThan(all.length);
+  });
+
+  it("leaves every row reachable from some view", () => {
     const rows = [...STATES, ...STATES].map((state, i) => row({ sourceId: `s${i}`, state }));
-    const { pending, imported, all } = partition(rows);
-    expect(pending.length + imported.length).toBe(rows.length);
+    const { ready, imported, all } = partition(rows);
     expect(all).toHaveLength(rows.length);
-    const ids = [...pending, ...imported].map((r) => r.sourceId).sort();
-    expect(ids).toEqual(rows.map((r) => r.sourceId).sort());
-    expect(pending.some((p) => imported.includes(p))).toBe(false);
+    const seen = new Set([...ready, ...imported].map((r) => r.sourceId));
+    expect([...seen].sort()).toEqual(rows.map((r) => r.sourceId).sort());
   });
 
-  it("keeps input order within each side", () => {
+  it("keeps input order within each view", () => {
     const a = row({ sourceId: "a", state: "new" });
     const b = row({ sourceId: "b", state: "current" });
-    const c = row({ sourceId: "c", state: "new" });
-    const { pending, imported } = partition([a, b, c]);
-    expect(pending.map((r) => r.sourceId)).toEqual(["a", "c"]);
-    expect(imported.map((r) => r.sourceId)).toEqual(["b"]);
+    const c = row({ sourceId: "c", state: "source_updated" });
+    const { ready, imported } = partition([a, b, c]);
+    expect(ready.map((r) => r.sourceId)).toEqual(["a", "c"]);
+    expect(imported.map((r) => r.sourceId)).toEqual(["b", "c"]);
   });
 
   it("returns the caller's own array as `all`", () => {
@@ -483,6 +509,6 @@ describe("partition", () => {
   });
 
   it("returns three empties for no rows", () => {
-    expect(partition([])).toEqual({ pending: [], imported: [], all: [] });
+    expect(partition([])).toEqual({ ready: [], imported: [], all: [] });
   });
 });

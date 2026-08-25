@@ -35,7 +35,7 @@ const NOTE = process.env.MC_NOTE ?? "source_lorebook_d81a750ad0c1a6d7";
 const D = VIEWPORTS.desktop, P = VIEWPORTS.phone;
 const BOTH = [P, D];
 
-/** The sources rail lands on "pending", which the dev corpus has none of. */
+/** The sources rail lands on "Ready to import", which omits current and missing sources. */
 const railAll = (p) => p.getByRole("button", { name: /^All/ }).click();
 
 // A surface is a route plus, where the route is not enough, the interaction
@@ -93,7 +93,7 @@ const SURFACES = [
 // Printed by reportGaps: surfaces a read-only engine cannot be driven to.
 const UNREACHABLE = [
   ["import confirm, job dock, import report (Sources.tsx)",
-   "all three hang off running an import, which writes notes. The confirm sheet also needs more than CONFIRM_THRESHOLD selectable sources; the dev corpus has zero pending."],
+   "all three hang off running an import, which writes notes. The confirm sheet also needs more than CONFIRM_THRESHOLD selectable sources; the dev corpus has six ready sources against a threshold of ten."],
   ["curate panel (Sources.tsx)",
    "shown for a source that has NOT been imported. Every source in the dev corpus is imported already."],
   ["change, link and keyword claims (ClaimDetail.tsx: DiffLines, InlineMemory, ClaimTarget, BatchTarget, KeywordEditor, capNote)",

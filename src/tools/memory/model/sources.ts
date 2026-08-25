@@ -142,9 +142,12 @@ function resolveState(freshness: string, blocked: string[]): SourceState {
   }
 }
 
-/** Rail partition: every source falls in exactly one of these. */
+/** The three rail views. They are filters, not a partition: a re-extractable
+ *  source is both `ready` and `imported`, so the counts do not sum to `all`.
+ *  `ready` is `isSelectable`, so the rail lists a source exactly when its
+ *  checkbox can be ticked. */
 export function partition(rows: SourceRow[]) {
-  const pending = rows.filter((r) => !isImported(r));
-  const imported = rows.filter((r) => isImported(r));
-  return { pending, imported, all: rows };
+  const ready = rows.filter(isSelectable);
+  const imported = rows.filter(isImported);
+  return { ready, imported, all: rows };
 }

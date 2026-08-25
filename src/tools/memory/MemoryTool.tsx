@@ -15,7 +15,7 @@ import { MemoryDetail } from "./detail/MemoryDetail";
 import { Sheet } from "../../ui";
 import { review, rows } from "./store/review";
 import { closePeek, notesById, peeked } from "./store/notes";
-import { pendingSources } from "./store/sources";
+import { readySources } from "./store/sources";
 import { activeFacets } from "./store/view";
 import { listedInVault } from "./model/listing";
 import { noteInScope } from "./model/scope";
@@ -35,7 +35,7 @@ export function MemoryTool({ rest }: { rest: string[] }) {
   const failed = useStore(statusFailed);
   const isRebuilding = useStore(rebuilding);
   const reviewData = useStore(review);
-  const pending = useStore(pendingSources);
+  const ready = useStore(readySources);
   const scope = useScope();
   const scopedRows = useStore(rows); // already narrowed to scope by the store
   const loadedNotes = useStore(notesById);
@@ -79,7 +79,7 @@ export function MemoryTool({ rest }: { rest: string[] }) {
           // where the alternative is a badge reading zero over a full vault.
           const count = id === "review" ? (reviewData ? scopedRows.length : s?.notes.pendingDrafts ?? 0)
             : id === "vault" ? (loadedNotes.size ? listedMemories : s?.notes.savedMemories ?? 0)
-            : (pending ?? 0);
+            : (ready ?? 0);
           return (
             <button key={id} className="mem-tab t-label" aria-current={view === id ? "page" : undefined}
               onClick={() => { if (id === "review") activeFacets.set(new Map()); navigate(`memory/${id}`); }}>

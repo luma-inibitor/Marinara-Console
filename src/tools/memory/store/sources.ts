@@ -45,11 +45,11 @@ export const chats = createStore<Chat[]>([]);
 // check that forbids screens writing entity stores should not read this as a
 // violation.
 
-/** Sources waiting to be imported, in the current scope. The nav badge reads
- *  this, and every nav badge must mean "waiting" — a badge counting work
- *  already done would give the same channel two opposite meanings. Null until
- *  the Sources screen has computed it once. */
-export const pendingSources = createStore<number | null>(null);
+/** Sources ready to import, in the current scope. The nav badge reads this,
+ *  and every nav badge must mean "waiting" — a badge counting work already
+ *  done would give the same channel two opposite meanings. Null until the
+ *  Sources screen has computed it once. */
+export const readySources = createStore<number | null>(null);
 
 /** Load every source kind's preview, the notes they produced, and the review
  *  queue's take on them, then assemble the rows.
