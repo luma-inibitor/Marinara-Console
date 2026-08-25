@@ -7,11 +7,9 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { tokensOf } from "../../shell/api";
 import type { Draft } from "../../shell/draft";
-import {
-  type Entry, type EntryStatus,
-  STATUS_LABEL, STATUS_HINT, POS_COMPACT, POS_FULL, ADVANCED_FIELDS,
-  statusOf, entryTokens,
-} from "./data";
+import type { Entry } from "./api/schema";
+import { ADVANCED_FIELDS, entryTokens, statusOf, type EntryStatus } from "./model/entry";
+import { POS_COMPACT, POS_FULL, STATUS_HINT, STATUS_LABEL } from "./model/labels";
 import { Chip } from "../../ui";
 import { joinList, t } from "../../copy";
 import { Fullscreen, ICON_SIZE, Remove } from "../../ui/icons";

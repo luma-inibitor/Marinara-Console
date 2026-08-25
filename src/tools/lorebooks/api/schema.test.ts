@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from "vitest";
 import * as v from "valibot";
-import { EntrySchema, LorebookSchema } from "./data";
+import { EntrySchema, LorebookSchema } from "./schema";
 
 const ok = (schema: Parameters<typeof v.safeParse>[0], value: unknown) => v.safeParse(schema, value).success;
 
