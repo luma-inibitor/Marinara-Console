@@ -4,7 +4,7 @@ import { useStore } from "../lib/store";
 import { LorebooksTool } from "../tools/lorebooks/LorebooksTool";
 import { MemoryTool } from "../tools/memory/MemoryTool";
 import { PresetsTool } from "../tools/presets/PresetsTool";
-import { Toaster } from "./toast";
+import { Toaster } from "./Toaster";
 import { Palette } from "./palette";
 import { ConnectionBanner, noteResult, startReconnect, reach } from "./connection";
 import { setResultHook } from "./api";
