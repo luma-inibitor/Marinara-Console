@@ -56,6 +56,10 @@ which means the markup asserts one face and the page renders another.
 - `--accent` (blue) is for interactive chrome only — focus, selection, primary
   buttons, links. It must never collide with the status hues.
 - `--flag` (orange) marks computed outliers (over-budget, p90 exceedance) only.
+- A row's **left edge bar** is one channel with three readings, so they must not
+  be reused for anything else: `--ok` at `inset 3px` marks a new target,
+  `--accent` at `inset 2px` is the keyboard cursor, and a background wash is
+  decision state.
 - **Categorical object-type hues** (Luma-confirmed): long-lived object taxonomies
   (e.g. memory note types) get one hue each, used consistently on every chip/dot
   that names the type, always paired with the type name in text. They are a third
