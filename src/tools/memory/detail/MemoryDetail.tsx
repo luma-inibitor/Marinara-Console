@@ -23,6 +23,7 @@ import { t } from "../../../copy";
 import { TypeIcon } from "../icons";
 import { Back, Edit, ExpandSet, ICON_SIZE } from "../../../ui/icons";
 import { Chip, CopyableText, IconButton } from "../../../ui";
+import { StatusPill } from "../components/StatusPill";
 import { RetrievalCard } from "./RetrievalCard";
 import { SectionRow } from "./SectionRow";
 import { editStamp, sectionViews } from "./model";
@@ -110,7 +111,7 @@ export function MemoryDetail(props: {
           {/* Titles wrap and never truncate: the title is the last thing on
               the screen that may be cut. */}
           <h1 className="mdc-title">{n.title ?? n.id}</h1>
-          <span className={`stt t-data mdc-status st-${n.status}`}>{n.status}</span>
+          <StatusPill status={n.status} className="mdc-status" />
         </div>
         <div className="mdc-meta t-data">
           <span className={`mdc-type type-${n.type}`}>{n.type.replaceAll("_", " ")}</span>

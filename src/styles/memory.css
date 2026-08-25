@@ -271,9 +271,7 @@
    border on the zone, save/discard replace keep/drop in the decide bar. */
 .hl { font-size: 14.5px; line-height: 1.5; margin-bottom: var(--s3); max-width: var(--measure); }
 .hl .skey { font-size: 13px; }
-.nref { display: inline-flex; align-items: center; gap: 4px; vertical-align: text-bottom; }
 .z-opi { display: inline-flex; color: var(--text-dim); }
-.nref .notelink, .nref-plain { font-family: var(--font-label); font-weight: 600; font-size: 13px; }
 .zone { border: var(--hairline); border-radius: var(--r-m); padding: var(--s2) var(--s3);
   margin-bottom: var(--s3); }
 .zone.is-editing { border-color: var(--accent); }
@@ -336,9 +334,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
   border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
 .kw-del { color: var(--danger); background: var(--danger-wash);
   border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
-.stt { border: var(--hairline); border-radius: var(--r-s); padding: 2px 8px; color: var(--text-dim); }
-.stt.st-active { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
-.stt.st-resolved { color: var(--flag); border-color: color-mix(in srgb, var(--flag) 45%, transparent); }
 .dim-i { color: var(--text-faint); }
 /* evidence zone */
 .z-ev { background: var(--surface-2); }
@@ -378,9 +373,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
   border-radius: var(--r-s); color: var(--text); padding: var(--s2);
   font-size: 13.5px; line-height: 1.4; resize: vertical; }
 .edit-area:focus { outline: none; border-color: var(--accent); }
-.notelink { background: none; border: none; padding: 0; color: var(--accent);
-  cursor: pointer; font-size: 12px; overflow-wrap: anywhere; text-align: left; }
-.notelink:hover { text-decoration: underline; }
 .linkline { display: inline-block; margin-right: var(--s2); }
 
 /* ══ stacked detail (mobile) ══ */

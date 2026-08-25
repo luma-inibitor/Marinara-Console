@@ -6,43 +6,18 @@
 // typography, the mode pill, and the raw id demoted to a quiet footer.
 
 import { useStore } from "../../lib/store";
-import { toast } from "../../shell/toast";
-import { closePeek, notesById, openPeek, peeked } from "./store/notes";
+import { closePeek, peeked } from "./store/notes";
 import { TypeIcon } from "./icons";
 import { Term, TYPE_TIP } from "./glossary";
 import { t } from "../../copy";
+import { LinkTarget } from "./components/NoteRef";
+import { StatusPill } from "./components/StatusPill";
+import { relationLabel } from "./model/relations";
 import { CopyableText, DetailSection, ModePill, RawJson, Sheet, SheetHead, Tag } from "../../ui";
 
-export async function peekNote(id: string) {
-  try {
-    await openPeek(id);
-  } catch (error) {
-    toast(`${id}: ${(error as Error).message}`, { kind: "error" });
-  }
-}
-
-export function NoteRef(props: { id: string; label?: string }) {
-  return (
-    <button className="notelink t-data" onClick={(e) => { e.stopPropagation(); peekNote(props.id); }}>
-      {props.label ?? props.id}
-    </button>
-  );
-}
-
-
-/** Resolve a link target to a titled, typed reference; raw id as last resort. */
-function PeekLinkTarget({ id }: { id: string }) {
-  const note = useStore(notesById).get(id);
-  if (note) {
-    return (
-      <span className="nref">
-        <TypeIcon type={note.type} size={14} />
-        <NoteRef id={id} label={note.title ?? id} />
-      </span>
-    );
-  }
-  return <NoteRef id={id} />;
-}
+// The reference itself lives in components/NoteRef.tsx, beside the resolution
+// it depends on. Re-exported here because the peek is what it opens.
+export { NoteRef, peekNote } from "./components/NoteRef";
 
 export function NotePeek() {
   const n = useStore(peeked);
@@ -55,7 +30,7 @@ export function NotePeek() {
         title={n.title ?? n.id}
       />
         <div className="peek-meta t-data">
-          <span className={`stt st-${n.status}`}>{n.status}</span>
+          <StatusPill status={n.status} />
           <ModePill modes={n.modes ?? []} />
         </div>
         {(n.keywords ?? []).length > 0 && (
@@ -67,8 +42,8 @@ export function NotePeek() {
           <div className="peek-links t-data">
             {n.links.map((l, i) => (
               <div key={i} className="linkrow">
-                <span className="rel">{l.relation.replaceAll("_", " ")} →</span>
-                <PeekLinkTarget id={l.target} />
+                <span className="rel">{relationLabel(l.relation)} →</span>
+                <LinkTarget id={l.target} />
               </div>
             ))}
           </div>

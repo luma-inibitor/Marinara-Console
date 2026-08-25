@@ -20,6 +20,7 @@ export { Picker } from "./Picker";
 export { RawJson } from "./RawJson";
 export { SearchBar } from "./SearchBar";
 export { SearchDisclosure } from "./SearchDisclosure";
+export { SectionKey } from "./SectionKey";
 export { Term } from "./Term";
 export { fuzzyFilter, fuzzyScore } from "./fuzzy";
 export { Modal, Sheet, SheetHead } from "./Sheet";

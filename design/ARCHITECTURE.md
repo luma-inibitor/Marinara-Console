@@ -79,7 +79,7 @@ The exemption is narrow enough to have caught something. `SECTION_CAP` and `KEYW
 
 Tests stay **beside the module they cover**, inside its layer directory: `model/pressure.test.ts` sits next to `model/pressure.ts`. Deleting a module deletes its test. `test/` holds only shared fixtures.
 
-The **filename carries the concept**. `model/pressure.ts` is the one cap computation; `components/SectionKey.tsx` is the one `§key` renderer. The twelve duplicated renderings in the surface census each collapse into one named file — what makes the duplication go away is that a concept has exactly one module, not that the concept owns a folder.
+The **filename carries the concept**. `model/pressure.ts` is the one cap computation; `ui/SectionKey.tsx` is the one `§key` renderer. The twelve duplicated renderings in the surface census each collapse into one named file — what makes the duplication go away is that a concept has exactly one module, not that the concept owns a folder.
 
 ```
 src/
@@ -91,6 +91,7 @@ src/
   styles/                   tokens + one sheet per tool (unchanged)
   shell/                    app frame: router, overlays, toast, palette, transport
   ui/                       shared presentational, domain-unaware, cross-tool
+    SectionKey.tsx          the one `§key` renderer
   tools/
     memory/
       api/
@@ -126,7 +127,6 @@ src/
         NoteRef.tsx         the one link-target renderer
         StatusPill.tsx
         TypeName.tsx
-        SectionKey.tsx
         SectionBody.tsx
         KeywordList.tsx
         KeywordEditor.tsx
@@ -146,6 +146,8 @@ src/
 ```
 
 Two names sit next to each other and mean different things on purpose: `src/ui/` is shared across tools and knows nothing about memories; `tools/memory/components/` is this tool's and knows everything about them. Promotion from the second to the first is the rule in §3.
+
+`SectionKey` sits in `ui/` rather than in `components/`, against the listing this file first drew, because `ui/DetailSection` is one of its three callers and `ui/` may not import a tool. The line the split actually follows is what a component has to know: a `§key` is a string with a mark in front of it, while a `NoteRef` has to reach the notes store and open a peek. Anything that needs the domain stays in the tool.
 
 The cost of layer-first: seeing everything about "sections" means looking in three directories rather than one. That is what filenames and grep are for, and it buys a property that matters more — you can tell what a file is allowed to do from where it sits, before opening it.
 

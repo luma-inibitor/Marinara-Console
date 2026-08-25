@@ -11,14 +11,11 @@
 // nothing a reader can act on.
 
 import { useState } from "react";
-import { useStore } from "../../../lib/store";
 import { t } from "../../../copy";
 import { type Note } from "../api/types";
 import { KEYWORD_CAP } from "../model/caps";
-import { notesById } from "../store";
-import { NoteRef } from "../NotePeek";
-import { TypeIcon } from "../icons";
-import { relationLabel } from "./model";
+import { LinkTarget, MemoryRef } from "../components/NoteRef";
+import { relationLabel } from "../model/relations";
 import { ModePill, Tag } from "../../../ui";
 import { Info } from "../../../ui/icons";
 import "./RetrievalCard.css";
@@ -38,18 +35,17 @@ const KEYWORDS_ON_ONE_LINE = 4;
  *  of pixels of provenance between the head and the first section. */
 const LINKS_SHOWN = 5;
 
-/** Resolve a link target to its title and its type icon; the raw id is the
- *  last resort, never the first. */
-function LinkTarget({ id }: { id: string }) {
-  const target = useStore(notesById).get(id);
+/** A link target in this card's own box: one line, the title truncating rather
+ *  than wrapping, which is why it takes the card's class instead of the default
+ *  reference box. An unresolved target keeps the shape and takes the hueless
+ *  `source` glyph rather than borrowing a taxonomy it may not be in. */
+function CardTarget({ id }: { id: string }) {
   return (
-    <span className="mdc-ret-target">
-      {/* The vault's standard way of naming a memory: the type's own glyph in
-          the type's hue, then the resolved title. An unresolved target takes
-          the hueless type rather than borrowing a taxonomy it may not be in. */}
-      <TypeIcon type={target?.type ?? "source"} size={14} />
-      <NoteRef id={id} label={target?.title} />
-    </span>
+    <LinkTarget
+      id={id}
+      className="mdc-ret-target"
+      unresolved={<MemoryRef id={id} title={id} type="source" className="mdc-ret-target" />}
+    />
   );
 }
 
@@ -129,7 +125,7 @@ export function RetrievalCard({ note }: { note: Note }) {
               {(linksOpen ? links : links.slice(0, LINKS_SHOWN)).map((link, i) => (
                 <span className="mdc-ret-linkrow" key={`${link.relation}:${link.target}:${i}`}>
                   <span className="mdc-ret-rel">{relationLabel(link.relation)}</span>
-                  <LinkTarget id={link.target} />
+                  <CardTarget id={link.target} />
                 </span>
               ))}
               {links.length > LINKS_SHOWN && (
