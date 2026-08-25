@@ -20,9 +20,9 @@ import { launch, openSurface, VIEWPORTS } from "./lib/browser.mjs";
 const HEIGHT = 900;
 
 // `dismiss` names the routes a surface actually offers. Everything built on
-// <Sheet>/<Modal> offers all three. The tag panel is a full-screen surface with
-// no scrim to tap, so it declares only escape and back rather than pretending
-// to pass a scrim case that never ran.
+// <Sheet>/<Modal> offers all three. The tag panel and the fullscreen editor are
+// full-screen surfaces with no scrim to tap, so they declare only escape and
+// back rather than pretending to pass a scrim case that never ran.
 const ALL = ["scrim", "escape", "back"];
 
 const CASES = [
@@ -46,6 +46,21 @@ const CASES = [
   { name: "tag panel", hash: "#/lorebooks/JZzGg_2NjFx1hFP_G4Yeq", vp: VIEWPORTS.phone,
     dismiss: ["escape", "back"], open: async (p) => {
       await p.getByRole("button", { name: /Tags/ }).click(); }, sel: ".tagpanel" },
+  // The three shell surfaces. Their scrim is not .peek-scrim, so `scrim` names
+  // the one to press.
+  { name: "palette", hash: "#/lorebooks", vp: VIEWPORTS.desktop, scrim: ".palette-backdrop",
+    open: (p) => p.keyboard.press("Meta+k"), sel: ".palette" },
+  { name: "cheat sheet", hash: "#/lorebooks", vp: VIEWPORTS.desktop, scrim: ".palette-backdrop",
+    open: async (p) => { await p.locator(".rail-item").first().focus(); await p.keyboard.press("?"); },
+    sel: ".cheat" },
+  // The editor guards a discard, so a dirty one answers every route with the
+  // confirm rather than by closing. Opened clean, which is the dismissal the
+  // other surfaces offer.
+  { name: "fullscreen text", hash: "#/lorebooks/JZzGg_2NjFx1hFP_G4Yeq", vp: VIEWPORTS.desktop,
+    dismiss: ["escape", "back"], open: async (p) => {
+      await p.locator(".row-summary").first().click();
+      await p.locator(".drawer .sub").nth(1).locator(".sub-head").click();
+      await p.locator(".drawer .fieldbar button").first().click(); }, sel: ".fseditor" },
 ];
 
 const browser = await launch();
@@ -62,7 +77,7 @@ for (const c of CASES) {
       // them, not the route the case started at: reaching a record can itself
       // be a navigation, and the peek opens over that record, not over the list.
       const base = new URL(p.url()).hash;
-      if (how === "scrim") await p.locator(".peek-scrim").click({ position: { x: 5, y: 5 } });
+      if (how === "scrim") await p.locator(c.scrim ?? ".peek-scrim").click({ position: { x: 5, y: 5 } });
       if (how === "escape") await p.keyboard.press("Escape");
       if (how === "back") await p.goBack();
       await p.waitForTimeout(700);
