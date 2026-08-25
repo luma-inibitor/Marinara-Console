@@ -4,7 +4,9 @@
 
 import { describe, expect, it } from "vitest";
 import * as v from "valibot";
-import { ExtractResponseSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteWriteSchema, ReviewResponseSchema } from "./schema";
+import { AcceptResponseSchema, ExtractResponseSchema, ImportPreviewSchema, ImportResultSchema, LtmStatusSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteWriteSchema, PreflightResponseSchema, ReviewResponseSchema, SkipResponseSchema } from "./schema";
+import { ChatSchema } from "./chats";
+import { CharacterRowSchema } from "./characters";
 
 const ok = (schema: Parameters<typeof v.safeParse>[0], value: unknown) => v.safeParse(schema, value).success;
 
@@ -269,5 +271,326 @@ describe("ExtractResponseSchema", () => {
 
   it("rejects the note envelope this route was wrongly typed as", () => {
     expect(ok(ExtractResponseSchema, { note: note(), rebuild: rebuild() })).toBe(false);
+  });
+});
+
+
+const status = () => ({
+  initialized: true,
+  directory: "long-term-memory",
+  notes: { total: 31, sourceNotes: 8, savedMemories: 23, pendingDrafts: 6, byType: { character: 3, source: 8 }, byStatus: { active: 30, resolved: 1 } },
+  events: { logAvailable: true, bytes: 251367 },
+  indexes: {
+    health: "healthy", dirty: false, rebuildState: "idle", errors: [], warnings: [],
+    generatedAt: "2026-08-25T08:54:36.984Z", noteCount: 23, chunkCount: 27,
+    chunkFormatVersion: 4, embeddingsAvailable: false, embeddedChunkCount: 0,
+  },
+});
+
+describe("LtmStatusSchema", () => {
+  it("accepts the status the live engine sends", () => {
+    expect(ok(LtmStatusSchema, status())).toBe(true);
+  });
+
+  it("accepts an index health the banner has no branch for", () => {
+    expect(ok(LtmStatusSchema, { ...status(), indexes: { ...status().indexes, health: "quarantined" } })).toBe(true);
+  });
+
+  it("rejects a status with no counts, which every badge falls back to", () => {
+    const { notes, ...rest } = status();
+    void notes;
+    expect(ok(LtmStatusSchema, rest)).toBe(false);
+  });
+
+  it("rejects a count sent as a string", () => {
+    expect(ok(LtmStatusSchema, { ...status(), notes: { ...status().notes, total: "31" } })).toBe(false);
+  });
+
+  it("rejects a byType map whose members are not numbers", () => {
+    expect(ok(LtmStatusSchema, { ...status(), notes: { ...status().notes, byType: { character: "3" } } })).toBe(false);
+  });
+});
+
+const sample = () => ({
+  sourceId: "lorebook_entry_7a821c05d6",
+  title: "Lorebook - Example Book: Description",
+  importMode: "roleplay",
+  mutationCount: 1,
+  summary: "Import Lorebook - Example Book: Description",
+  snippet: "Category: world\n\nAn example entry.",
+  status: "imported",
+  freshness: "current",
+  existingNoteId: "source_lorebook_7a821c05d638edf1",
+  existingNoteTitle: "Lorebook - Example Book: Description",
+});
+
+const preview = () => ({ source: "lorebooks", scanned: 5, draftable: 0, importedCount: 5, samples: [sample()] });
+
+describe("ImportPreviewSchema", () => {
+  it("accepts the preview the live engine sends", () => {
+    expect(ok(ImportPreviewSchema, preview())).toBe(true);
+  });
+
+  it("accepts a source kind that has nothing to scan", () => {
+    expect(ok(ImportPreviewSchema, { source: "chats", scanned: 0, draftable: 0, importedCount: 0, samples: [] })).toBe(true);
+  });
+
+  // The pending half of the union: no note exists yet, so neither field is sent.
+  it("accepts a sample that has not been imported", () => {
+    const { existingNoteId, existingNoteTitle, ...rest } = sample();
+    void existingNoteId; void existingNoteTitle;
+    expect(ok(ImportPreviewSchema, { ...preview(), samples: [{ ...rest, status: "pending", freshness: "new" }] })).toBe(true);
+  });
+
+  it("keeps the note a sample became, which the row needs to link anything to it", () => {
+    const parsed = v.parse(ImportPreviewSchema, preview());
+    expect(parsed.samples[0].existingNoteId).toBe("source_lorebook_7a821c05d638edf1");
+  });
+
+  it("accepts a freshness the source rail falls back on rather than dropping the row", () => {
+    expect(ok(ImportPreviewSchema, { ...preview(), samples: [{ ...sample(), freshness: "reimported" }] })).toBe(true);
+  });
+
+  it("rejects a preview with no samples array at all", () => {
+    const { samples, ...rest } = preview();
+    void samples;
+    expect(ok(ImportPreviewSchema, rest)).toBe(false);
+  });
+
+  it("rejects a sample with no sourceId, which is the key the row is built on", () => {
+    const { sourceId, ...rest } = sample();
+    void sourceId;
+    expect(ok(ImportPreviewSchema, { ...preview(), samples: [rest] })).toBe(false);
+  });
+});
+
+const accounting = () => ({ providerCandidates: 4, normalizedAdditions: 0, parserRejections: 0, validationRejections: 1, deduplications: 0, keptUnits: 3 });
+
+const importResult = () => ({
+  operationId: "5c9b3f22-0a7e-4a1e-9d2f-6d6a1b4c8e01",
+  batchStatus: "success",
+  source: "lorebooks",
+  imported: [{
+    sourceId: "lorebook_entry_7a821c05d6",
+    title: "Lorebook - Example Book: Description",
+    note: note(),
+    created: true,
+    sourceWriteStatus: "created",
+    extractionMethod: "llm",
+    extractionStatus: "succeeded",
+    retryable: false,
+    accounting: accounting(),
+    appliedMutationIds: [],
+    skippedMutationIds: [],
+    diagnostics: [],
+    draft: { id: "d4dba4df-d77f-4afe-a142-0149e55c0e0f", status: "pending", mutations: [mutation()], source: { sourceNoteId: "source_example" }, accounting: accounting() },
+  }],
+  writeFailures: [],
+  missingSourceIds: [],
+});
+
+describe("ImportResultSchema", () => {
+  it("accepts the batch reply the engine's own response schema defines", () => {
+    expect(ok(ImportResultSchema, importResult())).toBe(true);
+  });
+
+  it("accepts an entry whose extraction produced no draft", () => {
+    const r = importResult();
+    expect(ok(ImportResultSchema, { ...r, imported: [{ ...r.imported[0], draft: null }] })).toBe(true);
+  });
+
+  it("keeps the tally the report subtracts to get rejects", () => {
+    const parsed = v.parse(ImportResultSchema, importResult());
+    expect(parsed.imported[0].draft?.accounting?.keptUnits).toBe(3);
+  });
+
+  it("rejects a batch with no imported list, which the report iterates", () => {
+    const { imported, ...rest } = importResult();
+    void imported;
+    expect(ok(ImportResultSchema, rest)).toBe(false);
+  });
+
+  it("rejects an entry whose draft carries a memory that does not parse", () => {
+    const r = importResult();
+    const bad = { ...r.imported[0], draft: { ...r.imported[0].draft, mutations: [{ ...mutation(), note: { ...note(), type: "faction" } }] } };
+    expect(ok(ImportResultSchema, { ...r, imported: [bad] })).toBe(false);
+  });
+});
+
+const preflight = () => ({
+  draftId: "d4dba4df-d77f-4afe-a142-0149e55c0e0f",
+  selectedMutationIds: ["a4ee5529-bf35-4187-b72c-63f9fcd961dc"],
+  readyMutationIds: ["a4ee5529-bf35-4187-b72c-63f9fcd961dc"],
+  blockedMutationIds: [],
+  autoIncludedMutationIds: [],
+  rows: [{
+    mutationId: "a4ee5529-bf35-4187-b72c-63f9fcd961dc",
+    targetId: "timeline_the_household_904998_0",
+    disposition: "new",
+    status: "ready",
+    autoIncluded: false,
+    blockers: [],
+    conflicts: [],
+  }],
+});
+
+describe("PreflightResponseSchema", () => {
+  it("accepts the dry run the live engine sends", () => {
+    expect(ok(PreflightResponseSchema, preflight())).toBe(true);
+  });
+
+  it("accepts the blocked run, which is where the dock's counts come from", () => {
+    const p = preflight();
+    expect(ok(PreflightResponseSchema, {
+      ...p,
+      readyMutationIds: ["37818514-8094-423b-88a0-149b245ab625"],
+      blockedMutationIds: ["a35403cc-abf8-46a6-a9fe-0006afd66904"],
+      autoIncludedMutationIds: ["37818514-8094-423b-88a0-149b245ab625"],
+      rows: [
+        { ...p.rows[0], mutationId: "37818514-8094-423b-88a0-149b245ab625", disposition: "merge", autoIncluded: true },
+        {
+          ...p.rows[0], mutationId: "a35403cc-abf8-46a6-a9fe-0006afd66904", disposition: "rewrite", status: "blocked",
+          blockers: [{ code: "destructive_disposition_requires_explicit_review", message: "Rewrite and other destructive changes must be reviewed and applied one at a time." }],
+        },
+      ],
+    })).toBe(true);
+  });
+
+  it("rejects a row status the badges have no branch for", () => {
+    const p = preflight();
+    expect(ok(PreflightResponseSchema, { ...p, rows: [{ ...p.rows[0], status: "deferred" }] })).toBe(false);
+  });
+
+  it("rejects a row with no blockers array, which the badge indexes into", () => {
+    const p = preflight();
+    const { blockers, ...rest } = p.rows[0];
+    void blockers;
+    expect(ok(PreflightResponseSchema, { ...p, rows: [rest] })).toBe(false);
+  });
+
+  it("rejects a verdict with no ready set, which Apply sends", () => {
+    const { readyMutationIds, ...rest } = preflight();
+    void readyMutationIds;
+    expect(ok(PreflightResponseSchema, rest)).toBe(false);
+  });
+});
+
+const accept = () => ({
+  draft: {
+    id: "d4dba4df-d77f-4afe-a142-0149e55c0e0f",
+    status: "accepted",
+    applyState: "complete",
+    indexRebuildStatus: "succeeded",
+  },
+  appliedMutationIds: ["a4ee5529-bf35-4187-b72c-63f9fcd961dc"],
+  skippedMutationIds: [],
+  autoIncludedMutationIds: [],
+  indexRebuild: { status: "succeeded" },
+});
+
+describe("AcceptResponseSchema", () => {
+  it("accepts the apply reply the engine's own apply path returns", () => {
+    expect(ok(AcceptResponseSchema, accept())).toBe(true);
+  });
+
+  it("accepts a reply whose rebuild failed, which raises the stale-recall toast", () => {
+    const a = accept();
+    expect(ok(AcceptResponseSchema, { ...a, draft: { ...a.draft, indexRebuildStatus: "failed", indexRebuildError: "index write failed" } })).toBe(true);
+  });
+
+  it("rejects a bare draft sent without the envelope", () => {
+    expect(ok(AcceptResponseSchema, accept().draft)).toBe(false);
+  });
+
+  it("rejects a reply with no draft, which the rebuild check reads", () => {
+    const { draft, ...rest } = accept();
+    void draft;
+    expect(ok(AcceptResponseSchema, rest)).toBe(false);
+  });
+
+  it("rejects applied ids sent as anything but strings", () => {
+    expect(ok(AcceptResponseSchema, { ...accept(), appliedMutationIds: [{ id: "a4ee5529" }] })).toBe(false);
+  });
+});
+
+describe("SkipResponseSchema", () => {
+  const skip = () => ({ deleted: true, draftId: "d4dba4df-d77f-4afe-a142-0149e55c0e0f", mutationIds: ["a4ee5529-bf35-4187-b72c-63f9fcd961dc"], draft: { id: "d4dba4df-d77f-4afe-a142-0149e55c0e0f" } });
+
+  it("accepts the skip reply the engine returns on the 2xx path", () => {
+    expect(ok(SkipResponseSchema, skip())).toBe(true);
+  });
+
+  // Without the list the apply pass marks nothing dropped and the ledger keeps
+  // rows the engine has already deleted.
+  it("rejects a reply that does not say which claims went", () => {
+    const { mutationIds, ...rest } = skip();
+    void mutationIds;
+    expect(ok(SkipResponseSchema, rest)).toBe(false);
+  });
+
+  it("rejects the error body the engine sends instead on 404", () => {
+    expect(ok(SkipResponseSchema, { error: "Long-term memory draft mutation not found" })).toBe(false);
+  });
+});
+
+describe("ChatSchema", () => {
+  const chat = () => ({
+    id: "glNX0E579GUq7mUEd3tF_",
+    name: "Example chat",
+    mode: "conversation",
+    characterIds: ["p3XiZD7GIrsuyFVEFqqf9"],
+    groupId: null,
+    personaId: null,
+    connectedChatId: null,
+    metadata: { summary: null, tags: [] },
+  });
+
+  it("accepts the chat row the live host sends", () => {
+    expect(ok(ChatSchema, chat())).toBe(true);
+  });
+
+  // The host writes an absent field as null rather than leaving it off, and a
+  // dropped row is a chat the scope picker can never name.
+  it("accepts a row whose name and mode are null", () => {
+    expect(ok(ChatSchema, { ...chat(), name: null, mode: null })).toBe(true);
+  });
+
+  it("rejects a row with no id to scope by", () => {
+    const { id, ...rest } = chat();
+    void id;
+    expect(ok(ChatSchema, rest)).toBe(false);
+  });
+
+  it("rejects a row whose id is empty", () => {
+    expect(ok(ChatSchema, { ...chat(), id: "" })).toBe(false);
+  });
+});
+
+describe("CharacterRowSchema", () => {
+  const character = () => ({
+    id: "sPXZrSrx2AbL9TovssKPR",
+    data: "{\"name\":\"Example\",\"description\":\"An example card.\"}",
+    comment: "",
+    avatarPath: null,
+    embedding: null,
+  });
+
+  // The live host never hoists the name; every row is read out of `data`.
+  it("accepts the character row the live host sends, with no hoisted name", () => {
+    expect(ok(CharacterRowSchema, character())).toBe(true);
+  });
+
+  it("accepts a row whose card will not parse, which still has to name itself", () => {
+    expect(ok(CharacterRowSchema, { ...character(), data: "not json" })).toBe(true);
+  });
+
+  it("rejects a card handed over as an object rather than the string field", () => {
+    expect(ok(CharacterRowSchema, { ...character(), data: { name: "Example" } })).toBe(false);
+  });
+
+  it("rejects a row with no id to scope by", () => {
+    const { id, ...rest } = character();
+    void id;
+    expect(ok(CharacterRowSchema, rest)).toBe(false);
   });
 });

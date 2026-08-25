@@ -9,14 +9,14 @@
 // mirror the package schema and draft-projector — fidelity beats elegance. The
 // caps themselves are rules rather than payload, and live in model/caps.ts.
 //
-// The types down to ExtractResponse are inferred from the schemas in schema.ts
-// that check them; everything below is still asserted with `as T`.
+// Every type here is inferred from the schema in schema.ts that checks it, so
+// nothing in this file can claim a shape nothing validates.
 
 import type * as v from "valibot";
-import type { ConflictSchema, ExtractResponseSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteSectionSchema, NOTE_TYPES, ReviewChangeSchema, ReviewResponseSchema } from "./schema";
+import type { AcceptResponseSchema, ConflictSchema, DISPOSITIONS, ExtractResponseSchema, ImportPreviewSchema, ImportResultSchema, LtmStatusSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteSectionSchema, NOTE_TYPES, PreflightResponseSchema, ReviewChangeSchema, ReviewResponseSchema, SkipResponseSchema } from "./schema";
 
 export type NoteType = (typeof NOTE_TYPES)[number];
-export type Disposition = "new" | "merge" | "rewrite";
+export type Disposition = (typeof DISPOSITIONS)[number];
 
 export type NoteSection = v.InferOutput<typeof NoteSectionSchema>;
 
@@ -37,47 +37,14 @@ export type NoteArchive = v.InferOutput<typeof NoteArchiveSchema>;
 
 export type ExtractResponse = v.InferOutput<typeof ExtractResponseSchema>;
 
-export interface PreflightResponse {
-  draftId: string;
-  selectedMutationIds: string[];
-  readyMutationIds: string[];
-  blockedMutationIds: string[];
-  autoIncludedMutationIds: string[];
-  rows: Array<{ mutationId: string; targetId: string; disposition: Disposition; status: "ready" | "blocked"; autoIncluded: boolean; blockers: Array<{ code: string; message: string }>; conflicts: Conflict[] }>;
-}
+export type PreflightResponse = v.InferOutput<typeof PreflightResponseSchema>;
 
-export interface AcceptResponse {
-  draft: { id: string; status: string; indexRebuildStatus?: string; indexRebuildError?: string };
-  appliedMutationIds?: string[];
-  skippedMutationIds?: string[];
-  autoIncludedMutationIds?: string[];
-}
+export type AcceptResponse = v.InferOutput<typeof AcceptResponseSchema>;
 
-export interface LtmStatus {
-  notes: { total: number; sourceNotes: number; savedMemories: number; pendingDrafts: number; byType: Record<string, number>; byStatus: Record<string, number> };
-  indexes: { health: string; dirty: boolean; rebuildState: string; embeddingsAvailable: boolean };
-}
+export type SkipResponse = v.InferOutput<typeof SkipResponseSchema>;
 
-export interface ImportPreview {
-  source: string;
-  scanned: number;
-  draftable: number;
-  importedCount: number;
-  samples: Array<{ sourceId: string; title: string; importMode: string; mutationCount: number; summary: string; snippet: string; status?: string; freshness: string }>;
-}
+export type LtmStatus = v.InferOutput<typeof LtmStatusSchema>;
 
-export interface ImportResult {
-  batchStatus: string;
-  source: string;
-  imported: Array<{
-    sourceId: string;
-    title: string;
-    note?: Note;
-    draft?: {
-      mutations?: Mutation[];
-      source?: { sourceNoteId?: string };
-      accounting?: { providerCandidates: number; normalizedAdditions: number; parserRejections: number; validationRejections: number; deduplications: number; keptUnits: number };
-      extractionOutcome?: { state: string };
-    };
-  }>;
-}
+export type ImportPreview = v.InferOutput<typeof ImportPreviewSchema>;
+
+export type ImportResult = v.InferOutput<typeof ImportResultSchema>;

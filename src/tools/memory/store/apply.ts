@@ -83,7 +83,7 @@ export async function applyDecided() {
     if (drops.length) {
       try {
         const res = await skipMutations(draftId, drops.map((r) => r.mutation.id));
-        for (const id of res.mutationIds ?? []) {
+        for (const id of res.mutationIds) {
           const key = `${draftId}:${id}`;
           markApplied(key, "skipped");
           dec.delete(key);

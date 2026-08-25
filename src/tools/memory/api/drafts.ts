@@ -2,18 +2,22 @@
 //
 // Preflight is a dry run — it reports what an accept would do without doing it
 // — but it is still a POST, so it counts as a write against a real instance.
+// It parses as a read: nothing moved, so a mismatch must not say one did.
 
 import { api } from "../../../shell/api";
-import { parseWire } from "../../../shell/wire";
+import { parseWire, parseWrite } from "../../../shell/wire";
 import { LTM } from "./routes";
-import { ReviewResponseSchema } from "./schema";
-import type { AcceptResponse, Mutation, PreflightResponse, ReviewResponse } from "./types";
+import { AcceptResponseSchema, PreflightResponseSchema, ReviewResponseSchema, SkipResponseSchema } from "./schema";
+import type { AcceptResponse, Mutation, PreflightResponse, ReviewResponse, SkipResponse } from "./types";
 
 export const fetchReview = async (): Promise<ReviewResponse> =>
   parseWire(ReviewResponseSchema, await api(`${LTM}/drafts/review`), `GET ${LTM}/drafts/review`);
-export const preflightDraft = (draftId: string, body: { mutationIds: string[]; editedMutations?: Mutation[] }) =>
-  api<PreflightResponse>(`${LTM}/drafts/${draftId}/preflight`, { method: "POST", body });
-export const acceptDraft = (draftId: string, body: { mutationIds: string[]; editedMutations?: Mutation[] }) =>
-  api<AcceptResponse>(`${LTM}/drafts/${draftId}/accept`, { method: "POST", body });
-export const skipMutations = (draftId: string, mutationIds: string[]) =>
-  api<{ deleted: boolean; mutationIds?: string[] }>(`${LTM}/drafts/${draftId}/skip`, { method: "POST", body: { mutationIds } });
+
+export const preflightDraft = async (draftId: string, body: { mutationIds: string[]; editedMutations?: Mutation[] }): Promise<PreflightResponse> =>
+  parseWire(PreflightResponseSchema, await api(`${LTM}/drafts/${draftId}/preflight`, { method: "POST", body }), `POST ${LTM}/drafts/:id/preflight`);
+
+export const acceptDraft = async (draftId: string, body: { mutationIds: string[]; editedMutations?: Mutation[] }): Promise<AcceptResponse> =>
+  parseWrite(AcceptResponseSchema, await api(`${LTM}/drafts/${draftId}/accept`, { method: "POST", body }), `POST ${LTM}/drafts/:id/accept`);
+
+export const skipMutations = async (draftId: string, mutationIds: string[]): Promise<SkipResponse> =>
+  parseWrite(SkipResponseSchema, await api(`${LTM}/drafts/${draftId}/skip`, { method: "POST", body: { mutationIds } }), `POST ${LTM}/drafts/:id/skip`);

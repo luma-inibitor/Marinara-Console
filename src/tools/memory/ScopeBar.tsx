@@ -40,7 +40,7 @@ export function ScopeBar({ chats, characters }: { chats: Chat[]; characters: Cha
       <SearchDisclosure label="Chat" icon={SCOPE_ICON.chat}
         value={chat?.name ?? t("sourcesworkspace.allChats")} allLabel={t("sourcesworkspace.allChats")}
         current={chatId}
-        options={chatsInScope.map((c) => ({ id: c.id, name: c.name ?? c.id, hint: c.mode }))}
+        options={chatsInScope.map((c) => ({ id: c.id, name: c.name ?? c.id, hint: c.mode ?? undefined }))}
         emptyText={t("memoryvault.noMatchingChats")}
         onPick={(id) => setScope(id)} />
     </div>
