@@ -1,6 +1,7 @@
 import type { KeyboardEvent, MouseEvent } from "react";
 import { t } from "../../../copy";
 import { ChevronRight, Flag, ICON_SIZE } from "../../../ui/icons";
+import { SectionKey } from "../../../ui";
 import { sectionMeta, type SectionView } from "./model";
 import "./SectionRow.css";
 
@@ -46,7 +47,7 @@ export function SectionRow(props: {
         onClick={props.onToggle}
       >
         <span className="mdc-row-name-cell">
-          <span className="mdc-row-name">§{view.key}</span>
+          <SectionKey k={view.key} className="mdc-row-name" />
           {view.flag && (
             <span className="mdc-row-flag-wrap">
               {/* A button cannot nest inside a button, so the flag is a span

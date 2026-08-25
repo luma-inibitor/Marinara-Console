@@ -27,27 +27,21 @@ import { rows } from "./store/review";
 import { notesById } from "./store/notes";
 import { pressure } from "./store/pressure";
 import { useStore } from "../../lib/store";
-import { NoteRef } from "./NotePeek";
-import { OpIcon, TypeIcon, DecisionIcon } from "./icons";
-import { Term, GLOSSARY, OP_TIP, TYPE_TIP } from "./glossary";
+import { LinkTarget, MemoryRef, NoteRef } from "./components/NoteRef";
+import { StatusPill } from "./components/StatusPill";
+import { relationLabel } from "./model/relations";
+import { OpIcon, DecisionIcon } from "./icons";
+import { Term, GLOSSARY, OP_TIP } from "./glossary";
 import { flagsOf, riskLabel, FLAG, LOW_CONFIDENCE } from "./model/flags";
 import { lineDiff, splitLines, wordEmphasis } from "./model/diff";
-import { Edu } from "../../ui";
+import { Edu, SectionKey } from "../../ui";
 
 // ── small pieces ────────────────────────────────────────────────────
 
-/** A memory reference: type icon + tappable title. */
+/** A reference in the queue teaches the type it shows: the reviewer is meeting
+ *  these memories for the first time. */
 function Ref(props: { id?: string; title: string; type?: string }) {
-  return (
-    <span className="nref">
-      {props.type && <Term tip={TYPE_TIP[props.type] ?? props.type}><TypeIcon type={props.type} size={14} /></Term>}
-      {props.id ? <NoteRef id={props.id} label={props.title} /> : <b className="nref-plain">{props.title}</b>}
-    </span>
-  );
-}
-
-function Skey(props: { k: string }) {
-  return <span className="skey">§{props.k}</span>;
+  return <MemoryRef id={props.id} title={props.title} type={props.type} educate />;
 }
 
 function Fold(props: { label: string; children: ReactNode }) {
@@ -245,13 +239,13 @@ function Headline({ r, m, target }: { r: Row; m: Mutation; target: boolean }) {
           params={{ type: r.targetType.replaceAll("_", " ") }} slots={{ ref }} />;
       case "append_section":
         return <Copy k="memory.headline.append"
-          slots={{ section: <Skey k={m.sectionKey ?? ""} />, ref }} />;
+          slots={{ section: <SectionKey k={m.sectionKey ?? ""} />, ref }} />;
       case "update_section":
         return <Copy k="memory.headline.update"
-          slots={{ section: <Skey k={m.sectionKey ?? ""} />, ref }} />;
+          slots={{ section: <SectionKey k={m.sectionKey ?? ""} />, ref }} />;
       case "add_link":
         return <Copy k="memory.headline.link"
-          slots={{ ref, target: <LinkTarget target={m.link?.target ?? ""} /> }} />;
+          slots={{ ref, target: <ClaimTarget target={m.link?.target ?? ""} /> }} />;
       case "set_keywords":
         return <Copy k="memory.headline.keywords" slots={{ ref }} />;
       case "set_status":
@@ -263,18 +257,19 @@ function Headline({ r, m, target }: { r: Row; m: Mutation; target: boolean }) {
   return <div className="hl t-prose">{body}</div>;
 }
 
-/** Resolve a link target against the vault, then against this batch. The
- *  pending-in-batch chip renders only where asked — the preview states it;
+/** A link target the vault has never heard of may still be arriving in this
+ *  same batch, so the queue looks there before it gives up and shows the id.
+ *  The pending-in-batch chip renders only where asked — the preview states it;
  *  the headline stays short. */
-function LinkTarget({ target, chip }: { target: string; chip?: boolean }) {
-  const note = useStore(notesById).get(target);
+function BatchTarget({ target, chip }: { target: string; chip?: boolean }) {
   const allRows = useStore(rows);
-  if (note) return <Ref id={target} title={note.title ?? target} type={note.type} />;
   const pending = allRows.find((x) => x.targetId === target && x.mutation.kind === "create_note");
-  if (pending) {
-    return <span className="nref"><Ref title={pending.targetTitle} type={pending.targetType} />{chip && <span className="chip-batch t-data">{t("memory.detail.pendingInBatch")}</span>}</span>;
-  }
-  return <span className="dim t-data">{target}</span>;
+  if (!pending) return <span className="dim t-data">{target}</span>;
+  return <span className="nref"><Ref title={pending.targetTitle} type={pending.targetType} />{chip && <span className="chip-batch t-data">{t("memory.detail.pendingInBatch")}</span>}</span>;
+}
+
+function ClaimTarget({ target, chip }: { target: string; chip?: boolean }) {
+  return <LinkTarget id={target} educate unresolved={<BatchTarget target={target} chip={chip} />} />;
 }
 
 // ── zone 2: preview ─────────────────────────────────────────────────
@@ -311,7 +306,7 @@ function Preview(props: {
     <>
       {Object.entries(target?.sections ?? {}).map(([key, sec]) => (
         <div key={key} className="nc-sec">
-          <div className="z-eye t-label t-label-s"><Skey k={key} /></div>
+          <div className="z-eye t-label t-label-s"><SectionKey k={key} /></div>
           {key === affectedKey ? affected : splitLines(sec.text).map((l, i) => <Line key={i}>{l}</Line>)}
         </div>
       ))}
@@ -328,7 +323,7 @@ function Preview(props: {
     const addCh = (m.text ?? "").length;
     const addLines = editing ? area("__text", secText) : adds.map((l, i) => <Line key={i} mode="add">{l}</Line>);
     return (
-      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<Skey k={key} /> · {t(editing ? "memory.zoneEditing" : "memory.zonePreview")}</span>{props.controls}</>}
+      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<SectionKey k={key} /> · {t(editing ? "memory.zoneEditing" : "memory.zonePreview")}</span>{props.controls}</>}
         foot={<><span className="dim">+{addCh.toLocaleString()} · {(stored.length + addCh).toLocaleString()} {t("ui.editor.charUnit")}</span>{capNote(sectionPressure, r.targetId, key)}</>}>
         {whole ? (
           wholeSections(key, <>{storedLines.map((l, i) => <Line key={i}>{l}</Line>)}{addLines}</>)
@@ -353,7 +348,7 @@ function Preview(props: {
     const before = change?.before ?? target?.sections?.[key]?.text ?? "";
     const after = change?.after ?? m.section?.text ?? m.text ?? "";
     return (
-      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<Skey k={key} /> · {t(editing ? "memory.zoneEditing" : "memory.zoneDiff")}</span>{props.controls}</>}
+      <Zone cls={editing ? "is-editing" : ""} eyebrow={<><span className="z-lab">{opTag}<SectionKey k={key} /> · {t(editing ? "memory.zoneEditing" : "memory.zoneDiff")}</span>{props.controls}</>}
         foot={<><span className="dim">{after.length >= before.length ? "+" : "−"}{Math.abs(after.length - before.length).toLocaleString()} · {after.length.toLocaleString()} {t("ui.editor.charUnit")}</span>{capNote(sectionPressure, r.targetId, key)}</>}>
         {editing
           ? <>{splitLines(before).map((l, i) => <Line key={i} mode="del">{l}</Line>)}{area("__text", secText)}</>
@@ -378,7 +373,7 @@ function Preview(props: {
           const rest = lines.slice(3);
           return (
             <div key={key} className="nc-sec">
-              <div className="z-eye t-label t-label-s"><Skey k={key} /></div>
+              <div className="z-eye t-label t-label-s"><SectionKey k={key} /></div>
               {editing ? area(key, s.text ?? "") : (
                 <>
                   {headLines.map((l, i) => <Line key={i} mode="add">{l}</Line>)}
@@ -400,13 +395,13 @@ function Preview(props: {
   }
 
   if (m.kind === "add_link") {
-    const rel = (m.link?.relation ?? "").replaceAll("_", " ");
+    const rel = relationLabel(m.link?.relation ?? "");
     return (
       <Zone eyebrow={<span className="z-lab">{opTag}{t("memory.zonePreview")}</span>}>
         <div className="linkrow">
           <Ref id={notes.has(r.targetId) ? r.targetId : undefined} title={r.targetTitle} type={r.targetType} />
           <span className="rel t-data">— {rel} →</span>
-          <LinkTarget target={m.link?.target ?? ""} chip />
+          <ClaimTarget target={m.link?.target ?? ""} chip />
         </div>
         <InlineMemory id={m.link?.target ?? ""} />
         <Edu>{t("longtermmemorydetail.underTheHoodRelatedMemories")}</Edu>
@@ -443,9 +438,9 @@ function Preview(props: {
     return (
       <Zone eyebrow={<span className="z-lab">{opTag}{t("memory.zonePreview")}</span>}>
         <div className="linkrow">
-          <span className="stt t-data">{from}</span>
+          <StatusPill status={from} muted />
           <Forward className="dim-i" size={13} stroke={1.75} aria-hidden />
-          <span className={`stt t-data st-${to}`}>{to}</span>
+          <StatusPill status={to} />
         </div>
         <InlineMemory id={r.targetId} />
         <Edu>{t("memoryvault.statusHelp")}</Edu>

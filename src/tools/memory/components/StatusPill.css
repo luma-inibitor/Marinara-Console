@@ -1,0 +1,5 @@
+/* A memory's lifecycle status. See StatusPill.tsx.
+   The hue never travels alone — the status word is inside the pill (§1). */
+.stt { border: var(--hairline); border-radius: var(--r-s); padding: 2px 8px; color: var(--text-dim); }
+.stt.st-active { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+.stt.st-resolved { color: var(--flag); border-color: color-mix(in srgb, var(--flag) 45%, transparent); }

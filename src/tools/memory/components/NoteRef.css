@@ -1,0 +1,25 @@
+/* A memory reference, wherever one appears. See NoteRef.tsx.
+   Host-context overrides (the headline's size, the retrieval card's
+   truncating row) stay with their host — this file owns the default. */
+
+/* Accent means interactive (DESIGN.md §1), and this is the one part of a
+   reference you can act on: it opens the memory. */
+.notelink {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.notelink:hover { text-decoration: underline; }
+
+/* The glyph and the title read as one object, so they sit on one line and
+   align to the text they are embedded in rather than to their own box. */
+.nref { display: inline-flex; align-items: center; gap: 4px; vertical-align: text-bottom; }
+
+/* A resolved title is a name, so it takes the label face whether or not it is
+   reachable — .nref-plain is the same name with nothing to open. */
+.nref .notelink, .nref-plain { font-family: var(--font-label); font-weight: 600; font-size: 13px; }
