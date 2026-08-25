@@ -13,13 +13,6 @@ import { parseItems, parseWrite } from "../../shell/wire";
 import { tAny } from "../../copy";
 import { testPrimaryKeys, testSecondaryKeys } from "../../lib/lorebook-keyword-matching.js";
 
-// The wire shapes, and the types the tool reads, inferred from them. Loose, so
-// the two dozen fields the console never touches pass through untouched. A
-// field is named below only where the console reads it, and it is named with a
-// primitive rather than a coercion: `position`, `depth`, `order` and
-// `tokenBudget` are divided and compared, and `enabled`, `constant` and
-// `selective` decide whether an entry fires, so a string in either place has to
-// fail rather than pass a truthiness test.
 const id = v.pipe(v.string(), v.minLength(1));
 const strings = v.array(v.string());
 
@@ -30,9 +23,8 @@ export const LorebookSchema = v.looseObject({
   enabled: v.boolean(),
 });
 
-/** `selectiveLogic` is the vendored matcher's own closed set; a member outside
- *  it reaches `testSecondaryKeys`, which answers `true` for anything it does
- *  not recognise, so the entry would be drawn as firing on nothing. */
+/** `selectiveLogic` is closed because `testSecondaryKeys` answers `true` for a
+ *  logic it does not recognise, which would draw the entry as always firing. */
 export const EntrySchema = v.looseObject({
   id,
   name: v.string(),
@@ -153,9 +145,7 @@ export function tagStats(entries: Entry[]): TagStat[] {
 
 // ── API ──
 
-/** The route a wire mismatch is reported under, as a pattern rather than an
- *  instance. Method and path stay separate arguments because this file is
- *  @copy-strict, where a letter and a space make a string copy. */
+/** Two arguments because @copy-strict reads "GET /x" as copy. */
 const wire = (method: string, path: string) => `${method} ${path}`;
 
 export const fetchBooks = async () =>
@@ -163,8 +153,7 @@ export const fetchBooks = async () =>
 export const fetchEntries = async (bookId: string) =>
   parseItems(EntrySchema, await api(`/lorebooks/${bookId}/entries`), wire("GET", "/lorebooks/:id/entries"));
 
-/** The saved entry, or nothing: the drawer merges the reply over its draft, and
- *  both a row and an empty 204 leave that merge correct. */
+/** `nullish` because the route may answer 204 rather than the saved row. */
 export const patchEntry = async (bookId: string, entryId: string, patch: Record<string, unknown>) =>
   parseWrite(v.nullish(EntrySchema), await api(`/lorebooks/${bookId}/entries/${entryId}`, { method: "PATCH", body: patch }), wire("PATCH", "/lorebooks/:id/entries/:entryId"));
 export const createEntry = async (bookId: string, body: Record<string, unknown>) =>
