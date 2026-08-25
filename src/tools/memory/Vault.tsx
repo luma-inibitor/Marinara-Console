@@ -17,6 +17,7 @@ import { dedupeLines } from "./model/derived";
 import { effectiveKeywords, manualKeywords } from "./model/keywords";
 import { NoteRef } from "./NotePeek";
 import { allNotes, archiveNote, archiveNoteWithExtracted, loadNotes, notesError, notesLoaded, saveNoteSections, setNoteStatus } from "./store/notes";
+import { listedInVault } from "./model/listing";
 import { isScoped, noteInScope } from "./model/scope";
 import { useScope } from "./store/scope";
 import { Back, ICON_SIZE, NoMatches } from "../../ui/icons";
@@ -73,8 +74,13 @@ export function Vault(props: { noteId?: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [notes, scope.characterId, scope.chatId]);
 
+  // Archived memories are out of the list, and out of everything that counts
+  // it: a chip tallying rows the list does not show is a header contradicting
+  // its own rows just as much as an unscoped tally would be.
+  const listed = useMemo(() => inScope.filter(listedInVault), [inScope]);
+
   const visible = useMemo(() => {
-    let list = inScope.filter((n) => (showSources ? n.type === "source" : n.type !== "source"));
+    let list = listed.filter((n) => (showSources ? n.type === "source" : n.type !== "source"));
     if (typeFilter) list = list.filter((n) => n.type === typeFilter);
     if (query.trim()) {
       // Fuzzy on the title, plain substring in the body. Subsequence matching
@@ -84,7 +90,9 @@ export function Vault(props: { noteId?: string }) {
         fuzzyScore(query, n.title ?? n.id) !== null ||
         Object.values(n.sections ?? {}).some((s) => s.text?.toLowerCase().includes(q)));
     }
-    const statusRank: Record<string, number> = { active: 0, resolved: 1, archived: 2 };
+    // No archived rank: the list has none, and a rank for a status that cannot
+    // appear is a claim about ordering nobody can check.
+    const statusRank: Record<string, number> = { active: 0, resolved: 1 };
     const cmp: Record<SortKey, (a: Note, b: Note) => number> = {
       updated: (a, b) => String(b.updatedAt ?? "").localeCompare(String(a.updatedAt ?? "")),
       title: (a, b) => (a.title ?? a.id).localeCompare(b.title ?? b.id),
@@ -92,22 +100,27 @@ export function Vault(props: { noteId?: string }) {
       status: (a, b) => (statusRank[a.status] ?? 9) - (statusRank[b.status] ?? 9),
     };
     return [...list].sort(cmp[sort]);
-  }, [inScope, showSources, typeFilter, query, sort]);
+  }, [listed, showSources, typeFilter, query, sort]);
 
   const types = useMemo(() => {
     const m = new Map<NoteType, number>();
-    for (const n of inScope) {
+    for (const n of listed) {
       if (n.type === "source") continue;
       m.set(n.type, (m.get(n.type) ?? 0) + 1);
     }
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
-  }, [inScope]);
+  }, [listed]);
 
   if (error) return <div className="screen"><ErrorState title={t("memoryvault.memoriesCouldNotLoad")} message={error} /></div>;
   if (!loaded) return <div className="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
 
-  const memoriesN = inScope.filter((n) => n.type !== "source").length;
-  const sourcesN = inScope.length - memoriesN;
+  const memoriesN = listed.filter((n) => n.type !== "source").length;
+  const sourcesN = listed.length - memoriesN;
+  // Whether archiving is what emptied the tab being looked at. An empty list
+  // with archived records behind it is not the same screen as an empty vault,
+  // and only this tab's own archived records can explain this tab being empty.
+  const archivedHere = inScope.some((n) =>
+    !listedInVault(n) && (showSources ? n.type === "source" : n.type !== "source"));
   const open = openId ? notes.find((n) => n.id === openId) ?? null : null;
 
   // One detail, two projections: a right-hand pane on a wide screen, a pushed
@@ -164,6 +177,10 @@ export function Vault(props: { noteId?: string }) {
               ? <EmptyState
                   icon={<NoMatches size={22} stroke={1.75} aria-hidden />}
                   title={t("memoryvault.filteredEmptyDescription", { value1: query.trim() ? t("memoryvault.filteredEmptySearch", { value1: query.trim() }) : (typeFilter ?? "") })} />
+              // Archiving emptied it, and the records are still stored. Saying
+              // "no memories yet" over memories someone put away reads as loss.
+              : archivedHere
+                ? <EmptyState title={t("memory.vault.emptyAllArchived")} />
               // Scope hid them, not the vault being empty. Saying "no memories
               // yet" over a full vault sends the reader off to import more.
               : isScoped(scope)

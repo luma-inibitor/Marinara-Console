@@ -16,7 +16,8 @@ import { review, rows } from "./store/review";
 import { notesById } from "./store/notes";
 import { pendingSources } from "./store/sources";
 import { activeFacets } from "./store/view";
-import { isScoped, noteInScope } from "./model/scope";
+import { listedInVault } from "./model/listing";
+import { noteInScope } from "./model/scope";
 import { useScope, useScopeData } from "./store/scope";
 import { rebuildIndexes, rebuilding, refreshLtmStatus, status, statusFailed } from "./store/status";
 import { useStore } from "../../lib/store";
@@ -46,11 +47,10 @@ export function MemoryTool({ rest }: { rest: string[] }) {
   const reviewData = useStore(review);
   const pending = useStore(pendingSources);
   const scope = useScope();
-  const scoped = isScoped(scope);
   const scopedRows = useStore(rows); // already narrowed to scope by the store
   const loadedNotes = useStore(notesById);
-  const scopedMemories = useMemo(
-    () => [...loadedNotes.values()].filter((n) => n.type !== "source" && noteInScope(n, scope)).length,
+  const listedMemories = useMemo(
+    () => [...loadedNotes.values()].filter((n) => n.type !== "source" && listedInVault(n) && noteInScope(n, scope)).length,
     // Scope is a fresh object each render, so depending on it would recompute
     // every time. Its two fields ARE the whole of it, and noteInScope reads
     // nothing else, so listing them covers the object exactly.
@@ -96,8 +96,13 @@ export function MemoryTool({ rest }: { rest: string[] }) {
           // /status is likewise a server-wide aggregate that cannot see scope.
           // Both remain the fallback for the moment before anything has loaded,
           // where the alternative is a badge reading zero over a full vault.
+          //
+          // The vault badge reads the loaded notes whether or not a scope is
+          // set, because the list drops archived memories and `savedMemories`
+          // counts them: a server total is only close enough to the truth
+          // before the records this tab lists have arrived.
           const count = id === "review" ? (reviewData ? scopedRows.length : s?.notes.pendingDrafts ?? 0)
-            : id === "vault" ? (scoped && loadedNotes.size ? scopedMemories : s?.notes.savedMemories ?? 0)
+            : id === "vault" ? (loadedNotes.size ? listedMemories : s?.notes.savedMemories ?? 0)
             : (pending ?? 0);
           return (
             <button key={id} className="mem-tab t-label" aria-current={view === id ? "page" : undefined}

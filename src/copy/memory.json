@@ -937,6 +937,10 @@
     "note": "How many sections the memory has, as the spoken name of the count beside the sections heading. The heading already renders the noun, so the visible figure stays bare and this carries the noun for a screen reader."
   },
 
+  "memory.vault.emptyAllArchived": {
+    "text": "Everything here has been archived.",
+    "note": "The vault list emptied by archiving rather than by having nothing in it, in the same sentence shape as memory.vault.emptyScoped. The catalog never states this condition because upstream the vault lists archived memories, so it has no empty state they can cause. Deliberately states the condition and stops: the vault has no way to view archived memories yet, and naming a way out that does not exist is worse than naming none."
+  },
   "memory.vault.emptyScoped": {
     "text": "No memories are available in this scope.",
     "note": "The vault filtered to nothing by scope alone. The catalog ships this exact sentence shape for the two things it does scope — noLorebooksAreAvailableInThisScope, noSourcesHaveBeenImportedInThisScope — but never for saved memories, because upstream the vault is not a scoped view. Same sentence, right noun."
