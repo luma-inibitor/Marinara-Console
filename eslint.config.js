@@ -38,17 +38,7 @@ export default [
     },
     rules: {
       // Copy that reaches the reader as JSX text must come out of t().
-      // scripts/copycheck.mjs asks a different question — whether the words
-      // exist in a catalog — so a hand-typed <span>status</span> passes it
-      // forever, and reworking that catalog entry leaves the screen behind.
-      //
-      // jsx-text-only reads JSX text nodes and nothing else: attributes, class
-      // names, route ids and the `t("…")` key itself are all invisible to it.
-      // copycheck still owns the attribute copy (aria-label, title, placeholder)
-      // and the copy tables in .ts files.
-      //
-      // The `words` list replaces the plugin's defaults wholesale rather than
-      // extending them, so anything not listed here is copy.
+      // `words` replaces the plugin's default excludes rather than extending them.
       "i18next/no-literal-string": [
         "error",
         {
