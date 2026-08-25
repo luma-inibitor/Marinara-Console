@@ -239,8 +239,10 @@ function Editor({ presetId }: { presetId: string }) {
 
   const presetDraft = useDraft<PromptPreset>(full?.preset ?? null, {
     commit: async (patch) => {
-      await patchPreset(presetId, patch as Record<string, unknown>);
-      const merged = { ...(full!.preset), ...patch } as PromptPreset;
+      const updated = await patchPreset(presetId, patch as Record<string, unknown>);
+      // The engine's copy last, as the section draft does: it carries the new
+      // `updatedAt`, and without it the next save reads as someone else's write.
+      const merged = { ...(full!.preset), ...patch, ...updated } as PromptPreset;
       setFull((f) => f && ({ ...f, preset: merged }));
       return merged;
     },
@@ -448,7 +450,7 @@ function Editor({ presetId }: { presetId: string }) {
           <div className="segrow" role="group" aria-label={t("presets.wrapFormat")}>
             {(["xml", "markdown", "none"] as const).map((w) => (
               <button key={w} className="segbtn is-pos t-data" aria-pressed={full.preset.wrapFormat === w}
-                disabled={readOnly} onClick={() => { presetDraft.set("wrapFormat", w); void presetDraft.save(); }}>{w}</button>
+                disabled={readOnly} onClick={() => { presetDraft.set("wrapFormat", w); void presetDraft.save({ wrapFormat: w }); }}>{w}</button>
             ))}
           </div>
           <div className="chiprail">

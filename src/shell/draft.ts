@@ -40,8 +40,10 @@ export interface Draft<T extends { id: string }> {
   set: (field: keyof T, value: unknown) => void;
   /** Stage several fields at once (a segmented control writing 3 flags). */
   merge: (patch: Partial<T>) => void;
-  /** Write the pending edits. Resolves true on success. */
-  save: () => Promise<boolean>;
+  /** Write the pending edits, plus `now` on top. A handler that stages and writes in one
+   *  gesture must pass its value here: `save` is bound to its render's patch, so a `set`
+   *  beside it is not in there yet. */
+  save: (now?: Partial<T>) => Promise<boolean>;
   /** Throw away pending edits. */
   cancel: () => void;
   /** Adopt a new base (after a successful save elsewhere, or a refetch). */
@@ -122,9 +124,9 @@ export function useDraft<T extends { id: string }>(
     setPatch({}); setError(null); setFieldErrors({}); setConflict(null);
   }, [vf]);
 
-  const save = useCallback(async (): Promise<boolean> => {
+  const save = useCallback(async (now?: Partial<T>): Promise<boolean> => {
     if (!current) return false;
-    const pending = { ...patch };
+    const pending = { ...patch, ...now };
     if (Object.keys(pending).length === 0) return true;
     setSaving(true); setError(null); setFieldErrors({});
     try {
