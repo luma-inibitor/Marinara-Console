@@ -85,8 +85,7 @@ Full detail in `DESIGN.md`. The parts that constrain new work:
 
 Owner-confirmed. Do not re-litigate; see `DESIGN.md` §2 for the full list.
 
-- Titles **wrap, never truncate**. The most important value on screen must never
-  be the one that gets cut.
+- Titles **truncate to one line** in list rows.
 - Collapsed headers still carry data — counts, totals, status. Closed is not
   invisible. Multi-expand is the default.
 - One primary tap target per row.
