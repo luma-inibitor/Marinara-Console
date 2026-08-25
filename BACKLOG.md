@@ -381,7 +381,6 @@ Findings from four audits. Reports live outside the repo at `~/code/luma/`: `scr
 - **No sheet actually traps focus, locks scroll, or hides the page behind it**, though every sheet reads as if it does. Seven shipped bugs trace to this. Recommended fix is Radix's dialog inside `ui/Sheet.tsx`, leaving `overlays.ts` alone — one file, five call sites.
 - **Nothing validates what the engine sends.** Every response is an unchecked cast. This is what let the string `"false"` count as true and break four things at once. Add zod or valibot at the endpoints layer.
 - **`Sources.tsx` and `MemoryTool.tsx` form an import cycle** via `focusSource`. It only loads because that is a hoisted function declaration, and `src/lib/store.ts` computes eagerly, so a cycle is a `ReferenceError` at load rather than a soft failure. Fix by moving the handoff into `store/sources.ts`. Listed as the sole `import/no-cycle` exemption until then.
-- **`detail/RetrievalCard.tsx:119` counts derived keywords against the manual cap**, the same defect fixed elsewhere in PR #18.
 - **Six untraced strings in `src/tools/presets/PresetsTool.tsx`**, held by the copy baseline ratchet: `"{n} unsaved {n}"`, `"change"`, `"changes"`, `"fields"`, the overwrite warning, and `"— the same {n} you changed"`.
 - **`ScopeBar.tsx` carries a `data-contrast-exempt` that is now redundant** after the `aria-hidden` skip landed.
 - **`store/sources.ts` and `store/scope.ts` both fetch the chat list.** Not a defect today; see the decision file.

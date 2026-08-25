@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { KEYWORD_CAP } from "./caps";
 import { effectiveKeywords, manualKeywords, splitKeywords } from "./keywords";
 
 describe("splitKeywords", () => {
@@ -57,5 +58,24 @@ describe("effectiveKeywords", () => {
     };
     expect(effectiveKeywords(note)).toHaveLength(60);
     expect(manualKeywords(note)).toHaveLength(30);
+  });
+});
+
+describe("the two counts a keyword rail and its cap tally read", () => {
+  it("leaves the tally at zero on a note the engine keyworded by itself", () => {
+    const note = { keywords: Array.from({ length: KEYWORD_CAP }, (_, i) => `d${i}`), manualKeywords: [] };
+    expect(effectiveKeywords(note)).toHaveLength(KEYWORD_CAP);
+    expect(manualKeywords(note)).toHaveLength(0);
+  });
+
+  it("counts a suppressed keyword out of the rail without touching the tally", () => {
+    const note = { keywords: ["harbour", "fog"], manualKeywords: ["cargo"], suppressedKeywords: ["fog"] };
+    expect(effectiveKeywords(note)).toHaveLength(2);
+    expect(manualKeywords(note)).toHaveLength(1);
+  });
+
+  it("has the tally equal the rail on a note written before the split", () => {
+    const note = { keywords: ["harbour", "cargo"] };
+    expect(manualKeywords(note)).toEqual(effectiveKeywords(note));
   });
 });
