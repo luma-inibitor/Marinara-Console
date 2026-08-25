@@ -1,13 +1,9 @@
 /* @copy-strict */
-// The entry's enum labels: status and hint, and the position names at both
-// densities.
+// The entry's status, hint and position labels.
 //
-// The copy TABLES below are enum -> label maps living in object initialisers,
-// not rendered slots, so no position rule in design/copycheck.mjs reaches them.
-// Hence the @copy-strict marker above: in a strict file EVERY string literal
-// with a letter and a space is read as copy, so a label added to one of these
-// maps without a catalog entry fails the check instead of shipping unnoticed.
-// Do not drop the marker.
+// No position rule in design/copycheck.mjs reaches a label in an object
+// initialiser, so the marker above is what makes an unrouted label fail the
+// check. Do not drop it.
 import { tAny } from "../../../copy";
 import { STATUSES, type EntryStatus } from "./entry";
 

@@ -1,6 +1,5 @@
 /* @copy-strict */
-// A marker is a section whose content the engine injects at runtime, and what
-// it is called.
+// A marker is a section the engine fills in at runtime, and what it is called.
 import { tAny } from "../../../copy";
 import type { PromptSection } from "../api/schema";
 

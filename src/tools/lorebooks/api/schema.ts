@@ -1,5 +1,4 @@
-// The lorebook wire: what the engine sends for a book and for one of its
-// entries, and the schemas that check it before the tool believes it.
+// The book and entry wire, and the schemas that check it.
 import * as v from "valibot";
 
 const id = v.pipe(v.string(), v.minLength(1));

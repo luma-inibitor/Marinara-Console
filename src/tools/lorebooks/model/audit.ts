@@ -1,6 +1,5 @@
 /* @copy-strict */
-// What the audit reads across a whole book: the distribution it calls a row
-// hot, and the per-tag totals the tag panel draws. Strict because the untagged
+// The figures the audit reads across a whole book. Strict because the untagged
 // sentinel reads as copy and has to keep tracing to the catalog.
 import type { Entry } from "../api/schema";
 import { entryTokens } from "./entry";

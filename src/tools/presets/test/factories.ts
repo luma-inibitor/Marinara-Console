@@ -1,5 +1,4 @@
-// Shared fixtures for the preset model tests: already-decoded rows, which is
-// what every model function sees once api/schema.ts has parsed the wire.
+// Decoded rows, which is what a model function sees once the wire is parsed.
 import type { PresetFull, PromptGroup, PromptPreset, PromptSection } from "../api/schema";
 
 export const preset = (over: Partial<PromptPreset> = {}): PromptPreset => ({
