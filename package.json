@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest run",
+    "prepare": "git config core.hooksPath .githooks || true",
     "dev": "vite",
     "build": "vite build",
     "copycheck": "node scripts/copycheck.mjs",
@@ -13,6 +14,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "layercheck": "node scripts/layercheck.mjs",
+    "commitcheck": "node scripts/commitmsg.mjs",
+    "prcheck": "node scripts/prcheck.mjs",
     "typescale": "node scripts/typescale.mjs",
     "deadexports": "node scripts/deadexports.mjs",
     "deadcss": "node scripts/deadcss.mjs",

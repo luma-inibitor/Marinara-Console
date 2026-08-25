@@ -1,0 +1,45 @@
+name: Conventions
+
+# The commit-msg hook can be skipped with --no-verify, and a pull request's
+# title and body never pass through a hook at all. This is where those are
+# enforced. Separate from Check so editing a title or body re-runs this alone
+# rather than the whole build.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+
+concurrency:
+  group: conventions-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  conventions:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The commit sweep walks base..head, so the branch's history has to
+          # be here in full.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      # Both checks import nothing outside node's standard library, so there is
+      # no npm ci step here.
+      - name: Commit subjects
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/commitmsg.mjs --range "$BASE_SHA..$HEAD_SHA"
+
+      - name: Pull request title and opening
+        run: node scripts/prcheck.mjs

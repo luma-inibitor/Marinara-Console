@@ -1,0 +1,14 @@
+#!/bin/sh
+# Conventional Commits, checked before the commit exists. Installed by the
+# `prepare` script (core.hooksPath), skippable with `git commit --no-verify`.
+#
+# Without node on PATH this warns and lets the commit through rather than
+# blocking every GUI client that does not load a shell profile; CI runs the
+# same check on the pull request, so nothing reaches main unchecked.
+
+if ! command -v node >/dev/null 2>&1; then
+	echo "commit-msg hook: no node on PATH, commit message not checked (CI still will)." >&2
+	exit 0
+fi
+
+exec node "$(git rev-parse --show-toplevel)/scripts/commitmsg.mjs" "$1"
