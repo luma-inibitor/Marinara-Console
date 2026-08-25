@@ -13,7 +13,8 @@ import { KEYWORD_CAP, SECTION_CAP } from "./model/caps";
 import { t } from "../../copy";
 import { dedupeLines } from "./model/derived";
 import { effectiveKeywords, manualKeywords } from "./model/keywords";
-import { NoteRef } from "./NotePeek";
+import { LinkTarget } from "./components/NoteRef";
+import { relationLabel } from "./model/relations";
 import { allNotes, archiveNote, archiveNoteWithExtracted, loadNotes, notesError, notesLoaded, saveNoteSections, setNoteStatus } from "./store/notes";
 import { listedInVault } from "./model/listing";
 import { isScoped, noteInScope } from "./model/scope";
@@ -305,7 +306,7 @@ function NoteEditor(props: { note: Note; onClose: () => void }) {
         <div><span className="k">keywords</span>{effectiveKeywords(n).join(", ") || "—"} <span className="dim">{t("memoryvault.addedManually")} {manualKeywords(n).length}/{KEYWORD_CAP}</span></div>
         {(n.links ?? []).length > 0 && (
           <div><span className="k">{t("memory.vault.links")}</span>
-            <span>{n.links.map((l, i) => <span key={i} className="linkline"><span className="dim">{l.relation}</span> → <NoteRef id={l.target} /> </span>)}</span>
+            <span>{n.links.map((l, i) => <span key={i} className="linkline"><span className="rel rel-mid">{relationLabel(l.relation)}</span> → <LinkTarget id={l.target} /> </span>)}</span>
           </div>
         )}
       </div>
