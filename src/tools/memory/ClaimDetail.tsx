@@ -57,7 +57,7 @@ function Line(props: { mode?: "add" | "del"; children: ReactNode }) {
   const g = props.mode === "add" ? "+" : props.mode === "del" ? "−" : "";
   return (
     <div className={`ln ln-${props.mode ?? "ctx"}`}>
-      <span className="lg" data-contrast-exempt>{g}</span>
+      <span className="lg">{g}</span>
       <span className="lt">{props.children}</span>
     </div>
   );

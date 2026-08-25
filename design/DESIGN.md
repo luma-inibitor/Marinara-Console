@@ -85,6 +85,12 @@ which means the markup asserts one face and the page renders another.
   and essential labels ≥3:1. `--text-faint` exists but is restricted to decorative
   or ≥12px non-essential text. (The legacy app's dim grays failed AA; the token
   ladder here was rebuilt to pass. Don't reintroduce darker grays ad hoc.)
+  The sweep reads pseudo-element and placeholder ink too, so a `::before` glyph
+  is held to the same floor as a text node. `data-contrast-exempt` in the markup
+  only *claims* an exemption: it is honored solely for elements matching an entry
+  in `verify.mjs`'s `CONTRAST_EXEMPTIONS`, and each entry has to state why the ink
+  may sit below the floor. An exemption with no entry is measured like anything
+  else, so the attribute can never silence the check on its own.
 
 ### Space & motion
 
@@ -336,11 +342,16 @@ A UI change is not done until `node scripts/verify.mjs` passes:
    rendering; render at the viewport or do not claim the result.
    CSS breakpoints are two, semantic: **720px** (below it everything stacks)
    and **900px** (above it master-detail sits side by side).
-2. Zero console/page errors on every screen visited.
+2. Zero console/page errors *and warnings* on every screen visited.
 3. Tap-target sweep: interactive elements ≥44px primary / ≥24px+spacing secondary.
+   A control under 44px fails unless it clears 24px *and* sits ≥8px from the
+   nearest other target — that spacing is what §2 grants a secondary control, so
+   without it there is no band left for the element to be legitimate in. Segments
+   of one `[role="group"]` are a single control, not competing targets.
 4. Contrast sweep: computed fg/bg pairs meet the floors in §1.
-5. Density check on list screens: collapsed rows/screen reported (mobile target ~10+).
-6. Keyboard walk on desktop screens: tab order sane, focus visible, list navigation
+5. No horizontal document overflow at any viewport.
+6. Density check on list screens: collapsed rows/screen reported (mobile target ~10+).
+7. Keyboard walk on desktop screens: tab order sane, focus visible, list navigation
    works without a mouse.
 
 Screenshot before claiming; measure before asserting density. This habit has caught

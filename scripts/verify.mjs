@@ -1,8 +1,9 @@
 // Definition of done (design/DESIGN.md §7), executable.
 //   node scripts/verify.mjs [--url http://127.0.0.1:7872]
-// Checks per screen × viewport: console/page errors (fail), contrast (fail),
-// tap targets (fail <24px, warn <40px), rows-per-screen (report), keyboard walk
-// (desktop, fail if list navigation is dead). Screenshots into shots/verify/.
+// Checks per screen × viewport: console/page errors and warnings (fail),
+// contrast (fail), tap targets (fail below §2's floors), horizontal document
+// overflow (fail), rows-per-screen (report), keyboard walk (desktop, fail if
+// list navigation is dead). Screenshots into shots/verify/.
 // Read-only: navigates and presses j/k only — never types into fields.
 import { launch, ALL_VIEWPORTS } from "./lib/browser.mjs";
 import { mkdirSync } from "node:fs";
@@ -17,31 +18,79 @@ const URL = process.argv.includes("--url")
 // here: only this check opens contexts with isMobile/hasTouch at all.
 const TOUCH = new Set(["narrow", "phone", "tablet"]);
 
+// `data-contrast-exempt` in the markup only *claims* an exemption. It is
+// honored solely for elements matching an entry here, and every entry states
+// why the ink may sit below §1's floor; an element carrying the attribute with
+// no entry is measured like any other. A selector may name a pseudo-element.
+const CONTRAST_EXEMPTIONS = [
+  [".sep", "separator glyph between meta fields; punctuation, no information"],
+  [".mdc-sep", "separator glyph between meta fields; punctuation, no information"],
+  [".scopesep", "aria-hidden breadcrumb chevron; the scope names carry the meaning"],
+  [".meta > * + *::before", "separator glyph between meta fields; punctuation, no information"],
+  ["[data-brand]", "logotype; WCAG 1.4.3 exempts brand wordmarks from contrast"],
+];
+
+// §2/§7 floors: under TAP_PRIMARY a control is legitimate only as a secondary
+// one, which §2 grants on the condition that it clears TAP_GAP of its neighbours.
+const TAP_PRIMARY = 44, TAP_SECONDARY = 24, TAP_GAP = 8;
+
 mkdirSync("shots/verify", { recursive: true });
 
 // ── in-page audits ─────────────────────────────────────────────────
-const AUDITS = `((rowSel) => {
-  const out = { taps: [], contrast: [], rows: 0, rowsMatched: 0, empty: false };
+const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
+  const out = { taps: [], contrast: [], unjustifiedExempt: 0, overflow: 0, rows: 0, rowsMatched: 0, empty: false };
   const vis = (el) => {
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) return false;
     const s = getComputedStyle(el);
     return s.visibility !== "hidden" && s.display !== "none";
   };
+  const label = (el) => (el.getAttribute("aria-label") || el.textContent || el.tagName).trim().slice(0, 40);
 
   // tap targets
+  const targets = [];
   for (const el of document.querySelectorAll("button, a, input, select, [role=button]")) {
     if (!vis(el) || el.closest("[data-verify-exempt]")) continue;
     // .hit (base.css) pads a control's hit area out to --tap with a positioned
     // ::after, by construction — the visual box stays small on purpose. Reading
     // the box would fail every one of them for a target that is really 44px.
     if (el.classList.contains("hit")) continue;
-    const r = el.getBoundingClientRect();
-    const min = Math.min(r.width, r.height);
-    if (min < 40) out.taps.push({
+    // A wrapping <label> forwards its own clicks to the control, so the label
+    // is the target and the control's own box understates it.
+    const host = (el.matches("input, select, textarea") && el.closest("label")) || el;
+    targets.push({ el, r: host.getBoundingClientRect(), group: el.closest("[role=group]") });
+  }
+  // Edge-to-edge distance to the nearest other target. Two members of one
+  // [role=group] are segments of a single control, not competing targets, and
+  // whatever happens to scroll up against a nav landmark is a scroll offset
+  // rather than a layout — neither pairing is a spacing violation.
+  const clearance = (a) => {
+    let best = Infinity;
+    const aNav = !!a.el.closest("nav");
+    for (const b of targets) {
+      if (b === a || a.el.contains(b.el) || b.el.contains(a.el)) continue;
+      if (a.group && a.group === b.group) continue;
+      if (aNav !== !!b.el.closest("nav")) continue;
+      const dx = Math.max(0, a.r.left - b.r.right, b.r.left - a.r.right);
+      const dy = Math.max(0, a.r.top - b.r.bottom, b.r.top - a.r.bottom);
+      best = Math.min(best, Math.hypot(dx, dy));
+    }
+    return best;
+  };
+  for (const t of targets) {
+    const min = Math.min(t.r.width, t.r.height);
+    if (min >= TAP_PRIMARY) continue;
+    const gap = clearance(t);
+    out.taps.push({
       min: Math.round(min),
-      label: (el.getAttribute("aria-label") || el.textContent || el.tagName).trim().slice(0, 40),
+      gap: Number.isFinite(gap) ? Math.round(gap * 10) / 10 : null,
+      secondary: min >= TAP_SECONDARY && !(gap < TAP_GAP),
+      label: label(t.el),
     });
+  }
+
+  if (document.documentElement.scrollWidth > innerWidth + 1) {
+    out.overflow = document.documentElement.scrollWidth - innerWidth;
   }
 
   // contrast: text-bearing elements vs first opaque ancestor background
@@ -67,25 +116,37 @@ const AUDITS = `((rowSel) => {
     const root = parse(getComputedStyle(document.body).backgroundColor);
     return acc ?? root ?? { r: 11, g: 13, b: 18, a: 1 };
   };
+  const exempt = (el, pseudo) => exemptions.some((e) => e.pseudo === pseudo && el.matches(e.sel));
   const seen = new Set();
-  for (const el of document.querySelectorAll("body *")) {
-    if (!vis(el) || el.closest("[data-verify-exempt],[data-contrast-exempt]")) continue;
-    const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent.trim()).join("");
-    if (!text) continue;
-    const s = getComputedStyle(el);
-    const fg = parse(s.color); if (!fg) continue;
+  const measure = (el, pseudo, text) => {
+    const s = getComputedStyle(el, pseudo);
+    const fg = parse(s.color); if (!fg) return;
     const bg = bgOf(el);
     const L1 = lum(fg.r, fg.g, fg.b), L2 = lum(bg.r, bg.g, bg.b);
     const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
     const px = parseFloat(s.fontSize);
     const bold = parseInt(s.fontWeight, 10) >= 700;
     const floor = px >= 24 || (px >= 18.66 && bold) ? 3 : 4.5;
-    if (ratio < floor) {
-      const key = s.color + "|" + Math.round(ratio * 10) + "|" + text.slice(0, 20);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.contrast.push({ ratio: Math.round(ratio * 100) / 100, floor, px, text: text.slice(0, 40) });
+    if (ratio >= floor) return;
+    const key = s.color + "|" + Math.round(ratio * 10) + "|" + text.slice(0, 20);
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.contrast.push({ ratio: Math.round(ratio * 100) / 100, floor, px, text: (pseudo ?? "") + text.slice(0, 40) });
+  };
+  for (const el of document.querySelectorAll("body *")) {
+    if (!vis(el) || el.closest("[data-verify-exempt]")) continue;
+    if (el.hasAttribute("data-contrast-exempt") && !exempt(el, null)) out.unjustifiedExempt++;
+    const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent.trim()).join("");
+    if (text && !exempt(el, null)) measure(el, null, text);
+    // Pseudo-element and placeholder ink is invisible to the childNodes walk.
+    for (const pseudo of ["::before", "::after"]) {
+      const raw = getComputedStyle(el, pseudo).content;
+      if (!raw || raw === "none" || raw === "normal" || raw.includes("url(")) continue;
+      const glyph = raw.replace(/^"|"$/g, "").trim();
+      if (!glyph || exempt(el, pseudo)) continue;
+      measure(el, pseudo, glyph);
     }
+    if (el.placeholder && !exempt(el, "::placeholder")) measure(el, "::placeholder", el.placeholder);
   }
 
   // density: fully-visible collapsed rows, per the screen's own row selector.
@@ -150,6 +211,13 @@ const SCREENS = [
   { name: "memory-sources", path: "/#/memory/sources", waitFor: ".mem-rows", rows: ".srow" },
 ];
 
+const EXEMPT_ARG = CONTRAST_EXEMPTIONS.map(([spec]) => {
+  const [sel, pseudo] = spec.split("::");
+  return { sel, pseudo: pseudo ? `::${pseudo}` : null };
+});
+const AUDIT_ARGS = (screen) => [screen.rows ?? null, EXEMPT_ARG, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP]
+  .map((a) => JSON.stringify(a)).join(", ");
+
 let failures = 0, warnings = 0, blind = 0;
 for (const vp of ALL_VIEWPORTS) {
   const mobile = TOUCH.has(vp.name);
@@ -160,7 +228,7 @@ for (const vp of ALL_VIEWPORTS) {
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e.message)));
-  page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+  page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") errors.push(`${m.type()}: ${m.text()}`); });
 
   for (const screen of SCREENS) {
     await page.goto(URL + screen.path, { waitUntil: "networkidle" });
@@ -168,20 +236,31 @@ for (const vp of ALL_VIEWPORTS) {
     await page.waitForTimeout(400);
     await page.screenshot({ path: `shots/verify/${vp.name}-${screen.name}.png` });
 
-    const audit = await page.evaluate(`${AUDITS}(${JSON.stringify(screen.rows ?? null)})`);
-    const hardTaps = audit.taps.filter((t) => t.min < 24);
-    const softTaps = audit.taps.filter((t) => t.min >= 24);
+    const audit = await page.evaluate(`${AUDITS}(${AUDIT_ARGS(screen)})`);
+    const badTaps = audit.taps.filter((t) => !t.secondary);
+    const softTaps = audit.taps.filter((t) => t.secondary);
     const tag = `${vp.name}/${screen.name}`;
 
-    if (errors.length) { failures++; console.log(`FAIL ${tag} — console errors:\n  ${errors.join("\n  ")}`); errors.length = 0; }
+    if (errors.length) { failures++; console.log(`FAIL ${tag} — console:\n  ${errors.join("\n  ")}`); errors.length = 0; }
     if (audit.contrast.length) {
       failures++;
       console.log(`FAIL ${tag} — contrast below floor:`);
       for (const c of audit.contrast.slice(0, 6)) console.log(`  ${c.ratio}:1 (needs ${c.floor}) ${c.px}px "${c.text}"`);
     }
-    if (hardTaps.length) {
+    if (audit.overflow) { failures++; console.log(`FAIL ${tag} — document scrolls ${audit.overflow}px horizontally`); }
+    if (audit.unjustifiedExempt) {
+      warnings += audit.unjustifiedExempt;
+      console.log(`WARN ${tag} — ${audit.unjustifiedExempt} data-contrast-exempt elements have no entry in CONTRAST_EXEMPTIONS; measured as normal`);
+    }
+    if (badTaps.length) {
       failures++;
-      console.log(`FAIL ${tag} — targets under 24px: ${hardTaps.map((t) => `"${t.label}" ${t.min}px`).join(", ")}`);
+      const shown = [...new Map(badTaps.map((t) => [`${t.label}|${t.min}`, t])).values()].slice(0, 6);
+      console.log(`FAIL ${tag} — ${badTaps.length} targets below the §2 floors:`);
+      for (const t of shown) {
+        console.log(t.min < TAP_SECONDARY
+          ? `  ${t.min}px "${t.label}" — under the ${TAP_SECONDARY}px hard floor`
+          : `  ${t.min}px "${t.label}" — under ${TAP_PRIMARY}px and only ${t.gap}px from its neighbour (needs ${TAP_GAP}px to count as secondary)`);
+      }
     }
     if (softTaps.length) { warnings += softTaps.length; }
     // A metric that cannot fail is not a metric: if the screen rendered but its
@@ -198,7 +277,7 @@ for (const vp of ALL_VIEWPORTS) {
         density = ` · ${audit.rows} rows visible (of ${audit.rowsMatched})`;
       }
     }
-    console.log(`ok   ${tag}${density}${softTaps.length ? ` · ${softTaps.length} targets 24–39px (warn)` : ""}`);
+    console.log(`ok   ${tag}${density}${softTaps.length ? ` · ${softTaps.length} spaced secondary targets ${TAP_SECONDARY}–${TAP_PRIMARY - 1}px (warn)` : ""}`);
   }
 
   // command palette check (desktop)
@@ -242,5 +321,5 @@ for (const vp of ALL_VIEWPORTS) {
 }
 
 await browser.close();
-console.log(`\n${failures ? `${failures} FAILURES` : "all checks pass"}${warnings ? ` · ${warnings} soft-target warnings` : ""}${blind ? ` · ${blind} density selectors matched nothing (WARN — density unmeasured there)` : ""}`);
+console.log(`\n${failures ? `${failures} FAILURES` : "all checks pass"}${warnings ? ` · ${warnings} warnings` : ""}${blind ? ` · ${blind} density selectors matched nothing (WARN — density unmeasured there)` : ""}`);
 process.exit(failures ? 1 : 0);
