@@ -23,7 +23,6 @@
     border-left: 1px solid var(--edge-strong);
   }
 }
-.sheet.option-sheet { max-height: 50vh; }
 
 .sheet-head {
   position: sticky;

@@ -55,10 +55,6 @@
 .blocked-srcs { display: flex; flex-direction: column; gap: 3px; margin: var(--s2) 0; }
 .blocked-src { font-size: var(--fs-data-s); }
 .reex-note { margin-top: 6px; font-size: 12px; }
-.dock-detail { margin-top: 3px; font-size: var(--fs-data-s); }
-.dock-detail summary { cursor: pointer; color: var(--accent); }
-.dock-detail.is-drop summary { color: var(--danger); }
-.dock-detail-row { padding: 2px 0 0 var(--s3); overflow-wrap: anywhere; }
 
 /* ══ decision meter ══ */
 .mbar .m-keep { background: var(--ok); opacity: 0.75; }
@@ -69,11 +65,54 @@
    (dock counts, "Save FAILED"), which must stay inline. */
 .mval .is-keep, .mval .is-drop { display: inline-flex; align-items: center; gap: 2px; }
 .rail-gap { flex: 0 0 auto; width: 1px; align-self: stretch; margin: 4px 2px; background: var(--edge); }
-.chip.ctl { flex: 0 0 108px; width: 108px; justify-content: flex-start; gap: 6px; overflow: hidden; }
-.chip.ctl .ctl-k { flex: 0 0 auto; }
-.chip.ctl .ctl-v { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
-  font-family: var(--font-data); text-transform: none; letter-spacing: 0.02em;
-  font-size: 10.5px; color: var(--text); text-align: right; }
+
+/* ══ arrange rail — the phone's one row of chrome ══
+   Filter is glyph + count (its value is a quantity); group and sort are
+   glyph + word (theirs is a name, and a name has to be read). The two
+   arrangement buttons split the leftover width evenly so the row scans as
+   columns rather than as three differently-sized blobs. */
+.qrail { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s2); }
+/* Full primary height (§2). With the header cut these three are the screen's
+   principal controls, not chips beside a title — and at --tap-2 they sat 6px
+   from the row below, which is under the 8px that makes a small target
+   legitimate at all. Sizing them properly is the fix; spacing them was
+   arguing for the exception. */
+.qbtn { display: flex; align-items: center; gap: 5px; min-height: var(--tap);
+  padding: 0 8px; background: var(--surface-2); border: 1px solid var(--edge);
+  border-radius: var(--r-s); color: var(--text); cursor: pointer;
+  flex: 1 1 0; min-width: 0; }
+.qbtn:hover { border-color: var(--edge-strong); }
+.qbtn.is-on { background: var(--accent-wash); border-color: var(--accent); }
+/* Filter sizes to its content: a glyph, and a count only when there is one.
+   min-width holds the primary floor in the other axis — a 44px-tall button
+   35px wide is still a 35px target for a thumb. */
+.qbtn-f { flex: 0 0 auto; min-width: var(--tap); justify-content: center; padding: 0 9px; }
+.qbtn-f.is-on { color: var(--accent); }
+.qn { font-size: 11px; font-weight: 700; color: var(--accent);
+  font-variant-numeric: tabular-nums; }
+.qv { flex: 1; min-width: 0; font-size: 10.5px; text-align: left;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ══ active-filter track ══
+   Every active value, removable where it is shown — on a phone the sheet is
+   dismissed and this is the only way back out of a filter (DESIGN.md §4). */
+.ftrack { display: flex; align-items: center; gap: 5px; margin-top: 5px;
+  overflow-x: auto; scrollbar-width: none; padding-bottom: var(--s2); }
+.ftrack::-webkit-scrollbar { display: none; }
+.ftrack-n { flex: none; font-size: 10px; color: var(--text-dim);
+  white-space: nowrap; font-variant-numeric: tabular-nums; }
+.fpill { flex: none; display: flex; align-items: center; gap: 4px;
+  min-height: 24px; padding: 0 5px 0 7px; background: none;
+  border: 1px solid var(--edge); border-radius: 3px; color: var(--text-dim);
+  cursor: pointer; }
+.fpill:hover { color: var(--text); border-color: var(--edge-strong); }
+.fpill span { font-size: 10px; white-space: nowrap; }
+/* Clear sits at the far end, after the pills it clears — the track scrolls,
+   so it cannot be pinned right without landing on top of them. */
+.fclear { flex: none; display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; margin-left: 4px; background: none; border: 0;
+  color: var(--text-dim); cursor: pointer; }
+.fclear:hover { color: var(--text); }
 /* ═══ MEMORY LIST SYSTEM ═════════════════════════════════════════════
    One 40px / 24px / 1fr grid, declared on both .mem-summary and .mem-ghead:
    rows and group headers align by construction, so the two change together. */
@@ -208,7 +247,56 @@
   background: var(--accent); color: var(--accent-ink); font-weight: 700;
   font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
 .dock-primary:disabled { opacity: 0.45; }
-.restore-link { color: var(--accent); }
+
+/* ── the phone dock's status row ──
+   The header's tally and save pill live here now, so this row is the only
+   place the queue's totals are stated.
+
+   Every control in the dock is one height (--tap). The mismatch this replaces
+   was a 34px chip beside a 44px button, which CHECKLIST §4 calls out by name:
+   sibling controls share a height. */
+.dock-tally { flex: 1 1 100%; display: flex; align-items: center; gap: var(--s2);
+  min-height: var(--tap); flex-wrap: wrap; }
+/* Apply keeps its natural width and never truncates: it is the primary
+   action, and its own name is the last thing on the row allowed to be cut.
+   The width is RESERVED rather than fitted — the label cycles through
+   "Apply (…)" and counts of one to three digits on every decision, and a
+   primary button that twitches under the thumb reads as a glitch. 108px holds
+   the widest of them ("Apply (…)" at 98, "Apply (197)" at ~101). */
+.dock-tally .dock-primary { flex: 0 0 auto; margin-left: auto; min-width: 108px; }
+@media (max-width: 899px) {
+  .apply-dock { padding-bottom: 0; row-gap: var(--s1); }
+}
+/* The counts never break internally. Squeezed, they were splitting the total
+   off onto its own line — "40" above "/ 42" — which reads as two figures
+   rather than one ratio. Kept whole, the group moves as a unit: it shares the
+   row at 486 (the device this has to be right on) and takes its own line at
+   the 390 floor, where nothing would have fitted anyway. */
+/* The tally is a button: it shows the figures and opens the sheet that
+   explains them. Bordered rather than bare — an inert-looking number that
+   turns out to be tappable is the `Chip`/`Tag` mistake in another costume. */
+.dock-counts { display: flex; align-items: center; gap: 7px; flex: 1 1 auto;
+  white-space: nowrap; font-size: 12px; font-weight: 700;
+  font-variant-numeric: tabular-nums; min-height: var(--tap);
+  padding: 0 var(--s2); background: none; border: 1px solid transparent;
+  border-radius: var(--r-s); color: var(--text); cursor: pointer; }
+.dock-counts:hover { background: var(--surface-2); border-color: var(--edge); }
+.dock-counts > svg:last-child { color: var(--text-faint); flex: none; }
+/* The exception badge. Loud on purpose: behind it is the fact that Apply may
+   write something the reviewer did not keep, so hidden-by-default is fine and
+   hidden-and-quiet is not. */
+.dock-exc { display: inline-flex; align-items: center; gap: 3px; flex: none;
+  padding: 0 5px; min-height: 18px; border-radius: 999px;
+  background: var(--flag-wash); color: var(--flag); font-size: 10.5px; }
+.dock-counts b { display: inline-flex; align-items: center; gap: 4px; }
+.dock-counts .of { font-weight: 400; }
+.dock-tally .mem-save { flex: none; }
+/* The meter, as the dock's bottom edge. It spans the dock's full width, so it
+   escapes the padding the rows sit inside. */
+.dock-bar { flex: 1 1 100%; display: flex; height: 4px; margin: var(--s2) calc(-1 * var(--s3)) 0;
+  background: var(--surface-3); }
+.dock-bar .m-keep { background: var(--ok); }
+.dock-bar .m-drop { background: var(--danger); }
 
 /* ══ detail ══ */
 .claim-detail { padding: var(--panel-pad); }

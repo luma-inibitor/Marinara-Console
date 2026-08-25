@@ -16,6 +16,12 @@ export default defineConfig({
     proxy: {
       "/api": proxyTarget,
       "/__config": proxyTarget,
+      // The console's own state (the review queue's decision ledger) is served
+      // by server.mjs, not the engine, so it is not under /api and needs its
+      // own entry. Without it every decision fails to persist in dev and the
+      // queue shows "Failed" — while the same build served from server.mjs
+      // works, which is what made this hard to see.
+      "/console": proxyTarget,
     },
   },
 });

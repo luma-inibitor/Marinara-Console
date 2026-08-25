@@ -23,7 +23,23 @@ interface FacetDef {
   label: string;
   source: "computed" | "model" | "yours";
   get: (r: Row, ctx: FacetContext) => string | string[] | null;
+  /** Sibling facets whose filters are also dropped when counting this one.
+   *  A facet's count normally excludes only its own filter; two facets that
+   *  narrow the same underlying set have to exclude each other too, or the
+   *  broader one reports a number already narrowed by the finer one. */
+  countsIgnore?: string[];
+  /** Values that exist whether or not any row currently has one. Only for
+   *  facets with a closed vocabulary the reviewer should see in full — a
+   *  decision axis that lists nothing but "undecided" reads as though keep
+   *  and drop were not options. Open-ended facets (flags, sources) leave this
+   *  unset and take their vocabulary from the rows. */
+  domain?: string[];
 }
+
+/** The value `anyFlag` takes when a row has flags. The facet is a yes/no, but
+ *  it rides the same Map<facetId, Set<value>> as every other filter, so the
+ *  "yes" needs a value to be a member of. */
+export const ANY_FLAG = "any";
 
 // The facet and the row chip read the same flags, so filtering by a flag
 // always matches exactly the rows whose chip counted it.
@@ -33,15 +49,28 @@ function qualityFlags(r: Row, ctx: FacetContext): string[] | null {
 }
 
 export const FACETS: FacetDef[] = [
-  { id: "flags", label: "quality flags", source: "computed", get: qualityFlags },
+  { id: "flags", label: "quality flags", source: "computed", get: qualityFlags, countsIgnore: ["anyFlag"] },
+  // "Any flag at all" is its own filter rather than every flag selected: the
+  // set of flags grows, and a saved "all of them" would silently stop meaning
+  // all of them. Selecting named flags and asking for any are mutually
+  // exclusive — the sheet enforces that, so both are never live at once.
+  {
+    id: "anyFlag", label: t("memory.review.anyFlag"), source: "computed",
+    countsIgnore: ["flags"],
+    get: (r, ctx) => (qualityFlags(r, ctx) ? ANY_FLAG : null),
+  },
   { id: "disposition", label: "disposition", source: "model", get: (r) => r.disposition },
-  { id: "risk", label: "risk", source: "model", get: (r) => r.mutation.risk },
+  { id: "risk", label: "risk", source: "model", get: (r) => r.mutation.risk, domain: ["high", "medium", "low"] },
   { id: "kind", label: "change", source: "model", get: (r) => r.mutation.kind },
   { id: "claimKind", label: "claim", source: "model", get: (r) => r.mutation.claimKind },
   { id: "targetType", label: "memory type", source: "model", get: (r) => r.targetType },
   { id: "source", label: t("reviewqueue.sources"), source: "model", get: (r) => r.sourceTitle },
   {
     id: "status", label: "decision", source: "yours",
+    // Keep and drop are the point of the screen. They must be listed from the
+    // start, at zero, or the axis claims the only thing a claim can be is
+    // undecided.
+    domain: ["keep", "drop", t("memory.undecided")],
     get: (r, ctx) => {
       const s: string[] = [ctx.decisions.get(r.key) ?? t("memory.undecided")];
       if (ctx.edited.has(r.key)) s.push("edited");
@@ -67,10 +96,25 @@ export function applyFilters(list: Row[], active: Map<string, Set<string>>, ctx:
 export function facetCounts(list: Row[], active: Map<string, Set<string>>, ctx: FacetContext): Map<string, Map<string, number>> {
   const counts = new Map<string, Map<string, number>>();
   for (const f of FACETS) {
-    const others = new Map([...active.entries()].filter(([id]) => id !== f.id));
+    const skip = new Set([f.id, ...(f.countsIgnore ?? [])]);
+    const others = new Map([...active.entries()].filter(([id]) => !skip.has(id)));
     const pool = applyFilters(list, others, ctx);
     const m = new Map<string, number>();
     counts.set(f.id, m);
+    // Seed the whole vocabulary at zero before counting. A value the current
+    // slice happens not to contain is still one of the choices this facet
+    // offers, and dropping it makes the axis look smaller than it is — the
+    // risk facet listed no "high" at all on a batch that had none, which
+    // reads as "high risk is not a thing here" rather than "none of these".
+    // The vocabulary is the declared domain, or every value the UNFILTERED
+    // rows produce; never the pool, which is what is being narrowed.
+    for (const v of f.domain ?? []) m.set(v, 0);
+    for (const row of list) {
+      let vs = f.get(row, ctx);
+      if (vs == null) continue;
+      if (!Array.isArray(vs)) vs = [vs];
+      for (const v of vs) if (!m.has(v)) m.set(v, 0);
+    }
     for (const row of pool) {
       let vs = f.get(row, ctx);
       if (vs == null) continue;

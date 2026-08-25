@@ -14,7 +14,7 @@ import { bulkDecide, canUndo, cycleDecision, decisions, edited, retryPersist, sa
 import { blocked, loadError, loading, refresh, rejections, review, rows } from "./store/review";
 import { notesById, reextractSource } from "./store/notes";
 import { backupExportUrl } from "./store/backup";
-import { activeFacets, cursor, detailKey, facetSheetOpen, groupBy, sortBy, sortDir } from "./store/view";
+import { activeFacets, cursor, detailKey, dockSheetOpen, facetSheetOpen, groupBy, sortBy, sortDir, viewSheetOpen } from "./store/view";
 import { preflight, preflightPending, preflightRowState } from "./store/preflight";
 import { droppedDependencyWarnings, readyToSend, tally } from "./store/tally";
 import { applyDecided, applying, applyProgress, lastFailures } from "./store/apply";
@@ -22,21 +22,20 @@ import { pressure } from "./store/pressure";
 import { SECTION_CAP as CAP } from "./model/caps";
 import { capPercent } from "./model/pressure";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
-import { Flag, AllClear, NoMatches, DECISION_ICON, More, EditedMark, Back, Refresh, Download } from "../../ui/icons";
+import { Flag, AllClear, NoMatches, DECISION_ICON, More, EditedMark, Back, Refresh, Download, Undo, Filter, ClearFilters, GroupBy, SortDown, SortUp, Remove, ChevronUp, ICON_SIZE } from "../../ui/icons";
 import { DecisionIcon, GroupIcon, OpIcon, TypeIcon } from "./icons";
 import { Term, OP_TIP } from "./glossary";
 import { flagsOf, worstSeverity, contributionChars, FLAG } from "./model/flags";
-import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./model/facets";
+import { ANY_FLAG, FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./model/facets";
+import { FilterSheet, type SheetFacet } from "./review/FilterSheet";
+import { ViewSheet } from "./review/ViewSheet";
+import { DockSheet } from "./review/DockSheet";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./components/NoteRef";
-import { Chip, collapsedGroups, EmptyState, ErrorState, FacetDrawer, IconButton, ListGroup, Loading, MiddleTruncate, Picker, useIsDesktop, useRovingFocus } from "../../ui";
-import { createStore, useStore } from "../../lib/store";
+import { Chip, collapsedGroups, EmptyState, ErrorState, IconButton, ListGroup, Loading, MiddleTruncate, useIsDesktop, useRovingFocus } from "../../ui";
+import { useStore } from "../../lib/store";
 
 const RESTORE_POINT_THRESHOLD = 20;
-
-// Mobile choosers for group/sort (three-button rail).
-const groupSheetOpen = createStore(false);
-const sortSheetOpen = createStore(false);
 
 // Collapsed groups. Not persisted: a queue you are working through should
 // start open every visit, unlike the sources inventory.
@@ -63,8 +62,6 @@ export function Review() {
   const save = useStore(saveState);
   const blockedDrafts = useStore(blocked);
   const facetsOpen = useStore(facetSheetOpen);
-  const groupSheet = useStore(groupSheetOpen);
-  const sortSheet = useStore(sortSheetOpen);
   const collapsedIds = collapse.useCollapsed();
 
   useEffect(() => { void refresh(true); }, []);
@@ -175,44 +172,50 @@ export function Review() {
   return (
     <div className={`audit ${desktop ? "is-desktop" : ""}`}>
       <div className="audit-list" ref={listRef} tabIndex={0} onKeyDown={onListKey}>
+        {/* Desktop keeps the full console — title, generation line, meter, and
+            the flat chip rail. The phone gets the arrangement rail instead:
+            everything above the first claim there is a tax on the ~11 rows
+            §2 asks for, and the meter's keep/drop was the dock's keep/drop
+            said a second time (CHECKLIST §3). The dock is the phone's status
+            surface now, so it stays mounted and carries the tally. */}
         <header className="console">
-          <div className="hrow">
-            <h1 className="console-title">{t("reviewqueue.reviewQueue")}</h1>
-            <span className="t-data mem-save">
-              {save === "saving" ? t("memory.save.autosaving")
-                : save === "failed"
-                  ? <span className="is-drop">{t("activityview.failed")} <Chip onClick={retryPersist}>{t("activityview.retry")}</Chip></span>
-                  : t("memoryvault.saved")}
-            </span>
-            <IconButton label={t("memory.review.refreshQueue")} onClick={() => void refresh()}><Refresh size={15} stroke={1.75} aria-hidden /></IconButton>
-            <IconButton href={backupExportUrl()} download label={t("memory.restorePoint")}>
-              <Download size={16} stroke={1.5} aria-hidden />
-            </IconButton>
-          </div>
+          {desktop ? (
+            <>
+              <div className="hrow">
+                <h1 className="console-title">{t("reviewqueue.reviewQueue")}</h1>
+                <span className="t-data mem-save">
+                  {save === "saving" ? t("memory.save.autosaving")
+                    : save === "failed"
+                      ? <span className="is-drop">{t("activityview.failed")} <Chip onClick={retryPersist}>{t("activityview.retry")}</Chip></span>
+                      : t("memoryvault.saved")}
+                </span>
+                <IconButton label={t("memory.review.refreshQueue")} onClick={() => void refresh()}><Refresh size={15} stroke={1.75} aria-hidden /></IconButton>
+                <IconButton href={backupExportUrl()} download label={t("memory.restorePoint")}>
+                  <Download size={16} stroke={1.5} aria-hidden />
+                </IconButton>
+              </div>
 
-          {reviewData && (
-            <div className="gen-line t-data">
-              {t("memory.review.generatedAt", { time: new Date(reviewData.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })}
-              {reviewData.counts.deduplications > 0 && <> · {t("memory.review.dedupedUpstream", { count: reviewData.counts.deduplications })}</>}
-            </div>
-          )}
+              {reviewData && (
+                <div className="gen-line t-data">
+                  {t("memory.review.generatedAt", { time: new Date(reviewData.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })}
+                  {reviewData.counts.deduplications > 0 && <> · {t("memory.review.dedupedUpstream", { count: reviewData.counts.deduplications })}</>}
+                </div>
+              )}
 
-          {/* decision meter: tally as data, one line */}
-          <div className="meter">
-            <span className="t-label t-label-s">{t("memory.review.decided")}</span>
-            <span className="mbar">
-              <span className="m-keep" style={{ width: `${total ? (c.keep / total) * 100 : 0}%` }} />
-              <span className="m-drop" style={{ width: `${total ? (c.drop / total) * 100 : 0}%` }} />
-            </span>
-            <span className="t-data mval">
-              <b className="is-keep"><DecisionIcon d="keep" size={12} />{c.keep}</b> · <b className="is-drop"><DecisionIcon d="drop" size={12} />{c.drop}</b>
-              <span className="of"> / {total}</span>
-            </span>
-          </div>
+              {/* decision meter: tally as data, one line */}
+              <div className="meter">
+                <span className="t-label t-label-s">{t("memory.review.decided")}</span>
+                <span className="mbar">
+                  <span className="m-keep" style={{ width: `${total ? (c.keep / total) * 100 : 0}%` }} />
+                  <span className="m-drop" style={{ width: `${total ? (c.drop / total) * 100 : 0}%` }} />
+                </span>
+                <span className="t-data mval">
+                  <b className="is-keep"><DecisionIcon d="keep" size={12} />{c.keep}</b> · <b className="is-drop"><DecisionIcon d="drop" size={12} />{c.drop}</b>
+                  <span className="of"> / {total}</span>
+                </span>
+              </div>
 
-          <div className="chiprail">
-            {desktop ? (
-              <>
+              <div className="chiprail">
                 <Chip pressed={facetsOpen} onClick={openFacetSheet}>
                   {t("ui.facets.title")}{activeFacetCount(active) > 0 && <b className="ar">{activeFacetCount(active)}</b>}
                 </Chip>
@@ -235,34 +238,20 @@ export function Review() {
                     {dir === 1 || sort !== id ? "↓" : "↑"} {s.label}
                   </Chip>
                 ))}
-              </>
-            ) : (
-              <>
-                <Chip className="ctl" pressed={activeFacetCount(active) > 0} onClick={openFacetSheet}>
-                  <span className="ctl-k">{t("memory.review.filter")}</span><span className="ctl-v">{activeFacetCount(active) || t("sourcesworkspace.all")}</span>
-                </Chip>
-                <Chip className="ctl" onClick={() => { groupSheetOpen.set(true); }}>
-                  <span className="ctl-k">{t("memory.review.group")}</span><span className="ctl-v">{GROUPERS[group].label}</span>
-                </Chip>
-                <Chip className="ctl" onClick={() => { sortSheetOpen.set(true); }}>
-                  <span className="ctl-k">{t("memory.review.sort")}</span><span className="ctl-v">{dir === 1 ? "↓" : "↑"} {SORTERS[sort].label}</span>
-                </Chip>
-                <QuickChip facet="status" value={t("memory.undecided")} label={t("memory.undecided")} />
-                <QuickChip facet="flags" value={FLAG.restates} label={t("memory.restates")} flag />
-                <QuickChip facet="flags" value={FLAG.duplicate} label={t("memory.review.chipDupes")} flag />
-                <QuickChip facet="flags" value={FLAG.conflicts} label={t("memoryvault.conflicts")} flag />
-              </>
-            )}
-          </div>
+              </div>
 
-          {activeFacetCount(active) > 0 && (
-            <div className="chiprail">
-              <span className="t-data selcount">{t("memory.review.shownOf", { shown: shown.length, total: allRows.length })}</span>
-              <Chip onClick={() => bulkDecide(shown, "keep", t("memory.review.keepShown"))}>{t("memory.review.keepShown")}</Chip>
-              <Chip onClick={() => bulkDecide(shown, "drop", t("memory.review.dropShown"))}>{t("memory.review.dropShown")}</Chip>
-              <Chip onClick={() => bulkDecide(shown, null, t("memory.review.reset"))}>{t("memory.review.reset")}</Chip>
-              <Chip onClick={() => { activeFacets.set(new Map()); }}>{t("memoryvault.clearFilters")}</Chip>
-            </div>
+              {activeFacetCount(active) > 0 && (
+                <div className="chiprail">
+                  <span className="t-data selcount">{t("memory.review.shownOf", { shown: shown.length, total: allRows.length })}</span>
+                  <Chip onClick={() => bulkDecide(shown, "keep", t("memory.review.keepShown"))}>{t("memory.review.keepShown")}</Chip>
+                  <Chip onClick={() => bulkDecide(shown, "drop", t("memory.review.dropShown"))}>{t("memory.review.dropShown")}</Chip>
+                  <Chip onClick={() => bulkDecide(shown, null, t("memory.review.reset"))}>{t("memory.review.reset")}</Chip>
+                  <Chip onClick={() => { activeFacets.set(new Map()); }}>{t("memoryvault.clearFilters")}</Chip>
+                </div>
+              )}
+            </>
+          ) : (
+            <ArrangeRail active={active} group={group} sort={sort} dir={dir} shown={shown.length} total={total} />
           )}
         </header>
 
@@ -306,20 +295,7 @@ export function Review() {
       )}
 
       <FacetSheet />
-      <Picker open={groupSheet} label={t("memory.review.groupBy")} current={group}
-        options={Object.entries(GROUPERS).map(([id, g]) => ({ id, label: g.label }))}
-        onPick={(id) => { groupBy.set(id as ReturnType<typeof groupBy.get>); }}
-        onClose={() => { groupSheetOpen.set(false); }} />
-      <Picker open={sortSheet} label={t("memoryvault.sortBy")} current={sort}
-        onClose={() => { sortSheetOpen.set(false); }}
-        options={Object.entries(SORTERS).map(([id, sr]) => ({
-          id, label: sr.label,
-          hint: sort === id ? (dir === 1 ? "↓ tap to flip" : "↑ tap to flip") : undefined,
-        }))}
-        onPick={(id) => {
-          if (sortBy.get() === id) sortDir.set(sortDir.get() === 1 ? -1 : 1);
-          else { sortBy.set(id as ReturnType<typeof sortBy.get>); sortDir.set(1); }
-        }} />
+      <ViewSheetHost />
       <ApplyDock />
     </div>
   );
@@ -346,6 +322,99 @@ function toggleFacet(facetId: string, value: string) {
   activeFacets.set(next);
 }
 
+/** The phone's one row of chrome: filter, and the two arrangement values.
+ *
+ *  Filter is a glyph and a count because its value is "how narrowed am I",
+ *  which a number answers; group and sort are glyph + word because theirs is
+ *  a choice among names, and a name has to be read. The two arrangement
+ *  buttons share the remaining width so the row scans as columns.
+ *
+ *  Active filters land in a track under it, each removable where it is shown —
+ *  DESIGN.md §4 asks for exactly that, and it is the only path back out of a
+ *  filter that a phone has once the sheet is dismissed. */
+function ArrangeRail(props: {
+  active: Map<string, Set<string>>;
+  group: string;
+  sort: string;
+  dir: 1 | -1;
+  shown: number;
+  total: number;
+}) {
+  const n = activeFacetCount(props.active);
+  const SortGlyph = props.dir === 1 ? SortDown : SortUp;
+  return (
+    <>
+      <div className="qrail">
+        <button
+          type="button"
+          className={`qbtn qbtn-f ${n ? "is-on" : ""}`}
+          aria-label={t("memory.review.filter")}
+          aria-pressed={n > 0}
+          onClick={openFacetSheet}
+        >
+          <Filter size={ICON_SIZE.lg} stroke={1.75} aria-hidden />
+          {n > 0 && <span className="t-data qn">{n}</span>}
+        </button>
+        <button
+          type="button"
+          className={`qbtn ${props.group === "none" ? "" : "is-on"}`}
+          aria-label={t("memory.review.groupBy")}
+          onClick={() => { viewSheetOpen.set(true); }}
+        >
+          <GroupBy size={ICON_SIZE.lg} stroke={1.75} aria-hidden />
+          <span className="t-data qv">{GROUPERS[props.group].label}</span>
+        </button>
+        <button
+          type="button"
+          className="qbtn"
+          aria-label={t("memoryvault.sortBy")}
+          onClick={() => { viewSheetOpen.set(true); }}
+        >
+          <SortGlyph size={ICON_SIZE.lg} stroke={1.75} aria-hidden />
+          <span className="t-data qv">{SORTERS[props.sort].label}</span>
+        </button>
+      </div>
+
+      {n > 0 && (
+        <div className="ftrack">
+          <span className="t-data ftrack-n">
+            {t("memory.review.shownOf", { shown: props.shown, total: props.total })}
+          </span>
+          {[...props.active.entries()].flatMap(([facetId, set]) =>
+            [...set].map((value) => (
+              <button
+                key={`${facetId}:${value}`}
+                type="button"
+                className="fpill"
+                aria-label={t("pill.removeValue1", { value1: chipLabel(facetId, value) })}
+                onClick={() => toggleFacet(facetId, value)}
+              >
+                <span className="t-data">{chipLabel(facetId, value)}</span>
+                <Remove size={10} stroke={2} aria-hidden />
+              </button>
+            )),
+          )}
+          <button
+            type="button"
+            className="fclear"
+            aria-label={t("memoryvault.clearFilters")}
+            onClick={() => { activeFacets.set(new Map()); }}
+          >
+            <ClearFilters size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
+/** What a filter chip says. The value alone, except for the yes/no facet whose
+ *  value is the bare word "any" — meaningless without the thing it is any of. */
+function chipLabel(facetId: string, value: string): string {
+  if (facetId === "anyFlag") return t("memory.review.anyFlag");
+  return facetId === "source" ? sourceFacetLabel(value) : value;
+}
+
 function QuickChip(props: { facet: string; value: string; label: string; flag?: boolean }) {
   const on = useStore(activeFacets).get(props.facet)?.has(props.value) ?? false;
   return (
@@ -363,9 +432,9 @@ function sourceFacetLabel(title: string): string {
   return i > 0 ? t.slice(i + 1).trim() : t;
 }
 
-/** The review queue's facets, shaped for <FacetDrawer>. Facets are grouped by
- *  provenance: what the console computed, what the model asserted, and what the
- *  reviewer decided. */
+/** Builds the filter sheet's model from the stores and hands it over. The
+ *  sheet is presentation; every count here is computed against the live rows,
+ *  and a store read inside the sheet would not subscribe it. */
 function FacetSheet() {
   const open = useStore(facetSheetOpen);
   const allRows = useStore(rows);
@@ -378,39 +447,100 @@ function FacetSheet() {
   if (!open) return null;
   const counts = facetCounts(allRows, active, ctx);
   // A selected value must stay listed even at count 0, or the selection
-  // becomes un-clearable and the drawer can render blank.
+  // becomes un-clearable and the sheet can render blank.
   for (const [facetId, set] of active) {
     const m = counts.get(facetId);
     if (!m) continue;
     for (const v of set) if (!m.has(v)) m.set(v, 0);
   }
-  const label = { computed: t("memory.facetsComputed"), model: t("memory.facetsFromModel"), yours: t("memory.facetsYours") };
-  const groups = (["computed", "model", "yours"] as const).map((key) => ({
-    key,
-    label: label[key],
-    facets: FACETS.filter((f) => f.source === key).map((f) => ({
-      id: f.id,
-      label: f.label,
-      values: [...(counts.get(f.id) ?? new Map()).entries()]
-        .sort((a, b) => b[1] - a[1])
-        .map(([value, count]) => ({
-          value,
-          // Source titles arrive as "Lorebook - <book>: <entry>". Four chips
-          // reading "Lorebook - Ashgate — …" name nothing, so the chip shows
-          // the entry and keeps the whole title in its tooltip.
-          label: f.id === "source" ? sourceFacetLabel(value) : undefined,
-          count,
-          on: active.get(f.id)?.has(value) ?? false,
-        })),
-    })),
-  }));
+
+  const facets = new Map<string, SheetFacet>();
+  for (const f of FACETS) {
+    const values = [...(counts.get(f.id) ?? new Map()).entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([value, count]) => ({
+        value,
+        // Source titles arrive as "Lorebook - <book>: <entry>". Four rows
+        // reading "Lorebook - Ashgate — …" name nothing, so the row shows the
+        // entry; the whole title is what gets filtered on.
+        //
+        // Enum values are snake_case on the wire. `append_section` is a key,
+        // not a phrase, and a tile narrow enough to hold it breaks it across
+        // the underscore — the same de-snaking GROUPERS already does.
+        label: f.id === "source" ? sourceFacetLabel(value) : value.replaceAll("_", " "),
+        count,
+        on: active.get(f.id)?.has(value) ?? false,
+      }));
+    facets.set(f.id, { id: f.id, label: f.label, values, selected: values.filter((v) => v.on).length });
+  }
+
+  const shown = applyFilters(allRows, active, ctx);
   return (
-    <FacetDrawer
-      groups={groups}
+    <FilterSheet
+      model={{
+        facets,
+        anyFlagCount: counts.get("anyFlag")?.get(ANY_FLAG) ?? 0,
+        anyFlagOn: active.get("anyFlag")?.has(ANY_FLAG) ?? false,
+        shown: shown.length,
+        total: allRows.length,
+        activeCount: activeFacetCount(active),
+      }}
       onToggle={toggleFacet}
+      onToggleAnyFlag={toggleAnyFlag}
       onClear={() => { activeFacets.set(new Map()); }}
       onClose={() => { facetSheetOpen.set(false); }}
-      emptyText={t("memory.review.noFacetValues")}
+    />
+  );
+}
+
+/** "Any flag" and the named flags are one question at two resolutions, so
+ *  turning either on clears the other. Leaving both live would let the sheet
+ *  show a narrowed flag list under a control claiming to accept all of them. */
+function toggleAnyFlag() {
+  const next = new Map(activeFacets.get());
+  const wasOn = next.get("anyFlag")?.has(ANY_FLAG) ?? false;
+  const hadNamed = (next.get("flags")?.size ?? 0) > 0;
+  next.delete("flags");
+  next.delete("anyFlag");
+  // Named flags collapse UP to "any" rather than off: the press asked to
+  // widen, and widening from three flags to none is not what was asked.
+  if (!wasOn || hadNamed) next.set("anyFlag", new Set([ANY_FLAG]));
+  activeFacets.set(next);
+}
+
+function ViewSheetHost() {
+  const open = useStore(viewSheetOpen);
+  const group = useStore(groupBy);
+  const sort = useStore(sortBy);
+  const dir = useStore(sortDir);
+  const allRows = useStore(rows);
+  const active = useStore(activeFacets);
+  const sectionPressure = useStore(pressure);
+  const notes = useStore(notesById);
+  const dec = useStore(decisions);
+  const editedMuts = useStore(edited);
+  if (!open) return null;
+  const shown = applyFilters(allRows, active, { pressure: sectionPressure, notesById: notes, decisions: dec, edited: editedMuts });
+  return (
+    <ViewSheet
+      groupers={Object.entries(GROUPERS).map(([id, g]) => ({
+        id,
+        label: g.label,
+        // How many lanes this grouper would produce over what is actually
+        // shown — a fact about the choice, so it is measured, not guessed.
+        // "nothing" makes one lane by definition and states no number.
+        count: id === "none" ? undefined : new Set(shown.map((r) => g.key(r).id)).size,
+      }))}
+      sorters={Object.entries(SORTERS).map(([id, s]) => ({ id, label: s.label }))}
+      group={group}
+      sort={sort}
+      dir={dir}
+      onGroup={(id) => { groupBy.set(id as ReturnType<typeof groupBy.get>); }}
+      onSort={(id) => {
+        if (sortBy.get() === id) sortDir.set(sortDir.get() === 1 ? -1 : 1);
+        else { sortBy.set(id as ReturnType<typeof sortBy.get>); sortDir.set(1); }
+      }}
+      onClose={() => { viewSheetOpen.set(false); }}
     />
   );
 }
@@ -706,6 +836,8 @@ function Rejections() {
 }
 
 function ApplyDock() {
+  const desktop = useIsDesktop();
+  const save = useStore(saveState);
   const c = useStore(tally);
   const undoable = useStore(canUndo);
   const pf = useStore(preflight);
@@ -716,61 +848,159 @@ function ApplyDock() {
   const allRows = useStore(rows);
   const pfState = useStore(preflightRowState);
   const isApplying = useStore(applying);
-  // Stays mounted while undo is available so touch users can undo a bulk
-  // reset (the keyboard has `u`; the dock is the only touch path).
-  if (!c.keep && !c.drop && !undoable) return null;
+  const dockSheet = useStore(dockSheetOpen);
+  const dec = useStore(decisions);
+  const decided = c.keep + c.drop;
+  // On desktop the dock is purely the apply surface, and stays mounted while
+  // undo is available so touch users can undo a bulk reset (the keyboard has
+  // `u`; the dock is the only touch path).
+  //
+  // On the phone it is also the status surface — the header no longer carries
+  // the tally or the save state, so the dock cannot come and go with them.
+  if (desktop && !decided && !undoable) return null;
   // ready-after-drops, not the raw engine count, or a dropped dependency
   // preflight auto-included is counted twice (store/tally.ts readyToSend)
   const applyCount = ready + c.drop;
   const offerRestore = c.keep + c.drop >= RESTORE_POINT_THRESHOLD;
   const rowByKey = new Map(allRows.map((row) => [row.key, row]));
-  const autoRows = [...pfState.auto.keys()].map((k) => rowByKey.get(k)).filter(Boolean) as Row[];
+  // Preflight is sent only the keeps, so everything it marks auto-included is
+  // something the reviewer did not ask for — but the two halves have opposite
+  // outcomes. An undecided one is written; one the reviewer dropped is stripped
+  // again before sending (model/tally.ts countReadyToSend). Reported together
+  // they claimed a row would be applied that will not be, and the send count
+  // stopped reconciling with them (CHECKLIST §3).
+  const pulledIn = [...pfState.auto.keys()].map((k) => rowByKey.get(k)).filter(Boolean) as Row[];
+  const autoRows = pulledIn.filter((r) => dec.get(r.key) !== "drop");
+  const droppedRequiredRows = pulledIn.filter((r) => dec.get(r.key) === "drop");
   const blockedRows = [...pfState.blockedRows.entries()]
     .map(([k, why]) => ({ row: rowByKey.get(k), why }))
     .filter((x) => x.row) as Array<{ row: Row; why: string }>;
+  const total = c.keep + c.drop + c.undecided;
+  // What the sheet has to say that the reviewer did not ask for. The badge
+  // counts these, not the rows inside them: it is a "there is something here"
+  // marker, and the sheet does the accounting.
+  const exceptions =
+    (checking ? 0 : autoRows.length + droppedRequiredRows.length + blockedRows.length) + warnings.length;
   return (
-    <div className="apply-dock">
-      <div className="dock-info t-data">
-        <b className="is-keep">{c.keep}</b> {t("memory.keep")} · <b className="is-drop">{c.drop}</b> {t("memory.drop")}
-        {c.undecided > 0 && <span className="dim"> · {c.undecided} {t("memory.undecided")}</span>}
-        {c.edited > 0 && <span> · {t("memory.dock.editedCount", { count: c.edited })}</span>}
-        <br />
-        <span className="dim">
-          {progress ? t("memory.apply.progressDraft", { done: progress.done, total: progress.total }) : <>
-            {t("memory.draftsWillApply", { count: c.willSend })}
-            {c.stayPending > 0 && <>{" "}{t("memory.dock.stayPending", { count: c.stayPending })}</>}
-            {pf?.error
-              ? <span className="is-drop"> · {pf.error} <Chip onClick={() => void refresh()}>{t("activityview.retry")}</Chip></span>
-              : checking
-                ? <> · {t("memory.dock.checking")}</>
-                : pf
-                  ? <> · {t("memory.dock.ready", { count: ready })}{pf.blockedN ? <span className="is-drop"> · {t("memory.dock.blocked", { count: pf.blockedN })}</span> : null}</>
-                  : null}
-          </>}
+    <>
+      {/* Rendered OUTSIDE .apply-dock, not inside it. The dock sets
+          `backdrop-filter`, which makes it a containing block for fixed
+          descendants — the sheet's full-viewport scrim was being clipped to
+          the dock's own height, so a tap anywhere above it missed and the
+          sheet would not close. */}
+      {dockSheet && (
+        <DockSheet
+          model={{
+            undecided: c.undecided, edited: c.edited,
+            stayPending: c.stayPending,
+            // Zero when nothing is decided, because zero is then the true
+            // answer — not the null that means "the engine has not said yet".
+            // Reading `ready === null` as "checking" left the sheet claiming
+            // it was checking with the engine on an untouched queue, which
+            // preflight never does.
+            ready: pf ? ready : (decided ? null : 0),
+            auto: checking ? [] : autoRows,
+            droppedRequired: checking ? [] : droppedRequiredRows,
+            held: checking ? [] : blockedRows,
+            warnings: warnings.length,
+            offerRestore,
+          }}
+          onRestore={() => toast(t("memory.restorePointDone"))}
+          onClose={() => { dockSheetOpen.set(false); }}
+        />
+      )}
+      <div className="apply-dock">
+      {/* The phone's status row. Three counts and their total, each glyphed so
+          the state is not carried by colour alone, plus the save pill and the
+          two controls the cut header used to hold. */}
+      {!desktop && (
+        <div className="dock-tally">
+          {/* The tally is the affordance: tap the numbers to get the numbers
+              explained. An exception count rides on it so the surprises in
+              the apply path advertise themselves before the sheet is opened
+              — hidden by default is fine, hidden and silent is not. */}
+          <button type="button" className="t-data dock-counts" aria-label={t("memory.dock.detailTitle")} onClick={() => { dockSheetOpen.set(true); }}>
+            <b className="is-keep"><DecisionIcon d="keep" size={14} />{c.keep}</b>
+            <b className="is-drop"><DecisionIcon d="drop" size={14} />{c.drop}</b>
+            <b className="dim"><DecisionIcon d={null} size={14} />{c.undecided}</b>
+            <span className="dim of">/ {total}</span>
+            {exceptions > 0 && (
+              <span className="dock-exc"><Flag size={12} stroke={2} aria-hidden />{exceptions}</span>
+            )}
+            <ChevronUp size={13} stroke={1.75} aria-hidden />
+          </button>
+          <span className="t-data mem-save">
+            {save === "saving" ? t("memory.save.autosaving")
+              : save === "failed"
+                ? <span className="is-drop">{t("activityview.failed")} <Chip onClick={retryPersist}>{t("activityview.retry")}</Chip></span>
+                : t("memoryvault.saved")}
+          </span>
+          <IconButton label={t("memory.review.refreshQueue")} onClick={() => void refresh()}>
+            <Refresh size={15} stroke={1.75} aria-hidden />
+          </IconButton>
+          {/* An icon, not the desktop's labelled chip: it sits in a row of
+              44px controls, and a 34px chip beside them was the one
+              mismatched height in the dock. */}
+          <IconButton label={t("memoryvault.undo")} disabled={!undoable} onClick={undo}>
+            <Undo size={16} stroke={1.75} aria-hidden />
+          </IconButton>
+          {/* The short label is the phone's, not a whim: the labelled form
+              plus the counts overruns the row at 390px, and the value that
+              must never truncate is the primary action's own name. The
+              checking state has to come from the SAME pair — falling back to
+              the long one made the button grow and flash the other wording on
+              every decision. */}
+          <button className="dock-primary t-label" disabled={!decided || isApplying || checking || (c.keep > 0 && !pf) || Boolean(pf?.error)} onClick={() => void applyDecided()}>
+            {isApplying ? (progress ? t("memory.apply.progress", { done: progress.done, total: progress.total }) : t("memory.applying"))
+              : checking ? t("memory.apply.buttonShortChecking")
+              : t("memory.apply.buttonShort", { count: applyCount })}
+          </button>
+        </div>
+      )}
+      {/* What survives in the dock: progress while applying, and anything
+          BLOCKING. A preflight error stops the apply, so it stays at the
+          cause rather than behind a tap (DESIGN.md §4). Every other figure and
+          list moved into the tally's sheet, which has room to name the units
+          and render a claim as a claim. */}
+      {(progress || pf?.error) && (
+        <div className="dock-info t-data">
+          {progress
+            ? <span className="dim">{t("memory.apply.progressDraft", { done: progress.done, total: progress.total })}</span>
+            : <span className="is-drop">{pf!.error} <Chip onClick={() => void refresh()}>{t("activityview.retry")}</Chip></span>}
+        </div>
+      )}
+      {/* Desktop keeps its labelled controls, and gets the same tally button
+          — the figures it used to spell out inline live in the same sheet. */}
+      {desktop && (
+        <button type="button" className="t-data dock-counts" aria-label={t("memory.dock.detailTitle")} onClick={() => { dockSheetOpen.set(true); }}>
+          <b className="is-keep"><DecisionIcon d="keep" size={14} />{c.keep}</b>
+          <b className="is-drop"><DecisionIcon d="drop" size={14} />{c.drop}</b>
+          <b className="dim"><DecisionIcon d={null} size={14} />{c.undecided}</b>
+          <span className="dim of">/ {total}</span>
+          {exceptions > 0 && (
+            <span className="dock-exc"><Flag size={12} stroke={2} aria-hidden />{exceptions}</span>
+          )}
+          <ChevronUp size={13} stroke={1.75} aria-hidden />
+        </button>
+      )}
+      {desktop && <Chip disabled={!undoable} onClick={undo}>{t("memoryvault.undo")}</Chip>}
+      {desktop && (
+        <button className="dock-primary t-label" disabled={!decided || isApplying || checking || (c.keep > 0 && !pf) || Boolean(pf?.error)} onClick={() => void applyDecided()}>
+          {isApplying ? (progress ? t("memory.apply.progress", { done: progress.done, total: progress.total }) : t("memory.applying"))
+            : checking ? t("memory.apply.buttonChecking")
+            : t("memory.apply.button", { count: applyCount })}
+        </button>
+      )}
+
+      {/* The meter the header used to carry, as the dock's own bottom edge:
+          the same keep/drop proportion, stated once now instead of twice. */}
+      {!desktop && (
+        <span className="dock-bar" aria-hidden="true">
+          <span className="m-keep" style={{ width: `${total ? (c.keep / total) * 100 : 0}%` }} />
+          <span className="m-drop" style={{ width: `${total ? (c.drop / total) * 100 : 0}%` }} />
         </span>
-        {!checking && autoRows.length > 0 && (
-          <details className="dock-detail"><summary>{t("memory.autoIncluded", { count: autoRows.length })}</summary>
-            {autoRows.map((row) => <div key={row.key} className="dim dock-detail-row">→ {row.targetTitle}: {row.text.slice(0, 80)}</div>)}
-          </details>
-        )}
-        {!checking && blockedRows.length > 0 && (
-          <details className="dock-detail is-drop"><summary>{t("memory.dock.blockedHeld", { count: blockedRows.length })}</summary>
-            {blockedRows.map(({ row, why }) => <div key={row.key} className="dim dock-detail-row">→ {row.targetTitle}: {why}</div>)}
-          </details>
-        )}
-        {/* The whole sentence branches on count, not just the noun — the verb
-            and the pronouns have to agree too. */}
-        {warnings.length > 0 && (
-          <div className="is-drop">{t("memory.dock.droppedDependency", { count: warnings.length })}</div>
-        )}
-        {offerRestore && <><br /><a className="t-data restore-link" href={backupExportUrl()} download onClick={() => toast(t("memory.restorePointDone"))}>{t("memory.restorePoint")}</a></>}
+      )}
       </div>
-      <Chip disabled={!undoable} onClick={undo}>{t("memoryvault.undo")}</Chip>
-      <button className="dock-primary t-label" disabled={isApplying || checking || (c.keep > 0 && !pf) || Boolean(pf?.error)} onClick={() => void applyDecided()}>
-        {isApplying ? (progress ? t("memory.apply.progress", { done: progress.done, total: progress.total }) : t("memory.applying"))
-          : checking ? t("memory.apply.buttonChecking")
-          : t("memory.apply.button", { count: applyCount })}
-      </button>
-    </div>
+    </>
   );
 }

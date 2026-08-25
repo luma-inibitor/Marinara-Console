@@ -19,7 +19,7 @@ export function Sheet(props: {
   label: string;
   onClose: () => void;
   children: ReactNode;
-  /** Extra classes on the panel — `option-sheet` caps its height, for one. */
+  /** Extra classes on the panel — `filter-sheet` and `view-sheet`, for two. */
   className?: string;
 }) {
   return <Overlay {...props} surface={`sheet ${props.className ?? ""}`} />;

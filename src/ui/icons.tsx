@@ -27,7 +27,7 @@
 
 import {
   // disclosure + direction
-  IconChevronRight, IconChevronDown, IconArrowRight, IconExternalLink,
+  IconChevronRight, IconChevronDown, IconChevronUp, IconArrowRight, IconExternalLink,
   // search
   IconSearch,
   // actions
@@ -55,7 +55,9 @@ import {
   // source freshness
   IconRefreshAlert, IconAdjustments, IconUnlink,
   // navigation + transfer
-  IconChevronLeft, IconRefresh, IconDownload,
+  IconChevronLeft, IconRefresh, IconDownload, IconArrowBackUp,
+  // arrangement — narrowing a list, and ordering what survives
+  IconFilter, IconFilterOff, IconLayoutRows, IconSortDescending, IconSortAscending,
   // affordances
   IconArrowsDiagonal, IconStar, IconCheckbox, IconHash, IconSelector,
   type Icon,
@@ -82,6 +84,11 @@ export const ICON_SIZE = {
 export const ChevronRight = IconChevronRight;   // collapsed / drill in
 export const Back = IconChevronLeft;            // up one level in a mobile stack
 export const ChevronDown = IconChevronDown;     // expanded
+export const ChevronUp = IconChevronUp;         // opens a surface UPWARD — a
+                                                // dock expanding into a sheet.
+                                                // Direction is the promise: it
+                                                // says where the thing will
+                                                // come from.
 export const ExpandSet = IconSelector;          // opens or closes a whole SET
                                                 // of rows at once. Deliberately
                                                 // not the row chevron: a
@@ -106,6 +113,20 @@ export const Remove = IconX;
 export const More = IconDotsVertical;           // kebab / overflow
 export const Refresh = IconRefresh;             // re-fetch what is already here
 export const Download = IconDownload;           // hand the user a file
+export const Undo = IconArrowBackUp;            // take the last decision back
+
+// ── arrangement ─────────────────────────────────────────────────────
+// Narrowing a list and ordering what survives are two different questions, so
+// they get two silhouettes. The funnel is the filter *surface* wherever it
+// appears; the struck-through funnel only ever clears filters, never opens
+// them — an opener and its undo must not share a glyph.
+export const Filter = IconFilter;               // open the filter surface
+export const ClearFilters = IconFilterOff;      // drop every active filter
+export const GroupBy = IconLayoutRows;          // how the list is divided
+// Sort carries its DIRECTION in the glyph, so the button states which way it
+// currently runs rather than which way pressing it would go.
+export const SortDown = IconSortDescending;
+export const SortUp = IconSortAscending;
 export const Preview = IconEye;                 // show the rendered thing
 export const Raw = IconCode;                    // show the source thing
 export const Close = IconX;                     // dismiss a SURFACE (sheet,

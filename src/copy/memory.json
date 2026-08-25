@@ -53,8 +53,9 @@
     "note": "Facet-rail provenance heading (the review study's grouping): a facet the reviewer set by hand. See memory.facetsComputed for why the group names are ours."
   },
   "memory.autoIncluded": {
-    "text": "{{count}} added as dependencies",
-    "note": "Batch reporting: the product reports per draft; we report per batch. Not plural-selected on purpose — the line only renders when the count is two or more, because one dependency is reported inline on its own row."
+    "one": "{{count}} added as a dependency",
+    "other": "{{count}} added as dependencies",
+    "note": "Batch reporting: the product reports per draft; we report per batch. Plural-selected because the apply sheet lists this section from one row up — an earlier version only rendered it at two or more, on the grounds that a single dependency was reported inline on its own row, but the sheet is where the batch is accounted for and it cannot skip the first one."
   },
   "memory.queueEmpty": {
     "text": "Nothing is waiting on review.",
@@ -194,8 +195,8 @@
     "note": "Halts a running import batch between sources. Upstream import is one request that either completes or is canceled by the transport (importCancelledSelectionRetained); there is no user-facing verb for stopping a batch part-way."
   },
   "memory.save.autosaving": {
-    "text": "Autosaving…",
-    "note": "The review ledger's save pill (DESIGN §2 mandates Autosaving… / Saved / Failed). The catalog's memoryvault.saving is a modal save the user pressed; this ledger writes itself on a debounce, which is a different promise to make."
+    "use": "memoryvault.saving",
+    "note": "The review ledger's save pill. This was the coinage \"Autosaving…\", declined from the catalog on the grounds that a debounced ledger write is a different promise from a modal save the user pressed. Owner-overruled 2026-08-24: the distinction was not worth a coined word, and the longer string overflowed the phone dock's status row, which is the one place the pill has to fit."
   },
   "memory.gloss.static": {
     "text": "claim kind · an enduring fact or defined state — true about someone or the world, not established by a narrated event",
@@ -558,6 +559,61 @@
     "text": "No facet values in this slice.",
     "note": "Empty state inside the facet drawer itself, when the other active facets leave nothing to offer. The product has no facet drawer, so it cannot have an empty one."
   },
+  "memory.apply.buttonShortChecking": {
+    "text": "Apply (…)",
+    "note": "The short apply button while preflight is in flight. memory.apply.buttonChecking is the same state for the long label, and exists for the same reason: eliding only the number keeps the button from changing width or vocabulary mid-press. A short button falling back to the long checking label defeats that — it grew and flashed the other wording on every decision."
+  },
+  "memory.dock.detailTitle": {
+    "text": "What Apply will send",
+    "note": "Title of the sheet behind the dock's tally, which explains figures the dock can only state. The catalog has no equivalent because it applies one draft at a time from a modal and never has a mixed set to account for."
+  },
+  "memory.dock.unitMutations": {
+    "one": "{{count}} memory write",
+    "other": "{{count}} memory writes",
+    "note": "The same, for what the engine will actually write. memory.dock.ready calls this \"ready\", which says the state and not the unit; a reader comparing it to drafts and claims needs the unit."
+  },
+  "memory.apply.buttonShort": {
+    "text": "Apply ({{count}})",
+    "despite": "activityview.phaseApply",
+    "note": "The apply button on a phone, where the labelled form does not fit: measured at 390px the dock's counts want 221px and memory.apply.button another 159, against 366px of usable row. The catalog's bare \"Apply\" is the activity log's phase name and carries no count — and the count is the whole point of this button, which states how much a press is about to send. Dropping to the bare verb would leave the blast radius unstated on the one projection where the row is too tight to state it twice."
+  },
+  "memory.review.view": {
+    "text": "View",
+    "note": "Title of the sheet holding both arrangement questions — how the queue is divided and how it is ordered. The catalog splits these across memoryvault.sortBy and its own grouping controls and never names the pair, because upstream has no surface that asks both at once."
+  },
+  "memory.review.anyFlag": {
+    "text": "has quality flags",
+    "note": "The filter that keeps every claim carrying at least one quality flag, whichever flag it is. The catalog names individual flags but has no filter over the set, because upstream never computes the set."
+  },
+  "memory.review.anySource": {
+    "text": "any source",
+    "note": "Summary beside the source filter when it is unnarrowed. Parallel to memory.review.anyOfFlags; the source count is not stated here because the row already carries it."
+  },
+  "memory.review.moreFilters": {
+    "text": "More filters",
+    "note": "Opens the facets held back from the sheet's first screen. DESIGN.md §4 puts the long tail behind a disclosure; the catalog's extractiondetails.advancedExtractionDetails is about extraction internals, not about a filter surface having more of itself."
+  },
+  "memory.review.fewerFilters": {
+    "text": "Fewer filters",
+    "note": "The same disclosure once open. Named for what pressing it does rather than a bare chevron, so the control reads the same way in both states."
+  },
+  "memory.review.activeCount": {
+    "text": "{{count}} active",
+    "note": "How many filter values are currently narrowing the queue, shown in the filter sheet's head. The catalog's extractionprompttemplates.activeTemplate marks one template as in force; this counts selections, which upstream has no multi-select facet to count."
+  },
+  "memory.review.noneActive": {
+    "text": "none active",
+    "note": "The same slot when nothing is selected. A separate string rather than \"0 active\" because a zero count reads as a measurement and this is the absence of one."
+  },
+  "memory.review.shownClaims": {
+    "one": "{{shown}} of {{total}} claim",
+    "other": "{{shown}} of {{total}} claims",
+    "note": "The filter sheet's running result, so a selection states its own effect before the sheet is dismissed. memory.review.shownOf is the bare ratio used where the noun is already on screen; here the list is behind a scrim and the noun has to come along."
+  },
+  "memory.review.sortFlipHint": {
+    "text": "Tap the active sort again to flip direction.",
+    "note": "Help line under the sort options, where the same row both selects a sort and reverses it. The catalog has no reversible sort control and so no sentence explaining one."
+  },
   "memory.review.refreshQueue": {
     "text": "Refresh queue",
     "note": "Accessible name of the queue's re-fetch button. The catalog's activityview.refresh is the bare verb for the activity log; naming the object matters here because the header also carries a Retry for the save ledger."
@@ -625,35 +681,13 @@
     "text": "Applying draft {{done}}/{{total}}…",
     "note": "The same progress in the dock, where there is room to name the unit being counted. Drafts, not claims: one apply may span several drafts, which is why the console needed the word batch."
   },
-  "memory.dock.stayPending": {
-    "one": "({{count}} still holds undecided claims)",
-    "other": "({{count}} still hold undecided claims)",
-    "note": "Warns that a draft this apply touches will stay pending because some of its claims are undecided. Upstream a draft is accepted whole, so a partially-decided draft is a state the catalog cannot describe."
-  },
-  "memory.dock.ready": {
-    "text": "{{count}} ready",
-    "note": "Preflight's ready count in the dock. The catalog's preflightSummary is a whole sentence toast; memoryvault.ready is a transfer-preview row status. Neither is a clause that can sit in a running dock line."
-  },
   "memory.dock.blocked": {
     "text": "{{count}} blocked",
     "note": "Preflight's blocked count in the dock; the counterpart to memory.dock.ready. reviewqueue.blockedMutations (\"; {{count}} blocked before Apply\") is a fragment welded to a server summary, punctuation and all."
   },
-  "memory.dock.blockedHeld": {
-    "text": "{{count}} blocked — held back from Apply",
-    "note": "Summary of the dock's blocked-rows fold, saying what happens to them rather than only counting them. The catalog states blocking as a per-proposal status (preflightBlocked) and never as an outcome for the batch."
-  },
-  "memory.dock.editedCount": {
-    "text": "{{count}} edited",
-    "note": "How many claims in the decided set carry a staged edit. The catalog counts edited mutations only to refuse them (invalidEditedMutation); it has no plain count of the ones that are fine."
-  },
   "memory.dock.checking": {
     "text": "checking with the engine…",
     "note": "The dock while preflight is debounced or in flight. The catalog's preflight strings are all results; upstream preflight is an explicit button press, so there is no waiting state to name."
-  },
-  "memory.dock.droppedDependency": {
-    "one": "{{count}} kept claim depends on a dropped create — it will fail; keep the create or drop it",
-    "other": "{{count}} kept claims depend on a dropped create — they will fail; keep the create or drop them",
-    "note": "The one structural failure preflight cannot see: the server auto-includes an undecided dependency but cannot recover one explicitly dropped. Both halves inflect, so the whole sentence is plural-selected rather than the noun alone. The catalog's dependency strings describe automatic inclusion succeeding."
   },
   "memory.detail.field": {
     "text": "field",
@@ -888,90 +922,73 @@
     "use": "longtermmemorydetail.thisChat",
     "note": "Stands in for the scoped chat's name in the search-empty sentence when the chat has no name to show. The catalog has this verbatim; an earlier pass declined currentChat (\"Current chat\", a picker option that reads as a proper noun mid-sentence) but missed that thisChat is byte-identical to what we wanted."
   },
-
   "memory.detail.retrieval": {
     "use": "activityview.phaseRetrieval",
     "note": "Heading over the one bordered block on the detail card. The catalog names the retrieval phase in the activity view; this is the same concept — whether the engine reaches this memory at all — over the fields that decide it."
   },
-
   "memory.detail.retrievalWhat": {
     "text": "What retrieval means",
     "note": "Accessible name of the info button beside the retrieval heading. The catalog explains retrieval inside settings copy but never names a control that opens the explanation."
   },
-
   "memory.detail.retrievalHelp": {
     "text": "Keywords and modes decide whether the engine ever reaches this memory in a chat.",
     "note": "The retrieval popover's sentence, covering both fields in the block at once. longtermmemorydetail.underTheHoodKeywords explains how keyword matching works; this says what the block is FOR, and says it about modes as well."
   },
-
   "memory.detail.modes": {
     "text": "modes",
     "despite": "reviewqueue.modes",
     "note": "Key in the retrieval block's two-column grid. reviewqueue.modes is \"Modes:\" — the colon is part of the string, for a run-on readline — so it cannot be a grid label whose colon would read as a second separator. Lowercase to match the column."
   },
-
   "memory.detail.sectionMeta": {
     "one": "{{count}} line · {{chars}} ch",
     "other": "{{count}} lines · {{chars}} ch",
     "note": "A section row's size read-out, in the same shape as memory.detail.moreLines and memory.detail.earlierLines. The product has no line-level view of stored text, so nothing upstream measures a section this way."
   },
-
   "memory.detail.expandAll": {
     "text": "expand all",
     "note": "The control that opens every section at once. memory.expand names one row's chevron; this acts on the whole set and carries a different glyph, so it must not borrow the row's word."
   },
-
   "memory.detail.collapseAll": {
     "text": "collapse all",
     "note": "The counterpart to memory.detail.expandAll, and the card's manifest state: every section becomes a bare row. memory.collapse names one row's chevron."
   },
-
   "memory.detail.keywordRail": {
     "text": "Keywords, tap to unfold",
     "note": "Accessible name of the keyword rail, which is one tap target holding many keywords. The visible +N more counter is not a name, and the rail has to announce that tapping it does something."
   },
-
   "memory.detail.flagWhy": {
     "text": "Why this section is flagged",
     "note": "Accessible name of a section row's flag button. The catalog has no per-section exception signal, so nothing upstream names the control that explains one."
   },
-
   "memory.detail.sectionNearCap": {
     "text": "§{{key}} is at {{pct}}% of its {{cap}}-character cap.",
     "note": "A stored section approaching its cap. memory.flag.sectionNearCapNamed says the same of a PROJECTION over a review batch and ends \"after this batch\", which is false of a memory already sitting in the vault."
   },
-
   "memory.detail.sectionOverCap": {
     "text": "§{{key}} is at {{pct}}% of its {{cap}}-character cap and over the limit.",
     "note": "The far side of memory.detail.sectionNearCap for a stored section, ending in the console's own memory.overLimit phrase."
   },
-
   "memory.detail.relationRelatedTo": {
     "text": "Related to",
     "note": "The one link relation the catalog does not label. It ships relationExtractedFrom, relationOccurredIn, relationCausedBy and nine more in this exact sentence-case shape; related_to appears in stored payloads with no string beside it, so this fills the single gap in an otherwise complete set."
   },
-
   "memory.detail.edited": {
     "text": "edited {{when}}",
     "note": "The meta line's edit stamp. memoryvault.updated is the bare column heading \"Updated\"; this is the phrase in a running meta line, where the verb has to carry its timestamp."
   },
-
   "memory.detail.version": {
     "text": "v{{n}}",
     "note": "The memory's version in the meta line, abbreviated because the line is mono data separated by ·. The catalog exposes a version only inside backup-validation prose."
   },
-
   "memory.detail.edit": {
     "use": "longtermmemorydetail.reviewEdit",
     "note": "Opens the vault's editor from the read-only detail card. The catalog's own one-word Edit action."
   },
-
   "memory.detail.sectionCount": {
     "one": "{{count}} section",
     "other": "{{count}} sections",
     "note": "How many sections the memory has, as the spoken name of the count beside the sections heading. The heading already renders the noun, so the visible figure stays bare and this carries the noun for a screen reader."
   },
-
   "memory.vault.emptyAllArchived": {
     "text": "Everything here has been archived.",
     "note": "The vault list emptied by archiving rather than by having nothing in it, in the same sentence shape as memory.vault.emptyScoped. The catalog never states this condition because upstream the vault lists archived memories, so it has no empty state they can cause. Deliberately states the condition and stops: the vault has no way to view archived memories yet, and naming a way out that does not exist is worse than naming none."
@@ -980,9 +997,48 @@
     "text": "No memories are available in this scope.",
     "note": "The vault filtered to nothing by scope alone. The catalog ships this exact sentence shape for the two things it does scope — noLorebooksAreAvailableInThisScope, noSourcesHaveBeenImportedInThisScope — but never for saved memories, because upstream the vault is not a scoped view. Same sentence, right noun."
   },
-
   "memory.vault.emptyScopedBody": {
     "text": "Widening the scope will show memories from other characters and chats.",
     "note": "Names the way out, as memory.sources.emptyScopedBody does for the sources list; that one says \"import scope\" and \"sources\", which is the wrong control and the wrong noun here. The catalog states the empty condition and never tells the reader that the scope is the thing to change."
+  },
+  "memory.dock.droppedRequired": {
+    "one": "{{count}} dropped claim is needed",
+    "other": "{{count}} dropped claims are needed",
+    "note": "Heading of the apply sheet's dropped-dependency section. Preflight is sent only the keeps, so a dropped claim can only come back marked auto-included because a keep requires it. Short on purpose: the section heading is set in the label face, which is for structure and not for sentences, so the consequence lives in memory.dock.droppedRequiredWhy underneath it."
+  },
+  "memory.dock.stillUndecided": {
+    "one": "{{count}} claim is still undecided",
+    "other": "{{count}} claims are still undecided",
+    "note": "The remainder of the queue as a sentence rather than a figure. memory.undecided is the bare decision state used on a row; this is a statement about how much work is left after Apply."
+  },
+  "memory.dock.draftsStayOpen": {
+    "one": "{{count}} draft stays open after Apply",
+    "other": "{{count}} drafts stay open after Apply",
+    "note": "A draft holding both a decided and an undecided claim is contacted and survives. Replaces memory.dock.stayPending, which said the same thing as a subjectless parenthetical hanging off a figure; standing on its own in a list of sentences it needs a subject. Upstream a draft is accepted whole, so the catalog cannot describe a partially-decided one."
+  },
+  "memory.dock.editedStaged": {
+    "one": "{{count}} claim carries an edit you staged",
+    "other": "{{count}} claims carry edits you staged",
+    "note": "Replaces memory.dock.editedCount (\"{{count}} edited\"), a fragment that only read as a label beside a value. The catalog counts edited mutations only to refuse them (invalidEditedMutation); it has no plain count of the ones that are fine."
+  },
+  "memory.dock.droppedRequiredWhy": {
+    "one": "A claim you kept depends on it, but Apply honours the drop and leaves it out.",
+    "other": "Claims you kept depend on them, but Apply honours the drops and leaves them out.",
+    "note": "The consequence half of memory.dock.droppedRequired. Apply strips a dropped id back out even when preflight re-included it (model/tally.ts countReadyToSend), so the omission is stated rather than the addition. The catalog's dependency strings describe automatic inclusion succeeding and have no word for the ledger overruling it."
+  },
+  "memory.dock.blockedWhy": {
+    "one": "The engine refused it. Apply sends everything else.",
+    "other": "The engine refused these. Apply sends everything else.",
+    "note": "The consequence half of memory.dock.blocked, which counts but does not say what becomes of them. Replaces memory.dock.blockedHeld (\"{{count}} blocked — held back from Apply\"), which welded count and outcome into one caps heading; the label face is for structure, not for a sentence with an em dash in it."
+  },
+  "memory.dock.willFail": {
+    "one": "{{count}} kept claim will fail",
+    "other": "{{count}} kept claims will fail",
+    "note": "Heading of the section for the one structural failure preflight cannot see. Split out of memory.dock.droppedDependency, which carried count, cause and remedy in a single string and therefore had to be rendered as a caps heading two lines long."
+  },
+  "memory.dock.willFailWhy": {
+    "one": "It depends on a create you dropped. Keep the create, or drop this too.",
+    "other": "They depend on a create you dropped. Keep the create, or drop them too.",
+    "note": "The cause and remedy half of memory.dock.willFail. The server auto-includes an undecided dependency but cannot recover one explicitly dropped, so this is the reviewer's to fix; the catalog's dependency strings describe automatic inclusion succeeding."
   }
 }
