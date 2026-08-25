@@ -1,4 +1,4 @@
-// Checks an engine response against a schema before the app believes it.
+// Schema validation for engine responses: parses a reply against a schema before the app believes it.
 //
 // The failure contract, for every caller: a bad envelope throws and the screen
 // falls back to its existing error state, a bad element of a list is dropped

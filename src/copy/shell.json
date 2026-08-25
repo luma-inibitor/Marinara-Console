@@ -137,8 +137,8 @@
   },
 
   "shell.wire.mismatch": {
-    "text": "The engine sent {{context}} in a shape this console does not recognise. Check the browser console.",
-    "note": "Raised when a whole response fails its schema. The product is compiled against its own engine and cannot be out of step with it, so it has no string for the two halves disagreeing; its nearest words (longtermmemorydetail.vaultCorrupt, memorysettings.quarantineMalformedNotes) blame stored data rather than the wire."
+    "text": "The reply to {{context}} did not match what this console expects, so this screen has nothing to show. Check the browser console.",
+    "note": "Raised when a whole response fails its schema. Shares its wording with shell.wire.dropped, the same failure one record at a time. The product is compiled against its own engine and cannot be out of step with it, so it has no string for the two halves disagreeing; its nearest words (longtermmemorydetail.vaultCorrupt, memorysettings.quarantineMalformedNotes) blame stored data rather than the wire."
   },
   "shell.wire.dropped": {
     "one": "1 record in {{context}} did not match what this console expects and was left out. Check the browser console.",
