@@ -4,7 +4,7 @@ import { ListEmpty } from "marinara-console";
 export function FirstRun() {
   return (
     <div style={{ maxWidth: 460 }}>
-      <ListEmpty kind="first-run" what="lorebooks" action={{ label: "Add entry", run: () => {} }} />
+      <ListEmpty kind="first-run" what="entries" action={{ label: "Add entry", run: () => {} }} />
     </div>
   );
 }

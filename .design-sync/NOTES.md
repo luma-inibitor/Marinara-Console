@@ -131,6 +131,22 @@ into `shell/toast.ts` + `shell/Toaster.tsx`.)
 to `null` in `componentSrcMap`. To include them, re-export them from the barrel
 first — do not just un-null them, or their cards will reference a missing export.
 
+## The DS ships tokens, not the console's tool CSS — do not confuse them
+
+`cfg.cssEntry` is `tokens.css` + `base.css` only, plus each `src/ui/*.css` that
+a component imports (those arrive via `_ds_bundle.css`). **`src/styles/*.css`
+other than those two never ships** — `memory.css`, `lorebooks.css`,
+`presets.css`, `shell.css` are tool stylesheets and are outside the design
+system.
+
+The trap this created once: `conventions.md` taught
+`<Tag className="type-character">`. The `--type-character` *token* ships, so the
+name looks verified, but the `.type-character` *class* is defined in
+`memory.css` and only sets `--tc` — and every rule reading `--tc` is also in
+`memory.css`/`MemoryDetail.css`. The tint would silently never appear in any
+design built with the DS. When validating the header, grep for the **class**
+(`\.type-character`), not just the token.
+
 ## Known render warns (triaged — a warn NOT on this list is new)
 
 - **`[FONT_MISSING]` for "Archivo", "JetBrains Mono", "Source Sans 3"** (the
@@ -228,6 +244,26 @@ flagged the same way.
 The ones that render unauthored (ErrorState, ListEmpty, Loading, NotFound) only
 differ in having fallback copy — note they display the literal word `undefined`
 where a prop should be. They are still worth authoring.
+
+## Conventions header — validated this sync, three names were fiction
+
+`.design-sync/conventions.md` is prepended to the generated README and inlined
+into the design agent's system prompt, so a wrong name there propagates into
+every design built with this system. The validation pass caught three:
+
+- `ListGroup` was shown with `defaultOpen`, which exists in no component in this
+  repo, and without its three required props (`collapsed`, `onToggle`, `head`).
+  The snippet could never have compiled.
+- `ListEmpty` was shown with `onClear`; the prop is `onClearAll`.
+- `Tag` was shown with `className="type-character"` — see the tool-CSS section
+  above.
+
+Everything else verified: all 45 `--tokens`, all five `.t-*`/`.hit` classes, both
+`data-*` attributes, and every component named. **Re-run this check every sync**
+— it is mechanical: grep the file's backticked `--tokens` and `.classes` against
+`ds-bundle/styles.css` + `_ds_bundle.css`, and every JSX prop in its snippets
+against the emitted `.d.ts`. Watch the matcher: `tokens.css` puts several
+declarations on one line, so a `^`-anchored per-line regex reports false misses.
 
 ## Re-sync risks
 
