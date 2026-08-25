@@ -214,10 +214,10 @@
   font-weight: 600;
   font-size: 13px;
   /* Grown rather than padded with .hit, whose hit area would reach past the
-     8px between link rows and swallow taps meant for the row above. */
+     8px between rows and swallow taps meant for the row above. */
   display: inline-block;
-  min-height: var(--tap);
-  line-height: var(--tap);
+  min-height: 24px;
+  line-height: 24px;
   /* Truncates instead of wrapping, so a link is always one row tall. */
   min-width: 0;
   max-width: 100%;
