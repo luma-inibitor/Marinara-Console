@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "layercheck": "node scripts/layercheck.mjs",
     "typescale": "node scripts/typescale.mjs",
+    "notracked": "node scripts/notracked.mjs",
     "deadexports": "node scripts/deadexports.mjs",
     "deadcss": "node scripts/deadcss.mjs",
     "verify": "node scripts/verify.mjs",
@@ -21,7 +22,7 @@
     "domsnap": "node scripts/domsnap.mjs",
     "faceprobe": "node scripts/faceprobe.mjs",
     "lint": "eslint src",
-    "check": "npm run typecheck && npm run lint && npm test && npm run layercheck && npm run copycheck && npm run deadexports && npm run deadcss && npm run typescale && npm run build",
+    "check": "npm run typecheck && npm run lint && npm test && npm run layercheck && npm run notracked && npm run copycheck && npm run deadexports && npm run deadcss && npm run typescale && npm run build",
     "check:browser": "npm run verify && npm run overlaycheck"
   },
   "engines": {
