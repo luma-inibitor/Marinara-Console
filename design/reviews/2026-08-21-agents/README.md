@@ -43,7 +43,7 @@ The three open raw findings are the dock's unreconciled apply arithmetic
 (interaction.md), the missing roving tabindex in the review list
 (mobile-a11y.md), and the absent vault-note → related-claims path
 (linkage.md). They are carried into BACKLOG.md under "Still open from the
-2026-08-21 UX review (audited 2026-08-22)". The consolidated review's three
+2026-08-21 UX review". The consolidated review's three
 open items are the same three findings under its own numbering (2, 31, 50).
 
 Nothing audited turned out to be superseded or unverifiable: every

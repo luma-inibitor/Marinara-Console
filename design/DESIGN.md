@@ -65,11 +65,11 @@ which means the markup asserts one face and the page renders another.
   they are not dimmer at all (thread L\* 65.2 vs danger L\* 64.1), so reading the
   rule as lightness would make it already violated five times over. The hues are defined in `tokens.css` as
   `--type-*`; the tool that owns the taxonomy binds them to its own classes
-  (`memory.css` `.type-*` sets `--tc` from them). They moved there on
-  2026-08-23: they had been the last hardcoded palette outside the token file,
+  (`memory.css` `.type-*` sets `--tc` from them). They moved there
+  because they had been the last hardcoded palette outside the token file,
   which is what let `--type-character` drift into being byte-identical to
   `--accent` without anything noticing. One palette, one place to check.
-  **Resolved 2026-08-23:** `--type-character` had been `--accent` exactly
+  **Resolved:** `--type-character` had been `--accent` exactly
   (`#7d9bf0`, ΔE 0.00) — so a *selected* chip and the *character* chip were the
   same blue inside one control (`Chip.css:26` pressed border vs the `.tdot` on
   every type filter chip). It is now `#00b8d4`, picked from a computed candidate
@@ -207,17 +207,17 @@ exists, use it; if it needs a new one, add it here in the same change.
   `i`, an `!`, a segmented arc, a speech tail) is a different object and is
   free — `info-circle`, `message-circle`, `alert-circle` and the whole
   `progress-*` family including `progress-x` are all fine, and so is
-  `circle-dashed`. `undecided` was `circle-dashed` until 2026-08-23 and moved
+  `circle-dashed`. `undecided` moved from `circle-dashed`
   to `circle-dotted` for exactly this reason: circle-dashed is 8 arc segments
   and `progress-*` is 5 arc segments, one shared vocabulary, so the decision
   family and the progress family were colliding. 12 dots is a different
   vocabulary; the collision is gone and both `circle-dashed` and the arcs are
   released. Only the reserved interiors can be misread as a decision; that is
-  the whole point of the rule (owner-decided 2026-08-23).
+  the whole point of the rule (owner-decided).
   No icon may borrow another family's silhouette (that rule killed `flag-2`
   for status and a bare pencil for the edited mark). Type icons carry the
   categorical hue.
-  **State signals** (owner-decided 2026-08-23), one glyph per state so a
+  **State signals** (owner-decided), one glyph per state so a
   banner, a row mark and an empty state reporting the same condition look
   alike: error `alert-circle` (`Failure`) · partial `progress-x`
   (`PartialResult`) · degraded `progress-alert` (`Degraded`) · waiting on the

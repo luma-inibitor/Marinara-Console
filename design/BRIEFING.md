@@ -1,7 +1,7 @@
 # Memory management interface — design requirements briefing
 
-Written 2026-08-23, covering the work from the start of the memory tool through
-the component refactor. This is the orientation document: what the interface is
+Covering the work from the start of the memory tool through the component
+refactor. This is the orientation document: what the interface is
 for, what is settled, what the domain actually looks like, and what is still
 open. It sits above `DESIGN.md` (the framework) and `CHECKLIST.md` (the
 pre-flight), and points into both rather than repeating them.
