@@ -133,9 +133,6 @@ export function flagsOf(r: Row, ctx: FlagContext): RowFlag[] {
   if (r.mutation.kind === "create_note" && !(r.mutation.note?.keywords ?? []).length) {
     f.push({ label: FLAG.noKeywords, severity: "warn", sentence: t("memory.flag.noKeywordsSentence") });
   }
-  // Two independent caps, and a note can be under one and over the other:
-  // KEYWORD_CAP is on the manual array and refuses the next write,
-  // INDEXED_KEYWORD_CAP is on the merged list and silently drops the overflow.
   const target = ctx.notesById.get(r.targetId) as Note | undefined;
   if (target && manualKeywords(target).length >= KEYWORD_CAP) {
     f.push({
