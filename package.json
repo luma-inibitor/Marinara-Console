@@ -11,8 +11,18 @@
     "preview": "vite preview",
     "kit": "npx @tailwindcss/cli -i design/mockup-kit.css -o public/mockups/kit.css",
     "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
     "layercheck": "node scripts/layercheck.mjs",
-    "lint": "eslint src"
+    "deadexports": "node scripts/deadexports.mjs",
+    "deadcss": "node scripts/deadcss.mjs",
+    "verify": "node scripts/verify.mjs",
+    "overlaycheck": "node scripts/overlaycheck.mjs",
+    "domsnap": "node scripts/domsnap.mjs",
+    "faceprobe": "node scripts/faceprobe.mjs",
+    "lint": "eslint src",
+    "check": "npm run typecheck && npm run lint && npm test && npm run layercheck && npm run copycheck && npm run build",
+    "check:report": "npm run deadexports && npm run deadcss",
+    "check:browser": "npm run verify && npm run overlaycheck"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
