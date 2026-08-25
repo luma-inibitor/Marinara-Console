@@ -571,8 +571,8 @@ function ClaimRow(props: {
                 <EditedMark size={14} stroke={1.75} className="edit-mark" aria-label={t("reviewqueue.editedChange")} />
               </Term>
             )}
-            {isAuto && <span className="dep-tag">dependency</span>}
-            {blockedMsg && <span className="is-drop" title={blockedMsg}>blocked</span>}
+            {isAuto && <span className="dep-tag">{t("reviewqueue.dependency")}</span>}
+            {blockedMsg && <span className="is-drop" title={blockedMsg}>{t("memory.sourcesBlocked")}</span>}
             {flags.length > 0 && (
               <span className="fq" data-sev={sev} title={flags.map((f) => f.label).join(" · ")}>
                 <Flag size={13} stroke={1.75} aria-hidden />{flags.length}

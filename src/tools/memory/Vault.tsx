@@ -294,16 +294,16 @@ function NoteEditor(props: { note: Note; onClose: () => void }) {
     <div className="claim-detail">
       <div className="kvs t-data">
         <div><span className="k">{t("memory.vault.id")}</span>{n.id}</div>
-        <div><span className="k">type</span><Tag className={`type-${n.type}`}>{n.type.replaceAll("_", " ")}</Tag></div>
-        <div><span className="k">status</span>
-          <span className="segset" role="group" aria-label="Status">
+        <div><span className="k">{t("memory.vault.type")}</span><Tag className={`type-${n.type}`}>{n.type.replaceAll("_", " ")}</Tag></div>
+        <div><span className="k">{t("memory.vault.status")}</span>
+          <span className="segset" role="group" aria-label={t("memoryvault.status")}>
             {(["active", "resolved", "archived"] as const).map((st) => (
               <button key={st} className={`seg st-${st} t-data`} aria-pressed={n.status === st} onClick={() => changeStatus(st)}>{st}</button>
             ))}
           </span>
         </div>
-        <div><span className="k">modes</span>{(n.modes ?? []).join(", ")}</div>
-        <div><span className="k">keywords</span>{effectiveKeywords(n).join(", ") || "—"} <span className="dim">{t("memoryvault.addedManually")} {manualKeywords(n).length}/{KEYWORD_CAP}</span></div>
+        <div><span className="k">{t("memory.detail.modes")}</span>{(n.modes ?? []).join(", ")}</div>
+        <div><span className="k">{t("memory.vault.keywords")}</span>{effectiveKeywords(n).join(", ") || "—"} <span className="dim">{t("memoryvault.addedManually")} {manualKeywords(n).length}/{KEYWORD_CAP}</span></div>
         {(n.links ?? []).length > 0 && (
           <div><span className="k">{t("memory.vault.links")}</span>
             <span>{n.links.map((l, i) => <span key={i} className="linkline"><span className="rel rel-mid">{relationLabel(l.relation)}</span> → <LinkTarget id={l.target} /> </span>)}</span>

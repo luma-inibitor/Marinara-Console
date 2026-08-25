@@ -237,6 +237,10 @@
     "text": "Section saved",
     "note": "Confirms an explicit commit of a section draft. The catalog confirms saves per noun ('Detail renamed.', 'Memory saved.') and has no noun for this one."
   },
+  "presets.section.conflictBody": {
+    "text": "This section was updated elsewhere while you were editing{{detail}}. Saving now would overwrite that.",
+    "note": "Body of the section save bar's conflict state, with lorebooks.record.conflictFields dropped into the hole when the two writes touched the same fields. Says the same thing as lorebooks.entry.conflictBody about a section rather than an entry, and the noun is the whole point of the sentence. See lorebooks.record.conflictTitle for why the product has no concurrent-write copy."
+  },
   "presets.sectionGone": {
     "text": "This section no longer exists.",
     "note": "Raised when a conflict refetch finds the section deleted underneath the draft, so the save bar can say so instead of failing silently. Concurrent deletion of a record being edited is not a state the product models."

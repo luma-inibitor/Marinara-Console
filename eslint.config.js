@@ -1,4 +1,5 @@
 import babelParser from "@babel/eslint-parser";
+import i18next from "eslint-plugin-i18next";
 import importPlugin from "eslint-plugin-import";
 import reactHooks from "eslint-plugin-react-hooks";
 
@@ -29,13 +30,27 @@ export default [
         },
       },
     },
-    plugins: { "react-hooks": reactHooks, import: importPlugin },
+    plugins: { "react-hooks": reactHooks, import: importPlugin, i18next },
     settings: {
       // Resolution is the node resolver's, over TypeScript extensions.
       "import/resolver": { node: { extensions: [".ts", ".tsx", ".js", ".json"] } },
       "import/parsers": { "@babel/eslint-parser": [".ts", ".tsx"] },
     },
     rules: {
+      // Copy that reaches the reader as JSX text must come out of t().
+      // `words` replaces the plugin's default excludes rather than extending them.
+      "i18next/no-literal-string": [
+        "error",
+        {
+          mode: "jsx-text-only",
+          words: {
+            exclude: [
+              /^[^\p{L}]+$/u, // no letter anywhere: a number, a separator, a glyph
+              /^[kst]$/, // unit suffixes glued to a number: k, seconds, tokens
+            ],
+          },
+        },
+      ],
       "react-hooks/exhaustive-deps": "error",
       "react-hooks/rules-of-hooks": "error",
       // No module may take part in an import cycle.

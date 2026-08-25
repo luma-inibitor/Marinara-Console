@@ -527,7 +527,7 @@ function Evidence({ r, m }: { r: Row; m: Mutation }) {
   return (
     <Zone cls="z-ev" eyebrow={<span className="z-lab">{t("memory.zoneEvidence")}</span>}>
       {snippet && <div className="evq-q t-prose">{snippet}{snippet.length === 220 ? "…" : ""}</div>}
-      <div className="evq-a t-data">source: <Ref id={r.sourceNoteId} title={r.sourceTitle} type="source" /></div>
+      <div className="evq-a t-data">{t("reviewqueue.source")}: <Ref id={r.sourceNoteId} title={r.sourceTitle} type="source" /></div>
 
       <div className={`sig t-prose ${low ? "" : "sig-ok"}`} data-sev={low ? "warn" : undefined}>
         {/* Both branches carry a glyph, and they say different things: the low
