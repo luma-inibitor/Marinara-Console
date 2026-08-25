@@ -1,0 +1,154 @@
+{
+  "src/styles/lorebooks.css": [
+    ".advrow .an → 10.5px",
+    ".advrow .av → 10.5px",
+    ".console-title → 13px",
+    ".dangerbtn → 9.5px",
+    ".dbtn → 10px",
+    ".fl → 9px",
+    ".fs-body textarea → 13px",
+    ".hint → 10px",
+    ".kchip .x → 14px",
+    ".mdb → 12.5px",
+    ".modeswap button → 9px",
+    ".movebar .slot .c → 8.5px",
+    ".movebar .slot .v → 13px",
+    ".movebar > button → 16px",
+    ".mval → 10.5px",
+    ".num .tok → 13px",
+    ".num .unit → 8.5px",
+    ".ord → 9.5px",
+    ".pwrap .res → 10px",
+    ".savepill → 9.5px",
+    ".segbtn → 9.5px",
+    ".segbtn.is-pos → 11px",
+    ".sub .caret → 10px",
+    ".sub-summary → 10.5px",
+    ".tg → 9px",
+    ".toast-action → 10px",
+    ".toast-x → 14px",
+    ".trow .tn → 13px",
+    ".verdict → 9px"
+  ],
+  "src/styles/memory.css": [
+    ".a1-tgt → 11.5px",
+    ".action-sec → 11px",
+    ".chip-batch → 10px",
+    ".chip.ctl .ctl-v → 10.5px",
+    ".chs → 11px",
+    ".dbtn2 → 11px",
+    ".dock-primary → 11px",
+    ".edit-area → 13.5px",
+    ".editarea → 13px",
+    ".edu → 12px",
+    ".evq-q → 13px",
+    ".failname → 13.5px",
+    ".failwhy → 12.5px",
+    ".fq → 11px",
+    ".gact → 10.5px",
+    ".gact-note → 10.5px",
+    ".gen-line → 10px",
+    ".ghead-agg → 11px",
+    ".gmenu-pop button → 13px",
+    ".gname → 13px",
+    ".health-banner → 13px",
+    ".hl .skey → 13px",
+    ".lg → 11.5px",
+    ".ln → 13px",
+    ".lt-i → 12.5px",
+    ".mem-badge → 10px",
+    ".mem-tab → 10.5px",
+    ".reex-note → 12px",
+    ".ressub → 13px",
+    ".restitle → 14px",
+    ".rrow → 13px",
+    ".scopesep → 13px",
+    ".seccount i → 10px",
+    ".seccount → 11px",
+    ".sig → 13px",
+    ".stitle → 13px",
+    ".sw → 10.5px",
+    ".tag[class*=\"type-\"] → 10.5px",
+    ".tbar-n → 11px",
+    ".xtext → 13px",
+    ".zbtn → 10.5px",
+    "the gutter glyph carries the meaning when color fails. The create card's green inset edge is the same new-target channel as the list's group headers. Editing is a mode: accent border on the zone, save/discard replace keep/drop in the decide bar. */ .hl → 14.5px"
+  ],
+  "src/styles/presets.css": [
+    ".connbar → 13px",
+    ".costnote → 11.5px",
+    ".err-dot → 9px",
+    ".hint → 11.5px",
+    ".movebtn → 15px",
+    ".ordin → 15px",
+    ".preset-card-gutter .tok → 15px",
+    ".preset-card-gutter .unit → 8.5px",
+    ".rail-cell .ord → 12px",
+    ".toast-x → 18px",
+    ".tok-runtime → 10.5px"
+  ],
+  "src/styles/shell.css": [
+    ".rail-glyph → 16px"
+  ],
+  "src/tools/memory/components/NoteRef.css": [
+    ".nref .notelink, .nref-plain → 13px",
+    "this file owns the default. */ .notelink → 12px"
+  ],
+  "src/tools/memory/detail/MemoryDetail.css": [
+    ".mdc-record → 10.5px",
+    ".mdc-sectally → 10.5px"
+  ],
+  "src/tools/memory/detail/RetrievalCard.css": [
+    ".mdc-ret-rel → 12.5px",
+    ".mdc-ret-target .notelink → 13px",
+    ".mdc-ret-tip → 11.5px"
+  ],
+  "src/tools/memory/detail/SectionRow.css": [
+    ".mdc-row-body → 13.5px",
+    ".mdc-row-flag-pop → 11.5px",
+    ".mdc-row-meta → 10.5px"
+  ],
+  "src/ui/Chip.css": [
+    ".chip, .tag → 9.5px"
+  ],
+  "src/ui/Edu.css": [
+    ".edu → 12px"
+  ],
+  "src/ui/EmptyState.css": [
+    ".es-body → 12.5px",
+    ".es-title → 14px"
+  ],
+  "src/ui/FacetDrawer.css": [
+    ".facet-chip → 11px",
+    ".facet-chip[aria-pressed=\"true\"]::before → 10px",
+    ".facet-n → 10px"
+  ],
+  "src/ui/IconButton.css": [
+    ".icon-btn → 16px"
+  ],
+  "src/ui/JsonView.css": [
+    ".jn-count → 9.5px",
+    ".jsonview → 11px"
+  ],
+  "src/ui/Picker.css": [
+    ".picker-label → 12px",
+    ".picker-opt.is-on::before → 11px"
+  ],
+  "src/ui/RawJson.css": [
+    ".rawjson summary::before → 10px"
+  ],
+  "src/ui/SearchBar.css": [
+    ".searchbar-count → 10px"
+  ],
+  "src/ui/SearchDisclosure.css": [
+    ".disclosure-opt → 13px",
+    ".disclosure-value → 13px"
+  ],
+  "src/ui/SectionKey.css": [
+    ".skey → 11.5px"
+  ],
+  "src/ui/Term.css": [
+    ".term → 11.5px",
+    ".term:hover::after, .term:focus-visible::after, .term.tip-open::after → 11.5px"
+  ]
+}
