@@ -372,6 +372,49 @@ owner decision after explanation.
   without scrolling on mobile (now in the sheet header — verify on device);
   Esc dismisses the sheet (done).
 
+## Queued from the tooling audits (2026-08-24)
+
+Findings from four audits run this session. Reports live outside the repo at `~/code/luma/`: `scripts-audit.md`, `bespoke-audit.md`, `domsnap-evaluation.md`, `engine-harvest.md`.
+
+### Defects found, not yet fixed
+
+- **No sheet actually traps focus, locks scroll, or hides the page behind it**, though every sheet reads as if it does. Seven shipped bugs trace to this. Recommended fix is Radix's dialog inside `ui/Sheet.tsx`, leaving `overlays.ts` alone — one file, five call sites.
+- **Nothing validates what the engine sends.** Every response is an unchecked cast. This is what let the string `"false"` count as true and break four things at once. Add zod or valibot at the endpoints layer.
+- **`Sources.tsx` and `MemoryTool.tsx` form an import cycle** via `focusSource`. It only loads because that is a hoisted function declaration, and `src/lib/store.ts` computes eagerly, so a cycle is a `ReferenceError` at load rather than a soft failure. Fix by moving the handoff into `store/sources.ts`. Listed as the sole `import/no-cycle` exemption until then.
+- **`detail/RetrievalCard.tsx:119` counts derived keywords against the manual cap**, the same defect fixed elsewhere in PR #18.
+- **Six untraced strings in `src/tools/presets/PresetsTool.tsx`**, held by the copy baseline ratchet: `"{n} unsaved {n}"`, `"change"`, `"changes"`, `"fields"`, the overwrite warning, and `"— the same {n} you changed"`.
+- **`ScopeBar.tsx` carries a `data-contrast-exempt` that is now redundant** after the `aria-hidden` skip landed.
+- **`store/sources.ts` and `store/scope.ts` both fetch the chat list.** Not a defect today; see the decision file.
+
+### Adopt
+
+- **`eslint-plugin-i18next`, jsx-text mode.** Catches hardcoded UI text that `copycheck` structurally cannot — copycheck asks whether a word exists in a catalog, the rule asks whether it came from `t()`. Run on the real tree it found 25 hits, about 16 genuinely hardcoded, nine of them in directories copycheck calls clean. Four lines of config silence the unit-suffix noise. A lint rule also cannot scan nothing and report success.
+- **`noUncheckedIndexedAccess`.** Measured at roughly 60 diagnostics, half a day. Several look like live bugs, including a percentile lookup in `lorebooks/data.ts:90` and a diff-op scan in `ClaimDetail.tsx`. Deferred only until the review-queue redesign lands, to avoid colliding with it.
+- **A `CHANGELOG.md`.** We record what is owed here and what was chosen in `.decisions/`, but not what shipped, which is why the 2026-08-22 audit had to re-check thirty findings against the code by hand.
+- **A tracked-artifact tripwire** over `git ls-files`, after the near-miss that nearly committed 33 build artifacts.
+- **`shots.mjs` folds into `verify.mjs`**; **`components.mjs`** can be deleted.
+- **Re-evaluate `deadexports.mjs` and `deadcss.mjs` against knip.** The scripts audit kept them partly because knip, ts-prune and typescript-eslint were all believed blocked by TypeScript 7. That premise was wrong: 7.0.2 ships a working API under an "unstable" name (a run over this tree read 73 files and checked 240 exports in about a third of a second), knip dropped its TypeScript dependency in March so our version is invisible to it, and oxlint offers type-aware linting that requires TS 7 rather than breaking on it. ts-prune is archived. Only typescript-eslint is still blocked, with no date. The scripts may still win, but the comparison has to be redone on merit. See `~/code/luma/typescript7-tooling.md`.
+
+### Known check failures
+
+`node scripts/verify.mjs` reports **9 failures / 213 warnings** as of PR #34. All nine are tap targets below the primary floor:
+
+| Screen | Element | Measured |
+|---|---|---|
+| `memory-review` | `.mem-mid` rows | 35px, 6.1px clearance |
+| `preset-editor` | `.row-summary` rows | 39px, 1px clearance |
+| `narrow/memory-sources` | ModePill `.mseg` segments | 42px, 2px clearance |
+
+The ModePill case is newly visible: `.mseg` carries `.hit`, but `.modepill { overflow: hidden }` clips the 44px pad down to the pill's 42px padding box, so the pad never worked and the old skip hid it.
+
+Luma is separately deciding whether to lower the primary floor from 44px, so these numbers may be settled by moving the floor rather than the elements.
+
+### Decided, do not revisit without a reason
+
+- **Keep `domsnap`.** Measured against Playwright's aria snapshot and screenshots on the real PR #21 commits: domsnap caught the class change, aria reported identical, and aria and screenshots each flaked twice in six runs on an unchanged commit. Text-immunity is load-bearing, since 87–95% of aria lines carry copy we reword constantly.
+- **Keep the router, the store, toasts, fuzzy search, the JSON viewer, and date handling.** TanStack Query specifically rejected: the data here is one shared map with cross-derivation, so it would sit beside the stores rather than replace them.
+- **No Prettier.** It reflows the hand-formatted rationale blocks.
+
 ## Bugs / unverified
 
 - **Port not yet exercised against the live instance** (100.112.53.9, 45 blocked
