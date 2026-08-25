@@ -83,19 +83,19 @@ two are safe to delete.
 
 Clean, and uploaded. On a cold clone at `97e8574`: `npm ci`, `npx tsc --noEmit`,
 `npm test` (415 tests over 14 files), `npm run layercheck` and `npm run build`
-all green. The driver ran three times (the third is the one that shipped);
-render check 23/23 with **0 bad, 0 thin, 0 blank, 0 variants-identical**, and
-the only warn was the triaged `[FONT_MISSING]`.
+all green.
 
-Drift since the previous uploaded bundle: `SectionKey` was new to the barrel and
-to `componentSrcMap`, `DetailSection` and `Sheet` changed internally without
-changing their props, and `shell/toast.tsx` split into `shell/toast.ts` +
-`shell/Toaster.tsx`. **No prop contract changed** — regenerating `dtsPropsFor`
-reproduced all 22 prior bodies byte for byte.
+**All 23 components are authored** — 61 cells, every one graded `good`, no floor
+cards left. Render check 23/23 with 0 bad / 0 thin / 0 blank / 0
+variants-identical; the only warn was the triaged `[FONT_MISSING]`. 140 files
+uploaded, no deletions. The closing capture printed `23 carried forward, 0 grade
+cleared`, which is the proof the next sync stays cheap.
 
-18 components were verified-by-upload and skipped capture entirely; 4 changed
-and 1 was new. The final capture printed `4 carried forward, 1 captured,
-0 grade cleared`, which is the proof the next sync stays cheap.
+What this round changed beyond authoring: every card got a `viewport` sized to
+its content (they were 60–84% empty before), the four overlays got a sized
+`Stage` so their fixed positioning stops collapsing, the icon vocabulary now
+ships via `extraEntries`, and the `SheetHead` preview stopped hand-drawing an
+SVG glyph now that the real `TYPE_ICON` is reachable.
 
 ## Converter resolution root — a trap that cost real damage
 
