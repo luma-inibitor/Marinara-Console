@@ -1,0 +1,23 @@
+/* One rule per case the check has to tell apart. */
+
+/* clean: names a step */
+.tokened { font-size: var(--fs-data); color: red; }
+
+/* finding: a literal that happens to sit exactly on a step — renders right
+   today, still cannot move when the scale does */
+.on-scale { font-size: 11px; }
+
+/* finding: a size the scale cannot name at all */
+.off-scale { font-size: 13px; }
+
+/* finding: computed sizes are sizes the scale cannot name either */
+.computed { font-size: clamp(11px, 2vw, 14px); }
+
+/* not a finding: a custom property that merely mentions the words, and a
+   longhand whose name ends in font-size without being it */
+.decoy { --my-font-size: 13px; -webkit-font-smoothing: antialiased; }
+
+/* nested: the selector recorded must be the rule's own, not the block above */
+@media (min-width: 900px) {
+  .nested { font-size: 9px; }
+}

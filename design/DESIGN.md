@@ -485,6 +485,16 @@ place on. Measured before and after in the claim detail at a 1600px viewport:
   list is candidates, it fails only when the list **grows** past
   `design/deadcss-baseline.json`; delete a class and drop its line, or record a
   new one with `--adopt` and say why.
+- `node scripts/typescale.mjs` — every `font-size` should name a step, not a
+  number. §1 gives eight sizes as tokens; when this landed the tree set 112
+  literal sizes and rendered **fourteen** distinct ones, 67 of them off the
+  scale entirely — including `13px`, the most common size in the codebase and
+  a step that does not exist. Each one looks considered on its own line, which
+  is why only a count across the tree finds it. On-scale literals are reported
+  too and named with the token to use: they render correctly today and still
+  cannot follow the scale when it moves. The scale is parsed from `tokens.css`
+  rather than restated, so the check cannot drift from the thing it checks.
+  Baseline-ratcheted like `deadcss`; only growth fails.
 - `node scripts/domsnap.mjs before` / `... after --diff` — snapshots the rendered
   element tree and its class hooks across the routes plus the overlays, selected
   rows and expanded editors a URL cannot reach. Any refactor claiming "renders
