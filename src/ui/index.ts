@@ -15,6 +15,7 @@ export { NotFound } from "./NotFound";
 export { Loading } from "./Loading";
 export { IconButton } from "./IconButton";
 export { ListGroup } from "./ListGroup";
+export { MiddleTruncate } from "./MiddleTruncate";
 export { MODES, ModePill } from "./ModePill";
 export { Picker } from "./Picker";
 export { RawJson } from "./RawJson";

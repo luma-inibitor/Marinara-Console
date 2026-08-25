@@ -103,7 +103,9 @@ Density modes via `data-density` on `<html>`: `comfortable` (default) and `compa
 
 - ~11 rows per phone screen collapsed; titles **truncate to one line** in list
   rows; one-line mono meta with `·` separators; right-aligned numeric gutter
-  per row.
+  per row. A title whose siblings share its opening — a lorebook entry under
+  its book — gives up its **middle** instead (`MiddleTruncate`, §8), because
+  the end is the part that names it.
 - Accordions with **data-bearing collapsed headers** (counts, token totals, status —
   closed ≠ invisible). **Multi-expand is the default**; one-at-a-time only where
   focus demands it (e.g. phone editing of long forms).
@@ -441,6 +443,7 @@ including the presets tool.
 | `SearchDisclosure` | choose one, long list, anchored popover | `Picker` on a thumb rail |
 | `FacetDrawer` | every facet in a slice, with counts, as toggles | — |
 | `ListGroup` / `CollapseButton` | collapse behavior and its accessible name | — |
+| `MiddleTruncate` | a one-line title that elides its middle | a plain ellipsis where the end is what distinguishes |
 | `DetailSection` | a §section heading and its body | — |
 | `JsonView` / `RawJson` | a JSON value, folding or literal | — |
 | `CopyableText` | a value meant to be taken elsewhere | — |
