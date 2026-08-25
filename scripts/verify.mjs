@@ -43,25 +43,66 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) return false;
     const s = getComputedStyle(el);
-    return s.visibility !== "hidden" && s.display !== "none";
+    // Opacity is not inherited into a computed style, so a transparent ancestor
+    // has to be looked for; visibility and display are already resolved here.
+    if (s.visibility === "hidden" || s.display === "none" || s.opacity === "0") return false;
+    for (let p = el.parentElement; p && p !== document.documentElement; p = p.parentElement) {
+      if (getComputedStyle(p).opacity === "0") return false;
+    }
+    return true;
   };
+  // A bounding rect is unclipped: an element scrolled out of an overflow
+  // container still reports the box it would occupy, which is a place nobody can
+  // see or touch and which usually sits over unrelated content. Intersect with
+  // every ancestor that clips before believing the rect. Partial overlap counts,
+  // because the visible sliver is real; only an empty intersection means gone.
+  const clippedOut = (el, r) => {
+    // A positioned box is only clipped by ancestors in its containing block
+    // chain: a fixed one escapes them all, an absolute one escapes until the
+    // first positioned ancestor.
+    let escaping = getComputedStyle(el).position;
+    if (escaping === "fixed") return false;
+    for (let p = el.parentElement; p && p !== document.documentElement; p = p.parentElement) {
+      const s = getComputedStyle(p);
+      const clips = s.overflowX !== "visible" || s.overflowY !== "visible";
+      if (clips && escaping !== "absolute") {
+        const c = p.getBoundingClientRect();
+        if (Math.min(r.right, c.right) <= Math.max(r.left, c.left)) return true;
+        if (Math.min(r.bottom, c.bottom) <= Math.max(r.top, c.top)) return true;
+      }
+      if (s.position !== "static") escaping = "static";
+      if (s.position === "fixed") break;
+    }
+    return false;
+  };
+  const onScreen = (el) => vis(el) && !clippedOut(el, el.getBoundingClientRect());
   const label = (el) => (el.getAttribute("aria-label") || el.textContent || el.tagName).trim().slice(0, 40);
+  // Targets on separate layers are never reached by the same tap, so the
+  // distance between them is not a clearance. A fixed ancestor is what makes a
+  // layer here: the stacked detail screen sits over the list it came from, and
+  // every "neighbour" underneath it is unreachable while it is open.
+  const layerOf = (el) => {
+    for (let p = el; p && p !== document.documentElement; p = p.parentElement) {
+      if (getComputedStyle(p).position === "fixed") return p;
+    }
+    return null;
+  };
 
   // tap targets
   const targets = [];
   for (const el of document.querySelectorAll("button, a, input, select, [role=button]")) {
-    if (!vis(el) || el.closest("[data-verify-exempt]")) continue;
+    if (!onScreen(el) || el.closest("[data-verify-exempt]")) continue;
     // .hit (base.css) pads a control's hit area out to --tap with a positioned
     // ::after, by construction — the visual box stays small on purpose. Reading
     // the box would fail every one of them for a target that is really 44px.
     if (el.classList.contains("hit")) continue;
     // A wrapping <label> forwards its clicks, so the label is the target.
     const host = (el.matches("input, select, textarea") && el.closest("label")) || el;
-    targets.push({ el, r: host.getBoundingClientRect(), group: el.closest("[role=group]") });
+    targets.push({ el, r: host.getBoundingClientRect(), group: el.closest("[role=group]"), layer: layerOf(el) });
   }
   // Edge-to-edge distance to the nearest other target. Two members of one
   // [role=group] are segments of one control. A cross-<nav> pair reflects
-  // scroll position, not layout.
+  // scroll position, not layout, and so does a pair split across layers.
   const clearance = (a) => {
     let best = Infinity;
     const aNav = !!a.el.closest("nav");
@@ -69,6 +110,7 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
       if (b === a || a.el.contains(b.el) || b.el.contains(a.el)) continue;
       if (a.group && a.group === b.group) continue;
       if (aNav !== !!b.el.closest("nav")) continue;
+      if (a.layer !== b.layer) continue;
       const dx = Math.max(0, a.r.left - b.r.right, b.r.left - a.r.right);
       const dy = Math.max(0, a.r.top - b.r.bottom, b.r.top - a.r.bottom);
       best = Math.min(best, Math.hypot(dx, dy));
@@ -132,7 +174,7 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
     out.contrast.push({ ratio: Math.round(ratio * 100) / 100, floor, px, text: (pseudo ?? "") + text.slice(0, 40) });
   };
   for (const el of document.querySelectorAll("body *")) {
-    if (!vis(el) || el.closest("[data-verify-exempt]")) continue;
+    if (!onScreen(el) || el.closest("[data-verify-exempt]")) continue;
     if (el.hasAttribute("data-contrast-exempt") && !exempt(el, null)) out.unjustifiedExempt++;
     const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent.trim()).join("");
     if (text && !exempt(el, null)) measure(el, null, text);
@@ -148,16 +190,18 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
   }
 
   // density: fully-visible collapsed rows, per the screen's own row selector.
-  // rowsMatched counts every visible row anywhere in the document, so a screen
-  // whose selector matches nothing at all can be told apart from one whose rows
-  // are simply taller than the viewport.
+  // rowsMatched counts every laid-out row anywhere in the document — a row
+  // scrolled out of its list is still a row, and the denominator is what tells a
+  // screen whose selector matches nothing from one whose rows are simply taller
+  // than the viewport. The numerator is what a reader can actually see, so it
+  // wants the clipping test as well as the viewport box.
   if (rowSel) {
     for (const el of document.querySelectorAll(rowSel)) {
       if (!vis(el)) continue;
       if (el.parentElement?.closest(rowSel)) continue; // never count a nested row twice
       out.rowsMatched++;
       const r = el.getBoundingClientRect();
-      if (r.top >= 0 && r.bottom <= innerHeight) out.rows++;
+      if (r.top >= 0 && r.bottom <= innerHeight && !clippedOut(el, r)) out.rows++;
     }
     // "legitimately empty" means the list itself is empty — not the detail pane,
     // which shows its own empty state beside a full list on desktop.
