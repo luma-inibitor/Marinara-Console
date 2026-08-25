@@ -18,7 +18,13 @@ MARINARA_URL=http://<engine-host>:7860 node server.mjs   # serves dist/ on :7872
 ```
 
 Dev loop: `node server.mjs` in one shell (API proxy), `npm run dev` in another
-(Vite HMR on :5173, proxying /api to :7872).
+(Vite HMR on :5173, proxying /api to :7872). `MC_PROXY_TARGET` and `MC_DEV_PORT`
+override those two defaults, so a second pair can run against another engine:
+
+```sh
+MARINARA_URL=http://100.x.y.z:7860 PORT=7874 node server.mjs
+MC_PROXY_TARGET=http://127.0.0.1:7874 MC_DEV_PORT=5174 npm run dev
+```
 
 ## Layout
 
