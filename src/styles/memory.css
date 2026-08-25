@@ -55,7 +55,7 @@
 .health-banner { display: flex; align-items: center; gap: var(--s3);
   padding: var(--s2) var(--s3); background: var(--warn-wash);
   border-bottom: 1px solid color-mix(in srgb, var(--warn) 35%, transparent);
-  font-size: 13px; }
+  font-size: var(--fs-prose); }
 .health-banner .action-sec { flex: 0 0 auto; min-height: 36px; }
 .blocked-srcs { display: flex; flex-direction: column; gap: 3px; margin: var(--s2) 0; }
 .blocked-src { font-size: var(--fs-data-s); }
@@ -220,7 +220,7 @@
   border-radius: var(--r-m); padding: 4px; box-shadow: var(--shadow-pop);
   display: flex; flex-direction: column; }
 .gmenu-pop button { text-align: left; padding: 8px 10px; min-height: 38px;
-  border-radius: var(--r-s); color: var(--text); font-size: 13px; }
+  border-radius: var(--r-s); color: var(--text); font-size: var(--fs-prose); }
 .gmenu-pop button:hover { background: var(--surface-3); }
 @media (max-width: 899px) {
   .ghead-agg { display: none; }
@@ -260,7 +260,7 @@
    new-target channel as the list's group headers. Editing is a mode: accent
    border on the zone, save/discard replace keep/drop in the decide bar. */
 .hl { font-size: 14.5px; line-height: 1.5; margin-bottom: var(--s3); max-width: var(--measure); }
-.hl .skey { font-size: 13px; }
+.hl .skey { font-size: var(--fs-prose); }
 .z-opi { display: inline-flex; color: var(--text-dim); }
 .zone { border: var(--hairline); border-radius: var(--r-m); padding: var(--s2) var(--s3);
   margin-bottom: var(--s3); }
@@ -278,7 +278,7 @@
 .zbtn-group { display: inline-flex; align-items: center; gap: var(--s2); }
 /* preview lines: the diff vocabulary */
 .ln { display: flex; gap: 8px; padding: 2.5px 6px 2.5px 2px; border-radius: 3px;
-  font-size: 13px; line-height: 1.45; }
+  font-size: var(--fs-prose); line-height: 1.45; }
 .lg { flex: 0 0 12px; text-align: center; font-family: var(--font-data);
   font-size: 11.5px; color: var(--text-faint); }
 .lt { min-width: 0; max-width: var(--measure); overflow-wrap: anywhere; }
@@ -330,7 +330,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 /* evidence zone */
 .z-ev { background: var(--surface-2); }
 .audit-detail .z-ev { background: var(--canvas); }
-.evq-q { font-size: 13px; font-style: italic; border-left: 2px solid var(--edge-strong);
+.evq-q { font-size: var(--fs-prose); font-style: italic; border-left: 2px solid var(--edge-strong);
   padding: 2px 0 2px 10px; margin-bottom: 4px; max-width: var(--measure); }
 .evq-a { color: var(--text-dim); display: flex; align-items: center; gap: 5px;
   flex-wrap: wrap; margin-bottom: 6px; }
@@ -417,7 +417,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 /* Section keys are addresses (§ + text tone) and never accent: accent means
    interactive, and a §key is not a link. */
 
-.sig { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; font-size: 13px; }
+.sig { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; font-size: var(--fs-prose); }
 .sig svg { flex: 0 0 auto; margin-top: 2px; }
 /* The passed-validation branch of the confidence row. Only the glyph takes the
    color: the sentence stays body text, so a reassuring row never shouts as
@@ -453,7 +453,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .sghead .gexp { min-height: 30px; min-width: 26px; }
 .sghead { display: flex; align-items: center; gap: var(--s2); background: var(--surface-2);
   border-radius: var(--r-s); padding: 6px var(--s3); margin: var(--s3) 0 2px; }
-.gname { font-family: var(--font-label); font-weight: 650; font-size: 13px; }
+.gname { font-family: var(--font-label); font-weight: 650; font-size: var(--fs-prose); }
 .gn { color: var(--text-dim); }
 .gact { border: var(--hairline); border-radius: var(--r-s); color: var(--text-dim);
   font-family: var(--font-data); font-size: 10.5px; padding: 4px 8px; background: none; }
@@ -472,7 +472,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .sbox:disabled { opacity: 0.3; }
 .xchev { flex: 0 0 auto; color: var(--text-faint); background: none; border: none; display: inline-flex; }
 .srow .ki { flex: 0 0 auto; color: var(--text-dim); display: inline-flex; }
-.stitle { font-family: var(--font-label); font-weight: 600; font-size: 13px; flex: 1 1 auto;
+.stitle { font-family: var(--font-label); font-weight: 600; font-size: var(--fs-prose); flex: 1 1 auto;
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stg { display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; }
 .sw { font-family: var(--font-data); font-size: 10.5px; }
@@ -488,11 +488,11 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 /* the expanded body */
 .xbody { background: var(--surface-2); border-bottom: var(--hairline); padding: var(--s2) var(--s3) var(--s3); }
 .xbody .zone { background: var(--canvas); }
-.xtext { white-space: pre-wrap; font-size: 13px; color: var(--text-dim); }
+.xtext { white-space: pre-wrap; font-size: var(--fs-prose); color: var(--text-dim); }
 .curbar { display: flex; align-items: center; gap: var(--s2); border-top: var(--hairline);
   margin-top: var(--s2); padding-top: var(--s2); flex-wrap: wrap; }
 .editarea { width: 100%; background: var(--surface-1); border: var(--hairline); border-radius: var(--r-s);
-  color: var(--text); padding: var(--s2); font-size: 13px; line-height: 1.5; resize: vertical; }
+  color: var(--text); padding: var(--s2); font-size: var(--fs-prose); line-height: 1.5; resize: vertical; }
 .editarea:focus { outline: none; border-color: var(--accent); }
 .spend { display: inline-flex; align-items: center; gap: 2px; margin-left: 4px; opacity: 0.9; }
 .dirty { display: inline-flex; align-items: center; gap: 4px; color: var(--ok); }
@@ -534,7 +534,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
   border-bottom: var(--hairline); margin-bottom: var(--s2); }
 .reshead2 > svg { flex: 0 0 auto; margin-top: 2px; }
 .restitle { font-family: var(--font-label); font-weight: 650; font-size: 14px; }
-.ressub { font-size: 13px; margin-top: 2px; }
+.ressub { font-size: var(--fs-prose); margin-top: 2px; }
 .failblock { background: var(--danger-wash); border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
   border-radius: var(--r-s); padding: var(--s2) var(--s3); margin-bottom: var(--s2); }
 .failhead { display: flex; align-items: center; gap: 7px; color: var(--danger); }
@@ -544,7 +544,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .rhead, .rrow { display: grid; grid-template-columns: minmax(0, 1fr) 62px 84px; gap: 10px;
   align-items: center; padding: 5px 2px; }
 .rhead { color: var(--text-dim); border-bottom: var(--hairline); }
-.rrow { border-bottom: var(--hairline); font-size: 13px; }
+.rrow { border-bottom: var(--hairline); font-size: var(--fs-prose); }
 .rname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rnum { text-align: right; font-variant-numeric: tabular-nums; }
 .rnum.zero { color: var(--text-faint); }
@@ -576,7 +576,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .scoperow { position: relative; display: flex; align-items: center; gap: var(--s2);
   flex-wrap: wrap; padding: var(--s2) var(--s3); border-bottom: var(--hairline); }
 /* the level picker is <SearchDisclosure>, src/ui/SearchDisclosure.css */
-.scopesep { color: var(--text-faint); font-size: 13px; user-select: none; }
+.scopesep { color: var(--text-faint); font-size: var(--fs-prose); user-select: none; }
 /* the view tabs carry their own counts */
 .mem-tab { display: inline-flex; align-items: center; gap: 6px; }
 .mem-tab svg { display: block; flex: 0 0 auto; }

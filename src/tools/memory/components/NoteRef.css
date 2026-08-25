@@ -18,4 +18,4 @@
 .nref { display: inline-flex; align-items: center; gap: 4px; vertical-align: text-bottom; }
 
 /* .nref-plain is the same name with nothing to open. */
-.nref .notelink, .nref-plain { font-family: var(--font-label); font-weight: 600; font-size: 13px; }
+.nref .notelink, .nref-plain { font-family: var(--font-label); font-weight: 600; font-size: var(--fs-prose); }

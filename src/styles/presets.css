@@ -234,7 +234,7 @@
   display: flex; align-items: center; gap: var(--s2);
   padding: var(--s2) var(--s3); padding-top: calc(var(--s2) + env(safe-area-inset-top));
   background: var(--danger-wash); border-bottom: 1px solid var(--danger);
-  font-family: var(--font-prose); font-size: 13px; color: var(--text);
+  font-family: var(--font-prose); font-size: var(--fs-prose); color: var(--text);
 }
 .connbar-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); flex: 0 0 auto;
   animation: cpulse 1.6s ease-in-out infinite; }

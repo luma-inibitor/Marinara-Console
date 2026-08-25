@@ -179,7 +179,7 @@
   font-family: var(--font-label);
   font-variation-settings: "wdth" 106;
   font-weight: 600;
-  font-size: 13px;
+  font-size: var(--fs-prose);
   /* Grown rather than padded with .hit, whose hit area would reach past the 8px
      between rows and swallow taps meant for the row above. */
   display: inline-block;

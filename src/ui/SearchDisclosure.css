@@ -23,7 +23,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: var(--fs-prose);
 }
 
 /* The viewport clamp keeps a trigger near the right edge from opening a panel
@@ -55,7 +55,7 @@
   border-radius: var(--r-s);
   color: var(--text);
   text-align: left;
-  font-size: 13px;
+  font-size: var(--fs-prose);
 }
 .disclosure-opt:hover { background: var(--surface-2); }
 .disclosure-opt.is-on { background: var(--accent-wash); color: var(--text); }

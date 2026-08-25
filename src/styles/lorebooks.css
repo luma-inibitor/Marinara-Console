@@ -20,7 +20,7 @@
   border-bottom: var(--hairline); padding: var(--s2) var(--s3) 0; }
 .hrow { display: flex; align-items: center; gap: var(--s2); }
 .console-title { font-family: var(--font-label); font-variation-settings: "wdth" 116;
-  font-weight: 700; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase;
+  font-weight: 700; font-size: var(--fs-prose); letter-spacing: 0.05em; text-transform: uppercase;
   margin: 0; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .probe { display: flex; gap: 6px; margin-top: var(--s2); }
@@ -110,7 +110,7 @@
 .row.is-idle .nm, .row.is-idle .metaline, .row.is-idle .num { opacity: 0.45; }
 
 .num { padding: var(--row-pad-y) var(--row-pad-x) 0 0; text-align: right; }
-.num .tok { display: block; font-size: 13px; font-weight: 700; line-height: 1.1; }
+.num .tok { display: block; font-size: var(--fs-prose); font-weight: 700; line-height: 1.1; }
 .num .tok.is-hot { color: var(--flag); }
 .num .unit { display: block; font-size: 8.5px; color: var(--text-dim); margin-bottom: 4px; }
 [data-s="disabled"] .num .tok { color: var(--text-dim); }
@@ -178,7 +178,7 @@
   display: flex; align-items: center; justify-content: center; }
 .movebar .slot { height: 40px; border-radius: var(--r-m); border: var(--hairline);
   background: var(--canvas); display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.movebar .slot .v { font-size: 13px; font-weight: 700; }
+.movebar .slot .v { font-size: var(--fs-prose); font-weight: 700; }
 .movebar .slot .c { font-size: 8.5px; color: var(--text-dim); }
 
 .advrow { display: flex; justify-content: space-between; gap: var(--s3); padding: 4px 0;
@@ -219,7 +219,7 @@
 .trow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s2) var(--s3);
   padding: var(--s2) 0; border-bottom: var(--hairline); align-items: center; }
 .trow .tn { font-family: var(--font-label); font-variation-settings: "wdth" 108; font-weight: 700;
-  font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; overflow-wrap: anywhere; }
+  font-size: var(--fs-prose); letter-spacing: 0.05em; text-transform: uppercase; overflow-wrap: anywhere; }
 .trow .tn.is-none { color: var(--text-dim); font-style: italic; text-transform: none; letter-spacing: 0; }
 .trow .tacts { display: flex; gap: 5px; }
 .trow .tbar { grid-column: 1 / -1; height: 5px; border-radius: 2px; background: var(--surface-1);
@@ -238,7 +238,7 @@
 .fs-counts .delta.is-up { color: var(--flag); }
 .fs-body { flex: 1; min-height: 0; padding: var(--s2) var(--s3); }
 .fs-body textarea { width: 100%; height: 100%; background: transparent; border: 0; outline: none;
-  resize: none; color: var(--text); font-family: var(--font-data); font-size: 13px;
+  resize: none; color: var(--text); font-family: var(--font-data); font-size: var(--fs-prose);
   line-height: 1.65; font-variant-ligatures: none; }
 .fs-body textarea.is-nowrap { white-space: pre; overflow-x: auto; }
 .fs-foot { display: flex; gap: 5px; padding: var(--s2) var(--s3)
