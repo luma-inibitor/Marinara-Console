@@ -224,7 +224,10 @@
   .ghead-agg { display: none; }
   .gcap .gcap-pct { display: none; }
 }
-.group-actions { display: flex; gap: var(--s2); padding: var(--s2) var(--s3); align-items: center; }
+/* Wraps rather than squeezing: every button here sets white-space: nowrap, so
+   without this the widest label overflows the pane instead of taking its own
+   line, and a control that runs off the edge is worse than one on row two. */
+.group-actions { display: flex; flex-wrap: wrap; gap: var(--s2); padding: var(--s2) var(--s3); align-items: center; }
 
 /* ══ facet sheet — the surface is <Sheet>, src/ui/Sheet.css ══ */
 .peek-meta { color: var(--text-dim); font-size: var(--fs-data-s); overflow-wrap: anywhere; }

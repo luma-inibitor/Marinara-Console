@@ -46,12 +46,6 @@ export function putNote(note: Note) {
   notesById.set(new Map(notesById.get()).set(note.id, note));
 }
 
-function dropNote(id: string) {
-  const next = new Map(notesById.get());
-  next.delete(id);
-  notesById.set(next);
-}
-
 /** Load every memory into the index. Reloading never clears `notesLoaded`, so
  *  a refresh after a write does not throw the screen back to its spinner. */
 export async function loadNotes(): Promise<void> {
@@ -88,16 +82,26 @@ export async function setNoteStatus(id: string, status: Note["status"]): Promise
   }
 }
 
-/** The destructive default, and undoable: pass the old status back to
- *  `setNoteStatus` to put the memory back where it was. */
+/** Undoable: pass the old status back to `setNoteStatus` to put the memory
+ *  back where it was. */
 export function archiveNote(id: string): Promise<void> {
   return setNoteStatus(id, "archived");
 }
 
-/** Permanent, and unlike archiving it cannot be undone. */
-export async function discardNote(id: string): Promise<void> {
-  await deleteNote(id);
-  dropNote(id);
+/** Archives the memory together with everything extracted from it. The engine's
+ *  DELETE route is a cascading archive, not a removal — it answers with every
+ *  note it touched — so those go back into the map carrying their new status
+ *  rather than being dropped from it. Dropping them would leave the extracted
+ *  memories in the map still reading `active`, which is the one thing this
+ *  write is not.
+ *
+ *  Permanent removal is a different route (`POST /notes/permanent-delete`) that
+ *  the console never calls. Returns every note archived, the target first. */
+export async function archiveNoteWithExtracted(id: string): Promise<Note[]> {
+  const { notes } = await deleteNote(id);
+  const archived = notes ?? [];
+  for (const note of archived) putNote(note);
+  return archived;
 }
 
 /** Run extraction over a source memory again. What it produces is drafts, which

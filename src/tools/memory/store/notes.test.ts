@@ -14,7 +14,7 @@ const request = vi.fn();
 vi.mock("../../../shell/api", () => ({ api: (path: string, opts?: unknown) => request(path, opts) }));
 
 const { patchNote } = await import("../api/notes");
-const { notesById, putNote, saveNoteSections } = await import("./notes");
+const { archiveNoteWithExtracted, notesById, putNote, saveNoteSections } = await import("./notes");
 
 const NOTE: Note = { id: "char_watson", type: "character", status: "active", modes: [], links: [], sections: {} };
 
@@ -35,6 +35,33 @@ describe("patchNote", () => {
     await saveNoteSections("char_watson", { bio: { text: "hello" } });
     expect([...notesById.get().keys()]).toEqual(["char_watson"]);
     expect(notesById.get().get("char_watson")).toEqual(NOTE);
+  });
+});
+
+// The route named DELETE archives; nothing it touches leaves the store. A
+// version of this that dropped the target left the memories extracted from it
+// sitting in the map still reading "active", which is the one status the write
+// had just made false.
+describe("archiveNoteWithExtracted", () => {
+  const SOURCE: Note = { id: "source_x", type: "source", status: "archived", modes: [], links: [], sections: {} };
+  const DERIVED: Note = { ...NOTE, id: "world_x", type: "world", status: "archived" };
+
+  it("keeps every note the cascade archived, carrying its new status", async () => {
+    putNote({ ...SOURCE, status: "active" });
+    putNote({ ...DERIVED, status: "active" });
+    request.mockResolvedValue({ archived: true, note: SOURCE, notes: [SOURCE, DERIVED], rebuild: {} });
+
+    const archived = await archiveNoteWithExtracted("source_x");
+
+    expect(archived).toEqual([SOURCE, DERIVED]);
+    expect([...notesById.get().keys()].sort()).toEqual(["source_x", "world_x"]);
+    expect([...notesById.get().values()].map((n) => n.status)).toEqual(["archived", "archived"]);
+  });
+
+  it("leaves the store alone when the reply carries no notes", async () => {
+    request.mockResolvedValue({ archived: true, note: SOURCE, rebuild: {} });
+    expect(await archiveNoteWithExtracted("source_x")).toEqual([]);
+    expect(notesById.get().size).toBe(0);
   });
 });
 

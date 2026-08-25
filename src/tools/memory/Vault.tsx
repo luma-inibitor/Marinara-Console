@@ -1,7 +1,9 @@
 // Memory Vault — browse and correct what is stored.
 // Source notes are audit records, not memories: excluded by default, behind a
-// toggle. Cap pressure reads as a gradient on the row. Archive is the
-// destructive default (undoable); permanent delete confirms.
+// toggle. Cap pressure reads as a gradient on the row. Both write controls
+// archive — one this memory, one it and everything extracted from it — and
+// nothing here removes a memory: the engine's DELETE route is a cascading
+// archive, and its permanent-delete route is not called from this console.
 
 import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../../lib/store";
@@ -14,7 +16,7 @@ import { t } from "../../copy";
 import { dedupeLines } from "./model/derived";
 import { effectiveKeywords, manualKeywords } from "./model/keywords";
 import { NoteRef } from "./NotePeek";
-import { allNotes, archiveNote, discardNote, loadNotes, notesError, notesLoaded, saveNoteSections, setNoteStatus } from "./store/notes";
+import { allNotes, archiveNote, archiveNoteWithExtracted, loadNotes, notesError, notesLoaded, saveNoteSections, setNoteStatus } from "./store/notes";
 import { isScoped, noteInScope } from "./model/scope";
 import { useScope } from "./store/scope";
 import { Back, ICON_SIZE, NoMatches } from "../../ui/icons";
@@ -255,14 +257,20 @@ function NoteEditor(props: { note: Note; onClose: () => void }) {
     }
   };
 
-  const remove = async () => {
-    const message = n.type === "source"
-      ? t("sourcesworkspace.deleteImportedSourceKeepExtractedMessage", { value1: n.title ?? n.id })
-      : t("memory.vault.deleteConfirm", { title: n.title ?? n.id });
-    if (!confirm(message)) return;
+  // The cascade is the same route for every type, so the confirm does not
+  // branch on one: a memory with nothing extracted from it simply archives
+  // alone, which "any memories extracted from it" already covers.
+  const archiveWithExtracted = async () => {
+    const title = n.title ?? n.id;
+    if (!confirm(t("memory.vault.archiveWithExtractedConfirm", { title }))) return;
     try {
-      await discardNote(n.id);
-      toast(t("memory.vault.deleted", { title: n.title ?? n.id }));
+      const archived = await archiveNoteWithExtracted(n.id);
+      // The reply counts the target alongside what it reached, and the toast
+      // names the target separately, so it must not be counted twice.
+      const extracted = Math.max(0, archived.length - 1);
+      toast(extracted
+        ? t("memory.vault.archivedWithExtracted", { title, count: extracted })
+        : t("memory.vault.archived", { title }));
       props.onClose();
     } catch (error) {
       toast((error as Error).message, { kind: "error" });
@@ -327,7 +335,7 @@ function NoteEditor(props: { note: Note; onClose: () => void }) {
       <div className="group-actions">
         <button className="dock-primary t-label" disabled={busy} onClick={() => void save()}>{t("memoryvault.save")}</button>
         <button className="action-sec t-label" onClick={() => void archive()}>{t("memoryvault.archive")}</button>
-        <button className="action-sec is-danger-act t-label" onClick={() => void remove()}>{t("sourcesworkspace.deletePermanently")}</button>
+        <button className="action-sec t-label" onClick={() => void archiveWithExtracted()}>{t("memory.vault.archiveWithExtracted")}</button>
       </div>
     </div>
   );
