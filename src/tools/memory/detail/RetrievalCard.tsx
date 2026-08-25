@@ -14,6 +14,7 @@ import { useState } from "react";
 import { t } from "../../../copy";
 import { type Note } from "../api/types";
 import { KEYWORD_CAP } from "../model/caps";
+import { effectiveKeywords, manualKeywords } from "../model/keywords";
 import { LinkTarget, MemoryRef } from "../components/NoteRef";
 import { relationLabel } from "../model/relations";
 import { ModePill, Tag } from "../../../ui";
@@ -54,7 +55,8 @@ export function RetrievalCard({ note }: { note: Note }) {
   const [kwOpen, setKwOpen] = useState(false);
   const [linksOpen, setLinksOpen] = useState(false);
 
-  const keywords = note.keywords ?? [];
+  const keywords = effectiveKeywords(note);
+  const manual = manualKeywords(note).length;
   const links = note.links ?? [];
   const hidden = Math.max(0, keywords.length - KEYWORDS_ON_ONE_LINE);
   const toggleKw = () => setKwOpen((open) => !open);
@@ -112,7 +114,7 @@ export function RetrievalCard({ note }: { note: Note }) {
                 </button>
               )}
               <span className="mdc-ret-tally">
-                {keywords.length}/{KEYWORD_CAP}
+                {t("memoryvault.addedManually")} {manual}/{KEYWORD_CAP}
               </span>
             </span>
           </>
