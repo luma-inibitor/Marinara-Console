@@ -10,10 +10,11 @@ import { t, tAny } from "../../copy";
 import { Review } from "./Review";
 import { Vault } from "./Vault";
 import { Sources } from "./Sources";
-import { NotePeek } from "./NotePeek";
 import { Copy } from "./Copy";
+import { MemoryDetail } from "./detail/MemoryDetail";
+import { Sheet } from "../../ui";
 import { review, rows } from "./store/review";
-import { notesById } from "./store/notes";
+import { closePeek, notesById, peeked } from "./store/notes";
 import { pendingSources } from "./store/sources";
 import { activeFacets } from "./store/view";
 import { listedInVault } from "./model/listing";
@@ -49,6 +50,7 @@ export function MemoryTool({ rest }: { rest: string[] }) {
   const scope = useScope();
   const scopedRows = useStore(rows); // already narrowed to scope by the store
   const loadedNotes = useStore(notesById);
+  const peek = useStore(peeked);
   const listedMemories = useMemo(
     () => [...loadedNotes.values()].filter((n) => n.type !== "source" && listedInVault(n) && noteInScope(n, scope)).length,
     // Scope is a fresh object each render, so depending on it would recompute
@@ -126,7 +128,12 @@ export function MemoryTool({ rest }: { rest: string[] }) {
       {view === "review" && <Review />}
       {view === "vault" && <Vault noteId={rest[1]} />}
       {view === "sources" && <Sources />}
-      <NotePeek />
+      {peek && (
+        <Sheet className="peek-sheet" label={peek.title ?? peek.id} onClose={closePeek}>
+          {/* Keyed so a chained peek cannot inherit the last memory's collapse state. */}
+          <MemoryDetail key={peek.id} note={peek} onBack={closePeek} peek />
+        </Sheet>
+      )}
     </div>
   );
 }
