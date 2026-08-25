@@ -31,11 +31,36 @@ export function launch(options = {}) {
   return chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH, ...options });
 }
 
-// `settle` is the pause after networkidle: the app finishes its first data
-// render after the network has gone quiet, so networkidle alone is too early.
+// `settle` is the pause after mount: the app finishes its first data render
+// after the network has gone quiet, so networkidle alone is too early.
+//
+// Mounting is waited on rather than assumed. Vite rewrites every module URL
+// with a `?t=` cache-buster when a file changes, so a file edited, moved or
+// split while a check is running leaves the served module graph pointing at a
+// path the dev server no longer has. The import chain then dies before any
+// component renders, #app stays empty, and every locator the caller writes
+// waits out its full timeout and blames the UI for a dev-server fault. Failing
+// here instead names the real cause. The re-navigation is not a retry for a
+// flaky app: a fresh index.html is what makes Vite re-emit the module graph
+// with current timestamps, and it is the only way out of a poisoned one.
 export async function openPage(browser, { viewport, hash = "", url = DEV_URL + hash, settle = 0, timeout = 60000 }) {
   const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+  let refused = new Set();
+  page.on("requestfailed", (r) => { if (r.url().startsWith(DEV_URL)) refused.add(`${r.url()} ${r.failure()?.errorText ?? "failed"}`); });
+  page.on("response", (r) => { if (r.status() >= 400 && r.url().startsWith(DEV_URL)) refused.add(`${r.url()} HTTP ${r.status()}`); });
+
   await page.goto(url, { waitUntil: "networkidle", timeout });
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await page.waitForFunction(() => document.getElementById("app")?.childElementCount > 0, null, { timeout: 15000 });
+      break;
+    } catch {
+      const why = refused.size ? ` (dev server refused ${[...refused].join(", ")})` : "";
+      if (attempt >= 1) throw new Error(`app never mounted at ${url}${why}`);
+      refused = new Set();
+      await page.reload({ waitUntil: "networkidle", timeout });
+    }
+  }
   if (settle) await page.waitForTimeout(settle);
   return page;
 }
