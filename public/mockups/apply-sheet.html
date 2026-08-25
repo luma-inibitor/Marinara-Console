@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apply sheet &amp; decision rail</title>
+<link rel="stylesheet" href="kit.css">
+<!-- Load the app's real fonts. Without these the page falls back to whatever
+     the browser has, and then it is showing you the wrong fonts. These paths
+     only work on the vite port, so open this page at /public/mockups/. -->
+<link rel="stylesheet" href="/node_modules/@fontsource-variable/archivo/wdth.css">
+<link rel="stylesheet" href="/node_modules/@fontsource-variable/jetbrains-mono/index.css">
+<link rel="stylesheet" href="/node_modules/@fontsource-variable/source-sans-3/index.css">
+<style>
+  .sprite { display: none; }
+  .ic { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor;
+    stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .ic-s { width: 13px; height: 13px; }
+  .ic-l { width: 18px; height: 18px; }
+
+  /* ── the phone frame everything is drawn inside ── */
+  /* Fixed at 486px — the width Luma's phone reports. It must not shrink on a
+     narrow screen, or a row that really does overflow the phone would quietly
+     fit here and the mockup would be lying about the thing it is testing. The
+     page scrolls sideways instead. */
+  .ph { width: 486px; flex: none; background: var(--canvas);
+    border: 1px solid var(--edge-strong); border-radius: var(--r-l); overflow: hidden; }
+  .mk-spec { overflow-x: auto; }
+
+  /* ── the decision rail ── */
+  .rail { background: var(--surface-1); border-top: 1px solid var(--edge-strong);
+    padding: 8px 12px 0; }
+  .rail-row { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+  .counts { display: flex; align-items: center; gap: 9px; font-family: var(--font-data);
+    font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .counts b { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; }
+  .c-keep { color: var(--ok); } .c-drop { color: var(--danger); } .c-left { color: var(--text-dim); }
+  .pill { font-family: var(--font-data); font-size: 11px; color: var(--text-dim);
+    border: 1px solid var(--edge); border-radius: 99px; padding: 3px 9px; white-space: nowrap; }
+  .iconbtn { display: grid; place-items: center; width: 38px; height: 38px;
+    border: 1px solid var(--edge); border-radius: var(--r-s); background: none;
+    color: var(--text-dim); }
+  .spacer { margin-left: auto; }
+  .rbtn { display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    min-height: 40px; padding: 0 16px; border: none; border-radius: var(--r-m);
+    background: var(--accent); color: #0a0f1c; font-family: var(--font-label);
+    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    white-space: nowrap; }
+  .rbtn[disabled] { background: var(--surface-3); color: var(--text-faint); }
+  .meter { display: flex; height: 4px; margin: 8px -12px 0; background: var(--surface-3); }
+  .meter i { display: block; height: 100%; }
+  .m-keep { background: var(--ok); } .m-drop { background: var(--danger); }
+  .meter-lg { height: 8px; border-radius: 2px; margin: 0 0 6px; overflow: hidden; }
+
+  /* A stand-in for the claim list above the rail, so the rail is judged sitting
+     under something rather than floating in a box. Greyed on purpose — it is
+     scenery, not part of what is being decided here. */
+  .listfade { padding: 6px 12px 10px; opacity: .45; }
+  .lrow { display: flex; align-items: center; gap: 9px; padding: 7px 0; border-bottom: 1px solid var(--edge); }
+  .lrow i { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--off); flex: none; }
+  .lrow i.k { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 25%, transparent); }
+  .lrow i.d { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 25%, transparent); }
+  .lrow span { flex: 1; height: 8px; border-radius: 2px; background: var(--surface-3); }
+  .lrow span.s { flex: 0 0 40%; }
+  .ph-narrow { width: 390px; }
+
+  /* ── the sheet ── */
+  .sh { background: var(--surface-1); }
+  .sh-h { display: flex; align-items: center; gap: 8px; padding: 11px 14px;
+    border-bottom: 1px solid var(--edge); font-family: var(--font-label);
+    font-size: 9.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--text); }
+  .sh-h span { margin-left: auto; color: var(--text-dim); font-size: 16px; letter-spacing: 0; }
+  .sh-b { padding: 16px 14px 18px; }
+
+  .hero { font-family: var(--font-data); font-size: 24px; font-weight: 700;
+    font-variant-numeric: tabular-nums; color: var(--text); margin: 0; line-height: 1.1; }
+  .hero.is-quiet { font-size: 15px; font-weight: 400; color: var(--text-dim); }
+
+  .allclear { display: flex; align-items: center; gap: 6px; margin: 8px 0 0;
+    font-family: var(--font-prose); font-size: 13.5px; color: var(--text-dim); }
+  .allclear .ic { color: var(--ok); }
+
+  /* an exception block */
+  .zone { margin-top: 20px; border-left: 2px solid var(--danger); padding-left: 12px; }
+  .zone.is-flag { border-left-color: var(--flag); }
+  .zone-h { display: flex; align-items: center; gap: 6px; margin: 0;
+    font-family: var(--font-label); font-size: 9.5px; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--text); }
+  .zone-h .ic { color: var(--danger); }
+  .zone.is-flag .zone-h .ic { color: var(--flag); }
+  .zone-w { font-family: var(--font-prose); font-size: 13.5px; line-height: 1.4;
+    color: var(--text-dim); margin: 5px 0 0; }
+  .claim { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--edge); }
+  .claim-t { display: flex; align-items: center; gap: 5px; font-family: var(--font-data);
+    font-size: 11.5px; color: var(--type-character); }
+  .claim-x { font-family: var(--font-prose); font-size: 13.5px; line-height: 1.45;
+    color: var(--text-dim); margin: 3px 0 0; }
+  /* Two unlabelled lines under a warning left it ambiguous which one was the
+     dropped item and which the thing depending on it. */
+  .claim-k { font-family: var(--font-label); font-size: 9.5px; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--danger); margin: 5px 0 0; }
+
+  /* a band heading */
+  .band { margin-top: 24px; }
+  .band-h { font-family: var(--font-label); font-size: 9.5px; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--text-faint); margin: 0 0 6px; }
+  /* The unit goes in the column head, never repeated on every row
+     (design/CHECKLIST.md §3). Without it the trailing figures were bare. */
+  .band-h2 { display: flex; }
+  .band-h2 span { margin-left: auto; }
+
+  /* what changes — as rows */
+  .acts { display: grid; gap: 0; }
+  .act { display: flex; align-items: baseline; gap: 10px; padding: 7px 0;
+    border-bottom: 1px solid var(--edge); }
+  .act:last-child { border-bottom: none; }
+  .act-n { flex: 0 0 38px; text-align: right; font-family: var(--font-data);
+    font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
+  .act-l { font-family: var(--font-prose); font-size: 14px; color: var(--text-dim); }
+
+  /* what changes — as a bar */
+  .barwrap { padding-top: 2px; }
+  .bar { display: flex; height: 10px; border-radius: 3px; overflow: hidden;
+    background: var(--surface-3); }
+  .bar i { display: block; height: 100%; }
+  .b1 { background: var(--text); } .b2 { background: var(--text-dim); } .b3 { background: var(--off); }
+  .barkey { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px;
+    font-family: var(--font-data); font-size: 11.5px; color: var(--text-dim); }
+  .barkey span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+  .barkey b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* which memories */
+  .mems { display: grid; }
+  .mem { display: flex; align-items: center; gap: 8px; padding: 8px 0;
+    border-bottom: 1px solid var(--edge); }
+  .mem-t { flex: 1; min-width: 0; font-family: var(--font-prose); font-size: 14px;
+    color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mem-n { flex: 0 0 auto; font-family: var(--font-data); font-size: 12.5px;
+    font-variant-numeric: tabular-nums; color: var(--text-dim); }
+  .ty-character { color: var(--type-character); }
+  .ty-timeline { color: var(--type-timeline-event); }
+  .ty-thread { color: var(--type-thread); }
+  .ty-world { color: var(--type-world); }
+  .more { display: flex; align-items: center; gap: 8px; padding: 10px 0 0;
+    font-family: var(--font-prose); font-size: 13.5px; color: var(--accent); }
+  .more .ic { margin-left: auto; }
+
+  .sh-apply { display: flex; align-items: center; justify-content: center;
+    width: 100%; min-height: 44px; margin-top: 24px; border: none; border-radius: var(--r-m);
+    background: var(--accent); color: #0a0f1c; font-family: var(--font-label);
+    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .sh-apply[disabled] { background: var(--surface-3); color: var(--text-faint); }
+
+
+  /* ── save badge variants ── */
+  .wtab { display: grid; grid-template-columns: 78px repeat(3, minmax(0, 1fr));
+    border: 1px solid var(--edge-strong); border-radius: var(--r-m); overflow: visible; }
+  .wtab > * { padding: 11px 12px; border-bottom: 1px solid var(--edge); border-right: 1px solid var(--edge); }
+  .wtab > *:nth-child(4n) { border-right: none; }
+  .wtab > *:nth-last-child(-n+4) { border-bottom: none; }
+  .wth { font-family: var(--font-label); font-size: 9.5px; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--text-faint); }
+  .wtk { font-family: var(--font-data); font-size: 10.5px; color: var(--text-faint); }
+  /* the real tooltip recipe from src/ui/Term.css, so the mockup shows what ships */
+  .term { position: relative; display: inline-flex; align-items: center; gap: 5px;
+    cursor: help; font-family: var(--font-data); font-size: 11.5px; color: var(--text-dim);
+    border: var(--hairline); border-radius: var(--r-s); padding: 3px 8px;
+    border-bottom-style: dotted; border-bottom-color: var(--text-faint); }
+  .term.is-ok { color: var(--text-dim); }
+  /* "storing" is the same mark at half strength rather than a second glyph.
+     A clock-with-an-arrow sat two controls away from the undo button and read
+     as another way back; and DESIGN.md gives loading no icon of its own. */
+  .term.is-wait { opacity: .45; }
+  .term.is-bad { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+  .term.open::after {
+    content: attr(data-tip); position: absolute; left: 0; top: calc(100% + 6px);
+    z-index: 70; width: max-content; max-width: 260px;
+    background: var(--surface-3); color: var(--text); border: 1px solid var(--edge-strong);
+    border-radius: var(--r-s); padding: 6px 9px; font-size: 11.5px; line-height: 1.45;
+    font-family: var(--font-prose); white-space: normal; box-shadow: var(--shadow-pop); }
+  .retry { display: inline-flex; align-items: center; gap: 5px; min-height: 26px;
+    padding: 0 9px; border: var(--hairline); border-radius: var(--r-m); background: var(--surface-1);
+    color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+    font-family: var(--font-label); font-size: 9.5px; font-weight: 600;
+    letter-spacing: .09em; text-transform: uppercase; }
+  .wrow { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+
+  .pair { display: grid; gap: 26px; }
+  @media (min-width: 1080px) { .pair { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true">
+<symbol id="i-user" viewBox="0 0 24 24"><path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" /></symbol>
+<symbol id="i-timeline-event" viewBox="0 0 24 24"><path d="M10 20a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+  <path d="M10 20h-6" />
+  <path d="M14 20h6" />
+  <path d="M12 15l-2 -2h-3a1 1 0 0 1 -1 -1v-8a1 1 0 0 1 1 -1h10a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-3l-2 2" /></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M15 4.5l-4 4l-4 1.5l-1.5 1.5l7 7l1.5 -1.5l1.5 -4l4 -4" />
+  <path d="M9 15l-4.5 4.5" />
+  <path d="M14.5 4l5.5 5.5" /></symbol>
+<symbol id="i-world" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M3.6 9h16.8" />
+  <path d="M3.6 15h16.8" />
+  <path d="M11.5 3a17 17 0 0 0 0 18" />
+  <path d="M12.5 3a17 17 0 0 1 0 18" /></symbol>
+<symbol id="i-heart-handshake" viewBox="0 0 24 24"><path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+  <path d="M12 6l-3.293 3.293a1 1 0 0 0 0 1.414l.543 .543c.69 .69 1.81 .69 2.5 0l1 -1a3.182 3.182 0 0 1 4.5 0l2.25 2.25" />
+  <path d="M12.5 15.5l2 2" />
+  <path d="M15 13l2 2" /></symbol>
+<symbol id="i-checks" viewBox="0 0 24 24"><path d="M7 12l5 5l10 -10" />
+  <path d="M2 12l5 5m5 -5l5 -5" /></symbol>
+<symbol id="i-alert-circle" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 8v4" />
+  <path d="M12 16h.01" /></symbol>
+<symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 5a5 5 0 0 1 7 0a5 5 0 0 0 7 0v9a5 5 0 0 1 -7 0a5 5 0 0 0 -7 0v-9" />
+  <path d="M5 21v-7" /></symbol>
+<symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 6l6 6l-6 6" /></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+  <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" /></symbol>
+<symbol id="i-arrow-back-up" viewBox="0 0 24 24"><path d="M9 14l-4 -4l4 -4" />
+  <path d="M5 10h11a4 4 0 1 1 0 8h-1" /></symbol>
+<symbol id="i-circle-check" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+  <path d="M9 12l2 2l4 -4" /></symbol>
+<symbol id="i-circle-x" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+  <path d="M10 10l4 4m0 -4l-4 4" /></symbol>
+<symbol id="i-circle-dotted" viewBox="0 0 24 24"><path d="M7.5 4.21l0 .01" />
+  <path d="M4.21 7.5l0 .01" />
+  <path d="M3 12l0 .01" />
+  <path d="M4.21 16.5l0 .01" />
+  <path d="M7.5 19.79l0 .01" />
+  <path d="M12 21l0 .01" />
+  <path d="M16.5 19.79l0 .01" />
+  <path d="M19.79 16.5l0 .01" />
+  <path d="M21 12l0 .01" />
+  <path d="M19.79 7.5l0 .01" />
+  <path d="M16.5 4.21l0 .01" />
+  <path d="M12 3l0 .01" /></symbol>
+<symbol id="i-device-floppy" viewBox="0 0 24 24"><path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2" />
+  <path d="M10 14a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+  <path d="M14 4l0 4l-6 0l0 -4" /></symbol>
+<symbol id="i-cloud-check" viewBox="0 0 24 24"><path d="M11 18.004h-4.343c-2.572 -.004 -4.657 -2.011 -4.657 -4.487c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.388 0 2.585 .82 3.138 2.007" />
+  <path d="M15 19l2 2l4 -4" /></symbol>
+<symbol id="i-cloud-upload" viewBox="0 0 24 24"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1" />
+  <path d="M9 15l3 -3l3 3" />
+  <path d="M12 12l0 9" /></symbol>
+<symbol id="i-cloud-x" viewBox="0 0 24 24"><path d="M13 18.004h-6.343c-2.572 -.004 -4.657 -2.011 -4.657 -4.487c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.37 0 2.556 .8 3.117 1.964" />
+  <path d="M22 22l-5 -5" />
+  <path d="M17 22l5 -5" /></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10" /></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M12 8l0 4l2 2" />
+  <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" /></symbol>
+</svg>
+
+<div class="mk-page">
+
+  <h1 class="mk-h1">Apply sheet &amp; decision rail</h1>
+  <p class="mk-sub">The rail keeps track of how far through you are. The sheet handles everything about applying. Apply is the door between them.</p>
+  <div class="mk-band">shown at phone width · 486px · real fonts and icons · big number at 24px</div>
+
+  <!-- ════════════════════════════════════════════════ -->
+  <section class="mk-sec">
+    <h2 class="mk-h2"><span class="mk-no">§1</span> What the rail keeps</h2>
+    <p class="mk-caption" style="margin:0 0 16px">One decision leaks in here from the copy pass: the bar button now reads <b>Review and apply</b> rather than <b>Apply</b>, so the two Apply buttons are not both called Apply. That costs 81px in this row. It may not be needed any more — the panel's own button now reads "Apply 9 changes", which already tells them apart. Reverting it to "Apply ›" is a one-word change if you want the width back.</p>
+    <p class="mk-intro">Four things leave the rail: the number inside the Apply button, the warning badge, the "2 drafts will be applied" line, and the counts being tappable. All of that is now behind Apply. What is left is how far through you are, whether your work is saved, and the two buttons you press while working. Three ways to lay that out.</p>
+
+    <div class="pair">
+
+      <div class="mk-spec">
+        <p class="mk-label">R1 <b>· everything on one line</b></p>
+        <div class="ph">
+          <div class="listfade"><div class="lrow"><i class="k"></i><span></span></div><div class="lrow"><i class="d"></i><span class="s"></span></div><div class="lrow"><i></i><span></span></div><div class="lrow"><i></i><span class="s"></span></div></div>
+          <div class="rail">
+            <div class="rail-row">
+              <span class="counts">
+                <b class="c-keep"><svg class="ic ic-s"><use href="#i-circle-check"/></svg>6</b>
+                <b class="c-drop"><svg class="ic ic-s"><use href="#i-circle-x"/></svg>2</b>
+                <b class="c-left"><svg class="ic ic-s"><use href="#i-circle-dotted"/></svg>34</b>
+              </span>
+              <span class="pill">Saved</span>
+              <span class="spacer"></span>
+              <button class="iconbtn"><svg class="ic"><use href="#i-refresh"/></svg></button>
+              <button class="iconbtn"><svg class="ic"><use href="#i-arrow-back-up"/></svg></button>
+              <button class="rbtn">Review and apply <svg class="ic ic-s"><use href="#i-chevron-right"/></svg></button>
+            </div>
+            <div class="meter"><i class="m-keep" style="width:14%"></i><i class="m-drop" style="width:5%"></i></div>
+          </div>
+        </div>
+        <p class="mk-caption">Measured at 486px: 433 of 460 used, <b>27px spare</b>. It fit far more comfortably until the button grew from "Apply" to "Review and apply" — that one label change costs 81px, and it lands in the tightest row in the app.</p>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label">R1n <b>· the same single row on a 390px phone</b></p>
+        <div class="ph ph-narrow">
+          <div class="listfade"><div class="lrow"><i class="k"></i><span></span></div><div class="lrow"><i class="d"></i><span class="s"></span></div><div class="lrow"><i></i><span></span></div></div>
+          <div class="rail">
+            <div class="rail-row">
+              <span class="counts">
+                <b class="c-keep"><svg class="ic ic-s"><use href="#i-circle-check"/></svg>6</b>
+                <b class="c-drop"><svg class="ic ic-s"><use href="#i-circle-x"/></svg>2</b>
+                <b class="c-left"><svg class="ic ic-s"><use href="#i-circle-dotted"/></svg>34</b>
+              </span>
+              <span class="pill">Failed &middot; Retry</span>
+              <span class="spacer"></span>
+              <button class="iconbtn"><svg class="ic"><use href="#i-refresh"/></svg></button>
+              <button class="iconbtn"><svg class="ic"><use href="#i-arrow-back-up"/></svg></button>
+              <button class="rbtn">Review and apply <svg class="ic ic-s"><use href="#i-chevron-right"/></svg></button>
+            </div>
+            <div class="meter"><i class="m-keep" style="width:14%"></i><i class="m-drop" style="width:5%"></i></div>
+          </div>
+        </div>
+        <p class="mk-caption">Same row, narrowest phone we support, save pill saying the longest thing it can say: it needs 475px and has 364. That is <b>111px over</b>, and the icon buttons have shrunk to 29px trying to cope — under the 44px we promise for anything you tap. <b>R1 is out.</b> Switching the save badge to an icon (§5) claws back 79px of that, which is not enough on its own.</p>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label">R2 <b>· status on top, buttons underneath</b></p>
+        <div class="ph">
+          <div class="listfade"><div class="lrow"><i class="k"></i><span></span></div><div class="lrow"><i class="d"></i><span class="s"></span></div><div class="lrow"><i></i><span></span></div><div class="lrow"><i></i><span class="s"></span></div></div>
+          <div class="rail">
+            <div class="rail-row" style="min-height:32px">
+              <span class="counts">
+                <b class="c-keep"><svg class="ic ic-s"><use href="#i-circle-check"/></svg>6</b>
+                <b class="c-drop"><svg class="ic ic-s"><use href="#i-circle-x"/></svg>2</b>
+                <b class="c-left"><svg class="ic ic-s"><use href="#i-circle-dotted"/></svg>34</b>
+              </span>
+              <span class="spacer"></span>
+              <span class="pill">Saved</span>
+            </div>
+            <div class="rail-row">
+              <button class="iconbtn"><svg class="ic"><use href="#i-refresh"/></svg></button>
+              <button class="iconbtn"><svg class="ic"><use href="#i-arrow-back-up"/></svg></button>
+              <span class="spacer"></span>
+              <button class="rbtn">Review and apply <svg class="ic ic-s"><use href="#i-chevron-right"/></svg></button>
+            </div>
+            <div class="meter"><i class="m-keep" style="width:14%"></i><i class="m-drop" style="width:5%"></i></div>
+          </div>
+        </div>
+        <p class="mk-caption">The two rows you asked for a while back. 302px spare on the top row, 194px on the bottom. Nothing here can be pushed off by anything growing, even with the longer button and the longest save state. Costs about 32px of height.</p>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label">R3 <b>· the counts sit on the progress bar</b></p>
+        <div class="ph">
+          <div class="listfade"><div class="lrow"><i class="k"></i><span></span></div><div class="lrow"><i class="d"></i><span class="s"></span></div><div class="lrow"><i></i><span></span></div><div class="lrow"><i></i><span class="s"></span></div></div>
+          <div class="rail">
+            <div style="padding-top:4px">
+              <div class="meter meter-lg" style="margin:0 0 7px">
+                <i class="m-keep" style="width:14%"></i><i class="m-drop" style="width:5%"></i>
+              </div>
+              <div class="rail-row" style="min-height:0;margin-bottom:2px">
+                <span class="counts" style="font-size:11.5px">
+                  <b class="c-keep">6 keep</b><b class="c-drop">2 drop</b><b class="c-left">34 to review</b>
+                </span>
+                <span class="spacer"></span>
+                <span class="pill">Saved</span>
+              </div>
+            </div>
+            <div class="rail-row">
+              <button class="iconbtn"><svg class="ic"><use href="#i-refresh"/></svg></button>
+              <button class="iconbtn"><svg class="ic"><use href="#i-arrow-back-up"/></svg></button>
+              <span class="spacer"></span>
+              <button class="rbtn">Review and apply <svg class="ic ic-s"><use href="#i-chevron-right"/></svg></button>
+            </div>
+            <div class="meter" style="visibility:hidden"></div>
+          </div>
+        </div>
+        <p class="mk-caption">The bar moves to the top and gets thick enough to actually see, with the numbers reading as its caption. Same height and the same comfortable slack as R2 — 213px and 194px — but progress becomes the loudest thing in the rail instead of a 4px hairline nobody notices.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════ -->
+  <section class="mk-sec">
+    <h2 class="mk-h2"><span class="mk-no">§2</span> The sheet — two ways to show what changes</h2>
+    <p class="mk-intro">Identical apart from the middle band. Both add up: 2 + 4 + 3 is the 9 at the top, and so is 3 + 2 + 2 + 2 in the list below. They are the same nine things sliced two ways — by what sort of change it is, and by which memory it lands on.</p>
+
+    <div class="pair">
+
+      <div class="mk-spec">
+        <p class="mk-label">S1 <b>· three plain rows</b></p>
+        <div class="ph"><div class="sh">
+          <div class="sh-h">What Apply will write to the Vault <span>&times;</span></div>
+          <div class="sh-b">
+            <p class="hero">9 changes</p>
+
+            <div class="zone">
+              <h3 class="zone-h"><svg class="ic ic-s"><use href="#i-alert-circle"/></svg>1 dropped claim is needed</h3>
+              <p class="zone-w">A claim you kept depends on it, but Apply honors the drop and leaves it out.</p>
+              <div class="claim">
+                <p class="claim-t"><svg class="ic ic-s"><use href="#i-user"/></svg>Sherlock Holmes</p>
+                <p class="claim-k">You dropped</p>
+                <p class="claim-x">Link the tenant register entry to the Baker Street timeline.</p>
+              </div>
+            </div>
+
+            <div class="band">
+              <p class="band-h">What changes</p>
+              <div class="acts">
+                <div class="act"><span class="act-n">2</span><span class="act-l">new memories</span></div>
+                <div class="act"><span class="act-n">4</span><span class="act-l">text edits</span></div>
+                <div class="act"><span class="act-n">3</span><span class="act-l">links and tags</span></div>
+              </div>
+            </div>
+
+            <div class="band">
+              <p class="band-h band-h2">Which memories<span>changes</span></p>
+              <div class="mems">
+                <div class="mem"><svg class="ic ty-character"><use href="#i-user"/></svg><span class="mem-t">Sherlock Holmes</span><span class="mem-n">3</span></div>
+                <div class="mem"><svg class="ic ty-timeline"><use href="#i-timeline-event"/></svg><span class="mem-t">Baker Street — the front room</span><span class="mem-n">2</span></div>
+                <div class="mem"><svg class="ic ty-thread"><use href="#i-pin"/></svg><span class="mem-t">The bent ventilator cover</span><span class="mem-n">2</span></div>
+                <div class="mem"><svg class="ic ty-world"><use href="#i-world"/></svg><span class="mem-t">Ashgate harbour</span><span class="mem-n">2</span></div>
+              </div>
+            </div>
+
+            <button class="sh-apply">Apply 9 changes</button>
+          </div>
+        </div></div>
+        <p class="mk-caption">Reads straight down. The numbers line up on the right of their own narrow column, so you can add them up by eye.</p>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label">S2 <b>· one bar instead</b></p>
+        <div class="ph"><div class="sh">
+          <div class="sh-h">What Apply will write to the Vault <span>&times;</span></div>
+          <div class="sh-b">
+            <p class="hero">9 changes</p>
+
+            <div class="zone">
+              <h3 class="zone-h"><svg class="ic ic-s"><use href="#i-alert-circle"/></svg>1 dropped claim is needed</h3>
+              <p class="zone-w">A claim you kept depends on it, but Apply honors the drop and leaves it out.</p>
+              <div class="claim">
+                <p class="claim-t"><svg class="ic ic-s"><use href="#i-user"/></svg>Sherlock Holmes</p>
+                <p class="claim-k">You dropped</p>
+                <p class="claim-x">Link the tenant register entry to the Baker Street timeline.</p>
+              </div>
+            </div>
+
+            <div class="band">
+              <p class="band-h">What changes</p>
+              <div class="barwrap">
+                <div class="bar">
+                  <i class="b1" style="width:22.2%"></i><i class="b2" style="width:44.4%"></i><i class="b3" style="width:33.4%"></i>
+                </div>
+                <div class="barkey">
+                  <span><i class="swatch b1"></i><b>2</b> new memories</span>
+                  <span><i class="swatch b2"></i><b>4</b> text edits</span>
+                  <span><i class="swatch b3"></i><b>3</b> links and tags</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="band">
+              <p class="band-h band-h2">Which memories<span>changes</span></p>
+              <div class="mems">
+                <div class="mem"><svg class="ic ty-character"><use href="#i-user"/></svg><span class="mem-t">Sherlock Holmes</span><span class="mem-n">3</span></div>
+                <div class="mem"><svg class="ic ty-timeline"><use href="#i-timeline-event"/></svg><span class="mem-t">Baker Street — the front room</span><span class="mem-n">2</span></div>
+                <div class="mem"><svg class="ic ty-thread"><use href="#i-pin"/></svg><span class="mem-t">The bent ventilator cover</span><span class="mem-n">2</span></div>
+                <div class="mem"><svg class="ic ty-world"><use href="#i-world"/></svg><span class="mem-t">Ashgate harbour</span><span class="mem-n">2</span></div>
+              </div>
+            </div>
+
+            <button class="sh-apply">Apply 9 changes</button>
+          </div>
+        </div></div>
+        <p class="mk-caption">Shorter, and shows proportion at a glance. Two problems. The bar has to be grey, because every colour we have already means something else — green, red and yellow are reserved for status and blue means "you can tap this". And with small numbers the proportion is not really the interesting fact; 2 out of 9 being brand new memories matters because they are new, not because they are 22%.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════ -->
+  <section class="mk-sec">
+    <h2 class="mk-h2"><span class="mk-no">§3</span> The other states</h2>
+    <p class="mk-intro">Three more the sheet has to survive. The fourth — nothing decided at all — cannot happen any more, because Apply is greyed out until you have decided something, so there is no way to open the sheet on an empty batch.</p>
+
+    <div class="pair">
+
+      <div class="mk-spec">
+        <p class="mk-label">S3 <b>· nothing wrong</b></p>
+        <div class="ph"><div class="sh">
+          <div class="sh-h">What Apply will write to the Vault <span>&times;</span></div>
+          <div class="sh-b">
+            <p class="hero">9 changes</p>
+            <p class="allclear"><svg class="ic"><use href="#i-checks"/></svg>Nothing blocked</p>
+
+            <div class="band">
+              <p class="band-h">What changes</p>
+              <div class="acts">
+                <div class="act"><span class="act-n">2</span><span class="act-l">new memories</span></div>
+                <div class="act"><span class="act-n">4</span><span class="act-l">text edits</span></div>
+                <div class="act"><span class="act-n">3</span><span class="act-l">links and tags</span></div>
+              </div>
+            </div>
+
+            <div class="band">
+              <p class="band-h band-h2">Which memories<span>changes</span></p>
+              <div class="mems">
+                <div class="mem"><svg class="ic ty-character"><use href="#i-user"/></svg><span class="mem-t">Sherlock Holmes</span><span class="mem-n">3</span></div>
+                <div class="mem"><svg class="ic ty-timeline"><use href="#i-timeline-event"/></svg><span class="mem-t">Baker Street — the front room</span><span class="mem-n">2</span></div>
+                <div class="mem"><svg class="ic ty-thread"><use href="#i-pin"/></svg><span class="mem-t">The bent ventilator cover</span><span class="mem-n">2</span></div>
+                <div class="mem"><svg class="ic ty-world"><use href="#i-world"/></svg><span class="mem-t">Ashgate harbour</span><span class="mem-n">2</span></div>
+              </div>
+            </div>
+
+            <button class="sh-apply">Apply 9 changes</button>
+          </div>
+        </div></div>
+        <p class="mk-caption">"Nothing blocked" is there on purpose. If the warning section just disappeared when everything was fine, you would not know whether it had been checked or had failed to load.</p>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label">S4 <b>· 349 memories</b></p>
+        <div class="ph"><div class="sh">
+          <div class="sh-h">What Apply will write to the Vault <span>&times;</span></div>
+          <div class="sh-b">
+            <p class="hero" data-n="360">360 changes</p>
+            <p class="allclear"><svg class="ic"><use href="#i-checks"/></svg>Nothing blocked</p>
+
+            <div class="band">
+              <p class="band-h">What changes</p>
+              <div class="acts">
+                <div class="act"><span class="act-n">12</span><span class="act-l">new memories</span></div>
+                <div class="act"><span class="act-n">340</span><span class="act-l">text edits</span></div>
+                <div class="act"><span class="act-n">8</span><span class="act-l">links and tags</span></div>
+              </div>
+            </div>
+
+            <div class="band">
+              <p class="band-h band-h2">Which memories<span>changes</span></p>
+              <div class="mems">
+                <div class="mem"><svg class="ic ty-character"><use href="#i-user"/></svg><span class="mem-t">Sherlock Holmes</span><span class="mem-n">4</span></div>
+                <div class="mem"><svg class="ic ty-timeline"><use href="#i-timeline-event"/></svg><span class="mem-t">Baker Street — the front room</span><span class="mem-n">3</span></div>
+                <div class="mem"><svg class="ic ty-thread"><use href="#i-pin"/></svg><span class="mem-t">The bent ventilator cover</span><span class="mem-n">3</span></div>
+                <div class="mem"><svg class="ic ty-world"><use href="#i-world"/></svg><span class="mem-t">Ashgate harbour</span><span class="mem-n">2</span></div>
+                <div class="mem"><svg class="ic ty-character"><use href="#i-user"/></svg><span class="mem-t">Mrs Hudson</span><span class="mem-n">2</span></div>
+                <div class="mem"><svg class="ic ty-timeline"><use href="#i-timeline-event"/></svg><span class="mem-t">The evening the record was corrected</span><span class="mem-n">2</span></div>
+                <div class="mem"><svg class="ic ty-thread"><use href="#i-pin"/></svg><span class="mem-t">The tenant register</span><span class="mem-n">2</span></div>
+                <div class="mem"><svg class="ic ty-character"><use href="#i-user"/></svg><span class="mem-t">Watson</span><span class="mem-n">1</span></div>
+              </div>
+              <div class="more">341 more, one change each<svg class="ic"><use href="#i-chevron-right"/></svg></div>
+            </div>
+
+            <button class="sh-apply">Apply 360 changes</button>
+          </div>
+        </div></div>
+        <p class="mk-caption">The top band is still three lines — it always is. The list stops at eight and hands the rest to a link that takes you back to the queue with a filter on. A sheet with 349 rows in it has stopped being a summary and become a worse copy of the list.</p>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label">S5 <b>· still checking</b></p>
+        <div class="ph"><div class="sh">
+          <div class="sh-h">What Apply will write to the Vault <span>&times;</span></div>
+          <div class="sh-b">
+            <p class="hero is-quiet">Checking with the engine…</p>
+            <div class="band">
+              <p class="band-h">What changes</p>
+              <div class="acts">
+                <div class="act"><span class="act-n" style="color:var(--text-faint)">—</span><span class="act-l" style="color:var(--text-faint)">new memories</span></div>
+                <div class="act"><span class="act-n" style="color:var(--text-faint)">—</span><span class="act-l" style="color:var(--text-faint)">text edits</span></div>
+                <div class="act"><span class="act-n" style="color:var(--text-faint)">—</span><span class="act-l" style="color:var(--text-faint)">links and tags</span></div>
+              </div>
+            </div>
+            <button class="sh-apply" disabled>Apply</button>
+          </div>
+        </div></div>
+        <p class="mk-caption">Dashes rather than zeros. We do not know the numbers yet, and zero is an answer. The rows stay in place so nothing jumps when the reply lands.</p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════ -->
+  <section class="mk-sec">
+    <h2 class="mk-h2"><span class="mk-no">§5</span> The save badge</h2>
+    <p class="mk-intro">The badge has three states and currently spells all three out. Below are the icon versions, each one tappable to explain itself. The dotted underline is how everything else in this app marks "there is an explanation behind this", so the badge borrows it rather than inventing a new hint.</p>
+
+    <div class="mk-spec">
+      <p class="mk-label">the three states, four ways</p>
+      <div class="wtab">
+        <div class="wth"></div><div class="wth">storing</div><div class="wth">stored</div><div class="wth">could not store</div>
+
+        <div class="wtk">W1<br>today</div>
+        <div><div class="wrow"><span class="pill">Saving</span></div></div>
+        <div><div class="wrow"><span class="pill">Saved</span></div></div>
+        <div><div class="wrow"><span class="pill" style="color:var(--danger)">Failed &middot; Retry</span></div></div>
+
+        <div class="wtk">W2<br>cloud</div>
+        <div><div class="wrow"><span class="term " data-tip="Storing your latest keep and drop choices. This does not write anything to the memory store."><svg class="ic "><use href="#i-cloud-upload"/></svg></span></div></div>
+        <div><div class="wrow"><span class="term is-ok" data-tip="Your keep and drop choices are stored on the server as you go, so you can leave and come back. Nothing reaches the memory store until you press Apply."><svg class="ic "><use href="#i-cloud-check"/></svg></span></div></div>
+        <div><div class="wrow"><span class="term is-bad" data-tip="Your last few choices could not be stored. They are still on screen, but leaving now would lose them."><svg class="ic "><use href="#i-cloud-x"/></svg></span></div></div>
+
+        <div class="wtk">W3<br>disk</div>
+        <div><div class="wrow"><span class="term is-wait" data-tip="Storing your latest keep and drop choices. This does not write anything to the memory store."><svg class="ic "><use href="#i-device-floppy"/></svg></span></div></div>
+        <div><div class="wrow"><span class="term is-ok" data-tip="Your keep and drop choices are stored on the server as you go, so you can leave and come back. Nothing reaches the memory store until you press Apply."><svg class="ic "><use href="#i-device-floppy"/></svg></span></div></div>
+        <div><div class="wrow"><span class="term is-bad" data-tip="Your last few choices could not be stored. They are still on screen, but leaving now would lose them."><svg class="ic "><use href="#i-alert-circle"/></svg></span></div></div>
+
+        <div class="wtk">W4<br>mixed</div>
+        <div><div class="wrow"><span class="term is-wait" data-tip="Storing your latest keep and drop choices. This does not write anything to the memory store."><svg class="ic "><use href="#i-device-floppy"/></svg></span></div></div>
+        <div><div class="wrow"><span class="term is-ok" data-tip="Your keep and drop choices are stored on the server as you go, so you can leave and come back. Nothing reaches the memory store until you press Apply."><svg class="ic "><use href="#i-device-floppy"/></svg></span></div></div>
+        <div><div class="wrow"><span class="term is-bad" data-tip="Your last few choices could not be stored. They are still on screen, but leaving now would lose them."><svg class="ic "><use href="#i-alert-circle"/></svg></span><button class="retry">Retry</button></div></div>
+      </div>
+      <p class="mk-caption">W2 and W3 are icon-only in all three states. W4 keeps an icon for the two states you can ignore and gives the one you cannot a visible way out. Note what happens to W2 at this size: the upload cloud and the tick cloud are nearly the same shape, and "storing" versus "stored" is exactly the pair you need to tell apart at a glance. W3 sidesteps it by using one mark at two strengths instead of two marks.</p>
+    </div>
+
+    <div class="pair">
+      <div class="mk-spec">
+        <p class="mk-label">the tooltip, open</p>
+        <div class="ph" style="overflow:visible"><div style="padding:14px 12px 96px">
+          <div class="wrow"><span class="term is-ok open" data-tip="Your keep and drop choices are stored on the server as you go, so you can leave and come back. Nothing reaches the memory store until you press Apply."><svg class="ic "><use href="#i-device-floppy"/></svg></span></div>
+        </div></div>
+        <p class="mk-caption">Tap on a phone, hover or keyboard-focus on a desktop. This is the same tooltip the memory types and claim kinds already use, so it is one thing to learn rather than a new one.</p>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label">W3 in place, on a 390px phone</p>
+        <div class="ph ph-narrow">
+          <div class="listfade"><div class="lrow"><i class="k"></i><span></span></div><div class="lrow"><i class="d"></i><span class="s"></span></div><div class="lrow"><i></i><span></span></div></div>
+          <div class="rail">
+            <div style="padding-top:4px">
+              <div class="meter meter-lg" style="margin:0 0 7px"><i class="m-keep" style="width:14%"></i><i class="m-drop" style="width:5%"></i></div>
+              <div class="rail-row" style="min-height:0;margin-bottom:2px">
+                <span class="counts" style="font-size:11.5px">
+                  <b class="c-keep">6 keep</b><b class="c-drop">2 drop</b><b class="c-left">34 to review</b>
+                </span>
+                <span class="spacer"></span>
+                <span class="term is-ok" data-tip="Your keep and drop choices are stored on the server as you go, so you can leave and come back. Nothing reaches the memory store until you press Apply."><svg class="ic "><use href="#i-device-floppy"/></svg></span>
+              </div>
+            </div>
+            <div class="rail-row">
+              <button class="iconbtn"><svg class="ic "><use href="#i-refresh"/></svg></button>
+              <button class="iconbtn"><svg class="ic "><use href="#i-arrow-back-up"/></svg></button>
+              <span class="spacer"></span>
+              <button class="rbtn">Review and apply <svg class="ic ic-s"><use href="#i-chevron-right"/></svg></button>
+            </div>
+            <div class="meter" style="visibility:hidden"></div>
+          </div>
+        </div>
+        <p class="mk-caption">Measured: the badge goes from 53px to <b>33px</b> when stored, and from 112px to 33px when it could not store. W4 keeps a visible Retry and lands at 89px. Since the failed badge is what pushed the single-row layout 30px over the edge on this phone, W2 and W3 rescue it and W4 does not.</p>
+      </div>
+    </div>
+
+    <div class="mk-spec">
+      <p class="mk-label">the problem an icon makes worse</p>
+      <div class="wtab" style="grid-template-columns:1fr">
+        <div style="border-right:none">
+          <div class="wrow" style="gap:14px">
+            <span class="pill">Saved</span>
+            <span class="term is-ok" data-tip="Your keep and drop choices are stored on the server as you go, so you can leave and come back. Nothing reaches the memory store until you press Apply."><svg class="ic "><use href="#i-cloud-check"/></svg></span>
+            <span class="term is-ok" data-tip="Your keep and drop choices are stored on the server as you go, so you can leave and come back. Nothing reaches the memory store until you press Apply."><svg class="ic "><use href="#i-device-floppy"/></svg></span>
+          </div>
+        </div>
+      </div>
+      <p class="mk-caption">A blind copy review flagged that the word "Saved" already fights the promise that nothing is written until you press Apply — read plainly, it says your changes are in. A tick makes that worse, because a tick is the most finished-looking mark there is, and the cloud-with-a-tick is a tick plus "sent somewhere". The disk is the only one of the three that says <b>stored</b> without also saying <b>done</b>.</p>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════ -->
+  <section class="mk-sec">
+    <h2 class="mk-h2"><span class="mk-no">§4</span> What I would pick</h2>
+    <p class="mk-intro"><b>R3 and S1.</b> R1 is ruled out by measurement — it fits your phone with 107px to spare and then loses the Apply button by 30px on a 390px one. Between the two survivors I would take R3: the progress bar is the thing you glance at most often and right now it is a 4px hairline nobody notices, and moving it to the top of the rail costs no height at all because the counts become its caption. S1 over S2 because the bar has to be drawn in greys to stay inside our colour rules, and telling three greys apart is the one thing a bar is bad at.</p>
+    <p class="mk-note">Open question I could not settle on my own: the "which memories" list is sorted biggest first. That means a brand-new memory getting one write sorts below an existing one getting three, even though creating something new is the bigger deal. Do you want new memories pulled to the top of that list regardless of size?</p>
+  </section>
+
+</div>
+</body>
+</html>
