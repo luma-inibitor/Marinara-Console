@@ -365,6 +365,11 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 /* ══ stacked detail (mobile) ══ */
 .stack-screen { position: fixed; inset: 0; z-index: 50; background: var(--canvas);
   overflow-y: auto; }
+/* The stacked screen is opaque and fills the viewport, so the list underneath
+   is off screen — yet still tabbable, still announced, and still measured as a
+   tap target. Hiding it withdraws it from all three; it stays mounted, so its
+   scroll position survives the trip into the detail and back. */
+.audit:has(> .stack-screen) > .audit-list { visibility: hidden; }
 
 /* ══ vault ══ */
 .vault-summary { grid-template-columns: 32px minmax(0, 1fr) 58px; }

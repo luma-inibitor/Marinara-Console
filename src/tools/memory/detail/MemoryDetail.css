@@ -50,14 +50,14 @@
   overflow-wrap: anywhere;
 }
 
-.mdc-status { flex: 0 0 auto; font-size: var(--fs-data-s); }
+.mdc-edit { flex: 0 0 auto; min-height: var(--tap); }
 
 /* Indented past the back button so the meta reads as belonging to the title
    rather than to the control beside it. */
 .mdc-meta {
   display: flex;
   align-items: center;
-  /* Wraps so the edit control drops to its own line at narrow widths rather
+  /* Wraps so the status pill drops to its own line at narrow widths rather
      than squeezing the stamp — a squeezed stamp breaks mid-value and leaves a
      · orphaned at the head of the next line. */
   flex-wrap: wrap;
@@ -68,7 +68,7 @@
 }
 .mdc-type { color: var(--tc); }
 .mdc-sep { font-style: normal; color: var(--edge-strong); }
-.mdc-edit { margin-left: auto; min-height: var(--tap); }
+.mdc-status { flex: 0 0 auto; margin-left: auto; font-size: var(--fs-data-s); }
 
 .mdc-body { padding: var(--panel-pad); }
 

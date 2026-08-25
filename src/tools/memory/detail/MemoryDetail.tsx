@@ -117,17 +117,17 @@ export function MemoryDetail(props: {
           {/* Titles wrap and never truncate: the title is the last thing on
               the screen that may be cut. */}
           <h1 className="mdc-title">{n.title ?? n.id}</h1>
-          <StatusPill status={n.status} className="mdc-status" />
-        </div>
-        <div className="mdc-meta t-data">
-          <span className={`mdc-type type-${n.type}`}>{n.type.replaceAll("_", " ")}</span>
-          {edited && <><i className="mdc-sep" data-contrast-exempt>·</i><span>{t("memory.detail.edited", { when: edited })}</span></>}
-          {n.version != null && <><i className="mdc-sep" data-contrast-exempt>·</i><span>{t("memory.detail.version", { n: n.version })}</span></>}
           {props.onEdit && (
             <Chip className="mdc-edit" onClick={props.onEdit}>
               <Edit size={ICON_SIZE.sm} stroke={1.75} aria-hidden />{t("memory.detail.edit")}
             </Chip>
           )}
+        </div>
+        <div className="mdc-meta t-data">
+          <span className={`mdc-type type-${n.type}`}>{n.type.replaceAll("_", " ")}</span>
+          {edited && <><i className="mdc-sep" data-contrast-exempt>·</i><span>{t("memory.detail.edited", { when: edited })}</span></>}
+          {n.version != null && <><i className="mdc-sep" data-contrast-exempt>·</i><span>{t("memory.detail.version", { n: n.version })}</span></>}
+          <StatusPill status={n.status} className="mdc-status" />
         </div>
       </header>
 
