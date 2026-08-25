@@ -7,42 +7,58 @@
 // above: in a strict file EVERY string literal with a letter and a space is
 // read as copy, so a label added to one of these maps without a catalog entry
 // fails the check instead of shipping unnoticed. Do not drop the marker.
+import * as v from "valibot";
 import { api, tokensOf } from "../../shell/api";
+import { parseItems, parseWrite } from "../../shell/wire";
 import { tAny } from "../../copy";
 import { testPrimaryKeys, testSecondaryKeys } from "../../lib/lorebook-keyword-matching.js";
-import type { SelectiveLogic } from "../../lib/lorebook-keyword-matching.js";
 
-export interface Lorebook {
-  id: string;
-  name: string;
-  tokenBudget: number;
-  enabled: boolean;
-}
+// The wire shapes, and the types the tool reads, inferred from them. Loose, so
+// the two dozen fields the console never touches pass through untouched. A
+// field is named below only where the console reads it, and it is named with a
+// primitive rather than a coercion: `position`, `depth`, `order` and
+// `tokenBudget` are divided and compared, and `enabled`, `constant` and
+// `selective` decide whether an entry fires, so a string in either place has to
+// fail rather than pass a truthiness test.
+const id = v.pipe(v.string(), v.minLength(1));
+const strings = v.array(v.string());
 
-/** Fields the tool reads/writes. Everything else passes through untouched. */
-export interface Entry {
-  id: string;
-  name: string;
-  content: string;
-  description: string;
-  keys: string[];
-  secondaryKeys: string[];
-  enabled: boolean;
-  constant: boolean;
-  selective: boolean;
-  selectiveLogic: SelectiveLogic;
-  useRegex: boolean;
-  matchWholeWords: boolean;
-  caseSensitive: boolean;
-  position: number;
-  outletName: string;
-  depth: number;
-  order: number;
-  tag: string;
-  hasEmbedding?: boolean;
-  updatedAt?: string;
-  [extra: string]: unknown;
-}
+export const LorebookSchema = v.looseObject({
+  id,
+  name: v.string(),
+  tokenBudget: v.number(),
+  enabled: v.boolean(),
+});
+
+/** `selectiveLogic` is the vendored matcher's own closed set; a member outside
+ *  it reaches `testSecondaryKeys`, which answers `true` for anything it does
+ *  not recognise, so the entry would be drawn as firing on nothing. */
+export const EntrySchema = v.looseObject({
+  id,
+  name: v.string(),
+  content: v.string(),
+  description: v.string(),
+  keys: strings,
+  secondaryKeys: strings,
+  enabled: v.boolean(),
+  constant: v.boolean(),
+  selective: v.boolean(),
+  selectiveLogic: v.picklist(["and", "and_all", "or", "not", "not_all"]),
+  useRegex: v.boolean(),
+  matchWholeWords: v.boolean(),
+  caseSensitive: v.boolean(),
+  position: v.number(),
+  outletName: v.string(),
+  depth: v.number(),
+  order: v.number(),
+  tag: v.string(),
+  /** Not the engine's: server.mjs swaps the vector out for whether there was one. */
+  hasEmbedding: v.optional(v.boolean()),
+  updatedAt: v.optional(v.string()),
+});
+
+export type Lorebook = v.InferOutput<typeof LorebookSchema>;
+export type Entry = v.InferOutput<typeof EntrySchema>;
 
 export type EntryStatus = "normal" | "constant" | "selective" | "disabled";
 
@@ -136,12 +152,23 @@ export function tagStats(entries: Entry[]): TagStat[] {
 }
 
 // ── API ──
-export const fetchBooks = () => api<Lorebook[]>("/lorebooks");
-export const fetchEntries = (bookId: string) => api<Entry[]>(`/lorebooks/${bookId}/entries`);
-export const patchEntry = (bookId: string, id: string, patch: Record<string, unknown>) =>
-  api<Entry>(`/lorebooks/${bookId}/entries/${id}`, { method: "PATCH", body: patch });
-export const createEntry = (bookId: string, body: Record<string, unknown>) =>
-  api<Entry>(`/lorebooks/${bookId}/entries`, { method: "POST", body });
+
+/** The route a wire mismatch is reported under, as a pattern rather than an
+ *  instance. Method and path stay separate arguments because this file is
+ *  @copy-strict, where a letter and a space make a string copy. */
+const wire = (method: string, path: string) => `${method} ${path}`;
+
+export const fetchBooks = async () =>
+  parseItems(LorebookSchema, await api("/lorebooks"), wire("GET", "/lorebooks"));
+export const fetchEntries = async (bookId: string) =>
+  parseItems(EntrySchema, await api(`/lorebooks/${bookId}/entries`), wire("GET", "/lorebooks/:id/entries"));
+
+/** The saved entry, or nothing: the drawer merges the reply over its draft, and
+ *  both a row and an empty 204 leave that merge correct. */
+export const patchEntry = async (bookId: string, entryId: string, patch: Record<string, unknown>) =>
+  parseWrite(v.nullish(EntrySchema), await api(`/lorebooks/${bookId}/entries/${entryId}`, { method: "PATCH", body: patch }), wire("PATCH", "/lorebooks/:id/entries/:entryId"));
+export const createEntry = async (bookId: string, body: Record<string, unknown>) =>
+  parseWrite(EntrySchema, await api(`/lorebooks/${bookId}/entries`, { method: "POST", body }), wire("POST", "/lorebooks/:id/entries"));
 export const deleteEntry = (bookId: string, id: string) =>
   api<null>(`/lorebooks/${bookId}/entries/${id}`, { method: "DELETE" });
 export const bulkPatch = (bookId: string, entryIds: string[], changes: Record<string, unknown>) =>
