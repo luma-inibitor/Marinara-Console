@@ -6,7 +6,7 @@ import { navigate } from "./router";
 import { paletteOpen } from "./palette";
 import { t } from "../copy";
 
-export const cheatOpen = createStore(false);
+const cheatOpen = createStore(false);
 
 const G_TARGETS: Record<string, string> = { l: "lorebooks", p: "presets", m: "memory" };
 let gArmed = false;

@@ -16,9 +16,9 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 
 /** Field-level errors keyed by field name, as the engine reports them. */
-export type FieldErrors = Record<string, string>;
+type FieldErrors = Record<string, string>;
 
-export interface Conflict {
+interface Conflict {
   /** The server's copy, fetched fresh when the precondition failed. */
   theirs: Record<string, unknown>;
   /** Fields where their value differs from the value this draft started at. */
@@ -53,7 +53,7 @@ export interface Draft<T extends { id: string }> {
 }
 
 /** Pull `{path, message}` pairs out of an engine validation error, if present. */
-export function parseFieldErrors(err: unknown): FieldErrors {
+function parseFieldErrors(err: unknown): FieldErrors {
   const details = (err as { details?: Array<{ path?: string; message?: string }> })?.details;
   if (!Array.isArray(details)) return {};
   const out: FieldErrors = {};

@@ -4,7 +4,7 @@
 import { type Note } from "../api/types";
 import { type Decision, type Row } from "./review";
 
-export interface DroppedDependency {
+interface DroppedDependency {
   kept: Row;
   dropped: Row;
 }

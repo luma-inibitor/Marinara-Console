@@ -8,12 +8,12 @@ import { createStore, derived, useStore, type Store } from "../lib/store";
 import { ApiError } from "./api";
 import { t } from "../copy";
 
-export type Reach = "ok" | "offline" | "engine-down";
+type Reach = "ok" | "offline" | "engine-down";
 
 const browserOnline = createStore(navigator.onLine);
 const engineReachable = createStore(true);
 /** Bumped by a successful request, so recovery is announced once. */
-export const lastOk = createStore<number>(0);
+const lastOk = createStore<number>(0);
 
 export const reach: Store<Reach> = derived(
   [browserOnline, engineReachable],
@@ -39,7 +39,7 @@ let probing = false;
 let backoff = 1_000;
 
 /** Poll the engine until it answers, with backoff. Safe to call repeatedly. */
-export async function probe(): Promise<boolean> {
+async function probe(): Promise<boolean> {
   if (probing) return engineReachable.get();
   probing = true;
   try {

@@ -33,8 +33,6 @@ import { type Decision, type Row } from "../model/review";
 import { t } from "../../../copy";
 import { toast } from "../../../shell/toast";
 
-export type { Decision };
-
 export const decisions = createStore<Map<string, Decision>>(new Map());
 export const edited = createStore<Map<string, Mutation>>(new Map());
 

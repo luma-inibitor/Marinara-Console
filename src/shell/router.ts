@@ -1,7 +1,7 @@
 // Hash router: #/tool/rest... — deep links with no server routes.
 import { createStore } from "../lib/store";
 
-export interface Route {
+interface Route {
   tool: string;
   rest: string[];
 }

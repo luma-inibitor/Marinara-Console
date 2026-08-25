@@ -5,7 +5,7 @@
 
 import { type Decision, type Row } from "./review";
 
-export interface Tally {
+interface Tally {
   keep: number;
   drop: number;
   undecided: number;
