@@ -14,12 +14,13 @@
 
 import { describe, expect, it } from "vitest";
 
-import type { Disposition, ImportPreview, Note, NoteType, ReviewResponse } from "../api/types";
+import type { Disposition, ImportPreview, ImportResult, Note, NoteType, ReviewResponse } from "../api/types";
 import {
   type SourceKind,
   type SourceRow,
   type SourceState,
   buildSources,
+  importReportRows,
   isImported,
   isSelectable,
   partition,
@@ -510,5 +511,55 @@ describe("partition", () => {
 
   it("returns three empties for no rows", () => {
     expect(partition([])).toEqual({ ready: [], imported: [], all: [] });
+  });
+});
+
+const tally = { providerCandidates: 4, normalizedAdditions: 0, parserRejections: 0, validationRejections: 1, deduplications: 0, keptUnits: 3 };
+
+const draft = (accounting?: typeof tally) => ({
+  id: "d4dba4df-d77f-4afe-a142-0149e55c0e0f",
+  status: "pending",
+  mutations: [makeMutation()],
+  source: { sourceNoteId: "source_example" },
+  ...(accounting ? { accounting } : {}),
+});
+
+function importResult(entry: Partial<ImportResult["imported"][number]>): ImportResult {
+  return {
+    batchStatus: "success",
+    source: "lorebooks",
+    imported: [{
+      sourceId: "lorebook_entry_7a821c05d6",
+      title: "Lorebook - Example Book: Description",
+      note: makeNote({ id: "source_example" }),
+      draft: draft(),
+      ...entry,
+    }],
+  };
+}
+
+describe("importReportRows", () => {
+  it("reads the tally the entry carries when the draft omits it", () => {
+    expect(importReportRows([importResult({ accounting: tally })])).toEqual([
+      { title: "Lorebook - Example Book: Description", kept: 3, rejected: 1, failed: false },
+    ]);
+  });
+
+  it("falls back to the draft's copy when the entry omits it", () => {
+    expect(importReportRows([importResult({ draft: draft(tally) })])[0]).toMatchObject({ kept: 3, rejected: 1 });
+  });
+
+  it("reports one tally when both copies carry it", () => {
+    const r = importResult({ accounting: tally, draft: draft(tally) });
+    expect(importReportRows([r])[0]).toMatchObject({ kept: 3, rejected: 1 });
+  });
+
+  it("shows zeroes rather than a guess when neither copy carries it", () => {
+    expect(importReportRows([importResult({})])[0]).toMatchObject({ kept: 0, rejected: 0 });
+  });
+
+  it("marks an entry failed when the batch failed", () => {
+    const r = { ...importResult({ accounting: tally }), batchStatus: "failed" };
+    expect(importReportRows([r])[0].failed).toBe(true);
   });
 });

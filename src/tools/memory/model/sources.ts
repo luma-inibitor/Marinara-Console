@@ -7,7 +7,7 @@
 //
 // State names are the product catalog's, never coined (design/CHECKLIST.md §2).
 
-import type { ImportPreview, Note, ReviewResponse } from "../api/types";
+import type { ImportPreview, ImportResult, Note, ReviewResponse } from "../api/types";
 
 export type SourceKind = "characters" | "lorebooks" | "chats";
 
@@ -150,4 +150,25 @@ export function partition(rows: SourceRow[]) {
   const ready = rows.filter(isSelectable);
   const imported = rows.filter(isImported);
   return { ready, imported, all: rows };
+}
+
+interface ImportReportRow {
+  title: string;
+  kept: number;
+  rejected: number;
+  failed: boolean;
+}
+
+/** The engine sends the extraction tally twice from one value, and only the entry's copy is required. */
+export function importReportRows(results: ImportResult[]): ImportReportRow[] {
+  return results.flatMap((res) => res.imported.map((item) => {
+    const a = item.accounting ?? item.draft?.accounting;
+    const candidates = a ? a.providerCandidates + a.normalizedAdditions : 0;
+    return {
+      title: item.title,
+      kept: a?.keptUnits ?? 0,
+      rejected: a ? candidates - a.keptUnits : 0,
+      failed: res.batchStatus === "failed" || (!item.draft && !item.note),
+    };
+  }));
 }
