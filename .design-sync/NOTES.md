@@ -81,15 +81,21 @@ two are safe to delete.
 
 ## State at time of this sync
 
-Clean. On a cold clone at `97e8574`: `npm ci`, `npx tsc --noEmit`, `npm test`
-(415 tests over 14 files), `npm run layercheck` and `npm run build` all green.
-The browser checks (`scripts/domsnap.mjs`, `scripts/verify.mjs`) were not re-run
-this round — no bundle was built, so there was nothing new to shoot.
+Clean, and uploaded. On a cold clone at `97e8574`: `npm ci`, `npx tsc --noEmit`,
+`npm test` (415 tests over 14 files), `npm run layercheck` and `npm run build`
+all green. The driver ran three times (the third is the one that shipped);
+render check 23/23 with **0 bad, 0 thin, 0 blank, 0 variants-identical**, and
+the only warn was the triaged `[FONT_MISSING]`.
 
-Drift carried forward since the last uploaded bundle: `SectionKey` is new to the
-barrel and to `componentSrcMap`, `DetailSection` and `Sheet` changed internally
-without changing their props, and `shell/toast.tsx` split into `shell/toast.ts` +
-`shell/Toaster.tsx`. No prop contract changed.
+Drift since the previous uploaded bundle: `SectionKey` was new to the barrel and
+to `componentSrcMap`, `DetailSection` and `Sheet` changed internally without
+changing their props, and `shell/toast.tsx` split into `shell/toast.ts` +
+`shell/Toaster.tsx`. **No prop contract changed** — regenerating `dtsPropsFor`
+reproduced all 22 prior bodies byte for byte.
+
+18 components were verified-by-upload and skipped capture entirely; 4 changed
+and 1 was new. The final capture printed `4 carried forward, 1 captured,
+0 grade cleared`, which is the proof the next sync stays cheap.
 
 ## Converter resolution root — a trap that cost real damage
 
@@ -274,6 +280,10 @@ declarations on one line, so a `^`-anchored per-line regex reports false misses.
   designed — grades follow authored previews and preview-affecting config, not
   DS source edits — but it does mean a source rewrite this large ships without
   re-grading. Read the contact sheets yourself when the source has churned.
+- **`conventions.md` rots silently and nothing else checks it.** It is inlined
+  into the design agent's prompt, so a wrong prop name there is wrong in every
+  design built with this system, and no build step validates it. Re-run the
+  name check every sync (see the conventions section above).
 - **`dtsPropsFor` is a snapshot.** It does not track prop changes. Re-emit
   declarations and regenerate it on every re-sync, or contracts go stale
   silently — the build will NOT warn.
