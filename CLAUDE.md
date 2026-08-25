@@ -22,6 +22,7 @@
   a defect found while doing something else belongs there rather than in the
   diff that found it. A decision that changes is rewritten correct at the top,
   never appended to.
+- **Every behavior change adds a line to `CHANGELOG.md`** under `## Unreleased`, in the same diff. One sentence, what a person using the console now sees or can do, with the PR number. A purely mechanical change with no product impact needs none.
 - Validate: `npx tsc --noEmit && npm test && npm run layercheck && npm run build`,
   then the checks in DESIGN.md §7 (screenshot at 390/768/1280, zero console errors, contrast +
   tap-target floors).
