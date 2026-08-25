@@ -383,9 +383,11 @@ owner decision after explanation.
 - **Re-extract on the blocked-drafts card costs real model calls** on a live
   instance (44 sources × extraction). Needs a cost-aware confirm naming the
   count and connection before firing.
-- **279 soft tap-target warnings** from verify.mjs (24–39px secondary targets).
-  Within DESIGN's secondary floor, but worth one pass — the chip rail and tri
-  rail dominate the count.
+- **16 tap-target failures** from verify.mjs, four screens × four viewports.
+  Under §2's 44px floor and too tightly spaced to count as secondary: review rows `.mem-mid` 35px at 6.1px, preset-editor `.row-summary` 39px at 1px, the book audit's Test segment 42px at 7px, and the memory detail card's `.notelink` 24px and section actions 34px at 0–2.5px. Row height on the first two is a density tradeoff awaiting Luma's call.
+- **767 soft tap-target warnings** from verify.mjs (24–43px secondary targets,
+  correctly spaced). Within DESIGN's secondary floor, but worth one pass — the
+  chip rail and tri rail dominate the count.
 - **Mobile device pass on the port** — the prototype's mobile feedback round
   (bottom bar flush, facet fit, sticky toolbar) is believed carried, but only
   screenshot-verified at 390px headless, not on the phone.

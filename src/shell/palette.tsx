@@ -152,7 +152,7 @@ export function Palette() {
             );
           })}
         </div>
-        <div className="palette-foot meta" data-contrast-exempt>
+        <div className="palette-foot meta">
           <span>{t("shell.palette.hintMove")}</span><span>{t("shell.palette.hintOpen")}</span><span>{t("shell.palette.hintClose")}</span>
         </div>
       </div>

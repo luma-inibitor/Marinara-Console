@@ -633,7 +633,7 @@ function SectionDetail(props: {
 
             <div className="field">
               <span className="t-label t-label-s">{t("presets.role")}</span>
-              <div className="segrow is-3">
+              <div className="segrow is-3" role="group" aria-label={t("presets.role")}>
                 {(["system", "user", "assistant"] as const).map((r) => (
                   <button key={r} className="segbtn is-pos t-data" aria-pressed={s.role === r} disabled={readOnly}
                     onClick={() => save(s.id, { role: r })}>{r}</button>

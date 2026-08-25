@@ -178,7 +178,7 @@ export function Review() {
         <header className="console">
           <div className="hrow">
             <h1 className="console-title">{t("reviewqueue.reviewQueue")}</h1>
-            <span className="t-data mem-save" data-contrast-exempt>
+            <span className="t-data mem-save">
               {save === "saving" ? t("memory.save.autosaving")
                 : save === "failed"
                   ? <span className="is-drop">{t("activityview.failed")} <Chip onClick={retryPersist}>{t("activityview.retry")}</Chip></span>
@@ -191,7 +191,7 @@ export function Review() {
           </div>
 
           {reviewData && (
-            <div className="gen-line t-data" data-contrast-exempt>
+            <div className="gen-line t-data">
               {t("memory.review.generatedAt", { time: new Date(reviewData.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })}
               {reviewData.counts.deduplications > 0 && <> · {t("memory.review.dedupedUpstream", { count: reviewData.counts.deduplications })}</>}
             </div>

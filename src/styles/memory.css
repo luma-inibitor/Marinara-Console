@@ -50,7 +50,7 @@
 
 .mem-save { color: var(--text-dim); font-size: var(--fs-data-s); }
 .mem-save .chip { min-height: 26px; padding: 0 8px; margin-left: 4px; }
-.gen-line { color: var(--text-faint); font-size: 10px; margin-top: 2px; }
+.gen-line { color: var(--text-dim); font-size: 10px; margin-top: 2px; }
 .dep-tag { color: var(--accent); }
 .health-banner { display: flex; align-items: center; gap: var(--s3);
   padding: var(--s2) var(--s3); background: var(--warn-wash);
@@ -82,9 +82,6 @@
 .chip.ctl .ctl-v { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
   font-family: var(--font-data); text-transform: none; letter-spacing: 0.02em;
   font-size: 10.5px; color: var(--text); text-align: right; }
-/* chip rail: mandated secondary spacing + an edge fade so overflow is discoverable */
-.chiprail { gap: var(--s2); mask-image: linear-gradient(90deg, #000 94%, transparent); }
-
 /* ═══ MEMORY LIST SYSTEM ═════════════════════════════════════════════
    Owns every layout rule for the review and sources lists. No lorebook
    classes — this shares nothing with the audit-row pattern. (The vault
