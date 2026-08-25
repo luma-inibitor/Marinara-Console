@@ -751,13 +751,18 @@
     "text": "Archived {{title}}",
     "note": "Toast confirming an archive, naming the memory because the row it came from may have left the view. The catalog's archiveSuccess pair counts memories (\"{{count}} memories archived.\") for a multi-select the console does not have."
   },
-  "memory.vault.deleted": {
-    "text": "Deleted {{title}}",
-    "note": "Toast confirming a permanent delete, naming the memory for the same reason as memory.vault.archived. sourceoperation.deleted is a bare row status inside an operation report."
+  "memory.vault.archiveWithExtracted": {
+    "text": "Archive with extracted memories",
+    "note": "The second of the vault editor's two archive controls: the first archives this memory, this one archives it together with the memories extracted from it. The catalog's own archive labels are all single-scope (memoryvault.archive) or speak about a multi-select (sourceoperation.applyArchive, \"Archive selected records\"), and it names the cascade only as a delete (sourcesworkspace.deleteExtractedMemoriesTitle). \"extracted memories\" is the catalog's word for the set."
   },
-  "memory.vault.deleteConfirm": {
-    "text": "Permanently delete {{title}}? This cannot be undone.",
-    "note": "Confirm before a permanent delete of a memory. Both of the catalog's delete confirms are source-specific — they ask what to do with the extracted memories — and the generic one (permanentlyDeleteSelectedMemories) speaks about a multi-select. Registered whole because the code used to build it by splitting a catalog sentence on its question mark."
+  "memory.vault.archiveWithExtractedConfirm": {
+    "text": "Archive {{title}} and any memories extracted from it? Archiving excludes them from recall without deleting them.",
+    "note": "Confirm before the cascading archive. The catalog's confirmArchive counts a multi-select (\"Archive the source and {{count}} selected linked memories?\") and its delete confirms all promise permanence, which this action does not have. The second sentence exists because the control it replaced claimed the opposite; it restates statusHelp's \"archived memories cannot\" be recalled for a reader who is mid-decision."
+  },
+  "memory.vault.archivedWithExtracted": {
+    "one": "Archived {{title}} and {{count}} memory extracted from it",
+    "other": "Archived {{title}} and {{count}} memories extracted from it",
+    "note": "Toast after the cascading archive, naming the memory for the same reason as memory.vault.archived and reporting how far the cascade reached. The catalog's archiveSuccess pair is a bare count (\"{{count}} memories archived.\") with no target to attribute them to."
   },
   "memory.sources.search": {
     "text": "Search sources",
@@ -932,6 +937,10 @@
     "note": "How many sections the memory has, as the spoken name of the count beside the sections heading. The heading already renders the noun, so the visible figure stays bare and this carries the noun for a screen reader."
   },
 
+  "memory.vault.emptyAllArchived": {
+    "text": "Everything here has been archived.",
+    "note": "The vault list emptied by archiving rather than by having nothing in it, in the same sentence shape as memory.vault.emptyScoped. The catalog never states this condition because upstream the vault lists archived memories, so it has no empty state they can cause. Deliberately states the condition and stops: the vault has no way to view archived memories yet, and naming a way out that does not exist is worse than naming none."
+  },
   "memory.vault.emptyScoped": {
     "text": "No memories are available in this scope.",
     "note": "The vault filtered to nothing by scope alone. The catalog ships this exact sentence shape for the two things it does scope — noLorebooksAreAvailableInThisScope, noSourcesHaveBeenImportedInThisScope — but never for saved memories, because upstream the vault is not a scoped view. Same sentence, right noun."

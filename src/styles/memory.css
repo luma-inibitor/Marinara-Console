@@ -224,7 +224,9 @@
   .ghead-agg { display: none; }
   .gcap .gcap-pct { display: none; }
 }
-.group-actions { display: flex; gap: var(--s2); padding: var(--s2) var(--s3); align-items: center; }
+/* Wraps because every button here sets white-space: nowrap and would otherwise
+   overflow the pane. */
+.group-actions { display: flex; flex-wrap: wrap; gap: var(--s2); padding: var(--s2) var(--s3); align-items: center; }
 
 /* ══ facet sheet — the surface is <Sheet>, src/ui/Sheet.css ══ */
 .peek-meta { color: var(--text-dim); font-size: var(--fs-data-s); overflow-wrap: anywhere; }
