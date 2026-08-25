@@ -241,24 +241,31 @@ describe("facetCounts", () => {
 describe("buildGroups — groupers", () => {
   const row = (over: Partial<Row>) => plain(over);
 
-  it("groups by target, carrying the note type as meta", () => {
+  it("groups by target, carrying the note type as the icon", () => {
     const a = row({ targetId: "n1", targetTitle: "Alice", targetType: "character" });
     const b = row({ targetId: "n1", targetTitle: "Alice", targetType: "character" });
     const c = row({ targetId: "n2", targetTitle: "Vale", targetType: "world" });
     const groups = buildGroups([a, b, c], "target", "risk");
-    expect(groups.map((g) => [g.id, g.label, g.meta])).toEqual([
-      ["n1", "Alice", "character"],
-      ["n2", "Vale", "world"],
+    expect(groups.map((g) => [g.id, g.label, g.icon])).toEqual([
+      ["n1", "Alice", { family: "type", value: "character" }],
+      ["n2", "Vale", { family: "type", value: "world" }],
     ]);
     expect(keys(groups[0].rows)).toEqual([a.key, b.key]);
   });
 
-  it("groups by source, with no meta at all", () => {
-    const a = row({ sourceNoteId: "s1", sourceTitle: "Chat A" });
-    const b = row({ sourceNoteId: "s2", sourceTitle: "Chat B" });
+  it("groups by source, carrying the source kind as the icon", () => {
+    const a = row({ sourceNoteId: "s1", sourceTitle: "Chat A", sourceKind: "chat_summary" });
+    const b = row({ sourceNoteId: "s2", sourceTitle: "The Vale", sourceKind: "lorebook" });
     const groups = buildGroups([a, b], "source", "risk");
-    expect(groups.map((g) => [g.id, g.label])).toEqual([["s1", "Chat A"], ["s2", "Chat B"]]);
-    expect(groups[0].meta).toBeUndefined();
+    expect(groups.map((g) => [g.id, g.label, g.icon])).toEqual([
+      ["s1", "Chat A", { family: "sourceKind", value: "chat_summary" }],
+      ["s2", "The Vale", { family: "sourceKind", value: "lorebook" }],
+    ]);
+  });
+
+  it("leaves a source whose note recorded no provenance without an icon", () => {
+    const groups = buildGroups([row({ sourceNoteId: "s1", sourceTitle: "Chat A" })], "source", "risk");
+    expect(groups[0].icon).toBeUndefined();
   });
 
   it("groups by disposition, using the raw value as both id and label", () => {
@@ -270,13 +277,20 @@ describe("buildGroups — groupers", () => {
     expect(groups.map((g) => [g.id, g.label])).toEqual([["merge", "merge"], ["new", "new"]]);
   });
 
+  // Disposition and `none` key on nothing the console draws a glyph for, and
+  // the header shows an icon only when its grouper names one.
+  it("gives disposition and the `none` bucket no icon", () => {
+    expect(buildGroups([row({ disposition: "merge" })], "disposition", "risk")[0].icon).toBeUndefined();
+    expect(buildGroups([row({})], "none", "risk")[0].icon).toBeUndefined();
+  });
+
   it("groups by change kind, spacing the underscores out of the label only", () => {
     const a = row({ mutation: makeMutation({ kind: "append_section" }) });
     const b = row({ mutation: makeMutation({ kind: "create_note" }) });
     const groups = buildGroups([a, b], "kind", "risk");
-    expect(groups.map((g) => [g.id, g.label])).toEqual([
-      ["append_section", "append section"],
-      ["create_note", "create note"],
+    expect(groups.map((g) => [g.id, g.label, g.icon])).toEqual([
+      ["append_section", "append section", { family: "op", value: "append_section" }],
+      ["create_note", "create note", { family: "op", value: "create_note" }],
     ]);
   });
 

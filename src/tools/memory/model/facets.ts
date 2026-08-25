@@ -81,13 +81,33 @@ export function facetCounts(list: Row[], active: Map<string, Set<string>>, ctx: 
   return counts;
 }
 
-interface Grouper { label: string; key: (r: Row) => { id: string; label: string; meta?: string } }
+/** The glyph a group header wears, named as a table and a key into it rather
+ *  than as a component — this layer draws nothing. `family` picks the same
+ *  table the rows already read for that value, so a header and the rows under
+ *  it can never show two different glyphs for one thing.
+ *
+ *  A grouper carries its own icon, which is what makes a header show one: a
+ *  grouper whose key is a value rather than an object states no icon and gets
+ *  none, and a grouper added later either names a table or renders bare. */
+export interface GroupIconRef { family: "type" | "sourceKind" | "op"; value: string }
+
+interface Grouper { label: string; key: (r: Row) => { id: string; label: string; icon?: GroupIconRef } }
 
 export const GROUPERS: Record<string, Grouper> = {
-  target: { label: "target memory", key: (r) => ({ id: r.targetId, label: r.targetTitle, meta: r.targetType }) },
-  source: { label: t("reviewqueue.sources"), key: (r) => ({ id: r.sourceNoteId, label: r.sourceTitle }) },
+  target: { label: "target memory", key: (r) => ({ id: r.targetId, label: r.targetTitle, icon: { family: "type", value: r.targetType } }) },
+  source: {
+    label: t("reviewqueue.sources"),
+    key: (r) => ({
+      id: r.sourceNoteId, label: r.sourceTitle,
+      icon: r.sourceKind ? { family: "sourceKind", value: r.sourceKind } : undefined,
+    }),
+  },
+  // Disposition names how a proposal lands, not a thing with a glyph: the
+  // console draws no icon for new/merge/rewrite anywhere, and inventing three
+  // here would put unexplained marks in the one place they appear.
   disposition: { label: "disposition", key: (r) => ({ id: r.disposition, label: r.disposition }) },
-  kind: { label: "change kind", key: (r) => ({ id: r.mutation.kind, label: r.mutation.kind.replaceAll("_", " ") }) },
+  kind: { label: "change kind", key: (r) => ({ id: r.mutation.kind, label: r.mutation.kind.replaceAll("_", " "), icon: { family: "op", value: r.mutation.kind } }) },
+  // One synthetic bucket holding everything, keyed on nothing.
   none: { label: "nothing", key: () => ({ id: "all", label: "all proposals" }) },
 };
 
@@ -99,7 +119,7 @@ export const SORTERS: Record<string, { label: string; cmp: (a: Row, b: Row) => n
   target: { label: "target memory", cmp: (a, b) => a.targetTitle.localeCompare(b.targetTitle) },
 };
 
-export interface Group { id: string; label: string; meta?: string; rows: Row[] }
+export interface Group { id: string; label: string; icon?: GroupIconRef; rows: Row[] }
 
 export function buildGroups(list: Row[], grouperId: string, sorterId: string, dir: 1 | -1 = 1): Group[] {
   const base = SORTERS[sorterId]?.cmp ?? SORTERS.risk.cmp;
@@ -109,7 +129,7 @@ export function buildGroups(list: Row[], grouperId: string, sorterId: string, di
   for (const row of sorted) {
     const g = grouper.key(row);
     let bucket = groups.get(g.id);
-    if (!bucket) groups.set(g.id, (bucket = { id: g.id, label: g.label, meta: g.meta, rows: [] }));
+    if (!bucket) groups.set(g.id, (bucket = { id: g.id, label: g.label, icon: g.icon, rows: [] }));
     bucket.rows.push(row);
   }
   return [...groups.values()];
