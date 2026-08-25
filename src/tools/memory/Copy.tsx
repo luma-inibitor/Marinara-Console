@@ -5,7 +5,7 @@
 // would move English word order into the markup, which is the exact defect the
 // copy catalog exists to prevent. `<Copy>` resolves the string first and then
 // substitutes `{{slot}}` with a node, so the string keeps its word order and
-// the components keep their behaviour.
+// the components keep their behavior.
 //
 // `params` are filled as TEXT (and select the plural, via `count`); `slots`
 // are filled as NODES. A name must not appear in both, or the text fill wins

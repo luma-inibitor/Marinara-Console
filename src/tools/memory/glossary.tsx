@@ -13,7 +13,7 @@
 // shape the call sites index by a runtime value, with the prose lifted out.
 
 import { tAny } from "../../copy";
-import type { Mutation } from "./data";
+import type { Mutation } from "./api/types";
 
 /** Resolve a whole value→key table into value→text, once at module load. */
 const table = <K extends string>(prefix: string, ids: readonly K[]): Record<K, string> =>

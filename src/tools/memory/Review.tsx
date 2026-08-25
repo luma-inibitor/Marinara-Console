@@ -7,20 +7,27 @@
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { toast } from "../../shell/toast";
-import { type BlockedDraft, type Rejection, type Row, backupExportUrl, extractNote } from "./data";
-import { t, tAny } from "../../copy";
+import { extractNote } from "./api/notes";
+import { backupExportUrl } from "./api/backup";
+import type { BlockedDraft, Rejection, Row } from "./model/review";
+import { t } from "../../copy";
 import { Copy } from "./Copy";
-import {
-  activeFacets, applyDecided, applying, applyProgress, blocked, bulkDecide, canUndo, cursor, cycleDecision, decisions, detailKey, droppedDependencyWarnings, edited, facetSheetOpen, groupBy, lastFailures, loadError, loading, notesById, preflight, preflightPending, preflightRowState, pressure, readyToSend, refresh, rejections, retryPersist, review, rows, saveState, setDecision, sortBy, sortDir, tally, undo,
-} from "./store";
-import { SECTION_CAP as CAP } from "./data";
-import { refreshLtmStatus } from "./MemoryTool";
+import { bulkDecide, canUndo, cycleDecision, decisions, edited, retryPersist, saveState, setDecision, undo } from "./store/decisions";
+import { blocked, loadError, loading, refresh, rejections, review, rows } from "./store/review";
+import { notesById } from "./store/notes";
+import { activeFacets, cursor, detailKey, facetSheetOpen, groupBy, sortBy, sortDir } from "./store/view";
+import { preflight, preflightPending, preflightRowState } from "./store/preflight";
+import { droppedDependencyWarnings, readyToSend, tally } from "./store/tally";
+import { applyDecided, applying, applyProgress, lastFailures } from "./store/apply";
+import { pressure } from "./store/pressure";
+import { SECTION_CAP as CAP } from "./model/caps";
+import { capPercent } from "./model/pressure";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { Flag, AllClear, NoMatches, DECISION_ICON, More, EditedMark, Back, Refresh, Download } from "../../ui/icons";
 import { DecisionIcon, OpIcon, TypeIcon } from "./icons";
 import { Term, OP_TIP } from "./glossary";
-import { flagsOf, worstSeverity, contributionChars, FLAG } from "./flags";
-import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./facets";
+import { flagsOf, worstSeverity, contributionChars, FLAG } from "./model/flags";
+import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./model/facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./NotePeek";
 import { Chip, collapsedGroups, EmptyState, ErrorState, FacetDrawer, IconButton, ListGroup, Loading, Picker, useIsDesktop, useRovingFocus } from "../../ui";
@@ -587,7 +594,7 @@ function GroupPressure(props: { groupId: string; isTarget: boolean }) {
   }
   if (!worst || worst.projected < CAP * 0.8) return null;
   const over = worst.projected > CAP;
-  const pct = Math.round((worst.projected / CAP) * 100);
+  const pct = capPercent(worst.projected);
   return (
     <span className="fq gcap" data-sev={over ? "danger" : "warn"}
       title={t("memory.review.capTitle", { key: worst.key, stored: worst.current.toLocaleString(), projected: worst.projected.toLocaleString(), cap: CAP.toLocaleString() })}>
@@ -704,7 +711,7 @@ function ApplyDock() {
   // reset (the keyboard has `u`; the dock is the only touch path).
   if (!c.keep && !c.drop && !undoable) return null;
   // ready-after-drops, not the raw engine count, or a dropped dependency
-  // preflight auto-included is counted twice (store.ts readyToSend)
+  // preflight auto-included is counted twice (store/tally.ts readyToSend)
   const applyCount = ready + c.drop;
   const offerRestore = c.keep + c.drop >= RESTORE_POINT_THRESHOLD;
   const rowByKey = new Map(allRows.map((row) => [row.key, row]));

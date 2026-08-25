@@ -70,16 +70,16 @@ Full detail in `DESIGN.md`. The parts that constrain new work:
 - **Three type faces with strict roles.** `--font-label` for structure,
   `--font-data` for *all* data, `--font-prose` for sentences a human reads.
   Never set data in the prose face. Never set prose in mono.
-- **Colour has three reserved axes.** Status (`ok`/`warn`/`danger`/`off`) mirrors
+- **Color has three reserved axes.** Status (`ok`/`warn`/`danger`/`off`) mirrors
   the engine. `--accent` is interactive chrome *only*. Categorical type hues are
   identity, kept dimmer than both, always paired with the type name in text.
-  Colour is never the only carrier of meaning.
+  Color is never the only carrier of meaning.
 - **Two semantic breakpoints.** 720px (below it everything stacks) and 900px
   (above it a list and its detail sit side by side).
 - **Reading measure `--measure: 68ch`** on prose. Not on identifiers or
   key/value rows — wrapping `source_character_2cdcc172e8fe3cd6` serves nobody.
 - **Contrast and tap-target floors are enforced by `verify.mjs`**, not by
-  judgement. Body and data text ≥4.5:1; primary targets ≥44px.
+  judgment. Body and data text ≥4.5:1; primary targets ≥44px.
 
 ## 5. Requirements that are settled
 
@@ -93,9 +93,9 @@ Owner-confirmed. Do not re-litigate; see `DESIGN.md` §2 for the full list.
 - **Undo over confirm.** `confirm()` only for genuinely irreversible operations.
 - Numbers are computed from real data and engine-faithful. Thresholds derive
   from the data, not from constants someone picked.
-- Copy comes from the engine's own catalogue (`ltm-en.json`) wherever the
+- Copy comes from the engine's own catalog (`ltm-en.json`) wherever the
   concept exists upstream. Anything genuinely new is registered in `OURS` with a
-  reason. `design/copycheck.mjs` enforces this.
+  reason. `scripts/copycheck.mjs` enforces this.
 - Content is markdown; editors are plain textareas with counts. No rich editing.
 
 ## 6. Requirements this work established
@@ -117,7 +117,7 @@ it. `CHECKLIST.md` holds the full list with incidents attached.
   reach for it.
 - **Split components by role, not by shape.** `Chip` and `Tag` look identical
   and are separate, because one is pressable and the other is not.
-- **Own the behaviour, slot the shape.** `ListGroup` owns the chevron and its
+- **Own the behavior, slot the shape.** `ListGroup` owns the chevron and its
   accessible name; each list keeps its own header layout.
 - **Render it and look at it.** Every occlusion, wrap and clipping defect in this
   repo was invisible in the markup and obvious in a screenshot.
@@ -202,13 +202,13 @@ structured by design and are not to be parsed out of the prose.
 
 ## 9. How work gets checked
 
-Not optional, and not judgement calls:
+Not optional, and not judgment calls:
 
 | Command | Checks |
 |---|---|
-| `node verify.mjs` | Contrast, tap targets, console errors, keyboard walk, density |
-| `node design/copycheck.mjs <file>` | Every user-visible string traces to the catalogue or `OURS` |
-| `node design/deadcss.mjs` | CSS classes nothing uses |
-| `node design/domsnap.mjs before` / `after --diff` | A refactor renders identically — proved, not asserted |
-| `node design/overlaycheck.mjs` | Every layered surface closes on scrim, Escape and back |
-| `node design/shots.mjs <url>` | Screenshots at 390 / 486 / 768 / 1280 |
+| `node scripts/verify.mjs` | Contrast, tap targets, console errors, keyboard walk, density |
+| `node scripts/copycheck.mjs <file>` | Every user-visible string traces to the catalog or `OURS` |
+| `node scripts/deadcss.mjs` | CSS classes nothing uses |
+| `node scripts/domsnap.mjs before` / `after --diff` | A refactor renders identically — proved, not asserted |
+| `node scripts/overlaycheck.mjs` | Every layered surface closes on scrim, Escape and back |
+| `node scripts/shots.mjs <url>` | Screenshots at 390 / 486 / 768 / 1280 |

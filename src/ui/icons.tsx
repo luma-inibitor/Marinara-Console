@@ -57,7 +57,7 @@ import {
   // navigation + transfer
   IconChevronLeft, IconRefresh, IconDownload,
   // affordances
-  IconArrowsDiagonal, IconStar, IconCheckbox, IconHash,
+  IconArrowsDiagonal, IconStar, IconCheckbox, IconHash, IconSelector,
   type Icon,
 } from "@tabler/icons-react";
 
@@ -82,6 +82,12 @@ export const ICON_SIZE = {
 export const ChevronRight = IconChevronRight;   // collapsed / drill in
 export const Back = IconChevronLeft;            // up one level in a mobile stack
 export const ChevronDown = IconChevronDown;     // expanded
+export const ExpandSet = IconSelector;          // opens or closes a whole SET
+                                                // of rows at once. Deliberately
+                                                // not the row chevron: a
+                                                // control that acts on the set
+                                                // must not read as one more
+                                                // member of it.
 export const Forward = IconArrowRight;          // forward navigation on an action
 export const ExternalLink = IconExternalLink;   // leaves for another tool
 

@@ -1,0 +1,141 @@
+/* One section = one row = one tap target. See SectionRow.tsx. */
+
+.mdc-row-wrap {
+  border-bottom: var(--hairline);
+}
+
+.mdc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--s2);
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.mdc-row:hover {
+  background: var(--surface-1);
+}
+
+.mdc-row:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--r-s);
+}
+
+.mdc-row-name-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.mdc-row-name {
+  font-family: var(--font-data);
+  font-size: 11.5px;
+  color: var(--text);
+  font-variant-ligatures: none;
+  overflow-wrap: anywhere;
+}
+
+/* Anchor for the popover, which hangs off the glyph rather than the row. */
+.mdc-row-flag-wrap {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+/* --flag is reserved for computed outliers; this is the card's only one. */
+.mdc-row-flag {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  color: var(--flag);
+  cursor: pointer;
+}
+
+.mdc-row-flag:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--r-s);
+}
+
+.mdc-row-flag-pop {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: -8px;
+  z-index: 70;
+  width: max-content;
+  max-width: 246px;
+  padding: 6px 9px;
+  background: var(--surface-3);
+  color: var(--text);
+  border: 1px solid var(--edge-strong);
+  border-radius: var(--r-s);
+  box-shadow: var(--shadow-pop);
+  font-family: var(--font-prose);
+  font-size: 11.5px;
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: normal;
+}
+
+.mdc-row-meta {
+  font-family: var(--font-data);
+  font-size: 10.5px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  font-variant-ligatures: none;
+  white-space: nowrap;
+}
+
+/* --text-faint is restricted to decorative / ≥12px non-essential: a 14px
+   glyph whose meaning is also carried by the row's behavior qualifies. */
+.mdc-row-glyph {
+  display: inline-flex;
+  color: var(--text-faint);
+  transition: transform var(--t-fast);
+}
+
+.mdc-row-glyph-open {
+  transform: rotate(90deg);
+}
+
+.mdc-row-body {
+  margin-left: 24px;
+  margin-bottom: var(--s3);
+  max-width: var(--measure);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+/* An open row rides the top of the screen while its own body scrolls past, so
+   the control that closes a long section is never a hundred lines back up.
+   Sticky costs a short section nothing: a header whose body is shorter than
+   the remaining viewport never reaches its offset, so this needs no length
+   threshold and nothing has to be measured to decide it applies.
+
+   --mdc-head-h is the card's own sticky head, published by MemoryDetail; the
+   row parks directly beneath it rather than sliding under it. */
+.mdc-row.is-open {
+  position: sticky;
+  top: var(--mdc-head-h, 0px);
+  z-index: 3;
+  /* Opaque, or the body scrolls visibly through the header it is passing. */
+  background: var(--mdc-ground, var(--canvas));
+  border-bottom: var(--hairline);
+}
+.mdc-row.is-open:hover { background: var(--surface-1); }
+

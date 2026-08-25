@@ -63,7 +63,7 @@
   "memory.disposition.new": {
     "text": "new",
     "despite": "sourcesworkspace.new",
-    "note": "Disposition names: schema values the product computes but never labels. The catalog's \"New\" is a source-status chip in the sources workspace; this is one of a lowercase triad with merge and rewrite, and borrowing a capitalised word for one of three breaks the set."
+    "note": "Disposition names: schema values the product computes but never labels. The catalog's \"New\" is a source-status chip in the sources workspace; this is one of a lowercase triad with merge and rewrite, and borrowing a capitalized word for one of three breaks the set."
   },
   "memory.disposition.merge": {
     "text": "merge",
@@ -171,7 +171,7 @@
   },
   "memory.stop": {
     "text": "Stop",
-    "note": "Halts a running import batch between sources. Upstream import is one request that either completes or is cancelled by the transport (importCancelledSelectionRetained); there is no user-facing verb for stopping a batch part-way."
+    "note": "Halts a running import batch between sources. Upstream import is one request that either completes or is canceled by the transport (importCancelledSelectionRetained); there is no user-facing verb for stopping a batch part-way."
   },
   "memory.save.autosaving": {
     "text": "Autosaving…",
@@ -346,13 +346,13 @@
     "text": "A new memory with no keywords — keyword matching cannot find it.",
     "note": "The no-keywords flag as a sentence, naming the consequence rather than the condition, because the condition alone reads as a stylistic quibble."
   },
-  "memory.flag.keywordCap": {
-    "text": "target near keyword cap",
-    "note": "Flag label and facet value: the memory this claim targets is close to the 30-keyword ceiling. The catalog states the cap only as a rejection message after the fact (manualKeywordLimit)."
+  "memory.flag.keywordCapFull": {
+    "text": "target at keyword cap",
+    "note": "Flag label and facet value: the memory this claim targets already holds the full 30 keywords, so the next one is refused. The catalog names this state only by rejecting a write after the fact (manualKeywordLimit), which is not a label a reviewer can read beforehand."
   },
-  "memory.flag.keywordCapSentence": {
-    "text": "The target memory is near its {{cap}}-keyword cap.",
-    "note": "The keyword-cap flag as a sentence. Interpolates the cap rather than spelling it, so the sentence cannot drift from KEYWORD_CAP the way the catalog's hardcoded \"at most 30\" would."
+  "memory.flag.keywordCapFullSentence": {
+    "text": "The target memory has filled its {{cap}}-keyword cap — another keyword is refused.",
+    "note": "The at-cap keyword flag as a sentence. Interpolates the cap rather than spelling it, so the sentence cannot drift from KEYWORD_CAP the way the catalog's hardcoded \"at most 30\" would, and names the consequence because \"at the cap\" alone does not say the next write fails."
   },
   "memory.flag.sectionNearCap": {
     "text": "The section is close to its cap.",
@@ -440,7 +440,7 @@
   },
   "memory.peek.id": {
     "text": "the memory id",
-    "note": "Accessible name for the copy control on the peek's id footer, phrased as the object being copied because the control's own verb is supplied by the shared component. The catalog never exposes a note id as a labelled, copyable field."
+    "note": "Accessible name for the copy control on the peek's id footer, phrased as the object being copied because the control's own verb is supplied by the shared component. The catalog never exposes a note id as a labeled, copyable field."
   },
   "memory.backToQueue": {
     "text": "Back to queue",
@@ -720,7 +720,7 @@
   },
   "memory.vault.id": {
     "text": "id",
-    "note": "Key in the editor's key/value header. The catalog never exposes a note id as a labelled field — upstream ids live in diagnostics — so the one word this column needs has no source. Lowercase to match the column, whose other keys are catalog words rendered lowercase."
+    "note": "Key in the editor's key/value header. The catalog never exposes a note id as a labeled field — upstream ids live in diagnostics — so the one word this column needs has no source. Lowercase to match the column, whose other keys are catalog words rendered lowercase."
   },
   "memory.vault.links": {
     "text": "links",
@@ -847,5 +847,98 @@
   "memory.sources.thisChat": {
     "use": "longtermmemorydetail.thisChat",
     "note": "Stands in for the scoped chat's name in the search-empty sentence when the chat has no name to show. The catalog has this verbatim; an earlier pass declined currentChat (\"Current chat\", a picker option that reads as a proper noun mid-sentence) but missed that thisChat is byte-identical to what we wanted."
+  },
+
+  "memory.detail.retrieval": {
+    "use": "activityview.phaseRetrieval",
+    "note": "Heading over the one bordered block on the detail card. The catalog names the retrieval phase in the activity view; this is the same concept — whether the engine reaches this memory at all — over the fields that decide it."
+  },
+
+  "memory.detail.retrievalWhat": {
+    "text": "What retrieval means",
+    "note": "Accessible name of the info button beside the retrieval heading. The catalog explains retrieval inside settings copy but never names a control that opens the explanation."
+  },
+
+  "memory.detail.retrievalHelp": {
+    "text": "Keywords and modes decide whether the engine ever reaches this memory in a chat.",
+    "note": "The retrieval popover's sentence, covering both fields in the block at once. longtermmemorydetail.underTheHoodKeywords explains how keyword matching works; this says what the block is FOR, and says it about modes as well."
+  },
+
+  "memory.detail.modes": {
+    "text": "modes",
+    "despite": "reviewqueue.modes",
+    "note": "Key in the retrieval block's two-column grid. reviewqueue.modes is \"Modes:\" — the colon is part of the string, for a run-on readline — so it cannot be a grid label whose colon would read as a second separator. Lowercase to match the column."
+  },
+
+  "memory.detail.sectionMeta": {
+    "one": "{{count}} line · {{chars}} ch",
+    "other": "{{count}} lines · {{chars}} ch",
+    "note": "A section row's size read-out, in the same shape as memory.detail.moreLines and memory.detail.earlierLines. The product has no line-level view of stored text, so nothing upstream measures a section this way."
+  },
+
+  "memory.detail.expandAll": {
+    "text": "expand all",
+    "note": "The control that opens every section at once. memory.expand names one row's chevron; this acts on the whole set and carries a different glyph, so it must not borrow the row's word."
+  },
+
+  "memory.detail.collapseAll": {
+    "text": "collapse all",
+    "note": "The counterpart to memory.detail.expandAll, and the card's manifest state: every section becomes a bare row. memory.collapse names one row's chevron."
+  },
+
+  "memory.detail.keywordRail": {
+    "text": "Keywords, tap to unfold",
+    "note": "Accessible name of the keyword rail, which is one tap target holding many keywords. The visible +N more counter is not a name, and the rail has to announce that tapping it does something."
+  },
+
+  "memory.detail.flagWhy": {
+    "text": "Why this section is flagged",
+    "note": "Accessible name of a section row's flag button. The catalog has no per-section exception signal, so nothing upstream names the control that explains one."
+  },
+
+  "memory.detail.sectionNearCap": {
+    "text": "§{{key}} is at {{pct}}% of its {{cap}}-character cap.",
+    "note": "A stored section approaching its cap. memory.flag.sectionNearCapNamed says the same of a PROJECTION over a review batch and ends \"after this batch\", which is false of a memory already sitting in the vault."
+  },
+
+  "memory.detail.sectionOverCap": {
+    "text": "§{{key}} is at {{pct}}% of its {{cap}}-character cap and over the limit.",
+    "note": "The far side of memory.detail.sectionNearCap for a stored section, ending in the console's own memory.overLimit phrase."
+  },
+
+  "memory.detail.relationRelatedTo": {
+    "text": "Related to",
+    "note": "The one link relation the catalog does not label. It ships relationExtractedFrom, relationOccurredIn, relationCausedBy and nine more in this exact sentence-case shape; related_to appears in stored payloads with no string beside it, so this fills the single gap in an otherwise complete set."
+  },
+
+  "memory.detail.edited": {
+    "text": "edited {{when}}",
+    "note": "The meta line's edit stamp. memoryvault.updated is the bare column heading \"Updated\"; this is the phrase in a running meta line, where the verb has to carry its timestamp."
+  },
+
+  "memory.detail.version": {
+    "text": "v{{n}}",
+    "note": "The memory's version in the meta line, abbreviated because the line is mono data separated by ·. The catalog exposes a version only inside backup-validation prose."
+  },
+
+  "memory.detail.edit": {
+    "use": "longtermmemorydetail.reviewEdit",
+    "note": "Opens the vault's editor from the read-only detail card. The catalog's own one-word Edit action."
+  },
+
+  "memory.detail.sectionCount": {
+    "one": "{{count}} section",
+    "other": "{{count}} sections",
+    "note": "How many sections the memory has, as the spoken name of the count beside the sections heading. The heading already renders the noun, so the visible figure stays bare and this carries the noun for a screen reader."
+  },
+
+  "memory.vault.emptyScoped": {
+    "text": "No memories are available in this scope.",
+    "note": "The vault filtered to nothing by scope alone. The catalog ships this exact sentence shape for the two things it does scope — noLorebooksAreAvailableInThisScope, noSourcesHaveBeenImportedInThisScope — but never for saved memories, because upstream the vault is not a scoped view. Same sentence, right noun."
+  },
+
+  "memory.vault.emptyScopedBody": {
+    "text": "Widening the scope will show memories from other characters and chats.",
+    "note": "Names the way out, as memory.sources.emptyScopedBody does for the sources list; that one says \"import scope\" and \"sources\", which is the wrong control and the wrong noun here. The catalog states the empty condition and never tells the reader that the scope is the thing to change."
   }
 }

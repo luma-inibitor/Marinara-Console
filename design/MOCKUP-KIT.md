@@ -29,7 +29,7 @@ specimen itself): `mk-spec` `mk-label` `mk-stage` `mk-body` `mk-caption`
 `mk-note` `mk-list` + `mk-tag mk-tag-s|w|n` `mk-legend` `mk-mark` `mk-mark-abs`
 `mk-var` `mk-verdict` `mk-table`
 
-**Wireframe** (greyscale, no product colour — layout only): `wf-frame`
+**Wireframe** (greyscale, no product color — layout only): `wf-frame`
 `wf-title` `wf-row` `wf-box` `wf-badge` `wf-col` `wf-colhead` `wf-item`
 `wf-phone` `wf-cols` `wf-phones` `wf-sp`
 
@@ -45,10 +45,10 @@ Tailwind utilities are available too (`bg-surface-2`, `text-dim`, `font-data`,
 
 - **A phone frame is `wf-phone`, which is 486px** — the width Luma's device
   reports. A 300px box on a desktop page is not a phone and proves nothing.
-- **Screenshot with `node design/shots.mjs <url> <name>`**, which renders at
+- **Screenshot with `node scripts/shots.mjs <url> <name>`**, which renders at
   390 / 486 / 768 / 1280 and reports horizontal overflow per viewport.
-- **Wireframes stay greyscale.** Colour is a decision; a wireframe is about
-  where things sit. If a wireframe needs colour to make its point, it is a
+- **Wireframes stay greyscale.** Color is a decision; a wireframe is about
+  where things sit. If a wireframe needs color to make its point, it is a
   specimen, not a wireframe.
 - **The label goes outside the box.** `mk-label` sits on the page background,
   above `wf-frame` / `mk-body`, never inside it. A label inside the specimen

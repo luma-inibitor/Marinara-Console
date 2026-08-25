@@ -1,4 +1,4 @@
-/* The quietest of the three states. Body-size prose in the dim colour, so a
+/* The quietest of the three states. Body-size prose in the dim color, so a
    brief wait does not read louder than the content it is waiting for.
    Preflight zeroes the tag margin, so the breathing room is this padding. */
 .loadingstate {

@@ -17,10 +17,6 @@
   "presets.tokens": {
     "use": "activityview.tokens"
   },
-  "presets.sections": {
-    "text": "sections",
-    "note": "Unit for a preset's section count, and the label of the sort chip that orders by it. The catalog's `memorySections` is a memory's own detail list and renders as 'Memory details' — a different thing under a colliding key name."
-  },
   "presets.name": {
     "use": "extractionprompttemplates.name"
   },
@@ -39,11 +35,11 @@
   "presets.off": {
     "text": "off",
     "despite": "memorysettings.off",
-    "note": "Whether a section, or the group holding it, reaches the model. Declines the catalog's capitalised 'Off' because this word appears in three places here that all need it lowercase: a `.tg` and a `.toggle-label` that CSS uppercases, and a `.meta` data line that must not shout mid-sentence."
+    "note": "Whether a section, or the group holding it, reaches the model. Declines the catalog's capitalized 'Off' because this word appears in three places here that all need it lowercase: a `.tg` and a `.toggle-label` that CSS uppercases, and a `.meta` data line that must not shout mid-sentence."
   },
   "presets.on": {
     "text": "on",
-    "note": "The counterpart to presets.off, in the enabled/total summary and on the include switch. The catalog has 'Off' as a settings value but no 'On' at all — upstream's switches are described in prose ('Turn on for this chat'), never labelled."
+    "note": "The counterpart to presets.off, in the enabled/total summary and on the include switch. The catalog has 'Off' as a settings value but no 'On' at all — upstream's switches are described in prose ('Turn on for this chat'), never labeled."
   },
   "presets.runtime": {
     "text": "runtime",
@@ -72,7 +68,7 @@
   "presets.modeGame": {
     "text": "game",
     "despite": "extractionprompttemplates.game",
-    "note": "The counterpart to presets.modeConv. Declines the catalog's capitalised mode name for the same reason: this is a unit in a lowercase data line, not a mode named in a sentence, and the pair must match each other."
+    "note": "The counterpart to presets.modeConv. Declines the catalog's capitalized mode name for the same reason: this is a unit in a lowercase data line, not a mode named in a sentence, and the pair must match each other."
   },
   "presets.ofContext": {
     "text": "of context",

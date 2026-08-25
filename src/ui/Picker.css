@@ -14,7 +14,7 @@
   color: var(--text-dim);
 }
 .picker-opt.is-on { background: var(--surface-2); color: var(--text); }
-/* the tick, not colour alone, says which one is current */
+/* the tick, not color alone, says which one is current */
 .picker-opt.is-on::before { content: "✓"; color: var(--accent); font-size: 11px; }
 
 .picker-label { flex: 1; min-width: 0; text-transform: none; font-size: 12px; }

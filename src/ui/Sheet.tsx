@@ -25,7 +25,7 @@ export function Sheet(props: {
   return <Overlay {...props} surface={`sheet ${props.className ?? ""}`} />;
 }
 
-/** A centred dialog. The surface for a question the reviewer has to answer
+/** A centered dialog. The surface for a question the reviewer has to answer
  *  before anything else happens — an import that will spend model calls, say.
  *
  *  A Modal sits in the middle because it interrupts, where a Sheet arrives from
@@ -83,6 +83,9 @@ export function SheetHead(props: {
   autoFocus?: boolean;
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  // Mount-only on purpose. Depending on autoFocus would re-run the effect when
+  // it later flips true and yank focus out of whatever the reader is using.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (props.autoFocus) closeRef.current?.focus(); }, []);
   return (
     <header className="sheet-head">

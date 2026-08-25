@@ -125,7 +125,7 @@ than zero. `dimensionChanges` is deltas, −100 to 100.
 
 ---
 
-## Section merge behaviour by type
+## Section merge behavior by type
 
 Whether an `append_section` merges into the existing text or rewrites it is
 decided by `isAdditiveLtmSection(note, sectionKey)`. When additive, new text is

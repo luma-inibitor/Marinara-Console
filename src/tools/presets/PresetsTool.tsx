@@ -1,6 +1,6 @@
 // Prompt preset browser + editor. Order is THE attribute of a prompt preset,
 // so the status rail carries the ordinal.
-import { Chip, EmptyState, IconButton, Loading, ErrorState, ListEmpty, NotFound } from "../../ui";
+import { Chip, EmptyState, IconButton, Loading, ErrorState, ListEmpty, NotFound, useIsDesktop } from "../../ui";
 import { Add, Back, Duplicate, Fullscreen, ICON_SIZE, SetDefault } from "../../ui/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
@@ -24,17 +24,6 @@ export function PresetsTool({ rest }: { rest: string[] }) {
   return id ? <Editor presetId={id} key={id} /> : <Browser />;
 }
 
-function useIsDesktop(): boolean {
-  const [is, setIs] = useState(() => window.matchMedia("(min-width: 900px)").matches);
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 900px)");
-    const fn = () => setIs(mq.matches);
-    mq.addEventListener("change", fn);
-    return () => mq.removeEventListener("change", fn);
-  }, []);
-  return is;
-}
-
 // ── copy shared with the lorebook tool, deliberately NOT routed here ──
 // "Description", "Content", "Advanced", "Edit in full screen" and "all default"
 // live in src/copy/lorebooks.json (lorebooks.entry.*, lorebooks.record.*) and are
@@ -49,7 +38,7 @@ type BrowserSort = "tokens" | "sections" | "name";
 /** Sort chips, by the copy key that labels each. */
 const SORT_KEY: Record<BrowserSort, string> = {
   tokens: "presets.tokens",
-  sections: "presets.sections",
+  sections: "ui.sections",
   name: "presets.name",
 };
 
@@ -138,7 +127,7 @@ function Browser() {
                 ? <p className="preset-desc">{p.description}</p>
                 : <p className="preset-desc is-empty">{t("presets.noDescription")}</p>}
               <div className="meta">
-                <span><b className="t-num">{known ? known.totalSections : "—"}</b> {t("presets.sections")}</span>
+                <span><b className="t-num">{known ? known.totalSections : "—"}</b> {t("ui.sections")}</span>
                 {known && known.enabled !== known.totalSections && (
                   <span><b className="t-num" style={{ color: "var(--text-dim)" }}>{known.totalSections - known.enabled}</b> {t("presets.off")}</span>
                 )}
@@ -587,7 +576,6 @@ function SectionDetail(props: {
     draft.merge(patch as Partial<PromptSection>);
   };
   const fErr = (f: string) => draft?.fieldErrors[f];
-  const isDirty = (f: string) => draft?.dirtyFields.includes(f) ?? false;
   const marker = isMarker(s);
   const [openSubs, setOpenSubs] = useState<Set<Sub>>(
     () => new Set<Sub>(marker ? ["section"] : ["section", "content"]));

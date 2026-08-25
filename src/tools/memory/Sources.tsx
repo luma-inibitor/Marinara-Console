@@ -8,7 +8,7 @@
 //
 // Every state name and action verb here comes from the product catalog.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { createStore, useStore } from "../../lib/store";
 import {
   NoMatches, ChevronRight, ChevronDown, ExternalLink, Confirm,
@@ -16,21 +16,21 @@ import {
   SOURCE_KIND_ICON, SOURCE_STATE_ICON, type Icon,
 } from "../../ui/icons";
 import { navigate } from "../../shell/router";
-import { api } from "../../shell/api";
 import { toast } from "../../shell/toast";
-import {
-  type ImportPreview, type ImportResult, type Note,
-  importPreview, importSourceNotes, fetchNotes, fetchReview,
-} from "./data";
+import type { ImportResult } from "./api/types";
 import { t } from "../../copy";
 import { Copy } from "./Copy";
 import { focusSource, refreshLtmStatus } from "./MemoryTool";
 import { TypeIcon } from "./icons";
-import { pendingSources, scopeChatId, setScope } from "./store";
 import {
-  buildSources, isSelectable, isImported, partition,
+  blockedDrafts, chats as chatsStore, importSource, importSources, loadChats, loadSources,
+  pendingSources, sourceErrors, sourceRows, sourcesLoading, type Chat,
+} from "./store/sources";
+import { scopeChatId, setScope } from "./store/scope";
+import {
+  isSelectable, isImported, partition,
   type SourceKind, type SourceRow, type SourceState,
-} from "./sourceModel";
+} from "./model/sources";
 import { collapsedGroups, Edu, EmptyState, IconButton, ListGroup, Loading, Modal, ModePill, MODES, SearchBar, fuzzyFilter } from "../../ui";
 import { closeTopOverlay } from "../../shell/overlays";
 
@@ -88,9 +88,6 @@ function Spend({ n }: { n: number }) {
   return <span className="spend"><Cost size={12} stroke={1.75} aria-hidden />{n}</span>;
 }
 
-interface Chat { id: string; name?: string; mode?: string }
-
-
 const openRow = createStore<string | null>(null);
 const railView = createStore<"pending" | "imported" | "all">("pending");
 
@@ -101,17 +98,19 @@ const railView = createStore<"pending" | "imported" | "all">("pending");
 const collapse = collapsedGroups("mc-ltm-sources-collapsed");
 
 export function Sources() {
-  const [previews, setPreviews] = useState<Map<SourceKind, ImportPreview>>(new Map());
-  const [errors, setErrors] = useState<Map<SourceKind, string>>(new Map());
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [review, setReview] = useState<Awaited<ReturnType<typeof fetchReview>> | null>(null);
-  const [chats, setChats] = useState<Chat[]>([]);
+  // The rows, the per-kind errors and the chats live in the sources store,
+  // which is their one owner; the filters, the selection, the open row and the
+  // job dock below are this screen's own.
+  const rows = useStore(sourceRows);
+  const errors = useStore(sourceErrors);
+  const loading = useStore(sourcesLoading);
+  const blocked = useStore(blockedDrafts);
+  const chats = useStore(chatsStore);
   const [q, setQ] = useState("");
   // Mode filters what a source imports as. It is not a scope level: it does not
   // cascade, and the engine records it separately from scope (nav-wire §N6).
   const [modes, setModes] = useState<Set<string>>(new Set(MODES.map((m) => m.id)));
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
   const [job, setJob] = useState<{ done: number; total: number; stopped?: boolean } | null>(null);
   const [results, setResults] = useState<ImportResult[] | null>(null);
   const [confirmN, setConfirmN] = useState<number | null>(null);
@@ -120,34 +119,13 @@ export function Sources() {
   const rail = useStore(railView);
   const collapsedIds = collapse.useCollapsed();
 
-  const load = async () => {
-    setLoading(true);
-    const next = new Map<SourceKind, ImportPreview>();
-    const errs = new Map<SourceKind, string>();
-    await Promise.all(KINDS.map(async ({ id }) => {
-      try { next.set(id, await importPreview(id)); }
-      catch (error) { errs.set(id, (error as Error).message); }
-    }));
-    setPreviews(next);
-    setErrors(errs);
-    try { setNotes(await fetchNotes({ limit: 500 })); } catch { setNotes([]); }
-    try { setReview(await fetchReview()); } catch { setReview(null); }
-    setLoading(false);
-  };
-
   useEffect(() => {
-    void load();
-    api<Chat[] | { items: Chat[] }>("/chats")
-      .then((r) => setChats(Array.isArray(r) ? r : r.items ?? []))
-      .catch(() => setChats([]));
+    void loadSources();
+    void loadChats();
   }, [chatId]);
 
-  const rows = useMemo(() => buildSources(previews, review, notes), [previews, review, notes]);
   const { pending, imported, all } = partition(rows);
   useEffect(() => { pendingSources.set(pending.length); }, [pending.length]);
-  const blockedDrafts = useMemo(
-    () => (review?.sources ?? []).flatMap((s) => s.drafts.filter((d) => d.blockReasons.length)),
-    [review]);
 
   const view = rail === "pending" ? pending : rail === "imported" ? imported : all;
   const byMode = modes.size === MODES.length ? view : view.filter((r) => modes.has(r.importMode));
@@ -167,23 +145,16 @@ export function Sources() {
     stopRef.v = false;
     setResults(null);
     setJob({ done: 0, total: batch.length });
-    const out: ImportResult[] = [];
-    for (const [i, r] of batch.entries()) {
-      if (stopRef.v) { setJob({ done: i, total: batch.length, stopped: true }); break; }
-      setJob({ done: i, total: batch.length });
-      try {
-        const body: Record<string, unknown> = { source: r.kind, sourceIds: [r.sourceId], extract: true };
-        if (scopeChatId.get()) body.chatId = scopeChatId.get();
-        out.push(await importSourceNotes(body));
-      } catch (error) {
-        out.push({ batchStatus: "failed", source: r.kind, imported: [{ sourceId: r.sourceId, title: r.title }] } as ImportResult);
-        toast(`${r.title}: ${(error as Error).message}`, { kind: "error" });
-      }
-    }
-    if (!stopRef.v) setJob(null);
+    const { results: out, stopped } = await importSources(batch, {
+      shouldStop: () => stopRef.v,
+      onProgress: (done, total, halted) =>
+        setJob(halted ? { done, total, stopped: true } : { done, total }),
+      onError: (r, error) => toast(`${r.title}: ${error.message}`, { kind: "error" }),
+    });
+    if (!stopped) setJob(null);
     setResults(out);
     setSelected(new Set());
-    await load();
+    await loadSources();
     void refreshLtmStatus();
   };
 
@@ -207,11 +178,11 @@ export function Sources() {
           <RailChip id="pending" label={t("memory.sourcesPending")} n={pending.length} />
           <RailChip id="imported" label={t("sourcesworkspace.alreadyImported")} n={imported.length} />
           <RailChip id="all" label={t("sourcesworkspace.all")} n={all.length} />
-          {blockedDrafts.length > 0 && (
+          {blocked.length > 0 && (
             <>
               <span className="qsp" />
               <a className="qchip qblock" href="#/memory/review">
-                {t("memory.sourcesBlocked")} <b>{t("memory.review.blockedDrafts", { count: blockedDrafts.length, n: blockedDrafts.length })}</b>
+                {t("memory.sourcesBlocked")} <b>{t("memory.review.blockedDrafts", { count: blocked.length, n: blocked.length })}</b>
               </a>
             </>
           )}
@@ -267,7 +238,7 @@ export function Sources() {
               {group.map((r) => (
                 <SourceLine key={r.sourceId} row={r} bulk={bulk}
                   selected={selected.has(r.sourceId)} onToggle={() => toggle(r.sourceId)}
-                  onReload={load} />
+                  onReload={loadSources} />
               ))}
             </ListGroup>
           );
@@ -417,9 +388,7 @@ function CuratePanel({ row, onImported }: { row: SourceRow; onImported: () => Pr
   const importOne = async () => {
     setBusy(true);
     try {
-      const body: Record<string, unknown> = { source: row.kind, sourceIds: [row.sourceId], extract: true };
-      if (scopeChatId.get()) body.chatId = scopeChatId.get();
-      await importSourceNotes(body);
+      await importSource(row);
       toast(t("sourcesworkspace.sourceImportComplete"));
       openRow.set(null);
       await onImported();

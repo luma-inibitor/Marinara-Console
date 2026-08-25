@@ -3,19 +3,22 @@
 // toggle. Cap pressure reads as a gradient on the row. Archive is the
 // destructive default (undoable); permanent delete confirms.
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { openOverlay, closeTopOverlay } from "../../shell/overlays";
+import { useEffect, useMemo, useState } from "react";
+import { useStore } from "../../lib/store";
+import { navigate } from "../../shell/router";
 import { refreshLtmStatus } from "./MemoryTool";
 import { toast } from "../../shell/toast";
-import {
-  type Note, type NoteType, fetchNotes, patchNote, deleteNote,
-  SECTION_CAP, KEYWORD_CAP,
-} from "./data";
+import { type Note, type NoteSection, type NoteType } from "./api/types";
+import { KEYWORD_CAP, SECTION_CAP } from "./model/caps";
 import { t } from "../../copy";
-import { dedupeLines } from "./derived";
+import { dedupeLines } from "./model/derived";
 import { NoteRef } from "./NotePeek";
+import { allNotes, archiveNote, discardNote, loadNotes, notesError, notesLoaded, saveNoteSections, setNoteStatus } from "./store/notes";
+import { isScoped, noteInScope } from "./model/scope";
+import { useScope } from "./store/scope";
 import { Back, ICON_SIZE, NoMatches } from "../../ui/icons";
 import { Chip, DetailSection, EmptyState, ErrorState, IconButton, Loading, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
+import { MemoryDetail } from "./detail/MemoryDetail";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
 
@@ -27,21 +30,46 @@ function pressureOf(n: Note): number {
   return Math.max(worst, (n.keywords?.length ?? 0) / KEYWORD_CAP);
 }
 
-export function Vault() {
+/** The open memory is route state (`#/memory/vault/:id`), not component state,
+ *  so a detail view is linkable and the browser's own back button leaves it.
+ *  That also replaces the overlay-stack registration this screen used to make:
+ *  the route IS the history entry now, and keeping both would push two. */
+export function Vault(props: { noteId?: string }) {
   const desktop = useIsDesktop();
-  const [notes, setNotes] = useState<Note[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // The records live in the notes store, which is their one owner; only the
+  // filters, the sort and the editor's drafts are this screen's own.
+  const notes = useStore(allNotes);
+  const loaded = useStore(notesLoaded);
+  const error = useStore(notesError);
   const [query, setQuery] = useState("");
   const [showSources, setShowSources] = useState(false);
   const [typeFilter, setTypeFilter] = useState<NoteType | null>(null);
   const [sort, setSort] = useState<SortKey>("updated");
-  const [openId, setOpenId] = useState<string | null>(null);
+  const scope = useScope();
+  const openId = props.noteId ?? null;
+  // The card is read-only; editing is a mode you enter from it. Leaving the
+  // record leaves the mode with it, so a different memory never opens in a
+  // state the reader did not ask for.
+  const [editing, setEditing] = useState(false);
+  useEffect(() => { setEditing(false); }, [openId]);
+  const openDetail = (id: string) => navigate(`memory/vault/${id}`);
+  const closeDetail = () => navigate("memory/vault");
 
-  const load = () => fetchNotes({ limit: 500 }).then(setNotes).catch((e: Error) => setError(e.message));
-  useEffect(() => { void load(); }, []);
+  useEffect(() => { void loadNotes(); }, []);
+
+  // Scope decides what this view is about, so it narrows the list BEFORE the
+  // chips count it — a scoped list beside a global tally is a header that
+  // contradicts its own rows.
+  const inScope = useMemo(
+    () => notes.filter((n) => noteInScope(n, scope)),
+    // Scope is a fresh object each render, so depending on it would refilter
+    // every time. Its two fields ARE the whole of it, and noteInScope reads
+    // nothing else, so listing them covers the object exactly.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [notes, scope.characterId, scope.chatId]);
 
   const visible = useMemo(() => {
-    let list = (notes ?? []).filter((n) => (showSources ? n.type === "source" : n.type !== "source"));
+    let list = inScope.filter((n) => (showSources ? n.type === "source" : n.type !== "source"));
     if (typeFilter) list = list.filter((n) => n.type === typeFilter);
     if (query.trim()) {
       // Fuzzy on the title, plain substring in the body. Subsequence matching
@@ -59,29 +87,40 @@ export function Vault() {
       status: (a, b) => (statusRank[a.status] ?? 9) - (statusRank[b.status] ?? 9),
     };
     return [...list].sort(cmp[sort]);
-  }, [notes, showSources, typeFilter, query, sort]);
+  }, [inScope, showSources, typeFilter, query, sort]);
 
   const types = useMemo(() => {
     const m = new Map<NoteType, number>();
-    for (const n of notes ?? []) {
+    for (const n of inScope) {
       if (n.type === "source") continue;
       m.set(n.type, (m.get(n.type) ?? 0) + 1);
     }
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
-  }, [notes]);
-
-  const stackOpen = !desktop && Boolean(openId);
-  useEffect(() => {
-    if (!stackOpen) return;
-    return openOverlay(() => setOpenId(null));
-  }, [stackOpen]);
+  }, [inScope]);
 
   if (error) return <div className="screen"><ErrorState title={t("memoryvault.memoriesCouldNotLoad")} message={error} /></div>;
-  if (!notes) return <div className="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
+  if (!loaded) return <div className="screen"><Loading label={t("memoryvault.loadingMemories")} /></div>;
 
-  const memoriesN = notes.filter((n) => n.type !== "source").length;
-  const sourcesN = notes.length - memoriesN;
+  const memoriesN = inScope.filter((n) => n.type !== "source").length;
+  const sourcesN = inScope.length - memoriesN;
   const open = openId ? notes.find((n) => n.id === openId) ?? null : null;
+
+  // One detail, two projections: a right-hand pane on a wide screen, a pushed
+  // screen on a phone. The editor keeps its own header in both, because it has
+  // no head of its own and needs a way back to the card.
+  const detail = open && (editing
+    ? (
+      <>
+        <header className="console"><div className="hrow">
+          <IconButton className="hit" label={t("memory.backToVault")} onClick={() => setEditing(false)}>
+            <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+          </IconButton>
+          <h1 className="console-title">{open.title ?? open.id}</h1>
+        </div></header>
+        <NoteEditor note={open} onClose={closeDetail} />
+      </>
+    )
+    : <MemoryDetail note={open} onBack={closeDetail} onEdit={() => setEditing(true)} />);
 
   return (
     <div className={`audit ${desktop ? "is-desktop" : ""}`}>
@@ -120,29 +159,21 @@ export function Vault() {
               ? <EmptyState
                   icon={<NoMatches size={22} stroke={1.75} aria-hidden />}
                   title={t("memoryvault.filteredEmptyDescription", { value1: query.trim() ? t("memoryvault.filteredEmptySearch", { value1: query.trim() }) : (typeFilter ?? "") })} />
-              : <EmptyState title={t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")} />
+              // Scope hid them, not the vault being empty. Saying "no memories
+              // yet" over a full vault sends the reader off to import more.
+              : isScoped(scope)
+                ? <EmptyState title={t("memory.vault.emptyScoped")} body={t("memory.vault.emptyScopedBody")} />
+                : <EmptyState title={t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")} />
           )}
-          {visible.map((n) => <NoteRow key={n.id} note={n} isOpen={openId === n.id} onOpen={() => setOpenId(n.id)} />)}
+          {visible.map((n) => <NoteRow key={n.id} note={n} isOpen={openId === n.id} onOpen={() => openDetail(n.id)} />)}
         </main>
       </div>
       {desktop && (
         <aside className="audit-detail">
-          {open
-            ? <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />
-            : <EmptyState title={t("memory.vault.noneOpen")} body={t("memory.vault.selectToEdit")} />}
+          {detail ?? <EmptyState title={t("memory.vault.noneOpen")} body={t("memory.vault.selectToEdit")} />}
         </aside>
       )}
-      {!desktop && open && (
-        <div className="stack-screen">
-          <header className="console"><div className="hrow">
-            <IconButton className="hit" label={t("memory.backToVault")} onClick={closeTopOverlay}>
-              <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
-            </IconButton>
-            <h1 className="console-title">{open.title ?? open.id}</h1>
-          </div></header>
-          <NoteEditor note={open} onChanged={load} onClose={() => setOpenId(null)} />
-        </div>
-      )}
+      {!desktop && detail && <div className="stack-screen">{detail}</div>}
     </div>
   );
 }
@@ -176,36 +207,29 @@ function NoteRow(props: { note: Note; isOpen: boolean; onOpen: () => void }) {
   );
 }
 
-function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; onClose: () => void }) {
+function NoteEditor(props: { note: Note; onClose: () => void }) {
   const n = props.note;
   const [drafts, setDrafts] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState(n.status);
   const [busy, setBusy] = useState(false);
 
-  // One tap changes status immediately (optimistic; low-risk + recoverable).
+  // One tap changes status immediately (optimistic in the store; low-risk +
+  // recoverable).
   const changeStatus = (next: Note["status"]) => {
-    if (next === status) return;
-    const previous = status;
-    setStatus(next);
-    patchNote(n.id, { status: next })
-      .then(() => props.onChanged())
-      .catch((e: Error) => { setStatus(previous); toast(e.message, { kind: "error" }); });
+    if (next === n.status) return;
+    setNoteStatus(n.id, next).catch((e: Error) => toast(e.message, { kind: "error" }));
   };
 
   const save = async () => {
-    const patch: Record<string, unknown> = {};
-    const sections: Record<string, unknown> = {};
+    const sections: Record<string, NoteSection> = {};
     for (const [key, s] of Object.entries(n.sections ?? {})) {
       const v = drafts[key];
       if (v !== undefined && v !== s.text) sections[key] = { ...s, text: v };
     }
-    if (Object.keys(sections).length) patch.sections = { ...n.sections, ...sections };
-    if (!Object.keys(patch).length) { toast(t("memory.noChanges")); return; }
+    if (!Object.keys(sections).length) { toast(t("memory.noChanges")); return; }
     setBusy(true);
     try {
-      await patchNote(n.id, patch);
+      await saveNoteSections(n.id, { ...n.sections, ...sections });
       toast(t("memoryvault.saved"));
-      await props.onChanged();
       void refreshLtmStatus(); // a vault save triggers an index rebuild
     } catch (error) {
       toast((error as Error).message, { kind: "error" });
@@ -216,14 +240,11 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
   const archive = async () => {
     const previous = n.status;
     try {
-      await patchNote(n.id, { status: "archived" });
-      await props.onChanged();
+      await archiveNote(n.id);
       toast(t("memory.vault.archived", { title: n.title ?? n.id }), {
         actionLabel: t("memoryvault.undo"),
         onAction: () => {
-          patchNote(n.id, { status: previous })
-            .then(() => props.onChanged())
-            .catch((e: Error) => toast(e.message, { kind: "error" }));
+          setNoteStatus(n.id, previous).catch((e: Error) => toast(e.message, { kind: "error" }));
         },
       });
     } catch (error) {
@@ -237,10 +258,9 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
       : t("memory.vault.deleteConfirm", { title: n.title ?? n.id });
     if (!confirm(message)) return;
     try {
-      await deleteNote(n.id);
+      await discardNote(n.id);
       toast(t("memory.vault.deleted", { title: n.title ?? n.id }));
       props.onClose();
-      await props.onChanged();
     } catch (error) {
       toast((error as Error).message, { kind: "error" });
     }
@@ -265,7 +285,7 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
         <div><span className="k">status</span>
           <span className="segset" role="group" aria-label="Status">
             {(["active", "resolved", "archived"] as const).map((st) => (
-              <button key={st} className={`seg st-${st} t-data`} aria-pressed={status === st} onClick={() => changeStatus(st)}>{st}</button>
+              <button key={st} className={`seg st-${st} t-data`} aria-pressed={n.status === st} onClick={() => changeStatus(st)}>{st}</button>
             ))}
           </span>
         </div>
@@ -288,11 +308,14 @@ function NoteEditor(props: { note: Note; onChanged: () => Promise<void> | void; 
               <Chip onClick={() => dedupe(key)}>{t("memory.vault.dedupeLines")}</Chip>
             </>}
             meter={<span className="pbar"><i className={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={{ width: `${pct}%` }} /></span>}>
+            {/* onInput reads the value out before calling the updater: React runs
+                the updater during a later render, by which point the event has
+                been recycled and currentTarget is null. */}
             <textarea
               className="t-prose edit-area"
               rows={Math.min(14, Math.max(3, Math.ceil(value.length / 60)))}
               value={value}
-              onInput={(e) => setDrafts((prev) => ({ ...prev, [key]: e.currentTarget.value }))}
+              onInput={(e) => { const text = e.currentTarget.value; setDrafts((prev) => ({ ...prev, [key]: text })); }}
             />
           </DetailSection>
         );

@@ -3,7 +3,6 @@ import { route, navigate } from "./router";
 import { useStore } from "../lib/store";
 import { LorebooksTool } from "../tools/lorebooks/LorebooksTool";
 import { MemoryTool } from "../tools/memory/MemoryTool";
-import { PlaceholderTool } from "../tools/PlaceholderTool";
 import { PresetsTool } from "../tools/presets/PresetsTool";
 import { Toaster } from "./toast";
 import { Palette } from "./palette";

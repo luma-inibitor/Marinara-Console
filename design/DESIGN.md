@@ -46,12 +46,12 @@ is already prose, so applying it anywhere else is noise. Never put a type
 utility on an element whose component class sets a different face: the two
 rules have equal specificity and the winner is decided by stylesheet order,
 which means the markup asserts one face and the page renders another.
-`node design/faceprobe.mjs` reports the face every utility actually gets.
+`node scripts/faceprobe.mjs` reports the face every utility actually gets.
 
 ### Color — semantic first, chrome second
 
 - Status vocabulary mirrors the engine and is **reserved**: `--ok` (emerald) /
-  `--warn` (yellow) / `--danger` (red) / `--off` (grey). Pair every status color with
+  `--warn` (yellow) / `--danger` (red) / `--off` (gray). Pair every status color with
   a shape, icon, or text — never color alone (WCAG 1.4.1).
 - `--accent` (blue) is for interactive chrome only — focus, selection, primary
   buttons, links. It must never collide with the status hues.
@@ -236,7 +236,7 @@ exists, use it; if it needs a new one, add it here in the same change.
 - **Copy provenance** — every user-visible string traces to the vendored
   catalog (`src/copy/vendor/ltm-en.json`) or to a registered entry in
   `src/copy/<area>.json`, each carrying a `note` saying why the product has no
-  word for it. `design/copycheck.mjs` checks this mechanically against a
+  word for it. `scripts/copycheck.mjs` checks this mechanically against a
   rendered surface. Coining silently has been the single most repeated defect
   in this tool. (The old `OURS` object and `src/tools/memory/strings.ts` are
   gone: `OURS` could not express a mirror, and its reasons were comments
@@ -265,6 +265,52 @@ exists, use it; if it needs a new one, add it here in the same change.
   is a contradiction). Collapsed exception chips ([flag] n) tint by worst
   severity; the kinds stay filterable, not re-taxonomized per row.
 
+- **Scope** (`src/tools/memory/scope.ts`) — character › chat, chosen once above the
+  views and applied by all of them. Three rules, because a filter that hides
+  records has to be trustworthy:
+  **Unscoped means everywhere, not nowhere.** The catalog defines scope as the
+  chats and characters a memory *is available in*, so an empty scope is not an
+  orphan — it is global. Imported lorebook sources arrive unscoped and would
+  vanish the moment any scope was picked.
+  **A record that cannot be placed is shown.** If the note behind a review row
+  has not loaded, the row stays. Hiding on ignorance makes the queue understate
+  the work left, which is worse than showing one row too many.
+  **Counts follow the list.** Scope narrows the rows *and* every figure beside
+  them — the vault's chips, the nav badges — because a scoped list under a global
+  tally is a header contradicting its own rows. The review badge counts live
+  rows for the same reason: the response's `counts.mutations` also counts claims
+  held inside blocked drafts, and read 190 over a queue listing 77.
+  Scope is applied to the review queue inside the store, so the tally, facets,
+  groups and apply dock all narrow with it rather than each filtering by hand.
+
+- **Memory detail card** (`src/tools/memory/detail/`) — a read-only screen for one
+  stored record. Three rules carry it, and all three are load-bearing:
+  **One bordered surface.** The retrieval block (modes · keywords · links) is the
+  only box on the screen, so *boxed means metadata, unboxed means content*. A
+  second card — especially around a section body — collapses that distinction and
+  was the single biggest failure of the directions that lost.
+  **One section, one row, one behavior.** Every section expands in place, however
+  long it is, so the chevron has only one thing it can mean. An earlier pass
+  routed oversized sections to a bottom-sheet peek and made the glyph predict
+  which of the two you would get (chevron vs diagonal arrow); Luma retired it —
+  two interaction models and a size threshold to explain, in exchange for a
+  problem stickiness solves outright.
+  **A long section carries its own way out.** While a section is open its row is
+  `position: sticky` under the card's head, so the control that closes it is on
+  screen the whole way down. Sticky needs no length threshold and no measurement
+  to decide it applies: a row whose body is shorter than the remaining viewport
+  never reaches its offset. Collapsing must anchor the scroll back to the row —
+  the document shrinks under the reader otherwise, and the sticky control creates
+  the disorientation it exists to prevent.
+  **No truncation notices.** No "141 lines between", no dashed count boxes, no
+  "show rest". The row states the size and the chevron opens it. Every notice
+  tried here read as noise.
+  Collapse-all is the manifest state — every section becomes a bare row — which is
+  why a long memory needs no separate overflow design, only `defaultCollapsed`.
+  Cap pressure is stated in words in the flag's popover; the meter bar it used to
+  have died with the peek, and does not come back into the row, where it competed
+  with content for attention.
+
 ## 6. Layout recipes (with mobile collapse)
 
 - **Triage queue** (LTM review): left keyboard list + right detail; single-key
@@ -278,11 +324,14 @@ exists, use it; if it needs a new one, add it here in the same change.
 
 ## 7. Definition of done — `verify.mjs`
 
-A UI change is not done until `node verify.mjs` passes:
+A UI change is not done until `node scripts/verify.mjs` passes:
 
-1. Screenshots at the standard viewports — `node design/shots.mjs <url> <name>`:
-   **390×844** narrow floor · **486×1085** Luma's device, the one that must be
-   right · **768×1024** the band between the breakpoints · **1280×800** desktop.
+1. Screenshots at the standard viewports — `node scripts/shots.mjs <url> <name>`:
+   **390×844** `narrow`, the floor · **486×1085** `phone`, Luma's device and the
+   one that must be right · **768×1024** `tablet`, the band between the
+   breakpoints · **1280×800** `desktop`. Those four names are the only viewport
+   vocabulary; they are declared once in `scripts/lib/browser.mjs` and every
+   browser check imports them rather than restating widths.
    A "mobile" rendering drawn in a small box on a wide page is not a mobile
    rendering; render at the viewport or do not claim the result.
    CSS breakpoints are two, semantic: **720px** (below it everything stacks)
@@ -304,6 +353,13 @@ real bugs every time it was applied — treat it as part of the build, not QA.
 Shared components live in `src/ui/`, one folder-level, each with its own
 co-located stylesheet (`Chip.tsx` + `Chip.css`). Anything used by more than one
 screen belongs there; anything used by one screen belongs beside that screen.
+
+A screen kept beside its tool may co-locate its stylesheet the same way when it
+is a *family* rather than a single component — `src/tools/memory/detail/` is
+four components and four stylesheets. The rule it answers to is the one above:
+deleting the folder deletes its rules. A tool's one-off screens still belong in
+that tool's global sheet (`src/styles/memory.css`); the split is worth it only
+when the alternative is a 200-line unrelated block in a 600-line file.
 
 **Why co-located plain CSS**, and not utility classes in the JSX or CSS
 modules. The rules in this repo carry explanations that utility strings cannot
@@ -328,7 +384,7 @@ something was clickable by clicking it. Accent means interactive (§2); a
 component that is not interactive should not be able to reach for it.
 
 The same split runs through `EmptyState` / `Loading` / `ErrorState`. They are
-one shape — centred text in a blank pane — and three roles, and a single
+one shape — centered text in a blank pane — and three roles, and a single
 `kind` prop would have kept the shape and lost the roles. A loading state must
 not be allowed a title in the label face, because half a second of latency
 announced in bold reads as a verdict; an error state must not be allowed to
@@ -366,7 +422,7 @@ including the presets tool.
 | `Picker` | choose one, short fixed list, bottom sheet | `SearchDisclosure` if long |
 | `SearchDisclosure` | choose one, long list, anchored popover | `Picker` on a thumb rail |
 | `FacetDrawer` | every facet in a slice, with counts, as toggles | — |
-| `ListGroup` / `CollapseButton` | collapse behaviour and its accessible name | — |
+| `ListGroup` / `CollapseButton` | collapse behavior and its accessible name | — |
 | `DetailSection` | a §section heading and its body | — |
 | `JsonView` / `RawJson` | a JSON value, folding or literal | — |
 | `CopyableText` | a value meant to be taken elsewhere | — |
@@ -384,7 +440,7 @@ including the presets tool.
 Two rules the inventory encodes. **Split by role, not by shape**: `Chip` and
 `Tag` look alike and are separate components, because one is pressable and the
 other is not, and that had been something you found out by clicking. **Own the
-behaviour, slot the shape**: `ListGroup` owns the chevron and its accessible
+behavior, slot the shape**: `ListGroup` owns the chevron and its accessible
 name, while the review queue and the sources list keep their own header
 layouts — one shares a grid with its rows, one does not, and forcing a single
 shape would have invented a layout neither wanted.
@@ -404,15 +460,15 @@ place on. Measured before and after in the claim detail at a 1600px viewport:
 
 ### Checks that belong to this layer
 
-- `node design/deadcss.mjs` — CSS classes nothing appears to use. A **candidate**
+- `node scripts/deadcss.mjs` — CSS classes nothing appears to use. A **candidate**
   list: class names reach the DOM literally, composed as `` `type-${n.type}` ``,
   and as bare strings passed to a `cls` prop. Read every hit. The first version
   of this script reported 36 dead classes of which 20 were live.
-- `node design/domsnap.mjs before` / `... after --diff` — snapshots the rendered
+- `node scripts/domsnap.mjs before` / `... after --diff` — snapshots the rendered
   element tree and its class hooks across five screens at two viewports. Any
   refactor claiming "renders identically" runs this instead of asserting it. It
   is what caught three silent regressions in the chip sweep.
-- `node design/overlaycheck.mjs` — every layered surface must close on scrim
+- `node scripts/overlaycheck.mjs` — every layered surface must close on scrim
   tap, on Escape, and on back. The import confirm answered only one of those
   for weeks, because each sheet registered with the overlay stack by hand and
   one forgot. `Sheet` and `Modal` now do it, so the check guards a rule the

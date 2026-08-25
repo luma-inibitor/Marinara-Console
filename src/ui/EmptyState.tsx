@@ -8,7 +8,7 @@ import "./EmptyState.css";
  *  Waiting and failing are `Loading` and `ErrorState` instead: same shape,
  *  different roles, and §8 splits on role.
  *
- *  `tone` colours the icon only. It never carries meaning alone, so every
+ *  `tone` colors the icon only. It never carries meaning alone, so every
  *  toned state still says what happened in the title. */
 export function EmptyState(props: {
   icon?: ReactNode;

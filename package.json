@@ -4,19 +4,25 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
     "dev": "vite",
     "build": "vite build",
-    "copycheck": "node design/copycheck.mjs",
+    "copycheck": "node scripts/copycheck.mjs",
     "preview": "vite preview",
-    "kit": "npx @tailwindcss/cli -i design/mockup-kit.css -o public/mockups/kit.css"
+    "kit": "npx @tailwindcss/cli -i design/mockup-kit.css -o public/mockups/kit.css",
+    "test:watch": "vitest",
+    "layercheck": "node scripts/layercheck.mjs",
+    "lint": "eslint src"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/eslint-parser": "^7.29.7",
     "@babel/parser": "^7.29.8",
+    "@babel/preset-typescript": "^7.29.7",
     "@fontsource-variable/archivo": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource-variable/source-sans-3": "^5.3.0",
@@ -24,10 +30,13 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "@vitejs/plugin-react": "^6.1.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "playwright": "^1.62.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
   },
   "private": true,
   "dependencies": {

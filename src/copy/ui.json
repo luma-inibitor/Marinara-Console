@@ -230,12 +230,12 @@
 
   "ui.rawjson.label": {
     "text": "Raw record",
-    "note": "The summary of the fold that hides the underlying object. The catalog's 'record' is a memory's provenance panel (memoryvault.recordInfo) rather than the serialised object behind it, and it never offers the object itself."
+    "note": "The summary of the fold that hides the underlying object. The catalog's 'record' is a memory's provenance panel (memoryvault.recordInfo) rather than the serialized object behind it, and it never offers the object itself."
   },
   "ui.rawjson.lines": {
     "one": "1 line",
     "other": "{{count}} lines",
-    "note": "How much the raw fold is hiding, shown on the closed summary so a fold never reads as missing content. The catalog measures sources in entries and chunks and has no line count, because it never shows serialised text."
+    "note": "How much the raw fold is hiding, shown on the closed summary so a fold never reads as missing content. The catalog measures sources in entries and chunks and has no line count, because it never shows serialized text."
   },
 
   "ui.search.what": {
@@ -246,5 +246,20 @@
     "one": "1 match",
     "other": "{{count}} matches",
     "note": "The tally inside the search field, shown only while there is a query. The catalog counts results per subject in prose (reviewqueue.rejectedCount, sourcesworkspace.value1LorebooksValue2Entries…) and has no bare match count for a search box to carry."
+  },
+
+  "ui.sections": {
+    "text": "sections",
+    "note": "The count-of-sections label: the presets browser's section count and its sort chip, and the memory detail card's heading over a memory's section list. The catalog's memorySections is a memory's own detail list and renders as \"Memory details\" — a different thing under a colliding key name. Lowercase because both call sites uppercase in CSS."
+  },
+
+  "ui.moreCount": {
+    "text": "+{{count}} more",
+    "note": "How many items a clamped run is holding back — the keyword rail and each relation's link run on the memory detail card. The catalog folds hidden conflicts (moreConflicts) in a full sentence; this is a counter that has to fit at the end of the run it belongs to. Not plural-selected: it only ever shows above one."
+  },
+
+  "ui.showFewer": {
+    "text": "show fewer",
+    "note": "Refolds a clamped run to its one-line form; the counterpart to ui.moreCount. The catalog has no expandable run and so no word for closing one."
   }
 }

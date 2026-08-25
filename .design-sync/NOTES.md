@@ -57,7 +57,7 @@ two are safe to delete.
 ## State at time of this sync
 
 Clean: the copy migration onto `src/copy/` has settled and the React port has
-landed. `npx tsc --noEmit`, `npm run build`, `design/domsnap.mjs` (DOM identical
+landed. `npx tsc --noEmit`, `npm run build`, `scripts/domsnap.mjs` (DOM identical
 across the port) and `verify.mjs` (zero console errors) were all green when this
 bundle was built.
 

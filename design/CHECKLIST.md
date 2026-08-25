@@ -34,7 +34,7 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
 
 ## 2. Copy — before writing any label
 
-- [ ] **Run `node design/copycheck.mjs <file>`.** Every user-visible string must
+- [ ] **Run `node scripts/copycheck.mjs <file>`.** Every user-visible string must
       trace to `ltm-en.json` or be registered in `OURS` with a reason.
 - [ ] **Search the catalog for the concept, not the word.** The product almost
       always already has it.
@@ -71,7 +71,7 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
 
 ## 4. Layout and vocabulary
 
-- [ ] **One meaning per channel.** Accent means interactive. Colour is never the
+- [ ] **One meaning per channel.** Accent means interactive. Color is never the
       only carrier. One icon per concept, one concept per icon.
       *(An "edited" chip in accent, which the detail pane had just established
       means interactive. Two different yellow states meaning opposite things.)*

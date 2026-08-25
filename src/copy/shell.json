@@ -54,7 +54,7 @@
   },
   "shell.palette.hintMove": {
     "text": "↑↓ move",
-    "note": "Key-hint footer: a key glyph welded to its verb. The verbs exist upstream as button labels (sourceoperation.move) but a glyph-plus-verb hint is a form the product has no instance of, and splitting it would put a bare capitalised 'Move' in a lowercase footer."
+    "note": "Key-hint footer: a key glyph welded to its verb. The verbs exist upstream as button labels (sourceoperation.move) but a glyph-plus-verb hint is a form the product has no instance of, and splitting it would put a bare capitalized 'Move' in a lowercase footer."
   },
   "shell.palette.hintOpen": {
     "text": "↵ open",
@@ -62,7 +62,7 @@
   },
   "shell.palette.hintClose": {
     "text": "esc close",
-    "note": "Key-hint footer, same form as hintMove. memoryvault.close is the bare verb but capitalised as a button label, and the hint reads as one token with its key name."
+    "note": "Key-hint footer, same form as hintMove. memoryvault.close is the bare verb but capitalized as a button label, and the hint reads as one token with its key name."
   },
   "shell.palette.groupNavigate": {
     "text": "Navigate",
