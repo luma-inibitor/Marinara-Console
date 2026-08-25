@@ -476,12 +476,10 @@ place on. Measured before and after in the claim detail at a 1600px viewport:
   and as bare strings passed to a `cls` prop. Read every hit. The first version
   of this script reported 36 dead classes of which 20 were live.
 - `node scripts/domsnap.mjs before` / `... after --diff` — snapshots the rendered
-  element tree and its class hooks across every surface it can drive to: the
-  routes, plus the overlays, selected rows and expanded editors a URL cannot
-  reach. Any refactor claiming "renders identically" runs this instead of
-  asserting it. It is what caught three silent regressions in the chip sweep.
-  Every run ends with the components no surface rendered and why, so an
-  unreached surface cannot be read as an unchanged one.
+  element tree and its class hooks across the routes plus the overlays, selected
+  rows and expanded editors a URL cannot reach. Any refactor claiming "renders
+  identically" runs this instead of asserting it. Each run ends with the
+  components it did not reach.
 - `node scripts/overlaycheck.mjs` — every layered surface must close on scrim
   tap, on Escape, and on back. The import confirm answered only one of those
   for weeks, because each sheet registered with the overlay stack by hand and

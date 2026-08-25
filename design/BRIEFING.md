@@ -209,6 +209,6 @@ Not optional, and not judgment calls:
 | `node scripts/verify.mjs` | Contrast, tap targets, console errors, keyboard walk, density |
 | `node scripts/copycheck.mjs <file>` | Every user-visible string traces to the catalog or `OURS` |
 | `node scripts/deadcss.mjs` | CSS classes nothing uses |
-| `node scripts/domsnap.mjs before` / `after --diff` | A refactor renders identically — proved, not asserted, and it names what it did not reach |
+| `node scripts/domsnap.mjs before` / `after --diff` | A refactor renders identically, and what it did not reach |
 | `node scripts/overlaycheck.mjs` | Every layered surface closes on scrim, Escape and back |
 | `node scripts/shots.mjs <url>` | Screenshots at 390 / 486 / 768 / 1280 |
