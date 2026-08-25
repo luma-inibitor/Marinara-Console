@@ -29,7 +29,7 @@ import { flagsOf, worstSeverity, contributionChars, FLAG } from "./model/flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./model/facets";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./components/NoteRef";
-import { Chip, collapsedGroups, EmptyState, ErrorState, FacetDrawer, IconButton, ListGroup, Loading, Picker, useIsDesktop, useRovingFocus } from "../../ui";
+import { Chip, collapsedGroups, EmptyState, ErrorState, FacetDrawer, IconButton, ListGroup, Loading, MiddleTruncate, Picker, useIsDesktop, useRovingFocus } from "../../ui";
 import { createStore, useStore } from "../../lib/store";
 
 const RESTORE_POINT_THRESHOLD = 20;
@@ -419,6 +419,8 @@ function FacetSheet() {
 // Group header: one line — identity · aggregates (chars added) · cap flag only
 // when real · bar tally · keep-all/drop-all as icon buttons (undecided rows
 // only) · kebab for the rare object actions. The glyph comes from the grouper.
+// The title elides its MIDDLE, because every lorebook entry from one book
+// shares a long prefix and only the end tells them apart.
 function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key: string) => void; tabbable: (key: string) => boolean }) {
   const g = props.group;
   const dec = useStore(decisions);
@@ -446,7 +448,7 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
         head={<>
         {g.icon && <GroupIcon icon={g.icon} />}
         <div className="ghead-body">
-        <span className="gn t-prose">{g.label}</span>
+        <MiddleTruncate className="gn t-prose" text={g.label} />
         {chars > 0 && <span className="ghead-agg t-data">+{chars.toLocaleString()}</span>}
         <span className="ghead-ctl">
           <GroupPressure groupId={g.id} isTarget={isTarget} />
