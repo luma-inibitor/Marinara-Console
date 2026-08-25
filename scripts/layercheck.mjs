@@ -61,13 +61,28 @@
 //
 // Exit codes: 0 clean · 1 one or more violations of either rule.
 
-import { join } from "node:path";
-import { ROOT, rel, listSources, parseModule, valueSpecifiers } from "./lib/imports.mjs";
+import { rel, sourceFiles, parseModule, valueSpecifiers } from "./lib/imports.mjs";
 
 // ── layers ────────────────────────────────────────────────────────────────
-// Rank is the only thing compared: an import is legal when it lands at a rank
-// at or below its own. Equal ranks are fine — one component may import another.
-const RANK = { transport: 0, endpoints: 1, model: 2, state: 3, presentation: 4 };
+// Which layers a file's value imports may land in, per §1:
+//
+//     presentation → state → endpoints → transport
+//     presentation → model        state → model
+//
+// A layer always reaches its own. The model is a side branch rather than a
+// point on the line: it sits above endpoints and below state, which no single
+// ordering expresses, so this is a table instead of a rank comparison. The
+// model reaches nothing but itself.
+//
+// Presentation reaching endpoints or transport is downward and passes here.
+// RULE 2 below is where it fails.
+const REACHES = {
+  transport: new Set(["transport"]),
+  endpoints: new Set(["endpoints", "transport"]),
+  model: new Set(["model"]),
+  state: new Set(["state", "model", "endpoints", "transport"]),
+  presentation: new Set(["presentation", "state", "model", "endpoints", "transport"]),
+};
 const DIR_LAYER = {
   api: "endpoints",
   model: "model",
@@ -141,8 +156,11 @@ function isEndpointsModule(edge) {
   return /(^|\/)api\//.test(edge.spec);
 }
 
+// Matched anywhere in the path, so a tree rooted outside src (the fixtures) is
+// checked by the same rule.
 const TRANSPORT_DIR = "src/shell/";
 const TRANSPORT_CLIENT = "src/shell/api.ts";
+const inTransport = (p) => p.includes(TRANSPORT_DIR);
 
 // `api()` is a request, so importing it into a component is the same defect as
 // calling `fetch` there. The rest of that module is not: `ApiError` is a shape
@@ -152,8 +170,8 @@ const TRANSPORT_CLIENT = "src/shell/api.ts";
 const TRANSPORT_REQUEST = new Set(["api", "default"]);
 
 function isTransportClient(edge, from) {
-  if (from.startsWith(TRANSPORT_DIR)) return false;
-  if (!edge.resolved || rel(edge.resolved) !== TRANSPORT_CLIENT) return false;
+  if (inTransport(from)) return false;
+  if (!edge.resolved || !rel(edge.resolved).endsWith(TRANSPORT_CLIENT)) return false;
   return edge.names.some((n) => TRANSPORT_REQUEST.has(n) || n.startsWith("* as "));
 }
 
@@ -177,8 +195,7 @@ function fetchSites(mod) {
 
 // ── main ──────────────────────────────────────────────────────────────────
 const paths = process.argv.slice(2).filter((a) => !a.startsWith("--"));
-const roots = paths.length ? paths.map((p) => join(ROOT, p)) : [join(ROOT, "src")];
-const files = listSources(roots);
+const files = sourceFiles(paths);
 
 const perDir = new Map();
 const violations = [];
@@ -218,7 +235,7 @@ for (const abs of files) {
       });
     }
   }
-  if (!from.startsWith(TRANSPORT_DIR)) {
+  if (!inTransport(from)) {
     for (const line of fetchSites(mod)) {
       ownership.push({ file: from, line, rule: "fetch", text: "calls the global fetch()" });
     }
@@ -232,7 +249,7 @@ for (const abs of files) {
     if (tLayer === null || tLayer === "unclassified") continue;
     checked++;
     agg.edges++;
-    if (RANK[tLayer] <= RANK[layer]) continue;
+    if (REACHES[layer].has(tLayer)) continue;
     agg.bad++;
     violations.push({
       file: from,
@@ -249,7 +266,7 @@ console.log("per directory:");
 for (const d of [...perDir.values()].sort((a, b) => a.dir.localeCompare(b.dir))) {
   console.log(
     `  ${d.dir.padEnd(28)} ${String(d.files).padStart(3)} files  ${String(d.edges).padStart(3)} value imports  ` +
-    `[${d.layer}]${d.bad ? `  ${d.bad} UPWARD` : ""}`
+    `[${d.layer}]${d.bad ? `  ${d.bad} FORBIDDEN` : ""}`
   );
 }
 
@@ -266,14 +283,14 @@ if (parseErrors.length) {
 // ── rule 1 · direction ────────────────────────────────────────────────────
 console.log("\n──── RULE 1 · imports point downward (§1) ────");
 if (violations.length) {
-  console.log("\nUPWARD VALUE IMPORTS:");
+  console.log("\nFORBIDDEN VALUE IMPORTS:");
   for (const v of violations) {
     console.log(`  ${v.file}:${v.line}  ${v.from} → ${v.to}   ${v.text}`);
   }
 }
 console.log(
   violations.length
-    ? `\n${violations.length} upward value import(s) — every import points downward or not at all`
+    ? `\n${violations.length} forbidden value import(s) — every value import points downward or not at all`
     : "\nevery value import points downward"
 );
 
