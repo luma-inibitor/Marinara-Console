@@ -123,7 +123,7 @@ export function FilterSheet(props: {
                 {sources.selected ? selectedSummary(sources) : t("memory.review.anySource")}
               </span>
               <span className="t-data fs-n">{sources.selected ? `${sources.selected}/${sources.values.length}` : sources.values.length}</span>
-              <ChevronRight size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
+              <ChevronRight className="fs-chev" size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
             </button>
 
             {PINNED.map((id) => (
@@ -138,8 +138,8 @@ export function FilterSheet(props: {
                 {moreSelected(m) || TAIL.length}
               </span>
               {more
-                ? <ChevronDown size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
-                : <ChevronRight size={ICON_SIZE.sm} stroke={1.75} aria-hidden />}
+                ? <ChevronDown className="fs-chev" size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
+                : <ChevronRight className="fs-chev" size={ICON_SIZE.sm} stroke={1.75} aria-hidden />}
             </button>
             {more && TAIL.map((id) => (
               <CheckList key={id} facet={facet(id)} onToggle={props.onToggle} heading />

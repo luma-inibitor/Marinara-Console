@@ -48,13 +48,26 @@
 .fs-more { background: var(--canvas); border-top: var(--hairline); }
 
 /* ── section heads inside the sheet ── */
-.fs-sub { display: flex; align-items: baseline; gap: 7px; padding: 10px var(--s3) 5px; }
+.fs-sub { display: flex; align-items: baseline; gap: 7px;
+  padding: 10px calc(var(--s3) + var(--fs-trail)) 5px var(--s3); }
 .fs-sub .fs-row-l { flex: 1; }
 
-/* ── the count column ── */
-.fs-n { flex: none; font-size: 10px; color: var(--text-dim);
+/* ── the count column ──
+   The header comment above promises every count shares one column position.
+   It did not: the count landed wherever whatever followed it left room, so
+   "sources 6" sat 22px left of "memory type 6" directly beneath it, and the
+   More-filters count sat against its own label instead of the right edge.
+
+   The slot is what makes the promise true. A row with a drill-in chevron and
+   a row without now reserve the same trailing width, so the numbers line up
+   whether or not the row leads anywhere. `margin-left: auto` covers the rows
+   that have no flexible sibling to push the count over. */
+.fs-n { flex: none; margin-left: auto; font-size: 10px; color: var(--text-dim);
   font-variant-numeric: tabular-nums; }
 .fs-n.is-on { color: var(--accent); }
+.fs-chev { flex: none; }
+/* chevron + the row gap it sits behind */
+.filter-sheet { --fs-trail: 22px; }
 
 /* ── checkable rows ── */
 .fs-checks { display: grid; grid-template-columns: 1fr 1fr; }
