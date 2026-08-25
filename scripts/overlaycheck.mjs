@@ -34,7 +34,9 @@ const CASES = [
       await p.getByRole("button", { name: /^Sort/ }).click(); }, sel: ".sheet.option-sheet" },
   { name: "note peek",    hash: "#/memory/vault",   vp: VIEWPORTS.desktop, open: async (p) => {
       await p.locator(".row-summary").first().click();
-      await p.waitForTimeout(500);
+      // No pause between the two clicks: .notelink exists only inside a record,
+      // never in the list, so waiting for it to be clickable *is* waiting for
+      // the record to have arrived.
       await p.locator(".notelink").first().click(); }, sel: ".sheet" },
   // The memory detail card has no layered surface of its own: every section
   // expands in place, so there is nothing here to dismiss.
@@ -75,7 +77,10 @@ for (const c of CASES) {
       else if (hash !== base) { console.log(`FAIL ${c.name} / ${how}: left the screen (hash "${hash}", expected "${base}")`); fails++; }
       else console.log(`ok   ${c.name} / ${how}`);
     } catch (e) {
-      console.log(`FAIL ${c.name} / ${how}: ${String(e).split("\n")[0].slice(0, 90)}`); fails++;
+      // Wide enough for the harness's mount failure, which names the module the
+      // dev server refused. Clipped shorter, that reads as a bare click timeout
+      // and points the reader at the overlay code instead of the real fault.
+      console.log(`FAIL ${c.name} / ${how}: ${String(e).split("\n")[0].slice(0, 300)}`); fails++;
     }
     // Optional: a navigation that never landed leaves no page to close.
     await p?.close();
