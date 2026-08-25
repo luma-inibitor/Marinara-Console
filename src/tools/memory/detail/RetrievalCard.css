@@ -1,6 +1,4 @@
-/* Retrieval card — the detail screen's only bordered surface.
-   Every rule here is scoped under .mdc-ret so the card can never restyle the
-   unboxed content around it. */
+/* Retrieval card — the detail screen's only bordered surface. */
 
 .mdc-ret {
   border: var(--hairline);
@@ -24,8 +22,7 @@
   text-transform: uppercase;
 }
 
-/* Positioning context for the popover: it anchors to this, not to the card, so
-   the button can move without the popover leaving the card's right edge. */
+/* Positioning context for the popover; without it the tip anchors to the card. */
 .mdc-ret-info {
   position: relative;
   margin-left: auto;
@@ -44,8 +41,7 @@
   cursor: pointer;
 }
 
-/* right:0, never left — anchored to the far edge the popover grows inward and
-   cannot run off the card no matter how narrow the viewport is. */
+/* right:0, never left — the popover grows inward and cannot run off the card. */
 .mdc-ret-tip {
   position: absolute;
   top: calc(100% + var(--s1));
@@ -59,8 +55,7 @@
   border-radius: var(--r-s);
   padding: 6px 9px;
   box-shadow: var(--shadow-pop);
-  /* It sits inside the label row, which is caps, tracked and 600. This is a
-     sentence, so every one of those has to be undone rather than inherited. */
+  /* Undoes the caps/tracked/600 label row this sits inside. */
   font-family: var(--font-prose);
   font-size: 11.5px;
   line-height: 1.45;
@@ -79,25 +74,18 @@
   font-size: var(--fs-data-s);
 }
 
-/* The catalog strings are sentence case; the key column is lowercase, so the
-   case is a property of the column rather than of the copy. */
 .mdc-ret-key {
   color: var(--text-dim);
   text-transform: lowercase;
 }
-/* A key beside a multi-line value sits on the value's first line rather than in
-   the middle of the block. The offsets differ because the two values start on
-   different baselines: a 28px chip rail against a 12.5px prose relation. */
+/* Aligns the key to the value's first line: a 28px chip rail, a 12.5px relation. */
 .mdc-ret-key-kw { align-self: start; padding-top: 5px; }
 .mdc-ret-key-links { align-self: start; padding-top: 2px; }
 
 .mdc-ret-val { display: inline-flex; min-width: 0; }
 .mdc-ret-none { color: var(--text-dim); }
 
-/* ══ keyword rail ══
-   One button holding many keywords: one tap target, one thing to explain.
-   Collapsed it is a fixed 28px, so the card's height is the same whether the
-   note carries three keywords or thirty. */
+/* ══ keyword rail ══ */
 .mdc-ret-rail {
   display: flex;
   align-items: center;
@@ -112,15 +100,12 @@
   flex-wrap: nowrap;
   height: 28px;
   overflow: hidden;
-  /* Fade, never a hard cut: a sliced glyph reads as a rendering fault, while a
-     fade reads as "there is more". no-repeat because a repeating mask would
-     tile the opaque stop back over the overflow it is meant to hide. */
+  /* no-repeat: a repeating mask tiles the opaque stop back over the overflow. */
   mask-image: linear-gradient(90deg, #000 calc(100% - 52px), transparent);
   mask-repeat: no-repeat;
 }
 
-/* The mask dims the element's own focus ring along with its content, so drop it
-   while focused — the ring has to be fully visible to do its job. */
+/* The mask dims the element's own focus ring along with its content. */
 .mdc-ret-rail:focus-visible { mask-image: none; }
 
 .mdc-ret-rail.is-open {
@@ -130,14 +115,8 @@
   mask-image: none;
 }
 
-/* Tag's 34px floor is a spaced, tappable minimum; these are static labels
-   inside a control that is itself the tap target, and they have to fit one
-   28px line. Silhouette unchanged — only the floor moves.
-
-   A keyword is DATA, not a label: the engine matches the stored string
-   literally, so it is set in the data face at the case it is stored in.
-   Tag's label face would render `quartermaster` as QUARTERMASTER and show a
-   value the vault does not hold. */
+/* 26px, under Tag's 34px floor: static labels inside a control that is itself
+   the tap target, on one 28px line. */
 .mdc-ret-rail .tag {
   min-height: 26px;
   font-family: var(--font-data);
@@ -168,15 +147,8 @@
 .mdc-ret-tally { font-variant-numeric: tabular-nums; }
 
 /* ══ links ══ */
-/* 8px, not the 5px the rest of the block uses: these rows hold the only tap
-   targets in the card besides the rail, and two stacked targets read as one
-   control without a gap between them. */
+/* 8px, not the block's 5px: two stacked tap targets read as one control. */
 .mdc-ret-links { display: flex; flex-direction: column; gap: var(--s2); }
-/* One link, one line. The title truncates rather than wrapping — the house
-   rule that a title must never be cut protects the SCREEN's title, the one
-   thing a reader cannot recover; a link's title is recoverable by following
-   it, and 81 wrapping links would bury the sections under their own
-   provenance. */
 .mdc-ret-linkrow {
   display: flex;
   align-items: center;
@@ -184,8 +156,6 @@
   flex-wrap: nowrap;
   min-width: 0;
 }
-/* The relation is the row's preposition, the target's title is its point — so
-   the preposition holds its size and the title is what gives way. */
 .mdc-ret-rel {
   flex: 0 0 auto;
   color: var(--text-dim);
@@ -197,13 +167,10 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  /* min-width:0 on every link in the chain, or the flex item refuses to shrink
-     below its content and the ellipsis never appears. */
+  /* min-width:0 on every link in the chain, or the ellipsis never appears. */
   min-width: 0;
   flex: 0 1 auto;
 }
-/* The glyph is the type's own, in the type's hue — the vault's standard way of
-   naming a memory. It must not shrink with the title beside it. */
 .mdc-ret-target .ti {
   flex: 0 0 auto;
   display: inline-flex;
@@ -213,12 +180,11 @@
   font-variation-settings: "wdth" 106;
   font-weight: 600;
   font-size: 13px;
-  /* Grown rather than padded with .hit, whose hit area would reach past the
-     8px between rows and swallow taps meant for the row above. */
+  /* Grown rather than padded with .hit, whose hit area would reach past the 8px
+     between rows and swallow taps meant for the row above. */
   display: inline-block;
   min-height: 24px;
   line-height: 24px;
-  /* Truncates instead of wrapping, so a link is always one row tall. */
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
@@ -227,6 +193,4 @@
   overflow-wrap: normal;
 }
 
-/* Sits on its own line under the run it unfolds, not inline with the last
-   link, so it never reads as another link. */
 .mdc-ret-linkmore { align-self: flex-start; margin-top: 2px; }

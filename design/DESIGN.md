@@ -101,8 +101,9 @@ Density modes via `data-density` on `<html>`: `comfortable` (default) and `compa
 
 ## 2. Owner preferences (confirmed by Luma — do not re-litigate)
 
-- ~11 rows per phone screen collapsed; titles **wrap, never truncate**; one-line
-  mono meta with `·` separators; right-aligned numeric gutter per row.
+- ~11 rows per phone screen collapsed; titles **truncate to one line** in list
+  rows; one-line mono meta with `·` separators; right-aligned numeric gutter
+  per row.
 - Accordions with **data-bearing collapsed headers** (counts, token totals, status —
   closed ≠ invisible). **Multi-expand is the default**; one-at-a-time only where
   focus demands it (e.g. phone editing of long forms).

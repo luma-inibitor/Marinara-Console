@@ -19,11 +19,10 @@ never restates.
   conditionals at line end. *Check: render sibling rows with and without
   optional elements; assert shared fields align column-wise.* (Group-header
   feedback, 3:21 PM.)
-- **L2 · Titles wrap on their own line, never against trailing controls.**
-  A long title must get the full row width (two-line pattern) rather than
-  wrapping in a narrow column beside chips. *Check: render with a 30+ char
-  title; assert no wrap column narrower than ~60% of the row.* (3:21 PM;
-  also DESIGN §2 "titles wrap, never truncate".)
+- **L2 · Titles get the full row width, then truncate.**
+  A long title must not be squeezed into a narrow column beside chips.
+  *Check: render with a 30+ char title; assert one line, ellipsised, and no
+  column narrower than ~60% of the row.*
 - **L3 · Bars sit flush with their viewport edge.** No stale offsets
   reserving space for chrome that is not there; safe-area padded. *Check:
   bottom bar's bottom == viewport bottom (or the visible dock top).*
