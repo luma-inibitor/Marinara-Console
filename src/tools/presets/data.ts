@@ -12,18 +12,18 @@
 import { api, tokensOf } from "../../shell/api";
 import { tAny } from "../../copy";
 
-export const bool = (v: unknown): boolean => v === true || v === "true";
+const bool = (v: unknown): boolean => v === true || v === "true";
 const parseJson = <T,>(v: unknown, fallback: T): T => {
   if (v == null) return fallback;
   if (typeof v !== "string") return v as T;
   try { return JSON.parse(v) as T; } catch { return fallback; }
 };
 
-export type MarkerType =
+type MarkerType =
   | "character" | "persona" | "lorebook" | "chat_history" | "chat_summary"
   | "dialogue_examples" | "agent_data" | "id_macro_cards" | string;
 
-export interface MarkerConfig { type: MarkerType; [extra: string]: unknown; }
+interface MarkerConfig { type: MarkerType; [extra: string]: unknown; }
 
 // Marker types the engine's assembler actually handles (packages/server/src/
 // services/prompt/{assembler,marker-expander}.ts). Do not invent entries here:
@@ -31,7 +31,7 @@ export interface MarkerConfig { type: MarkerType; [extra: string]: unknown; }
 // failure mode.
 //
 // The values are copy KEYS, not labels; the labels live in src/copy/presets.json.
-export const MARKER_LABEL_KEYS: Record<string, string> = {
+const MARKER_LABEL_KEYS: Record<string, string> = {
   character: "presets.marker.character",
   persona: "presets.marker.persona",
   lorebook: "presets.marker.lorebook",
@@ -75,7 +75,7 @@ export interface PromptSection {
   forbidOverrides: boolean;
 }
 
-export interface PromptGroup { id: string; name: string; enabled: boolean; }
+interface PromptGroup { id: string; name: string; enabled: boolean; }
 
 export interface PresetFull {
   preset: PromptPreset;
@@ -84,7 +84,7 @@ export interface PresetFull {
   choiceBlocks: ChoiceBlock[];
 }
 
-export interface ChoiceBlock {
+interface ChoiceBlock {
   id: string;
   variableName: string;
   question: string;

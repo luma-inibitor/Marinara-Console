@@ -21,8 +21,6 @@ import { Add, Back, ICON_SIZE, SelectMode, Tags } from "../../ui/icons";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
 type Mode = "find" | "test";
-/** Save state for the bulk-edit path, which writes directly. */
-export type SavePill = "dirty" | "saved" | "err";
 
 /** Sort chip labels, as copy keys — a table, so it goes through t() by key. */
 const SORT_LABEL: Record<SortKey, string> = {

@@ -55,7 +55,7 @@ export interface FlagContext {
   notesById: Map<string, Note>;
 }
 
-export interface RowFlag {
+interface RowFlag {
   /** Facet value — stable, filterable, shown in the detail signals zone. */
   label: string;
   severity: "warn" | "danger";

@@ -16,7 +16,7 @@ export interface Store<T> {
   subscribe(fn: Listener): () => void;
 }
 
-export interface Writable<T> extends Store<T> {
+interface Writable<T> extends Store<T> {
   set(next: T): void;
   update(fn: (prev: T) => T): void;
 }

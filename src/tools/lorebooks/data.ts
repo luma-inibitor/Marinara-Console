@@ -115,7 +115,7 @@ export function matchesQuery(e: Entry, q: string): boolean {
     || (e.tag ?? "").toLowerCase().includes(s);
 }
 
-export interface TagStat { tag: string; n: number; tokens: number; constant: number; disabled: number; ids: string[]; }
+interface TagStat { tag: string; n: number; tokens: number; constant: number; disabled: number; ids: string[]; }
 
 /** Sentinel bucket for entries with no tag. The leading space keeps it sorting
  *  and comparing distinctly from any tag a user could type; compare against
@@ -146,11 +146,3 @@ export const deleteEntry = (bookId: string, id: string) =>
   api<null>(`/lorebooks/${bookId}/entries/${id}`, { method: "DELETE" });
 export const bulkPatch = (bookId: string, entryIds: string[], changes: Record<string, unknown>) =>
   api(`/lorebooks/${bookId}/entries/bulk`, { method: "PATCH", body: { entryIds, changes } });
-
-/** Fields safe to resend when undoing a delete (recreate). */
-export function recreateBody(e: Entry): Record<string, unknown> {
-  const drop = new Set(["id", "lorebookId", "createdAt", "updatedAt", "embedding", "embeddingSpaceId", "hasEmbedding"]);
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(e)) if (!drop.has(k)) out[k] = v;
-  return out;
-}

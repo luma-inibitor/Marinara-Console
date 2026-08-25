@@ -8,7 +8,7 @@ import type { Decision } from "../model/review";
 
 const KEY = "ltm-review";
 
-export interface LedgerRecord {
+interface LedgerRecord {
   dec?: Record<string, Decision>;
   edited?: Record<string, Mutation>;
   savedAt?: string;

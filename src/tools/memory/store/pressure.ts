@@ -19,8 +19,6 @@ import { decisions } from "./decisions";
 import { rows } from "./review";
 import { notesById } from "./notes";
 
-export type { SectionPressure };
-
 function compute() {
   return computePressure(rows.get(), (k) => decisions.get().get(k), notesById.get());
 }

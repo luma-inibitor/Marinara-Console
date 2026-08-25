@@ -13,7 +13,7 @@ import { flagsOf, type FlagContext } from "./flags";
 /** The store values the facet rules need. Facets are evaluated during render,
  *  where a store read does not subscribe the caller, so the caller reads them
  *  with `useStore` and passes them down. */
-export interface FacetContext extends FlagContext {
+interface FacetContext extends FlagContext {
   decisions: Map<string, Decision>;
   edited: Map<string, Mutation>;
 }

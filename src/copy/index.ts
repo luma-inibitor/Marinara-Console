@@ -54,13 +54,13 @@ type ConsoleEntries = typeof shellCopy &
   typeof presetsCopy;
 
 /** Console keys, minus the `_`-prefixed metadata. */
-export type ConsoleKey = Exclude<Extract<keyof ConsoleEntries, string>, Meta>;
+type ConsoleKey = Exclude<Extract<keyof ConsoleEntries, string>, Meta>;
 
 type VendoredKey = Extract<keyof typeof vendored, string>;
 type Strip<K extends string> = K extends `${typeof PREFIX}${infer R}` ? R : never;
 
 /** Product keys, with the `ui.longTermMemory.` prefix stripped. */
-export type ProductKey = Strip<VendoredKey>;
+type ProductKey = Strip<VendoredKey>;
 
 /**
  * Bases of the catalog's own One/Other pairs, so `t("memoryvault.archiveSuccess",
@@ -74,7 +74,7 @@ type PluralBase<K extends string> = K extends `${infer B}One`
     : never
   : never;
 
-export type Key = ConsoleKey | ProductKey | PluralBase<ProductKey>;
+type Key = ConsoleKey | ProductKey | PluralBase<ProductKey>;
 
 export type Params = Record<string, string | number>;
 
@@ -182,52 +182,3 @@ export function tAny(key: string, params?: Params): string {
 export function joinList(items: readonly string[]): string {
   return new Intl.ListFormat("en", { style: "long", type: "conjunction" }).format(items);
 }
-
-// ── the memory tool's OURS surface ───────────────────────────────────────
-// `Copy` is the adapter the memory tool's call sites read through; the strings
-// themselves live in memory.json. The records (`nav`, `disposition`) are flat
-// keys in the JSON, reassembled here through tAny because their call sites
-// index them by a runtime value.
-/** The flat `prefix.*` keys of one area, reassembled as a record. */
-function group(prefix: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const key of Object.keys(consoleTable)) {
-    if (key.startsWith(prefix)) out[key.slice(prefix.length)] = tAny(key);
-  }
-  return out;
-}
-
-export const Copy = {
-  keep: t("memory.keep"),
-  drop: t("memory.drop"),
-  undecided: t("memory.undecided"),
-  applying: t("memory.applying"),
-  dropped: t("memory.dropped"),
-  draftsWillApply: (n: number) => t("memory.draftsWillApply", { count: n }),
-  nearLimit: t("memory.nearLimit"),
-  overLimit: t("memory.overLimit"),
-  restorePoint: t("memory.restorePoint"),
-  restorePointDone: t("memory.restorePointDone"),
-  facetsComputed: t("memory.facetsComputed"),
-  facetsFromModel: t("memory.facetsFromModel"),
-  facetsYours: t("memory.facetsYours"),
-  autoIncluded: (n: number) => t("memory.autoIncluded", { count: n }),
-  queueEmpty: t("memory.queueEmpty"),
-  disposition: group("memory.disposition."),
-  nav: group("memory.nav."),
-  sourcesPending: t("memory.sourcesPending"),
-  sourcesBlocked: t("memory.sourcesBlocked"),
-  sourcesReviewEach: t("memory.sourcesReviewEach"),
-  extractionText: t("memory.extractionText"),
-  noMatchingSources: t("memory.noMatchingSources"),
-  zonePreview: t("memory.zonePreview"),
-  zoneDiff: t("memory.zoneDiff"),
-  zoneEvidence: t("memory.zoneEvidence"),
-  zoneNewMemory: t("memory.zoneNewMemory"),
-  zoneExtraction: t("memory.zoneExtraction"),
-  claim: t("memory.claim"),
-  batch: t("memory.batch"),
-  section: t("memory.section"),
-  existing: t("memory.existing"),
-  proposed: t("memory.proposed"),
-};

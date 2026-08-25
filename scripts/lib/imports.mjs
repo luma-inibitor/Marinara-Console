@@ -228,7 +228,64 @@ export function parseModule(absPath) {
     }
   }
 
+  collectDynamicImports(ast.program.body, mod, absPath);
   return mod;
+}
+
+// `await import("./x")` is an edge like any other, and its names are as real as
+// a static import's. Only the static top-level forms are walked above, so this
+// sweeps the whole tree for the expression form. A dynamic import whose target
+// is not a plain string cannot be resolved, and one whose result is not
+// destructured reaches every export under some name this AST never spells --
+// both are recorded as a star so nothing downstream reads them as unused.
+function collectDynamicImports(root, mod, absPath) {
+  const seen = new Set();
+  const walk = (n, parent, grandparent) => {
+    if (Array.isArray(n)) { for (const c of n) walk(c, parent, grandparent); return; }
+    if (!n || typeof n !== "object" || typeof n.type !== "string") return;
+    // Babel spells `import(x)` as a CallExpression whose callee is `Import`;
+    // other parsers emit an `ImportExpression` with a `source`.
+    const dyn =
+      n.type === "ImportExpression" ? n.source
+      : n.type === "CallExpression" && n.callee?.type === "Import" ? n.arguments?.[0]
+      : null;
+    if (dyn && !seen.has(n)) {
+      seen.add(n);
+      const spec = dyn.type === "StringLiteral" ? dyn.value : null;
+      if (spec) {
+        // `const { a, b } = await import("./x")` -- the parent is the await and
+        // its own parent the declarator that holds the pattern.
+        const pattern =
+          parent?.type === "AwaitExpression" && grandparent?.type === "VariableDeclarator"
+            ? grandparent.id
+            : parent?.type === "VariableDeclarator"
+              ? parent.id
+              : null;
+        const names =
+          pattern?.type === "ObjectPattern"
+            ? pattern.properties
+                .filter((prop) => prop.type === "ObjectProperty" && !prop.computed && prop.key?.name)
+                .map((prop) => prop.key.name)
+            : null;
+        mod.imports.push({
+          line: n.loc.start.line,
+          spec,
+          resolved: resolveSpecifier(absPath, spec),
+          kind: "imports",
+          statementTypeOnly: false,
+          bare: false,
+          specifiers: names?.length
+            ? names.map((name) => ({ imported: name, local: name, typeOnly: false, star: false }))
+            : [{ imported: "*", local: null, typeOnly: false, star: true }],
+        });
+      }
+    }
+    for (const k of Object.keys(n)) {
+      if (k === "loc" || k.endsWith("Comments")) continue;
+      walk(n[k], n, parent);
+    }
+  };
+  walk(root, null, null);
 }
 
 /** The specifiers of one import edge that survive to runtime, as names. */
