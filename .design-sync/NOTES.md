@@ -6,10 +6,17 @@
 - **This is an app, not a published library.** `package.json` has
   `main: "index.js"`, the npm-init default, and that file does not exist.
   There is no `exports`/`module`/`types` field. The real component surface is
-  **`src/ui/index.ts`** — a barrel with 23 exports over 22 components. The
+  **`src/ui/index.ts`** — a barrel with 29 exports over 23 components. The
   converter needs that pointed at explicitly; discovery will not find it.
 - **`dist/` is a Vite APP build** (index.html + hashed assets), not a component
   library build. Do not treat it as the compiled component output.
+
+## The converter is not in this repo
+
+`.ds-sync/` is gitignored, so a fresh clone has the config and the previews but
+**not the tool that consumes them**. `resync.mjs` arrives with the design-sync
+skill; without that skill installed there is no way to build a bundle, and the
+work below is prep only. `.ds-sync/types/` is likewise regenerated, never cloned.
 
 ## Invocation — the flag without which nothing builds
 
@@ -56,15 +63,24 @@ two are safe to delete.
 
 ## State at time of this sync
 
-Clean: the copy migration onto `src/copy/` has settled and the React port has
-landed. `npx tsc --noEmit`, `npm run build`, `scripts/domsnap.mjs` (DOM identical
-across the port) and `verify.mjs` (zero console errors) were all green when this
-bundle was built.
+Clean. On a cold clone at `97e8574`: `npm ci`, `npx tsc --noEmit`, `npm test`
+(415 tests over 14 files), `npm run layercheck` and `npm run build` all green.
+The browser checks (`scripts/domsnap.mjs`, `scripts/verify.mjs`) were not re-run
+this round — no bundle was built, so there was nothing new to shoot.
+
+Drift carried forward since the last uploaded bundle: `SectionKey` is new to the
+barrel and to `componentSrcMap`, `DetailSection` and `Sheet` changed internally
+without changing their props, and `shell/toast.tsx` split into `shell/toast.ts` +
+`shell/Toaster.tsx`. No prop contract changed.
 
 ## Converter resolution root — a trap that cost real damage
 
 The converter needs `react` in `--node-modules` (it vendors React for preview
-cards). This repo has no react. **Do not build a scratch root by symlinking the
+cards). **This no longer needs a scratch root at all** — react is a real
+dependency here since the port, so `--node-modules ./node_modules` is correct and
+the rest of this section is kept only so the incident is not repeated.
+
+**Do not build a scratch root by symlinking the
 repo's packages into it and then `cp -RL` through those symlinks** — `cp -RL`
 follows the link and copies a directory into itself, which EMPTIED
 `node_modules/@preact/signals` and `node_modules/@tabler/icons-preact` in the
@@ -81,10 +97,13 @@ after installing react into it. Never mix symlinks-to-repo with recursive copies
 
 ## Why the graph is bigger than src/ui
 
-`src/ui/ErrorState.tsx` imports `ApiError` from `src/shell/api.ts`, so bundling
-the barrel pulls in `src/shell/` — which is why `@preact/signals` (used by
-`shell/toast.tsx`) appears in the dependency graph at all. Expect the bundle to
-span more than `src/ui/`.
+Two edges pull `src/shell/` in: `src/ui/ErrorState.tsx` imports `ApiError` from
+`src/shell/api.ts`, and `src/ui/CopyableText.tsx` imports `toast` from
+`src/shell/toast.ts`. Bundling the barrel therefore spans more than `src/ui/`.
+
+(An older version of this note blamed `@preact/signals` by way of
+`shell/toast.tsx`. Both are gone — preact is uninstalled and that module split
+into `shell/toast.ts` + `shell/Toaster.tsx`.)
 
 ## Components excluded from the DS
 
@@ -117,6 +136,15 @@ Fix, and it must be redone whenever component props change:
 npx tsc -p tsconfig.dts.json          # emits .ds-sync/types/ (gitignored)
 ```
 
+**That command now exits non-zero and this is expected.** Three TS4023/TS4058
+errors say `Writable` from `src/lib/store` "cannot be named" — it is used in the
+public type of `shell/router.ts`, `shell/toast.ts` and `ui/useCollapsedGroups.ts`
+but never exported. Emit continues, and every component declaration lands; the
+only casualty is `useCollapsedGroups.d.ts`, which is a hook and never a card. Do
+not treat the non-zero exit as a failed extraction — check that
+`.ds-sync/types/ui/` has a `.d.ts` per component instead. Exporting `Writable`
+from `src/lib/store` would clear it.
+
 Then regenerate `cfg.dtsPropsFor` from those declarations. `tsconfig.dts.json`
 is committed at the repo root. Extraction detail: the generator matches
 `export declare function Name(props: {…})`; **`Edu` destructures its params**
@@ -129,9 +157,14 @@ directly, so the emitted and configured bodies agree without translation.
 
 Checking for drift is mechanical — match `declare function <Name>(props: {…})`
 in `.ds-sync/types/**` against `cfg.dtsPropsFor` and compare the property-name
-sets. At the last sync 21 of 22 matched exactly and only `Edu` was absent, which
-is expected: it destructures. Anything else showing up absent means a component
-started destructuring and needs hand-writing too.
+sets. At this sync all 22 previously-configured components matched exactly —
+`Edu` included, which is hand-written because it destructures. Anything showing
+up absent means a component started destructuring and needs the same treatment.
+
+Regenerating is safe to re-run: it reproduces every existing body byte for byte,
+so the only diff should be genuinely new or genuinely changed components. Keep
+the emitted indentation — strip the leading four spaces from the FIRST line only
+and leave every continuation line as tsc emitted it.
 
 ## CSS entry must be a concatenation, not an import list
 
@@ -167,13 +200,16 @@ compresses just as small as a uniformly white one. It cannot tell "broken" from
 "correctly dark and sparse". Look at `_screenshots/contact-sheet-*.png` before
 believing it.
 
-The 7 flagged components (CopyableText, DetailSection, Edu, EmptyState,
-ListGroup, SheetHead, Term) are blank for a plain reason: an unauthored preview
-mounts as `h(C, {})`, and those components have nothing to draw without props.
-The ones that do render (ErrorState, ListEmpty, Loading, NotFound) only differ
-in having fallback copy — note they display the literal word `undefined` where
-a prop should be. Authoring previews is the fix, and the owner has explicitly
-deferred it.
+An unauthored preview mounts as `h(C, {})`, so any component with nothing to
+draw without props reads as blank. Seven were flagged for that reason
+(CopyableText, DetailSection, Edu, EmptyState, ListGroup, SheetHead, Term) and
+all seven now have authored previews in `.design-sync/previews/`. `SectionKey`
+is the eighth and was authored with it — `k` is required, so it would have
+flagged the same way.
+
+The ones that render unauthored (ErrorState, ListEmpty, Loading, NotFound) only
+differ in having fallback copy — note they display the literal word `undefined`
+where a prop should be. They are still worth authoring.
 
 ## Re-sync risks
 
@@ -189,6 +225,10 @@ deferred it.
   silently — the build will NOT warn.
 - **`.ds-sync/scratch/`** is a leftover preact-era node_modules and is no longer
   used — `--node-modules ./node_modules` is the repo's own now. Safe to delete.
-- **Preview authoring is the standing offer**: all 22 ship floor cards. Any
-  re-sync can author previews incrementally; authored files live in
-  `.design-sync/previews/` and carry forward.
+- **Preview authoring is incremental**: 8 of 23 are authored, the rest ship
+  floor cards. Authored files live in `.design-sync/previews/` and carry
+  forward, so any re-sync can add to them without redoing the others.
+- **Previews do not pass `copycheck` and are not meant to.** They carry specimen
+  corpus prose — the Devi Okonkwo / Harbour Ledger world the existing seven
+  established — which traces to no catalog by design. Keep new previews in that
+  world, and keep the untraced strings to specimen data rather than UI copy.
