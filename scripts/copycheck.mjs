@@ -631,10 +631,8 @@ if (htmlArgs.length) {
   process.exit(code);
 }
 
-// Resolved against ROOT, never joined onto it: `join(ROOT, "/abs/path")`
-// concatenates, and the agent instructions in this repo say to use absolute
-// paths. A path argument that matches no source file is an error, because a
-// gate that scanned nothing must not report success.
+// Path arguments resolve against ROOT. One that matches no source file is an
+// error: this gate may not report success on nothing.
 const args = paths.length ? paths : ["src"];
 const groups = args.map((arg) => ({ arg, files: listSources([resolve(ROOT, arg)]) }));
 const unmatched = groups.filter((g) => !g.files.length);

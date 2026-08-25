@@ -64,23 +64,18 @@
 import { rel, sourceFiles, parseModule, valueSpecifiers } from "./lib/imports.mjs";
 
 // ── layers ────────────────────────────────────────────────────────────────
-// Which layers a file's value imports may land in, spelled out per §1:
+// Which layers a file's value imports may land in, per §1:
 //
 //     presentation → state → endpoints → transport
 //     presentation → model        state → model
 //
-// A layer always reaches its own — one component may import another.
+// A layer always reaches its own. The model is a side branch rather than a
+// point on the line: it sits above endpoints and below state, which no single
+// ordering expresses, so this is a table instead of a rank comparison. The
+// model reaches nothing but itself.
 //
-// This is a table rather than a rank comparison because the model is a side
-// branch, not a point on a line. It sits above endpoints (endpoints may not
-// transform) and below state (state may transform), and any single ordering
-// satisfying both makes `model → endpoints` compare as downward — the exact
-// edge §1 names as this rule's trophy catch: SECTION_CAP and KEYWORD_CAP sat
-// in api/types.ts and were value-imported by the model. So the model reaches
-// nothing but itself: no React, no stores, no fetch, no endpoints values.
-//
-// Presentation reaching endpoints or transport IS downward and passes this
-// rule; that is a question of ownership, and RULE 2 below is where it fails.
+// Presentation reaching endpoints or transport is downward and passes here.
+// RULE 2 below is where it fails.
 const REACHES = {
   transport: new Set(["transport"]),
   endpoints: new Set(["endpoints", "transport"]),
@@ -161,9 +156,8 @@ function isEndpointsModule(edge) {
   return /(^|\/)api\//.test(edge.spec);
 }
 
-// Matched anywhere in the path rather than at its start, so a tree rooted
-// somewhere other than the repo's own src — scripts/fixtures — is checked by
-// the same rule.
+// Matched anywhere in the path, so a tree rooted outside src (the fixtures) is
+// checked by the same rule.
 const TRANSPORT_DIR = "src/shell/";
 const TRANSPORT_CLIENT = "src/shell/api.ts";
 const inTransport = (p) => p.includes(TRANSPORT_DIR);

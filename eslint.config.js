@@ -31,23 +31,15 @@ export default [
     },
     plugins: { "react-hooks": reactHooks, import: importPlugin },
     settings: {
-      // The node resolver, not the TypeScript one: that needs the Compiler API
-      // this typescript has no JS build of. It is enough here — there are no
-      // path aliases in this tree, every specifier is relative or a package.
+      // Resolution is the node resolver's, over TypeScript extensions.
       "import/resolver": { node: { extensions: [".ts", ".tsx", ".js", ".json"] } },
       "import/parsers": { "@babel/eslint-parser": [".ts", ".tsx"] },
     },
     rules: {
       "react-hooks/exhaustive-deps": "error",
       "react-hooks/rules-of-hooks": "error",
-      // An import cycle is not a soft failure here: lib/store.ts computes
-      // eagerly at module scope, so a half-initialized module throws a
-      // ReferenceError at load. layercheck has no cycle detection at all —
-      // equal layers pass it unconditionally, so two components may cycle.
+      // No module may take part in an import cycle.
       "import/no-cycle": ["error", { ignoreExternal: true }],
-      // scripts/layercheck.mjs RULE 2 already fails a component that names
-      // fetch. This reports the same thing per line, in the editor, before a
-      // commit.
       "no-restricted-globals": [
         "error",
         {
@@ -63,11 +55,8 @@ export default [
     rules: { "no-restricted-globals": "off" },
   },
   {
-    // The one cycle in the tree: Sources.tsx imports `focusSource` from
-    // MemoryTool.tsx, which imports Sources.tsx. It loads today only because
-    // `focusSource` is a hoisted function declaration. Breaking it means moving
-    // the handoff down into store/sources.ts, which is a src/ change this
-    // config edit does not make. Nothing else belongs on this list.
+    // MemoryTool.tsx and Sources.tsx import each other. Queued for untangling;
+    // no other file may be added here.
     files: ["src/tools/memory/MemoryTool.tsx", "src/tools/memory/Sources.tsx"],
     rules: { "import/no-cycle": "off" },
   },

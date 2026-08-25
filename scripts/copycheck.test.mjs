@@ -1,6 +1,5 @@
-// The copy gate's path handling. `join(ROOT, "/abs/path")` concatenated instead
-// of resolving, so every absolute path — which the agent instructions in this
-// repo ask for — scanned zero files and exited 0.
+// The copy gate's path handling: an absolute path reads the files it names, and
+// a path matching nothing fails.
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";

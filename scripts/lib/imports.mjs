@@ -43,12 +43,9 @@ export function listSources(roots) {
 
 /**
  * The source files named by a check's command-line path arguments, or by
- * `fallback` when there are none. Paths are resolved against ROOT, so an
- * absolute path names the file it spells rather than being concatenated onto
- * ROOT and landing nowhere.
- *
- * An argument that matches no source file exits 2 instead of returning an
- * empty list: a check that scanned nothing must not be able to report success.
+ * `fallback` when there are none. Paths resolve against ROOT, absolute ones
+ * included. An argument that matches no source file exits 2: a check may not
+ * report success on nothing.
  */
 export function sourceFiles(paths, fallback = "src") {
   const args = paths.length ? paths : [fallback];

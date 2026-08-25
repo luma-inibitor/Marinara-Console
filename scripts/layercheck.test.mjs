@@ -1,7 +1,6 @@
 // Every rule layercheck enforces, run against a fixture tree that breaks it and
-// one that does not. The rank table it used to compare against silently passed
-// `model → api/` for months; a rule with no fixture can be disabled by an edit
-// and stay green, so each one is pinned here by the finding it prints.
+// one that does not. A rule with no fixture can be disabled by an edit and stay
+// green.
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
