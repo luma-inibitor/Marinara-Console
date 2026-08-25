@@ -15,7 +15,7 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { Mutation, NoteSection, ReviewResponse } from "../api/types";
+import type { Mutation, Note, NoteSection, ReviewResponse } from "../api/types";
 import { flattenReview, sectionTextOf } from "./review";
 import { chars, makeMutation, makeNote, resetIds, section } from "../test/factories";
 
@@ -139,18 +139,32 @@ describe("flattenReview — the row's identity", () => {
 });
 
 describe("flattenReview — source and target resolution", () => {
-  it("resolves sourceTitle through the map", () => {
+  /** The source note the review payload's `s1` points at. */
+  const sourceNote = (over: Partial<Note> = {}) =>
+    new Map([["s1", makeNote({ id: "s1", type: "source", title: "The Harbour Chat", ...over })]]);
+  const oneSourceRow = (notes: Map<string, Note>) => {
     const m = makeMutation();
     const data = response(source("s1", [draft("d1", [m])], [target("n1", [wireRow("d1", m)])]));
-    const { rows } = flattenReview(data, new Map([["s1", "The Harbour Chat"]]));
-    expect(rows[0]!.sourceNoteId).toBe("s1");
-    expect(rows[0]!.sourceTitle).toBe("The Harbour Chat");
+    return flattenReview(data, notes).rows[0]!;
+  };
+
+  it("resolves sourceTitle through the map", () => {
+    const row = oneSourceRow(sourceNote());
+    expect(row.sourceNoteId).toBe("s1");
+    expect(row.sourceTitle).toBe("The Harbour Chat");
   });
 
   it("falls back to the source id when the map has no entry for it", () => {
-    const m = makeMutation();
-    const data = response(source("s1", [draft("d1", [m])], [target("n1", [wireRow("d1", m)])]));
-    expect(flattenReview(data, new Map([["other", "Nope"]])).rows[0]!.sourceTitle).toBe("s1");
+    expect(oneSourceRow(new Map([["other", makeNote({ id: "other" })]])).sourceTitle).toBe("s1");
+  });
+
+  it("takes the source kind off the source note's provenance", () => {
+    expect(oneSourceRow(sourceNote({ provenance: { kind: "lorebook" } })).sourceKind).toBe("lorebook");
+  });
+
+  it("leaves the source kind absent when the note recorded no provenance", () => {
+    expect(oneSourceRow(sourceNote()).sourceKind).toBeUndefined();
+    expect(oneSourceRow(new Map()).sourceKind).toBeUndefined();
   });
 
   it("takes targetTitle and targetType off the target, not off the mutation", () => {
@@ -295,7 +309,7 @@ describe("flattenReview — blocked drafts", () => {
     const data = response(
       source("s1", [draft("d1", [m, makeMutation()], { blockReasons: reasons })], []),
     );
-    const { blocked } = flattenReview(data, new Map([["s1", "Chat One"]]));
+    const { blocked } = flattenReview(data, new Map([["s1", makeNote({ id: "s1", type: "source", title: "Chat One" })]]));
     expect(blocked).toEqual([
       { draftId: "d1", sourceNoteId: "s1", sourceTitle: "Chat One", reasons, mutationCount: 2 },
     ]);
@@ -372,7 +386,7 @@ describe("flattenReview — rejections", () => {
         ],
       })], []),
     );
-    expect(flattenReview(data, new Map([["s1", "Chat One"]])).rejections).toEqual([
+    expect(flattenReview(data, new Map([["s1", makeNote({ id: "s1", type: "source", title: "Chat One" })]])).rejections).toEqual([
       { sourceNoteId: "s1", sourceTitle: "Chat One", reason: "too_short", message: "Nothing to save", snippet: "ok" },
       { sourceNoteId: "s1", sourceTitle: "Chat One", reason: "duplicate", message: undefined, snippet: undefined },
     ]);

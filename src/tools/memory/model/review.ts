@@ -5,7 +5,7 @@
 // after load. The engine has no such object, which is why flattening a
 // response is a transform rather than a parse.
 
-import type { Conflict, Disposition, Mutation, NoteType, ReviewChange, ReviewResponse } from "../api/types";
+import type { Conflict, Disposition, Mutation, Note, NoteType, ReviewChange, ReviewResponse } from "../api/types";
 
 // ── review rows ─────────────────────────────────────────────────────
 
@@ -19,6 +19,9 @@ export interface Row {
   draftId: string;
   sourceNoteId: string;
   sourceTitle: string;
+  /** The engine's singular source-kind name: `lorebook`, `character`,
+   *  `chat_summary`. Absent when the source note recorded no provenance. */
+  sourceKind?: string;
   targetId: string;
   targetTitle: string;
   targetType: NoteType;
@@ -88,12 +91,16 @@ function mutationParts(m: Mutation): Array<{ key: string; text: string }> {
   return [];
 }
 
-export function flattenReview(data: ReviewResponse, sourceTitles: Map<string, string>) {
+/** The payload names its sources by id, so `sourceNotes` supplies the title and
+ *  the kind. */
+export function flattenReview(data: ReviewResponse, sourceNotes: Map<string, Note>) {
   const rows: Row[] = [];
   const blocked: BlockedDraft[] = [];
   const rejections: Rejection[] = [];
   for (const source of data.sources) {
-    const sourceTitle = sourceTitles.get(source.sourceNoteId) ?? source.sourceNoteId;
+    const sourceNote = sourceNotes.get(source.sourceNoteId);
+    const sourceTitle = sourceNote?.title ?? source.sourceNoteId;
+    const sourceKind = sourceNote?.provenance?.kind;
     const blockedDraftIds = new Set<string>();
     for (const d of source.drafts) {
       if (d.blockReasons.length) {
@@ -119,6 +126,7 @@ export function flattenReview(data: ReviewResponse, sourceTitles: Map<string, st
           draftId: row.draftId,
           sourceNoteId: source.sourceNoteId,
           sourceTitle,
+          sourceKind,
           targetId: target.noteId,
           targetTitle: target.title ?? target.noteId,
           targetType: target.noteType,

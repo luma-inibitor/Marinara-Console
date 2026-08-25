@@ -23,7 +23,7 @@ import { SECTION_CAP as CAP } from "./model/caps";
 import { capPercent } from "./model/pressure";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { Flag, AllClear, NoMatches, DECISION_ICON, More, EditedMark, Back, Refresh, Download } from "../../ui/icons";
-import { DecisionIcon, OpIcon, TypeIcon } from "./icons";
+import { DecisionIcon, GroupIcon, OpIcon, TypeIcon } from "./icons";
 import { Term, OP_TIP } from "./glossary";
 import { flagsOf, worstSeverity, contributionChars, FLAG } from "./model/flags";
 import { FACETS, GROUPERS, SORTERS, applyFilters, facetCounts, buildGroups, type Group } from "./model/facets";
@@ -418,11 +418,7 @@ function FacetSheet() {
 
 // Group header: one line — identity · aggregates (chars added) · cap flag only
 // when real · bar tally · keep-all/drop-all as icon buttons (undecided rows
-// only) · kebab for the rare object actions. Object affordances (type icon,
-// dot, aggregates, pressure, open-note) exist only when the group key IS an
-// object; enum lanes get label + count + tally + bulk and nothing else. At
-// narrow width the header wraps to two lines and the aggregates drop
-// (priority order, CSS).
+// only) · kebab for the rare object actions. The glyph comes from the grouper.
 function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key: string) => void; tabbable: (key: string) => boolean }) {
   const g = props.group;
   const dec = useStore(decisions);
@@ -430,7 +426,10 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   // The collapsed Set is read here, in the component that paints the collapsed
   // state — asking a helper that closed over the store would not subscribe it.
   const collapsed = collapse.useCollapsed().has(g.id);
-  const isTarget = useStore(groupBy) === "target";
+  const grouping = useStore(groupBy);
+  // Object affordances exist only when the group key is an object.
+  const isTarget = grouping === "target";
+  const isSource = grouping === "source";
   const kept = g.rows.filter((r) => dec.get(r.key) === "keep").length;
   const dropped = g.rows.filter((r) => dec.get(r.key) === "drop").length;
   const undecidedRows = g.rows.filter((r) => !dec.get(r.key));
@@ -438,14 +437,14 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   const chars = isTarget ? g.rows.reduce((n, r) => n + contributionChars(r), 0) : 0;
   return (
     /* Same grid as the rows: chevron in the rail (the control column gets a
-       control), type icon in the kind column, words in the body. The
+       control), the grouper's glyph in the kind column, words in the body. The
        new-target marker is the 2a green edge (owner call, color-only tradeoff
        accepted) — an edge, so nothing in the title line shifts. */
     <ListGroup className={`mem-ghead ${isNew ? "is-new" : ""}`}
         collapsed={collapsed} onToggle={() => collapse.toggle(g.id)}
         label={g.label} count={g.rows.length}
         head={<>
-        {isTarget && g.meta && <TypeIcon type={g.meta} />}
+        {g.icon && <GroupIcon icon={g.icon} />}
         <div className="ghead-body">
         <span className="gn t-prose">{g.label}</span>
         {chars > 0 && <span className="ghead-agg t-data">+{chars.toLocaleString()}</span>}
@@ -472,7 +471,10 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
               </button>
             </span>
           )}
-          {isTarget && <GroupMenu group={g} kept={kept} dropped={dropped} isNew={isNew} />}
+          {(isTarget || isSource) && (
+            <GroupMenu group={g} kept={kept} dropped={dropped} isNew={isNew}
+              openLabel={isSource ? t("reviewqueue.openSource") : t("reviewqueue.openMemory")} />
+          )}
         </span>
         </div>
       </>}>
@@ -481,9 +483,9 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
   );
 }
 
-/** The kebab: rare object actions only — open the memory, clear this group's
- *  decisions. */
-function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: boolean }) {
+/** The kebab: open the note the group is keyed on, or clear its decisions.
+ *  `openLabel` names which note that is. */
+function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: boolean; openLabel: string }) {
   const [open, setOpen] = useState(false);
   const g = props.group;
   useEffect(() => {
@@ -503,7 +505,7 @@ function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: 
           <span className="gmenu-scrim" onClick={() => setOpen(false)} />
           <div className="gmenu-pop" role="menu">
             {!props.isNew && (
-              <button role="menuitem" onClick={() => { setOpen(false); peekNote(g.id); }}>{t("reviewqueue.openMemory")}</button>
+              <button role="menuitem" onClick={() => { setOpen(false); peekNote(g.id); }}>{props.openLabel}</button>
             )}
             {(props.kept > 0 || props.dropped > 0) && (
               <button role="menuitem" onClick={() => { setOpen(false); bulkDecide(g.rows, null, `${t("memory.review.reset")} ${g.label}`); }}>

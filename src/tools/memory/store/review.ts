@@ -67,9 +67,9 @@ export async function refresh(first = false) {
     ]);
     review.set(data);
     notesById.set(new Map(allNotes.map((n) => [n.id, n])));
-    const sourceTitles = new Map(allNotes.filter((n) => n.type === "source").map((n) => [n.id, n.title ?? n.id]));
+    const sourceNotes = new Map(allNotes.filter((n) => n.type === "source").map((n) => [n.id, n]));
     lines.set(vaultLines(allNotes));
-    const flat = flattenReview(data, sourceTitles);
+    const flat = flattenReview(data, sourceNotes);
     const live = flat.rows.filter((r) => !appliedThisSession.has(r.key));
     computeDerived(live, lines.get());
     rowsBeforeScope = live;
@@ -80,7 +80,7 @@ export async function refresh(first = false) {
     pruneLedger(new Set(live.map((r) => r.key)));
     // Sources → Review handoff: pre-filter to the just-imported source.
     if (focus) {
-      const title = sourceTitles.get(focus) ?? focus;
+      const title = sourceNotes.get(focus)?.title ?? focus;
       const next = new Map(activeFacets.get());
       next.set("source", new Set([title]));
       activeFacets.set(next);

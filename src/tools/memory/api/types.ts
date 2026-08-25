@@ -32,6 +32,8 @@ export interface Note {
   manualKeywords?: string[];
   /** Derived keywords a person removed; recall skips them. */
   suppressedKeywords?: string[];
+  /** Where an imported source note came from. Only source notes carry it. */
+  provenance?: { kind?: string; sourceId?: string };
   links: Array<{ target: string; relation: string }>;
   sections: Record<string, NoteSection>;
   conflicts?: Conflict[];

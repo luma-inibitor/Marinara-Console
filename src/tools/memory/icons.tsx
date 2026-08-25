@@ -11,8 +11,9 @@
 // undecided. A round glyph holding anything else — the chat_summary speech
 // tail, an `i`, an `!`, a segmented arc — is a different object and is free.
 
-import { TYPE_ICON, OP_ICON, DECISION_ICON, type Icon as IconC } from "../../ui/icons";
+import { TYPE_ICON, OP_ICON, SOURCE_KIND_ICON, DECISION_ICON, type Icon as IconC } from "../../ui/icons";
 import type { Mutation } from "./api/types";
+import type { GroupIconRef } from "./model/facets";
 
 /** Type icon in the note's categorical hue. Decorative next to a title. */
 export function TypeIcon(props: { type: string; size?: number }) {
@@ -20,6 +21,21 @@ export function TypeIcon(props: { type: string; size?: number }) {
   return (
     <span className={`ti type-${props.type}`} aria-hidden="true">
       <I size={props.size ?? 15} stroke={1.75} />
+    </span>
+  );
+}
+
+/** The glyph in a group header's icon column. A value no table knows draws
+ *  nothing. `.ti` is what places it in that column. */
+export function GroupIcon(props: { icon: GroupIconRef }) {
+  const { family, value } = props.icon;
+  if (family === "type") return <TypeIcon type={value} />;
+  const I = family === "sourceKind" ? SOURCE_KIND_ICON[value] : OP_ICON[value];
+  if (!I) return null;
+  // type-source is the one neutral hue every source note carries.
+  return (
+    <span className={family === "sourceKind" ? "ti type-source" : "ti"} aria-hidden="true">
+      <I size={15} stroke={1.75} />
     </span>
   );
 }
