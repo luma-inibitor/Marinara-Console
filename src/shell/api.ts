@@ -69,6 +69,4 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
 let onResult: ((err: unknown | null) => void) | null = null;
 export const setResultHook = (fn: (err: unknown | null) => void) => { onResult = fn; };
 
-/** Engine-faithful token estimate — approximateTokens() in packages/shared. */
-export const tokensOf = (text: string | null | undefined): number =>
-  Math.ceil((text ?? "").length / 4);
+export { tokensOf } from "../lib/tokens";

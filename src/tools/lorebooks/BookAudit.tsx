@@ -6,12 +6,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { navigate } from "../../shell/router";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import { toast } from "../../shell/toast";
-import {
-  type Entry, type Lorebook, type Evaluation,
-  entryTokens, statusOf, percentile, evaluate, matchesQuery, tagStats,
-  fetchBooks, fetchEntries, patchEntry, createEntry, deleteEntry, bulkPatch,
-  POS_COMPACT, UNTAGGED,
-} from "./data";
+import type { Entry, Lorebook } from "./api/schema";
+import { entryTokens, matchesQuery, statusOf } from "./model/entry";
+import { evaluate, type Evaluation } from "./model/evaluation";
+import { percentile, tagStats, UNTAGGED } from "./model/audit";
+import { POS_COMPACT } from "./model/labels";
+import { fetchBooks, fetchEntries, patchEntry, createEntry, deleteEntry, bulkPatch } from "./store/books";
 import { EntryDrawer, type FullscreenCtx } from "./entries";
 import { useDraft } from "../../shell/draft";
 import { FullscreenText } from "../../ui/FullscreenText";

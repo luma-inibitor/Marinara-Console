@@ -2,7 +2,9 @@ import { Loading, ErrorState, ListEmpty } from "../../ui";
 import { useEffect, useState } from "react";
 import { t } from "../../copy";
 import { navigate } from "../../shell/router";
-import { fetchBooks, fetchEntries, entryTokens, type Lorebook } from "./data";
+import type { Lorebook } from "./api/schema";
+import { entryTokens } from "./model/entry";
+import { fetchBooks, fetchEntries } from "./store/books";
 
 // A book's stats are fetched per-book and can fail independently of the list.
 // A failed fetch must NOT render as zeros: "0 / 1,000 tokens" is indistinguishable
