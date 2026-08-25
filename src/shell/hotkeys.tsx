@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { createStore, useStore } from "../lib/store";
 import { navigate } from "./router";
 import { paletteOpen } from "./palette";
+import { openOverlay, closeTopOverlay } from "./overlays";
+import { FocusTrap } from "../ui/FocusTrap";
 import { t } from "../copy";
 
 const cheatOpen = createStore(false);
@@ -22,7 +24,7 @@ export function useHotkeys() {
       // Cmd/Ctrl-K works everywhere, including inputs
       if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "k") {
         ev.preventDefault();
-        paletteOpen.update((v) => !v);
+        if (paletteOpen.get()) closeTopOverlay(); else paletteOpen.set(true);
         return;
       }
       if (isTyping(ev.target) || ev.metaKey || ev.ctrlKey || ev.altKey) return;
@@ -40,8 +42,10 @@ export function useHotkeys() {
         gTimer = setTimeout(() => { gArmed = false; }, 1200);
         return;
       }
-      if (ev.key === "?") { ev.preventDefault(); cheatOpen.update((v) => !v); return; }
-      if (ev.key === "Escape" && cheatOpen.get()) { cheatOpen.set(false); }
+      if (ev.key === "?") {
+        ev.preventDefault();
+        if (cheatOpen.get()) closeTopOverlay(); else cheatOpen.set(true);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -67,12 +71,14 @@ const SHORTCUTS: Array<[string, string]> = [
 ];
 
 export function CheatSheet() {
-  const open = useStore(cheatOpen);
-  if (!open) return null;
+  return useStore(cheatOpen) ? <CheatBody /> : null;
+}
+
+function CheatBody() {
+  useEffect(() => openOverlay(() => cheatOpen.set(false)), []);
   return (
-    <div className="palette-backdrop" onClick={() => { cheatOpen.set(false); }}>
-      <div className="palette cheat" role="dialog" aria-modal="true" aria-label={t("shell.hotkeys.title")}
-        onClick={(ev) => ev.stopPropagation()}>
+    <FocusTrap scrim="palette-backdrop" onOutside={closeTopOverlay}>
+      <div className="palette cheat" role="dialog" aria-modal="true" aria-label={t("shell.hotkeys.title")}>
         <div className="cheat-head t-label">{t("shell.hotkeys.title")}</div>
         <div className="cheat-body">
           {SHORTCUTS.map(([keys, what]) => (
@@ -83,6 +89,6 @@ export function CheatSheet() {
           ))}
         </div>
       </div>
-    </div>
+    </FocusTrap>
   );
 }

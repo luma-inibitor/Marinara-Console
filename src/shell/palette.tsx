@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { createStore, useStore } from "../lib/store";
 import { navigate } from "./router";
 import { api } from "./api";
+import { openOverlay, closeTopOverlay } from "./overlays";
+import { FocusTrap } from "../ui/FocusTrap";
 import { t } from "../copy";
 
 export const paletteOpen = createStore(false);
@@ -83,23 +85,25 @@ function score(label: string, q: string): number {
 }
 
 export function Palette() {
+  return useStore(paletteOpen) ? <PaletteBody /> : null;
+}
+
+function PaletteBody() {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<Item[]>(BASE);
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const open = useStore(paletteOpen);
+
+  // Deferred into popstate. A route pushed before the rewind is what it eats.
+  const pending = useRef<Item | null>(null);
+  useEffect(() => openOverlay(() => { paletteOpen.set(false); pending.current?.run(); }), []);
 
   useEffect(() => {
-    if (!open) return;
-    setQuery("");
-    setActive(0);
     inputRef.current?.focus();
     let live = true;
     void loadDataItems().then((data) => { if (live) setItems([...BASE, ...data]); });
     return () => { live = false; };
-  }, [open]);
-
-  if (!open) return null;
+  }, []);
 
   const q = query.trim().toLowerCase();
   const results = (q
@@ -108,20 +112,21 @@ export function Palette() {
     : items.filter((it) => it.group !== GROUP.entries)   // unqueried: don't dump every entry
   ).slice(0, 12);
 
-  const run = (it: Item) => { paletteOpen.set(false); it.run(); };
+  const run = (it: Item) => { pending.current = it; closeTopOverlay(); };
 
-  const onKey = (ev: KeyboardEvent<HTMLInputElement>) => {
+  // On the panel, not the field: the trap keeps Tab inside the palette, so a
+  // result button can hold focus and still has to answer these keys.
+  const onKey = (ev: KeyboardEvent<HTMLDivElement>) => {
     if (ev.key === "ArrowDown") { ev.preventDefault(); setActive((a) => Math.min(results.length - 1, a + 1)); }
     else if (ev.key === "ArrowUp") { ev.preventDefault(); setActive((a) => Math.max(0, a - 1)); }
     else if (ev.key === "Enter" && results[active]) { ev.preventDefault(); run(results[active]); }
-    else if (ev.key === "Escape") { ev.preventDefault(); paletteOpen.set(false); }
   };
 
   let lastGroup = "";
   return (
-    <div className="palette-backdrop" onClick={() => { paletteOpen.set(false); }}>
+    <FocusTrap scrim="palette-backdrop" onOutside={closeTopOverlay}>
       <div className="palette" role="dialog" aria-modal="true" aria-label={t("shell.palette.title")}
-        onClick={(ev) => ev.stopPropagation()}>
+        onKeyDown={onKey}>
         <input
           ref={inputRef}
           className="palette-input t-data"
@@ -129,7 +134,6 @@ export function Palette() {
           aria-label={t("shell.palette.searchLabel")}
           value={query}
           onInput={(ev) => { setQuery(ev.currentTarget.value); setActive(0); }}
-          onKeyDown={onKey}
         />
         <div className="palette-results" role="listbox">
           {results.length === 0 && <div className="palette-empty meta"><span>{t("shell.palette.empty")}</span></div>}
@@ -156,6 +160,6 @@ export function Palette() {
           <span>{t("shell.palette.hintMove")}</span><span>{t("shell.palette.hintOpen")}</span><span>{t("shell.palette.hintClose")}</span>
         </div>
       </div>
-    </div>
+    </FocusTrap>
   );
 }

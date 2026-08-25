@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
+import { useEffect, useRef } from "react";
 import { t } from "../copy";
 import { openOverlay, closeTopOverlay } from "../shell/overlays";
+import { FocusTrap } from "./FocusTrap";
 import { Close, ICON_SIZE } from "./icons";
 import "./Sheet.css";
 
@@ -43,7 +43,7 @@ export function Modal(props: {
 /** Scrim, dialog semantics, and the overlay-stack registration that every
  *  layered surface needs.
  *
- *  Radix owns the focus trap. `overlays.ts` owns dismissal and history. */
+ *  `FocusTrap` owns the trap. `overlays.ts` owns dismissal and history. */
 function Overlay(props: {
   label: string;
   onClose: () => void;
@@ -56,30 +56,12 @@ function Overlay(props: {
   close.current = props.onClose;
   useEffect(() => openOverlay(() => close.current()), []);
 
-  // Read during render. By the first effect the trap has already moved focus
-  // into the surface.
-  const [opener] = useState(() => document.activeElement as HTMLElement | null);
-
   return (
-    <Dialog.Root open modal>
-      <Dialog.Overlay className="peek-scrim">
-        <Dialog.Content
-          asChild
-          // overlays.ts handles Escape on the same node in the same phase, where
-          // stopPropagation cannot reach it, so both would close a layer.
-          onEscapeKeyDown={(e) => e.preventDefault()}
-          // Routed through the stack so state and history stay in step.
-          onPointerDownOutside={(e) => { e.preventDefault(); closeTopOverlay(); }}
-          // The stack restores focus while the trap is still up and the trap
-          // takes it back. On unmount it holds.
-          onCloseAutoFocus={(e) => { e.preventDefault(); if (opener?.isConnected) opener.focus(); }}
-        >
-          <aside className={props.surface} aria-modal="true" aria-label={props.label}>
-            {props.children}
-          </aside>
-        </Dialog.Content>
-      </Dialog.Overlay>
-    </Dialog.Root>
+    <FocusTrap scrim="peek-scrim" onOutside={closeTopOverlay}>
+      <aside className={props.surface} aria-modal="true" aria-label={props.label}>
+        {props.children}
+      </aside>
+    </FocusTrap>
   );
 }
 

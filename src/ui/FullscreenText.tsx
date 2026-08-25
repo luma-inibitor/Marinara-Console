@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { tokensOf } from "../shell/api";
 import { openOverlay } from "../shell/overlays";
 import { Chip } from "./Chip";
+import { FocusTrap } from "./FocusTrap";
 import { t } from "../copy";
 
 const MD_TOKENS = ["# ", "## ", "**", "_", "- ", "> ", "`", "[]", "\n"];
@@ -27,7 +28,6 @@ export function FullscreenText(props: {
   const [wrap, setWrap] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const startTokens = useMemo(() => tokensOf(props.initial), [props.initial]);
-  const restoreTo = useRef<HTMLElement | null>(null);
 
   const ch = value.length, tk = tokensOf(value);
   const dCh = ch - props.initial.length, dTk = tk - startTokens;
@@ -42,9 +42,10 @@ export function FullscreenText(props: {
   const live = useRef({ value, dirty, confirming });
   live.current = { value, dirty, confirming };
 
-  // Own Escape at the capture phase so it never reaches the list behind us.
+  // Own Escape at the capture phase so it never reaches the list behind us. It
+  // must stay on window: one node ahead of the trap's document listener is what
+  // leaves the dirty guard below as the only thing Escape can reach.
   useEffect(() => {
-    restoreTo.current = document.activeElement as HTMLElement | null;
     const onKey = (ev: KeyboardEvent) => {
       const st = live.current;
       if (ev.key === "Escape") {
@@ -59,12 +60,8 @@ export function FullscreenText(props: {
     };
     window.addEventListener("keydown", onKey, true);
     document.getElementById("fs-ta")?.focus();
-    return () => {
-      window.removeEventListener("keydown", onKey, true);
-      restoreTo.current?.focus?.();
-    };
-    // Mount-only: one listener for the editor's lifetime, and the restore in
-    // the cleanup must be the element focused at mount. Editor state is read
+    return () => { window.removeEventListener("keydown", onKey, true); };
+    // Mount-only: one listener for the editor's lifetime. Editor state is read
     // through `live.current` for exactly this reason, but onCancel/onDone are
     // captured here as they were at mount — safe only while callers pass
     // callbacks that do not change identity-with-behaviour mid-edit.
@@ -113,56 +110,58 @@ export function FullscreenText(props: {
   };
 
   return (
-    <div className="fseditor" role="dialog" aria-modal="true" aria-label={props.title}>
-      <div className="fs-head">
-        <div className="fs-title-wrap">
-          <div className="t-label">{props.title}</div>
-          <div className="meta">
-            <span>{props.subtitle}</span>
-            {dirty && <span className="is-dirty-dot">{t("ui.editor.unsaved")}</span>}
-          </div>
-        </div>
-        <Chip pressed={wrap} onClick={() => setWrap(!wrap)}>{t("ui.editor.wrap")}</Chip>
-        <button className="dbtn" onClick={cancel}>{t("ui.editor.cancel")}</button>
-        <button className="dbtn is-primary" onClick={() => props.onDone(value)}>{t("ui.editor.done")}</button>
-      </div>
-      <div className="fs-counts meta">
-        <span><b className="t-num">{ch.toLocaleString()}</b> {t("ui.editor.charUnit")}</span>
-        <span><b className="t-num">{tk.toLocaleString()}</b> {t("ui.editor.tokensEst")}</span>
-        {props.budget !== undefined && props.budget > 0 && (
-          <span>{t("ui.editor.ofBudget", { pct: ((tk / props.budget) * 100).toFixed(1) })}</span>
-        )}
-        {(dTk !== 0 || dCh !== 0) && (
-          <span className={`delta ${dTk > 0 ? "is-up" : dTk < 0 ? "is-down" : ""}`}>
-            {sign(dCh)} {t("ui.editor.charUnit")} · {sign(dTk)} {t("ui.editor.tokenUnit")}
-          </span>
-        )}
-      </div>
-      <div className="fs-body">
-        <textarea id="fs-ta" className={wrap ? "" : "is-nowrap"} spellCheck={false} value={value}
-          onInput={(ev) => setValue(ev.currentTarget.value)} />
-      </div>
-      <div className="fs-foot">
-        {MD_TOKENS.map((t) => (
-          <button key={t} className="mdb t-data" onClick={() => insert(t)}>{t.trim() || "↵"}</button>
-        ))}
-      </div>
-
-      {confirming && (
-        // Verb buttons naming the outcome — never Yes/No (forms doc §4).
-        <div className="fs-confirm" role="alertdialog" aria-label={t("ui.editor.discardTitle")}>
-          <div className="fs-confirm-box">
-            <p className="t-label">{t("ui.editor.discardTitle")}</p>
-            <p className="prose-note">
-              {t("ui.editor.discardBody", { delta: sign(dCh) })}
-            </p>
-            <div className="fs-confirm-acts">
-              <button className="dbtn" onClick={() => setConfirming(false)}>{t("ui.editor.keepEditing")}</button>
-              <button className="dbtn is-danger" onClick={props.onCancel}>{t("ui.editor.discard")}</button>
+    <FocusTrap>
+      <div className="fseditor" role="dialog" aria-modal="true" aria-label={props.title}>
+        <div className="fs-head">
+          <div className="fs-title-wrap">
+            <div className="t-label">{props.title}</div>
+            <div className="meta">
+              <span>{props.subtitle}</span>
+              {dirty && <span className="is-dirty-dot">{t("ui.editor.unsaved")}</span>}
             </div>
           </div>
+          <Chip pressed={wrap} onClick={() => setWrap(!wrap)}>{t("ui.editor.wrap")}</Chip>
+          <button className="dbtn" onClick={cancel}>{t("ui.editor.cancel")}</button>
+          <button className="dbtn is-primary" onClick={() => props.onDone(value)}>{t("ui.editor.done")}</button>
         </div>
-      )}
-    </div>
+        <div className="fs-counts meta">
+          <span><b className="t-num">{ch.toLocaleString()}</b> {t("ui.editor.charUnit")}</span>
+          <span><b className="t-num">{tk.toLocaleString()}</b> {t("ui.editor.tokensEst")}</span>
+          {props.budget !== undefined && props.budget > 0 && (
+            <span>{t("ui.editor.ofBudget", { pct: ((tk / props.budget) * 100).toFixed(1) })}</span>
+          )}
+          {(dTk !== 0 || dCh !== 0) && (
+            <span className={`delta ${dTk > 0 ? "is-up" : dTk < 0 ? "is-down" : ""}`}>
+              {sign(dCh)} {t("ui.editor.charUnit")} · {sign(dTk)} {t("ui.editor.tokenUnit")}
+            </span>
+          )}
+        </div>
+        <div className="fs-body">
+          <textarea id="fs-ta" className={wrap ? "" : "is-nowrap"} spellCheck={false} value={value}
+            onInput={(ev) => setValue(ev.currentTarget.value)} />
+        </div>
+        <div className="fs-foot">
+          {MD_TOKENS.map((t) => (
+            <button key={t} className="mdb t-data" onClick={() => insert(t)}>{t.trim() || "↵"}</button>
+          ))}
+        </div>
+
+        {confirming && (
+          // Verb buttons naming the outcome — never Yes/No (forms doc §4).
+          <div className="fs-confirm" role="alertdialog" aria-label={t("ui.editor.discardTitle")}>
+            <div className="fs-confirm-box">
+              <p className="t-label">{t("ui.editor.discardTitle")}</p>
+              <p className="prose-note">
+                {t("ui.editor.discardBody", { delta: sign(dCh) })}
+              </p>
+              <div className="fs-confirm-acts">
+                <button className="dbtn" onClick={() => setConfirming(false)}>{t("ui.editor.keepEditing")}</button>
+                <button className="dbtn is-danger" onClick={props.onCancel}>{t("ui.editor.discard")}</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </FocusTrap>
   );
 }

@@ -443,6 +443,7 @@ including the presets tool.
 | `fuzzyFilter` / `fuzzyScore` | subsequence matching with a score | — |
 | `Sheet` / `Modal` | a layered surface, its dismissal contract, and its focus trap | — |
 | `SheetHead` | a sheet's sticky title row | — |
+| `FocusTrap` | Tab containment and background aria-hiding, dismissal left alone | `Sheet` / `Modal` unless the surface has its own shape |
 | `Picker` | choose one, short fixed list, bottom sheet | `SearchDisclosure` if long |
 | `SearchDisclosure` | choose one, long list, anchored popover | `Picker` on a thumb rail |
 | `FacetDrawer` | every facet in a slice, with counts, as toggles | — |
