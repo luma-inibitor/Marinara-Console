@@ -1,5 +1,4 @@
-// Imports THROUGH the barrel, which is the arrangement a barrel is for: the
-// re-export is live and Widget.tsx is reached only via the forwarding line.
+// Imports through the barrel, and exports nothing of its own.
 import { Widget } from "./barrel";
 
 console.log(Widget);

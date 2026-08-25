@@ -1,7 +1,5 @@
 // Re-export judging, against a fixture tree that hides a dead one and two that
-// do not. The class is worth a fixture of its own because it is invisible to
-// the obvious grep: `import … Widget` finds the real consumers of the real
-// module and says nothing about a forwarding line nobody imports from.
+// do not.
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";

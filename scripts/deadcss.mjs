@@ -18,10 +18,7 @@
 // which is the safe direction to be wrong in: a false "live" costs a dead rule
 // nobody deletes, a false "dead" costs a bug.
 //
-// ── The baseline ratchet (design/deadcss-baseline.json) ───────────────────
-// The list is candidates, so failing on all of it would block PRs on somebody
-// else's judgement calls. Today's set is recorded and only growth fails, which
-// is the question a reviewer has: did this change strand a rule? See
+// Candidates are ratcheted against design/deadcss-baseline.json; see
 // scripts/lib/baseline.mjs.
 //
 // Exit codes: 0 clean · 1 a candidate outside the baseline · 2 the baseline is

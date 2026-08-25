@@ -1,15 +1,10 @@
-// The baseline ratchet, shared by the two dead-code checks: record today's
-// findings, fail only on the ones that are not in the record.
+// The baseline ratchet shared by the two dead-code checks. The baseline records
+// today's findings and only a finding outside it fails. The file shape follows
+// copycheck.mjs and design/copy-baseline.json: keyed by file, sorted item names,
+// no line numbers.
 //
-// The shape follows `copycheck.mjs` and design/copy-baseline.json — baseline
-// under design/, keyed by FILE, values sorted item names with no line numbers
-// so ordinary edits do not churn it, `--adopt` to record and `--prune` to
-// retire. copycheck's `_areas` is not copied: it stages a migration through
-// directories routed one at a time, and dead code has one area, the whole tree.
-//
-// Enforcement is PER ITEM, never by count. A count lets a new dead export pass
-// as long as an old one is deleted in the same change, which is the defect the
-// check exists to catch.
+// Enforcement is per item, never by count. A count lets a new dead export pass
+// as long as an old one is deleted in the same change.
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 
 /** The recorded set, or an integrity complaint when it cannot be read. */
@@ -40,15 +35,10 @@ const group = (findings) => {
 };
 
 /**
- * Split today's findings against the record. `findings` are `{file, item, ...}`;
- * the extra fields ride along untouched so a caller can still print line numbers.
- *
- * `--adopt` records today's set; `--prune` only ever REMOVES entries that no
- * longer appear. Neither grows the record as a side effect of a normal run.
- *
- * `scope` is which files this run actually looked at. A narrowed run
- * (`deadexports src/ui`) saw nothing of the rest of the tree, so it may neither
- * call those entries vanished nor prune them away.
+ * Split today's findings against the record. `findings` are `{file, item, ...}`.
+ * `adopt` records today's set; `prune` only removes entries that no longer
+ * appear. `scope` is which files this run looked at: a narrowed run may neither
+ * call an entry outside it vanished nor prune it away.
  */
 export function ratchet(path, findings, { adopt = false, prune = false, scope = () => true } = {}) {
   const { entries, integrity } = loadBaseline(path);
@@ -77,19 +67,14 @@ export function ratchet(path, findings, { adopt = false, prune = false, scope = 
   return { fresh, vanished, integrity, recorded: Object.values(entries).reduce((n, v) => n + v.length, 0) };
 }
 
-/**
- * The shared tail of both checks: print what is new, warn about what vanished,
- * and pick the exit code. 2 means the check itself is compromised and must
- * never read as a pass.
- */
+/** Print what is new, warn about what vanished, and return the exit code. */
 export function reportRatchet({ fresh, vanished, integrity, label, noun, adopt, prune }) {
   if (integrity.length) {
     console.log("\nBASELINE INTEGRITY FAILURE — the check itself is compromised:");
     for (const m of integrity) console.log("  " + m);
     return 2;
   }
-  // Adopting rewrites the record to today's set, so there is nothing left
-  // outside it to fail on and the run reports what it wrote instead.
+  // Adopting rewrote the record to today's set, so nothing is left to fail on.
   if (adopt) {
     console.log(`\nbaseline adopted — ${label} now records today's findings`);
     return 0;
