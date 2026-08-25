@@ -31,19 +31,8 @@ export function launch(options = {}) {
   return chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH, ...options });
 }
 
-// `settle` is how long #app must go without a DOM mutation before the page
-// counts as ready — a condition, not a sleep.
-//
-// A fixed pause was wrong in both directions and wrong invisibly. Mounting is
-// satisfied by the shell, which renders before any screen has its data, so the
-// gate below it was a stopwatch: on a cold dev server the module graph is still
-// being transformed while the clock runs, the screen is still on its <Loading>
-// line when the clock stops, and the caller records a spinner as if it were the
-// finished render. On a snapshot check that reads as every element of the screen
-// disappearing — a diff with no code behind it, on whichever screens happened to
-// lose the race. Waiting for the loading line to clear and then for the tree to
-// hold still ties the wait to what the app is actually doing, and it costs the
-// same on a warm server as the sleep it replaced.
+// `settle` is how long #app must go without a DOM mutation before the page is
+// ready. A fixed wait can return while a screen is still loading.
 //
 // Mounting is waited on rather than assumed. Vite rewrites every module URL
 // with a `?t=` cache-buster when a file changes, so a file edited, moved or
@@ -72,11 +61,8 @@ export async function openPage(browser, { viewport, hash = "", url = DEV_URL + h
       await page.reload({ waitUntil: "networkidle", timeout });
     }
   }
-  // `.loadingstate` is the one loading marker in the app (src/ui/Loading.tsx),
-  // so its absence is the screen saying its data arrived. It is not a forever
-  // wait even when the engine is down: the same component gives up at twelve
-  // seconds and becomes an error state, which clears this and gets recorded as
-  // the deterministic render it is.
+  // The app's only loading marker (src/ui/Loading.tsx). It self-times-out at
+  // 12s, so this cannot hang.
   try {
     await page.waitForFunction(() => !document.querySelector("#app .loadingstate"), null, { timeout: 20000 });
   } catch {
@@ -90,9 +76,8 @@ export async function openPage(browser, { viewport, hash = "", url = DEV_URL + h
   return page;
 }
 
-/** Resolve true once #app has gone `span` ms without a mutation, false if it
- *  never does. Attributes count: a class that flips is exactly the kind of
- *  change the snapshot check exists to notice. */
+/** True once #app has gone `span` ms without a mutation, false if it never
+ *  does. Attributes count: a flipped class is a change worth catching. */
 function quiet(page, span, cap = Math.max(span * 4, 8000)) {
   return page.evaluate(([span, cap]) => new Promise((resolve) => {
     const root = document.getElementById("app");

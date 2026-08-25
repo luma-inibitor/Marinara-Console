@@ -9,11 +9,8 @@
 // the element tree and its styling hooks change", which is the question a
 // component extraction actually raises.
 //
-// Do not run this while something else is driving the same dev server. The
-// harness waits for the screen to load and then to hold still rather than for
-// a fixed span, so contention costs time instead of correctness — but a page
-// the server keeps repainting will exhaust that wait and warn, and a warning
-// is easy to scroll past.
+// Do not run this while something else is driving the same dev server; a page
+// that keeps repainting never settles.
 import { launch, openPage, VIEWPORTS } from "./lib/browser.mjs";
 import fs from "node:fs";
 
