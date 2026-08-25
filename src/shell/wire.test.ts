@@ -19,7 +19,7 @@ vi.mock("./toast", () => ({
 }));
 
 import * as v from "valibot";
-import { parseItems, parseWire, WireMismatchError } from "./wire";
+import { parseItems, parseWire, parseWrite, WireMismatchError } from "./wire";
 
 const Thing = v.looseObject({ id: v.string(), on: v.boolean() });
 
@@ -64,6 +64,32 @@ describe("parseWire", () => {
     await settled();
     expect(logged).toHaveBeenCalled();
     expect(raised).toEqual([{ message: "shell.wire.mismatch|context=GET /thing", kind: "error" }]);
+  });
+});
+
+describe("parseWrite", () => {
+  it("returns the value when it matches", () => {
+    expect(parseWrite(Thing, { id: "a", on: true }, "PATCH /thing")).toEqual({ id: "a", on: true });
+  });
+
+  it("throws rather than returning a partial write", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() => parseWrite(Thing, { id: "a" }, "PATCH /thing")).toThrow(WireMismatchError);
+  });
+
+  it("carries copy saying the change was made, for the caller to report", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    let thrown: unknown;
+    try { parseWrite(Thing, { id: "a" }, "PATCH /thing"); } catch (e) { thrown = e; }
+    expect((thrown as Error).message).toBe("shell.wire.writeMismatch|context=PATCH /thing");
+  });
+
+  it("logs the issues but raises no toast of its own", async () => {
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() => parseWrite(Thing, { id: "a" }, "PATCH /thing")).toThrow();
+    await settled();
+    expect(logged).toHaveBeenCalled();
+    expect(raised).toEqual([]);
   });
 });
 
