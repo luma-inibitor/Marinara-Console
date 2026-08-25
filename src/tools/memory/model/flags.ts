@@ -13,8 +13,8 @@
 // filter can name a flag without re-deriving its text.
 
 import type { Note } from "../api/types";
-import { KEYWORD_CAP, SECTION_CAP } from "./caps";
-import { manualKeywords } from "./keywords";
+import { INDEXED_KEYWORD_CAP, KEYWORD_CAP, SECTION_CAP } from "./caps";
+import { ignoredKeywordCount, manualKeywords } from "./keywords";
 import { type Row, sectionTextOf } from "./review";
 import { capPercent, rowOverflows, type SectionPressure } from "./pressure";
 import { t } from "../../../copy";
@@ -40,6 +40,7 @@ export const FLAG = {
   undated: t("memory.flag.undatedEvent"),
   noKeywords: t("memory.flag.noKeywords"),
   keywordCapFull: t("memory.flag.keywordCapFull"),
+  keywordsIgnored: t("memory.flag.keywordsIgnored"),
 };
 
 /** `${risk} risk` as one token, for the row's readline and the risk flags. */
@@ -132,14 +133,18 @@ export function flagsOf(r: Row, ctx: FlagContext): RowFlag[] {
   if (r.mutation.kind === "create_note" && !(r.mutation.note?.keywords ?? []).length) {
     f.push({ label: FLAG.noKeywords, severity: "warn", sentence: t("memory.flag.noKeywordsSentence") });
   }
-  // The cap counts only what a person added: the engine caps each keyword
-  // array separately, so derived keywords never crowd out manual ones.
   const target = ctx.notesById.get(r.targetId) as Note | undefined;
-  const targetKeywords = target ? manualKeywords(target).length : 0;
-  if (targetKeywords >= KEYWORD_CAP) {
+  if (target && manualKeywords(target).length >= KEYWORD_CAP) {
     f.push({
       label: FLAG.keywordCapFull, severity: "warn",
       sentence: t("memory.flag.keywordCapFullSentence", { cap: KEYWORD_CAP }),
+    });
+  }
+  const ignored = target ? ignoredKeywordCount(target) : 0;
+  if (ignored > 0) {
+    f.push({
+      label: FLAG.keywordsIgnored, severity: "danger",
+      sentence: t("memory.flag.keywordsIgnoredSentence", { count: ignored, cap: INDEXED_KEYWORD_CAP }),
     });
   }
   return f;

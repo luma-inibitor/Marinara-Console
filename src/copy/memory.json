@@ -374,6 +374,15 @@
     "text": "The target memory has filled its {{cap}}-keyword cap — another keyword is refused.",
     "note": "The at-cap keyword flag as a sentence. Interpolates the cap rather than spelling it, so the sentence cannot drift from KEYWORD_CAP the way the catalog's hardcoded \"at most 30\" would, and names the consequence because \"at the cap\" alone does not say the next write fails."
   },
+  "memory.flag.keywordsIgnored": {
+    "text": "target over keyword match limit",
+    "note": "Flag label and facet value: the target memory stores more keywords than the engine will match on, so some of them are dead. The catalog has no word for this at all — upstream the write is accepted and the overflow is dropped at index time, silently, with nothing reported to anyone."
+  },
+  "memory.flag.keywordsIgnoredSentence": {
+    "one": "Keyword matching reads only the first {{cap}} keywords on the target memory, so {{count}} keyword it stores never matches anything.",
+    "other": "Keyword matching reads only the first {{cap}} keywords on the target memory, so {{count}} keywords it stores never match anything.",
+    "note": "The over-match-limit keyword flag as a sentence, borrowing the catalog's own \"Keyword matching\" from underTheHoodKeywords. Interpolates the cap so it cannot drift from INDEXED_KEYWORD_CAP, and counts the dead keywords because the reviewer's next question is how many."
+  },
   "memory.flag.sectionNearCap": {
     "text": "The section is close to its cap.",
     "note": "Section-pressure flag when no single section can be named (nothing projected). The catalog has no pressure model at all: upstream a write either fits or is rejected, so approaching a cap is a state it cannot describe."

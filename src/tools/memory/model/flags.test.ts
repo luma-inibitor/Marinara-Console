@@ -24,7 +24,7 @@ vi.mock("../../../copy", () => ({
 }));
 
 import type { Mutation, Note, ReviewResponse } from "../api/types";
-import { KEYWORD_CAP, SECTION_CAP } from "./caps";
+import { INDEXED_KEYWORD_CAP, KEYWORD_CAP, SECTION_CAP } from "./caps";
 import { flattenReview, type Row, sectionTextOf } from "./review";
 import type { SectionPressure } from "./pressure";
 import { FLAG, LOW_CONFIDENCE, contributionChars, flagsOf, worstSeverity } from "./flags";
@@ -369,7 +369,8 @@ describe("flagsOf — one branch at a time", () => {
   it("keeps the at-cap wording above the cap", () => {
     const keywords = Array.from({ length: KEYWORD_CAP + 5 }, (_, i) => `k${i}`);
     const notes = new Map([["n1", makeNote({ id: "n1", keywords })]]);
-    expect(labels(cleanRow({ targetId: "n1" }), ctx({ notesById: notes }))).toEqual([FLAG.keywordCapFull]);
+    expect(labels(cleanRow({ targetId: "n1" }), ctx({ notesById: notes })))
+      .toEqual([FLAG.keywordCapFull, FLAG.keywordsIgnored]);
   });
 
   it("does not flag a target whose cap-worth of keywords is all engine-derived", () => {
@@ -381,12 +382,66 @@ describe("flagsOf — one branch at a time", () => {
   it("flags a target whose MANUAL list is at the cap, however few are derived", () => {
     const manualKeywords = Array.from({ length: KEYWORD_CAP }, (_, i) => `m${i}`);
     const notes = new Map([["n1", makeNote({ id: "n1", keywords: ["derived"], manualKeywords })]]);
-    expect(labels(cleanRow({ targetId: "n1" }), ctx({ notesById: notes }))).toEqual([FLAG.keywordCapFull]);
+    expect(labels(cleanRow({ targetId: "n1" }), ctx({ notesById: notes })))
+      .toEqual([FLAG.keywordCapFull, FLAG.keywordsIgnored]);
   });
 
   it("does not flag a target note well below the cap", () => {
     const notes = new Map([["n1", makeNote({ id: "n1", keywords: Array.from({ length: 24 }, (_, i) => `k${i}`) })]]);
     expect(labels(cleanRow({ targetId: "n1" }), ctx({ notesById: notes }))).toEqual([]);
+  });
+
+  it("does not flag when the target note is not in the vault map", () => {
+    expect(labels(cleanRow({ targetId: "missing" }), ctx({ notesById: new Map() }))).toEqual([]);
+  });
+});
+
+describe("flagsOf — keywords past the index cap", () => {
+  const derived = (n: number) => Array.from({ length: n }, (_, i) => `d${i}`);
+  const notesWith = (n: Partial<Note>) => new Map([["n1", makeNote({ id: "n1", ...n })]]);
+  const row = () => cleanRow({ targetId: "n1" });
+
+  it("flags a target whose derived list alone fills the index cap, leaving its one manual keyword dead", () => {
+    const notes = notesWith({ keywords: derived(INDEXED_KEYWORD_CAP), manualKeywords: ["mine"] });
+    expect(flagsOf(row(), ctx({ notesById: notes }))).toEqual([
+      {
+        label: FLAG.keywordsIgnored,
+        severity: "danger",
+        sentence: `memory.flag.keywordsIgnoredSentence|count=1,cap=${INDEXED_KEYWORD_CAP}`,
+      },
+    ]);
+  });
+
+  it("does not flag a merged list that sits exactly on the index cap", () => {
+    const notes = notesWith({ keywords: derived(INDEXED_KEYWORD_CAP - 2), manualKeywords: ["a", "b"] });
+    expect(labels(row(), ctx({ notesById: notes }))).toEqual([]);
+  });
+
+  it("counts every keyword past the cap", () => {
+    const notes = notesWith({ keywords: derived(INDEXED_KEYWORD_CAP), manualKeywords: ["a", "b", "c"] });
+    expect(flagsOf(row(), ctx({ notesById: notes }))[0]!.sentence)
+      .toBe(`memory.flag.keywordsIgnoredSentence|count=3,cap=${INDEXED_KEYWORD_CAP}`);
+  });
+
+  it("counts suppressed keywords out before the cap applies", () => {
+    const notes = notesWith({
+      keywords: derived(INDEXED_KEYWORD_CAP), manualKeywords: ["mine"], suppressedKeywords: ["d0"],
+    });
+    expect(labels(row(), ctx({ notesById: notes }))).toEqual([]);
+  });
+
+  it("raises both flags when the manual list is full AND the merged list overflows", () => {
+    const notes = notesWith({
+      keywords: ["derived"], manualKeywords: Array.from({ length: KEYWORD_CAP }, (_, i) => `m${i}`),
+    });
+    expect(labels(row(), ctx({ notesById: notes }))).toEqual([FLAG.keywordCapFull, FLAG.keywordsIgnored]);
+  });
+
+  it("raises only the write-limit flag when the manual list is full and nothing is derived", () => {
+    const notes = notesWith({
+      keywords: [], manualKeywords: Array.from({ length: KEYWORD_CAP }, (_, i) => `m${i}`),
+    });
+    expect(labels(row(), ctx({ notesById: notes }))).toEqual([FLAG.keywordCapFull]);
   });
 
   it("does not flag when the target note is not in the vault map", () => {
