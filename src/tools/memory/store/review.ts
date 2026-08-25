@@ -26,6 +26,7 @@ import { currentScope, scopeCharacterId, scopeChatId } from "./scope";
 import { lines, loadAllNotes, notesById } from "./notes";
 import { activeFacets } from "./view";
 import { decisions, loadPersisted, pruneLedger } from "./decisions";
+import { consumeFocusSource } from "./sources";
 
 export const loading = createStore(true);
 export const loadError = createStore<string | null>(null);
@@ -54,8 +55,7 @@ function applyScope() {
 }
 
 export async function refresh(first = false) {
-  const focus = sessionStorage.getItem("mc-ltm-focus-source");
-  if (focus) sessionStorage.removeItem("mc-ltm-focus-source");
+  const focus = consumeFocusSource();
   if (first) {
     loading.set(true);
     await loadPersisted();
