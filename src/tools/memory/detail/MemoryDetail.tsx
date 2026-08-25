@@ -21,8 +21,8 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { Note } from "../api/types";
 import { t } from "../../../copy";
 import { TypeIcon } from "../icons";
-import { Back, Edit, ExpandSet, ICON_SIZE } from "../../../ui/icons";
-import { Chip, CopyableText, IconButton } from "../../../ui";
+import { Back, Close, Edit, ExpandSet, ICON_SIZE } from "../../../ui/icons";
+import { Chip, CopyableText, IconButton, RawJson } from "../../../ui";
 import { StatusPill } from "../components/StatusPill";
 import { RetrievalCard } from "./RetrievalCard";
 import { SectionRow } from "./SectionRow";
@@ -40,6 +40,9 @@ export function MemoryDetail(props: {
   /** Omitted where the screen has nowhere to send an editor. */
   onEdit?: () => void;
   defaultCollapsed?: boolean;
+  /** The overlay projection: the card dismisses instead of going back, takes
+   *  focus on open, and carries the stored record as a fold. */
+  peek?: boolean;
 }) {
   const n = props.note;
   const views = sectionViews(n);
@@ -104,8 +107,11 @@ export function MemoryDetail(props: {
     <div className="mdc" ref={scroller} style={{ "--mdc-head-h": `${headH}px` } as React.CSSProperties}>
       <header className="console mdc-head" ref={head}>
         <div className="hrow">
-          <IconButton className="mdc-back" label={t("memory.backToVault")} onClick={props.onBack}>
-            <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+          <IconButton className="mdc-back" autoFocus={props.peek}
+            label={props.peek ? t("ui.sheet.close") : t("memory.backToVault")} onClick={props.onBack}>
+            {props.peek
+              ? <Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
+              : <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />}
           </IconButton>
           <TypeIcon type={n.type} size={ICON_SIZE.lg} />
           {/* Titles wrap and never truncate: the title is the last thing on
@@ -160,6 +166,8 @@ export function MemoryDetail(props: {
         <div className="mdc-record t-data">
           <CopyableText value={n.id} label={t("memory.peek.id")} />
         </div>
+
+        {props.peek && <RawJson value={n} label={t("memory.peek.rawMemory")} />}
       </div>
     </div>
   );

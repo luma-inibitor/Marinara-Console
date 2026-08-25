@@ -228,13 +228,8 @@
    overflow the pane. */
 .group-actions { display: flex; flex-wrap: wrap; gap: var(--s2); padding: var(--s2) var(--s3); align-items: center; }
 
-/* ══ facet sheet — the surface is <Sheet>, src/ui/Sheet.css ══ */
-.peek-meta { color: var(--text-dim); font-size: var(--fs-data-s); overflow-wrap: anywhere; }
-.peek-kw { display: flex; flex-wrap: wrap; gap: 4px; margin-top: var(--s2); }
-.peek-links { margin-top: var(--s2); font-size: var(--fs-data-s); }
-.peek-text { white-space: pre-line; font-size: 13.5px; max-width: var(--measure); }
-
-/* the filter drawer is <FacetDrawer>, src/ui/FacetDrawer.css;
+/* ══ facet sheet — the surface is <Sheet>, src/ui/Sheet.css ══
+   the filter drawer is <FacetDrawer>, src/ui/FacetDrawer.css;
    the option rows are <Picker>, src/ui/Picker.css */
 
 /* ══ apply dock ══ */
@@ -254,15 +249,6 @@
 
 /* ══ detail ══ */
 .claim-detail { padding: var(--panel-pad); }
-/* ══ note peek + mode pill ══
-   The peek speaks the list's vocabulary. The mode pill always renders all
-   three segments (DM · RP · GM) at constant width; active segments lit. */
-.peek-meta { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
-/* the id is copyable, so it is information rather than decoration and takes
-   the dim tone the contrast floor requires */
-.peek-id { color: var(--text-dim); font-size: 10.5px; margin-top: var(--s3);
-  padding-top: var(--s2); border-top: var(--hairline); overflow-wrap: anywhere; }
-
 /* ══ detail pane — organized around the decision ══
    Zones top-to-bottom answer the reviewer's questions in order: headline
    (what is this) · preview (what the vault looks like after keep) · evidence

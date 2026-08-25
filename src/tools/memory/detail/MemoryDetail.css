@@ -10,11 +10,18 @@
    the card can be mounted in the desktop detail pane (--surface-1) or as a
    pushed screen (--canvas) without a seam appearing. */
 .mdc { --mdc-ground: var(--canvas); height: 100%; overflow-y: auto; }
-.audit-detail .mdc { --mdc-ground: var(--surface-1); }
+.audit-detail .mdc, .peek-sheet .mdc { --mdc-ground: var(--surface-1); }
 /* The retrieval block is one step up from the ground, not one specific token:
    on a --surface-1 pane its own --surface-1 fill would sit flat and the block
    would read as a hairline rectangle rather than a raised surface. */
-.audit-detail .mdc-ret { background: var(--surface-2); }
+.audit-detail .mdc-ret, .peek-sheet .mdc-ret { background: var(--surface-2); }
+
+/* The peek is the same card projected into a <Sheet>. The card takes over the
+   sheet's padding and its scrolling: a flex column with min-height 0 shrinks
+   the card to whatever the sheet's height cap leaves it, so the head and the
+   open row stick to the card instead of to a sheet scrolling beneath them. */
+.peek-sheet { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.peek-sheet .mdc { min-height: 0; }
 
 /* .console supplies the sticky seam and the padding; the ground comes from the
    card so the sticky head matches the pane it is sticking to. */
