@@ -11,8 +11,8 @@
 // belongs to the screen, and importing `shell/toast` here would point upward.
 
 import { createStore } from "../../../lib/store";
-import type { ImportPreview, ImportResult, ReviewResponse } from "../api/types";
-import { fetchChats, type Chat } from "../api/chats";
+import type { Chat, ImportPreview, ImportResult, ReviewResponse } from "../api/types";
+import { fetchChats } from "../api/chats";
 import { fetchReview } from "../api/drafts";
 import { importPreview, importSourceNotes } from "../api/import";
 import { buildSources, type SourceKind, type SourceRow } from "../model/sources";

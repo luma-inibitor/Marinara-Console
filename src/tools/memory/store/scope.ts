@@ -8,7 +8,8 @@
 
 import { useEffect, useState } from "react";
 import { createStore, useStore } from "../../../lib/store";
-import { fetchChats, type Chat } from "../api/chats";
+import { fetchChats } from "../api/chats";
+import type { Chat } from "../api/types";
 import { fetchCharacters } from "../api/characters";
 import { parseCharacter, type Character } from "../model/character";
 import type { Scope } from "../model/scope";

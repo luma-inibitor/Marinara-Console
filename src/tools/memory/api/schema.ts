@@ -1,5 +1,5 @@
-// Validates every long-term-memory route the console calls; `types.ts` infers
-// its types from here.
+// Validates every route the memory tool calls; `types.ts` infers its types
+// from here, and `client.ts` names which route each one checks.
 //
 // Every object is loose, so the fields the engine sends and the console never
 // reads pass through unnamed. A field is required below only where the console
@@ -264,4 +264,25 @@ export const SkipResponseSchema = v.looseObject({
   deleted: v.boolean(),
   draftId: v.optional(v.string()),
   mutationIds: strings,
+});
+
+// The host's chats and characters. Not long-term-memory routes: scope names a
+// chat or a character the engine already knows about.
+
+/** `characterIds` is what the scope cascade narrows on: choosing a character
+ *  leaves only the chats that name it. The host writes an absent field as
+ *  `null` rather than leaving it off. */
+export const ChatSchema = v.looseObject({
+  id: v.pipe(v.string(), v.minLength(1)),
+  name: v.nullish(v.string()),
+  mode: v.nullish(v.string()),
+  characterIds: v.optional(v.array(v.string())),
+});
+
+/** The card's own JSON arrives as a string field. The live host never hoists
+ *  `name` out of it, so every row reaches one through `model/character.ts`. */
+export const CharacterRowSchema = v.looseObject({
+  id: v.pipe(v.string(), v.minLength(1)),
+  data: v.optional(v.string()),
+  name: v.optional(v.string()),
 });
