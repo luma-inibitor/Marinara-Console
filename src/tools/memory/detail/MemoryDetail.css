@@ -68,7 +68,7 @@
 }
 .mdc-type { color: var(--tc); }
 .mdc-sep { font-style: normal; color: var(--edge-strong); }
-.mdc-edit { margin-left: auto; }
+.mdc-edit { margin-left: auto; min-height: var(--tap); }
 
 .mdc-body { padding: var(--panel-pad); }
 
@@ -92,7 +92,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  min-height: var(--tap-2);
+  min-height: var(--tap);
   padding: 0 9px;
   border: var(--hairline);
   border-radius: var(--r-s);

@@ -169,8 +169,8 @@
 
 /* ══ links ══ */
 /* 8px, not the 5px the rest of the block uses: these rows hold the only tap
-   targets in the card besides the rail, and a secondary target needs both its
-   24px and ≥8px of separation from its neighbour (§2). */
+   targets in the card besides the rail, and two stacked targets read as one
+   control without a gap between them. */
 .mdc-ret-links { display: flex; flex-direction: column; gap: var(--s2); }
 /* One link, one line. The title truncates rather than wrapping — the house
    rule that a title must never be cut protects the SCREEN's title, the one
@@ -213,13 +213,11 @@
   font-variation-settings: "wdth" 106;
   font-weight: 600;
   font-size: 13px;
-  /* A 13px line box is 20px tall, under the 24px floor for a secondary target.
-     Grown rather than padded with .hit: two link rows sit close enough that
-     44px hit areas would overlap and the lower row would swallow taps meant
-     for the upper one. */
+  /* Grown rather than padded with .hit, whose hit area would reach past the
+     8px between link rows and swallow taps meant for the row above. */
   display: inline-block;
-  min-height: 24px;
-  line-height: 24px;
+  min-height: var(--tap);
+  line-height: var(--tap);
   /* Truncates instead of wrapping, so a link is always one row tall. */
   min-width: 0;
   max-width: 100%;
