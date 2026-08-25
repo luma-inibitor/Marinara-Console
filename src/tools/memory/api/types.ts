@@ -12,7 +12,7 @@
 // Every type here is inferred from the schema in schema.ts that checks it.
 
 import type * as v from "valibot";
-import type { AcceptResponseSchema, ConflictSchema, DISPOSITIONS, ExtractResponseSchema, ImportPreviewSchema, ImportResultSchema, LtmStatusSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteSectionSchema, NOTE_TYPES, PreflightResponseSchema, ReviewChangeSchema, ReviewResponseSchema, SkipResponseSchema } from "./schema";
+import type { AcceptResponseSchema, CharacterRowSchema, ChatSchema, ConflictSchema, DISPOSITIONS, ExtractResponseSchema, ImportPreviewSchema, ImportResultSchema, LtmStatusSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteSectionSchema, NOTE_TYPES, PreflightResponseSchema, ReviewChangeSchema, ReviewResponseSchema, SkipResponseSchema } from "./schema";
 
 export type NoteType = (typeof NOTE_TYPES)[number];
 export type Disposition = (typeof DISPOSITIONS)[number];
@@ -47,3 +47,7 @@ export type LtmStatus = v.InferOutput<typeof LtmStatusSchema>;
 export type ImportPreview = v.InferOutput<typeof ImportPreviewSchema>;
 
 export type ImportResult = v.InferOutput<typeof ImportResultSchema>;
+
+export type Chat = v.InferOutput<typeof ChatSchema>;
+
+export type CharacterRow = v.InferOutput<typeof CharacterRowSchema>;

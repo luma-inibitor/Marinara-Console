@@ -4,9 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 import * as v from "valibot";
-import { AcceptResponseSchema, ExtractResponseSchema, ImportPreviewSchema, ImportResultSchema, LtmStatusSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteWriteSchema, PreflightResponseSchema, ReviewResponseSchema, SkipResponseSchema } from "./schema";
-import { ChatSchema } from "./chats";
-import { CharacterRowSchema } from "./characters";
+import { AcceptResponseSchema, CharacterRowSchema, ChatSchema, ExtractResponseSchema, ImportPreviewSchema, ImportResultSchema, LtmStatusSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteWriteSchema, PreflightResponseSchema, ReviewResponseSchema, SkipResponseSchema } from "./schema";
 
 const ok = (schema: Parameters<typeof v.safeParse>[0], value: unknown) => v.safeParse(schema, value).success;
 

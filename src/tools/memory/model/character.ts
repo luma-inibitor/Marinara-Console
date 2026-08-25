@@ -5,7 +5,7 @@
 // wire shape — and a card that will not parse still has to name itself, or the
 // picker lists a blank row nobody can choose.
 
-import type { CharacterRow } from "../api/characters";
+import type { CharacterRow } from "../api/types";
 
 export interface Character { id: string; name: string }
 

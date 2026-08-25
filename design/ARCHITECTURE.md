@@ -70,7 +70,7 @@ The exemption is narrow enough to have caught something. `SECTION_CAP` and `KEYW
 
 | Directory | Layer | Holds |
 |---|---|---|
-| `api/` | endpoints | one module per route family; wire types and the schemas that check them |
+| `api/` | endpoints | one module per route family; wire types, the schemas that check them, and the client that owns the parse |
 | `model/` | model | pure functions; no React, no `fetch`, no stores |
 | `store/` | state | stores, orchestration, invalidation; no JSX |
 | `components/` | presentation | this tool's components |
@@ -96,6 +96,7 @@ src/
   tools/
     memory/
       api/
+        client.ts           THE route→schema table, and the one parse
         notes.ts            /notes, /notes/:id
         drafts.ts           review, preflight, accept, skip
         import.ts           preview, source-notes
