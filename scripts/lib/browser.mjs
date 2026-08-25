@@ -44,9 +44,8 @@ export function launch(options = {}) {
 // flaky app: a fresh index.html is what makes Vite re-emit the module graph
 // with current timestamps, and it is the only way out of a poisoned one.
 //
-// `context` carries any other browser-context option the caller needs (touch
-// emulation, device scale). `onPage` runs before the first navigation, which is
-// the only place a caller can subscribe to load-time console and page errors.
+// `context` carries extra browser-context options. `onPage` runs before the
+// first navigation, so a caller can subscribe to load-time page errors.
 export async function openPage(browser, { viewport, hash = "", url = DEV_URL + hash, settle = 0, timeout = 60000, context = {}, onPage }) {
   const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height }, ...context });
   onPage?.(page);

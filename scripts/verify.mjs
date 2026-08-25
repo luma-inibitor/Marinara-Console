@@ -22,7 +22,7 @@ const TOUCH = new Set(["narrow", "phone", "tablet"]);
 // honored solely for elements matching an entry here, and every entry states
 // why the ink may sit below §1's floor; an element carrying the attribute with
 // no entry is measured like any other. A selector may name a pseudo-element.
-// Anything aria-hidden needs no entry: the contrast pass skips it wholesale.
+// An aria-hidden element needs no entry; the contrast pass skips it.
 const CONTRAST_EXEMPTIONS = [
   [".sep", "separator glyph between meta fields; punctuation, no information"],
   [".mdc-sep", "separator glyph between meta fields; punctuation, no information"],
@@ -43,29 +43,22 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) return false;
     const s = getComputedStyle(el);
-    // Opacity is not inherited into a computed style, so a transparent ancestor
-    // has to be looked for; visibility and display are already resolved here.
+    // Opacity does not inherit into a computed style, so ancestors are walked.
     if (s.visibility === "hidden" || s.display === "none" || s.opacity === "0") return false;
     for (let p = el.parentElement; p && p !== document.documentElement; p = p.parentElement) {
       if (getComputedStyle(p).opacity === "0") return false;
     }
     return true;
   };
-  // A bounding rect is unclipped: an element scrolled out of an overflow
-  // container still reports the box it would occupy, which is a place nobody can
-  // see or touch and which usually sits over unrelated content. Null comes back
-  // for such an element, and otherwise the box that is really there.
-  //
-  // The two kinds of overflow are not the same fact. auto and scroll hide by
-  // scroll position, so a half-scrolled control is still a full-size control and
-  // keeps its own rect; only one scrolled entirely away is gone. hidden and clip
-  // take the area off for good, so the rect shrinks to what is left.
+  // The rect an element really occupies on screen, or null if an ancestor's
+  // overflow leaves nothing of it. auto and scroll hide by scroll position, so a
+  // half-scrolled element keeps its full rect and only one scrolled entirely
+  // away is dropped. hidden and clip remove the area, so the rect shrinks.
   const clipTo = (el, r) => {
     const box = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
     let l = r.left, t = r.top, rt = r.right, b = r.bottom; // what is on screen now
-    // A positioned box is only clipped by ancestors in its containing block
-    // chain: a fixed one escapes them all, an absolute one escapes until the
-    // first positioned ancestor.
+    // A positioned box escapes ancestors outside its containing block chain:
+    // fixed escapes all of them, absolute until the first positioned ancestor.
     let escaping = getComputedStyle(el).position;
     if (escaping === "fixed") return box;
     for (let p = el.parentElement; p && p !== document.documentElement; p = p.parentElement) {
@@ -96,12 +89,8 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
     return box;
   };
   const onScreen = (el) => vis(el) && !!clipTo(el, el.getBoundingClientRect());
-  // .hit (base.css) pads a control's hit area out to --tap with a positioned
-  // ::after. That pad is what a finger lands on, so it is what gets measured —
-  // but only as far as it survives: ModePill sets overflow:hidden on the pill,
-  // which clips the pad straight back off its segments. The pad is read off the
-  // pseudo's own box rather than assumed, so nothing here names a size and --tap
-  // is free to move.
+  // .hit (base.css) pads a control's hit area with a positioned ::after. The pad
+  // is read off the pseudo's own box, and clipTo can still take it back off.
   const padBox = (el, r) => {
     const s = getComputedStyle(el, "::after");
     if (s.position !== "absolute" || s.content === "none") return null;
@@ -113,10 +102,8 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
     return { left: Math.min(r.left, x), top: Math.min(r.top, y), right: Math.max(r.right, x + w), bottom: Math.max(r.bottom, y + h) };
   };
   const label = (el) => (el.getAttribute("aria-label") || el.textContent || el.tagName).trim().slice(0, 40);
-  // Targets on separate layers are never reached by the same tap, so the
-  // distance between them is not a clearance. A fixed ancestor is what makes a
-  // layer here: the stacked detail screen sits over the list it came from, and
-  // every "neighbour" underneath it is unreachable while it is open.
+  // Nearest fixed ancestor. Targets on different layers are never reached by the
+  // same tap, so the distance between them is not a clearance.
   const layerOf = (el) => {
     for (let p = el; p && p !== document.documentElement; p = p.parentElement) {
       if (getComputedStyle(p).position === "fixed") return p;
@@ -137,7 +124,7 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
   }
   // Edge-to-edge distance to the nearest other target. Two members of one
   // [role=group] are segments of one control. A cross-<nav> pair reflects
-  // scroll position, not layout, and so does a pair split across layers.
+  // scroll position, not layout.
   const clearance = (a) => {
     let best = Infinity;
     const aNav = !!a.el.closest("nav");
@@ -173,11 +160,9 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
     const f = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
     return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
   };
-  // A computed color is whatever the browser chose to serialize: color-mix() in
-  // a stylesheet comes back as color(srgb …), and a regex over rgb() reads those
-  // as no color at all — which silently exempted every rule using one. Painting
-  // a pixel makes the browser do the conversion instead. The sentinel catches an
-  // unparseable value, which leaves the previous fillStyle in place.
+  // A computed color can be rgb(), color(srgb …) or color-mix(). Painting a
+  // pixel has the browser resolve any of them. The sentinel catches a value it
+  // cannot parse, which leaves the previous fillStyle in place.
   const ink = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
   const colors = new Map();
   const parse = (s) => {
@@ -195,8 +180,8 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
     colors.set(s, v);
     return v;
   };
-  // The node carrying the background comes back too: opacity between the text
-  // and that node dims the text against it, opacity at or above it dims both.
+  // The node carrying the background comes back with it. Opacity at or above
+  // that node dims text and background together, so measure() stops there.
   const bgOf = (el) => {
     let node = el, acc = null;
     while (node && node !== document.documentElement) {
@@ -217,9 +202,8 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
     const s = getComputedStyle(el, pseudo);
     const raw = parse(s.color); if (!raw) return;
     const bg = bgOf(el);
-    // A dimmed row is dimmer to read, not just to look at: the ink is composited
-    // over its background at the product of every opacity between the two, and
-    // its own alpha. Scoring the token colour reports a contrast nobody gets.
+    // Ink composites over its background at its own alpha times every opacity
+    // between the two.
     let a = raw.a;
     for (let n = el; n && n !== bg.node && n !== document.documentElement; n = n.parentElement) a *= parseFloat(getComputedStyle(n).opacity);
     const fg = { r: raw.r * a + bg.r * (1 - a), g: raw.g * a + bg.g * (1 - a), b: raw.b * a + bg.b * (1 - a) };
@@ -236,9 +220,7 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
   };
   for (const el of document.querySelectorAll("body *")) {
     if (!onScreen(el) || el.closest("[data-verify-exempt]")) continue;
-    // Ink an assistive reader is told to ignore is decoration by the markup's
-    // own account. This is what the one-glyph entries in CONTRAST_EXEMPTIONS
-    // were doing by hand, selector by selector.
+    // Markup that hides text from assistive readers is calling it decoration.
     if (el.closest("[aria-hidden=true]")) continue;
     if (el.hasAttribute("data-contrast-exempt") && !exempt(el, null)) out.unjustifiedExempt++;
     const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent.trim()).join("");
@@ -255,11 +237,9 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
   }
 
   // density: fully-visible collapsed rows, per the screen's own row selector.
-  // rowsMatched counts every laid-out row anywhere in the document — a row
-  // scrolled out of its list is still a row, and the denominator is what tells a
-  // screen whose selector matches nothing from one whose rows are simply taller
-  // than the viewport. The numerator is what a reader can actually see, so it
-  // wants the clipping test as well as the viewport box.
+  // rowsMatched counts every laid-out row anywhere in the document, so a screen
+  // whose selector matches nothing at all can be told apart from one whose rows
+  // are simply taller than the viewport.
   if (rowSel) {
     for (const el of document.querySelectorAll(rowSel)) {
       if (!vis(el)) continue;
@@ -329,9 +309,7 @@ let failures = 0, warnings = 0, blind = 0;
 for (const vp of ALL_VIEWPORTS) {
   const mobile = TOUCH.has(vp.name);
   const errors = [];
-  // Every page this check opens goes through the shared harness, which waits
-  // for the app to mount and for document.fonts.ready. Web fonts change text
-  // metrics, so a box read before they land is not the box that ships.
+  // openPage waits for the app to mount and for fonts, which move text metrics.
   const open = (url) => openPage(browser, {
     viewport: vp,
     url,
