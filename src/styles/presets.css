@@ -1,6 +1,5 @@
-/* Presets tool. Owns its own semantics rather than borrowing the lorebook's
-   status-dot vocabulary: a prompt section's defining attribute is its ORDER,
-   so the rail carries the ordinal and off-ness is expressed by dimming. */
+/* Presets tool: browser cards, section editor, save bar, connection banner,
+   toasts. Rows carry an ordinal rail rather than a status dot. */
 
 /* ── browser ── */
 .screen.is-narrow { max-width: 760px; }
@@ -30,7 +29,7 @@
 
 /* ── editor header ── */
 .console-title.is-wrapping {
-  white-space: normal;                 /* titles wrap, never truncate */
+  white-space: normal;
   overflow: visible;
   text-overflow: clip;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
@@ -40,7 +39,7 @@
 .tagline .meta { display: flex; flex-wrap: wrap; }
 .costnote {
   margin: var(--s1) 0 0;
-  font-family: var(--font-prose);      /* prose, not the data face */
+  font-family: var(--font-prose);
   font-size: 11.5px;
   color: var(--text-dim);
   line-height: 1.45;
@@ -111,8 +110,7 @@
   border: var(--hairline); border-radius: var(--r-m);
   background: var(--surface-1); color: var(--text);
 }
-/* inline-flex + gap so the fullscreen icon sits on the label's center line
-   rather than its baseline. Gap matches .dbtn, the console's other icon+text button. */
+/* inline-flex so the icon sits on the label's center line, not its baseline. */
 .edit-content .ec-label { color: var(--accent); display: inline-flex; align-items: center; gap: 6px; }
 .edit-content .ec-meta { color: var(--text-dim); }
 .content-preview {
@@ -133,8 +131,7 @@
 .sub-summary .is-off { color: var(--text-faint); font-weight: 700; }
 .sub-summary .is-runtime { color: var(--accent); }
 
-/* save pill lives in the title row — always visible, chrome-colored (§1:
-   emerald is reserved for entity status, not transaction state) */
+/* ── save pill (title row) ── */
 .hrow .savepill { flex: 0 0 auto; white-space: nowrap; }
 .savepill.is-saved { color: var(--text-dim); }
 .savepill.is-dirty { color: var(--accent); }
@@ -146,18 +143,15 @@
 
 /* ── §1 type-role corrections ── */
 
-/* Numbers are data: a number inside a chip must not inherit the chip’s 9.5px
-   tracked uppercase label styling, or it reads as a label, not a value. */
+/* Undoes the chip's label styling, which a nested number would otherwise
+   inherit — every property here is a reset, not a choice. */
 .chip .t-num {
   font-family: var(--font-data);
   font-size: var(--fs-data); letter-spacing: 0; text-transform: none;
   color: var(--text);
 }
 
-/* ── explicit save ──────────────────────────────────────────────────
-   The commit bar is the only thing in either tool that writes. It sticks to the
-   bottom of the editing surface so the state and the action are never scrolled
-   away. */
+/* ── explicit save ────────────────────────────────────────────── */
 .savebar {
   position: sticky; bottom: 0; z-index: 12;
   display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
@@ -181,14 +175,13 @@
 .savebar.has-conflict .t-label { color: var(--warn); }
 .savebar.has-conflict .savebar-acts { margin-top: var(--s2); justify-content: flex-end; }
 
-/* field-level validation — the engine supplies these messages; we render them
-   at the field rather than as a toast that scrolls past */
+/* ── field-level validation ── */
 .field-err { color: var(--danger); margin: 6px 0 0; }
 [aria-invalid="true"] { border-color: var(--danger) !important; }
 .err-dot { color: var(--danger); margin-left: 5px; font-size: 9px; vertical-align: middle; }
 .sub.has-error > .sub-head { box-shadow: inset 2px 0 0 var(--danger); }
 
-/* per-field dirty marking, so a 40-field panel shows what a save would write */
+/* per-field dirty marking */
 .ta.is-dirty, .tin.is-dirty { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
 
 /* inline key entry */
@@ -200,7 +193,7 @@
 }
 .kadd-in:focus { border-style: solid; border-color: var(--accent); outline: none; }
 
-/* order is typed directly on desktop, not only stepped */
+/* inline order entry */
 .ordin {
   width: 100%; background: transparent; border: 0; color: var(--text);
   font-family: var(--font-data); font-size: 15px; font-weight: 700;
@@ -258,8 +251,7 @@
 @media (max-width: 640px) { .connbar { flex-wrap: wrap; } .connbar-btn { width: 100%; } }
 
 /* ── toasts ────────────────────────────────────────────────────── */
-/* clear the action dock AND the tab bar, so the sole undo path is never
-   overlapped by the controls it sits above */
+/* 128px clears the action dock and the tab bar stacked below it. */
 .toaster { bottom: calc(128px + env(safe-area-inset-bottom)); }
 @media (min-width: 900px) { .toaster { bottom: calc(24px + env(safe-area-inset-bottom)); } }
 

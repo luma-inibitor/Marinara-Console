@@ -36,8 +36,6 @@
   min-width: 0;
 }
 
-/* The key's type is SectionKey's; the row only says how it may break, because
-   the row is what runs out of width. */
 .mdc-row-name {
   overflow-wrap: anywhere;
 }
@@ -49,7 +47,6 @@
   flex: 0 0 auto;
 }
 
-/* --flag is reserved for computed outliers; this is the card's only one. */
 .mdc-row-flag {
   width: 26px;
   height: 26px;
@@ -96,8 +93,8 @@
   white-space: nowrap;
 }
 
-/* --text-faint is restricted to decorative / ≥12px non-essential: a 14px
-   glyph whose meaning is also carried by the row's behavior qualifies. */
+/* Uses --text-faint: a 14px glyph whose meaning the row's behavior also
+   carries clears the restriction on that token. */
 .mdc-row-glyph {
   display: inline-flex;
   color: var(--text-faint);
@@ -119,14 +116,8 @@
   line-height: 1.5;
 }
 
-/* An open row rides the top of the screen while its own body scrolls past, so
-   the control that closes a long section is never a hundred lines back up.
-   Sticky costs a short section nothing: a header whose body is shorter than
-   the remaining viewport never reaches its offset, so this needs no length
-   threshold and nothing has to be measured to decide it applies.
-
-   --mdc-head-h is the card's own sticky head, published by MemoryDetail; the
-   row parks directly beneath it rather than sliding under it. */
+/* --mdc-head-h is the height of the card's own sticky head, published by
+   MemoryDetail, so an open row parks beneath it rather than sliding under. */
 .mdc-row.is-open {
   position: sticky;
   top: var(--mdc-head-h, 0px);

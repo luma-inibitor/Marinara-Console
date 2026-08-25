@@ -1,34 +1,25 @@
 /* The detail card's shell: sticky head, one scrolling body, and the section
    list's own header. The retrieval block and the rows bring their own rules.
 
-   Nothing here draws a border except the head's seam and the section header's
-   — the card's one bordered surface is the retrieval block, and a second box
-   on this screen would break "boxed means metadata, unboxed means content". */
-
-/* The ground the card is painted on. Anything that has to blend into the page
-   — the preview fade, above all — reads it rather than assuming --canvas, so
-   the card can be mounted in the desktop detail pane (--surface-1) or as a
-   pushed screen (--canvas) without a seam appearing. */
+/* --mdc-ground is the surface the card is painted on. Anything that has to
+   blend into the page reads it rather than assuming --canvas, so the card can
+   be mounted in the detail pane or as a pushed screen without a seam. */
 .mdc { --mdc-ground: var(--canvas); height: 100%; overflow-y: auto; }
 .audit-detail .mdc, .peek-sheet .mdc { --mdc-ground: var(--surface-1); }
-/* The retrieval block is one step up from the ground, not one specific token:
-   on a --surface-1 pane its own --surface-1 fill would sit flat and the block
-   would read as a hairline rectangle rather than a raised surface. */
+/* The retrieval block is one step up from the ground: on a --surface-1 pane
+   its default --surface-1 fill would sit flat against it. */
 .audit-detail .mdc-ret, .peek-sheet .mdc-ret { background: var(--surface-2); }
 
-/* The peek is the same card projected into a <Sheet>. The card takes over the
-   sheet's padding and its scrolling: a flex column with min-height 0 shrinks
-   the card to whatever the sheet's height cap leaves it, so the head and the
-   open row stick to the card instead of to a sheet scrolling beneath them. */
+/* Peek: the same card inside a <Sheet>. The card takes over the sheet's
+   padding and scrolling — min-height 0 shrinks it to the sheet's height cap,
+   or the head sticks to a sheet scrolling beneath it instead of to the card. */
 .peek-sheet { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
 .peek-sheet .mdc { min-height: 0; }
 
-/* .console supplies the sticky seam and the padding; the ground comes from the
-   card so the sticky head matches the pane it is sticking to. */
+/* .console supplies the sticky seam and the padding. */
 .mdc-head { padding-bottom: 0; background: var(--mdc-ground); }
 
-/* Square, quiet, and flat: the back control is chrome, not an action, so it
-   drops .icon-btn's raised surface and border. */
+/* Drops .icon-btn's raised surface and border. */
 .mdc-back.icon-btn {
   background: none;
   border: 0;
@@ -44,22 +35,19 @@
   font-variation-settings: "wdth" 106;
   font-weight: 600;
   font-size: var(--fs-head);
-  /* The title is the last thing on this screen that may be cut, so it wraps
-     instead of truncating — the house rule, and the reason this heading does
-     not reuse .console-title, which ellipsises. */
+  /* Wraps rather than truncating, which is why this heading does not reuse
+     .console-title. */
   overflow-wrap: anywhere;
 }
 
 .mdc-edit { flex: 0 0 auto; min-height: var(--tap); }
 
-/* Indented past the back button so the meta reads as belonging to the title
-   rather than to the control beside it. */
+/* Indented past the back button so the meta aligns with the title. */
 .mdc-meta {
   display: flex;
   align-items: center;
-  /* Wraps so the status pill drops to its own line at narrow widths rather
-     than squeezing the stamp — a squeezed stamp breaks mid-value and leaves a
-     · orphaned at the head of the next line. */
+  /* Wraps, or a squeezed timestamp breaks mid-value and orphans its · at the
+     head of the next line. */
   flex-wrap: wrap;
   gap: 5px;
   padding: 0 0 var(--s2) 52px;
@@ -80,13 +68,10 @@
   border-bottom: var(--hairline);
 }
 .mdc-sectally { font-size: 10.5px; color: var(--text-dim); }
-/* The meta line spaces its separators with flex gap; this one is inline, so
-   without a margin the section count and the char count run together and read
-   as a single figure. */
+/* This separator is inline, not a flex child, so it needs its own margin. */
 .mdc-sectally .mdc-sep { margin: 0 5px; }
 
-/* The set control, not a row control: it carries the vertical double-chevron
-   and an outline, so it cannot be mistaken for one more section row. */
+/* ── expand/collapse all ── */
 .mdc-all {
   margin-left: auto;
   display: inline-flex;
@@ -102,9 +87,7 @@
 .mdc-allglyph { display: inline-flex; transition: transform var(--t-fast); }
 .mdc-allglyph.is-open { transform: rotate(180deg); }
 
-/* The record. Unlabeled on purpose for now — provenance moved into the
-   retrieval block and this is the one element with no settled home, so it is
-   kept isolated rather than dressed up. */
+/* ── the record ── */
 .mdc-record {
   margin-top: var(--s3);
   font-size: 10.5px;

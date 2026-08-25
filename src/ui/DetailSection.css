@@ -1,6 +1,4 @@
 .dsec { margin-top: var(--s3); }
-/* the key leads, anything trailing is pushed to the far edge by the caller's
-   own margin-left:auto — this row only guarantees they share a baseline */
 .dsec-head {
   display: flex;
   align-items: center;

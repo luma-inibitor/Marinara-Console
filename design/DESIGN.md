@@ -382,6 +382,12 @@ output and pointing at things. Keeping `.chip` greppable is worth more than
 uniqueness in a codebase this size. Tailwind utilities remain available as the
 escape hatch for a one-off override.
 
+### CSS comments — four kinds, nothing else
+
+A stylesheet is not documentation. Keep only: a one-sentence file header saying what the file covers; section dividers (`/* ── rows ── */`); the derivation of a magic number (`/* centers the 15px icon in the 40px first line */`); and a gotcha — a rule whose removal or reordering silently breaks something you cannot see from the rule itself.
+
+Cut everything else. No design rationale (that is this document's job), no restating the declaration in prose, no narrative about what changed, no cross-references a reader could grep for, no em-dash asides that land a point. If a comment argues, it belongs here instead — and check that it is not already here before moving it.
+
 **Preflight is on** (`src/styles/theme.css`). Our stylesheets are unlayered and
 preflight lands in `layer(base)`, so it reaches only properties we never set.
 Its measured effect: form controls inherit our font and leading instead of the

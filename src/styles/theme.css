@@ -1,13 +1,10 @@
-/* Tailwind theme — generated from the same tokens the hand-written CSS uses.
-   design/DESIGN.md §1 stays the single source of visual truth: every value
-   below is `var(--token)`, so changing a token changes both the utilities and
-   the existing stylesheets at once. There is no second palette.
+/* Tailwind theme: every value below is a `var(--token)` from tokens.css, so
+   there is no second palette.
 
-   Preflight IS imported, into layer(base). Our four stylesheets are imported
-   unlayered, and unlayered CSS beats every layer, so preflight can only reach
-   properties we never set ourselves. Utilities win over the hand-written rules
-   by layer order, which is what you want when overriding one property on one
-   element. */
+   Layering is load-bearing. Our stylesheets are imported unlayered and
+   unlayered CSS beats every layer, so preflight (layer base) can only reach
+   properties we never set, and utilities (layer utilities) still win over the
+   hand-written rules. */
 
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
@@ -28,7 +25,7 @@
   --color-dim: var(--text-dim);
   --color-faint: var(--text-faint);
 
-  /* status — reserved meanings, see DESIGN.md §2 */
+  /* status */
   --color-ok: var(--ok);
   --color-warn: var(--warn);
   --color-danger: var(--danger);
@@ -44,7 +41,7 @@
   --color-warn-ink: var(--warn-ink);
   --color-scrim: var(--scrim);
 
-  /* categorical object-type hues — identity, not state. See DESIGN.md §1 */
+  /* categorical object-type hues */
   --color-type-character: var(--type-character);
   --color-type-relationship: var(--type-relationship);
   --color-type-timeline-event: var(--type-timeline-event);
@@ -54,9 +51,8 @@
   --color-type-neutral: var(--type-neutral);
 
   /* Self-referential ON PURPOSE, here and in the --font-* bridges below:
-     tokens.css is unlayered and beats this layer(theme) block, so tokens.css
-     supplies the value and the bridge only registers the name with Tailwind so
-     `shadow-pop` etc. generate. Moving tokens.css into a layer kills all three. */
+     unlayered tokens.css supplies the value, and the bridge only registers the
+     name so `shadow-pop` etc. generate. Layering tokens.css kills all three. */
   --shadow-pop: var(--shadow-pop);
   --shadow-panel: var(--shadow-panel);
   --shadow-modal: var(--shadow-modal);
@@ -74,7 +70,7 @@
   --text-title: var(--fs-title);
   --text-head: var(--fs-head);
 
-  /* space — the 4px grid, named as the tokens name it */
+  /* space */
   --spacing-1: var(--s1);
   --spacing-2: var(--s2);
   --spacing-3: var(--s3);
@@ -89,7 +85,7 @@
   --radius-m: var(--r-m);
   --radius-l: var(--r-l);
 
-  /* the two semantic breakpoints (DESIGN.md §7): below stack, above split */
+  /* the two semantic breakpoints (DESIGN.md §7) */
   --breakpoint-stack: 720px;
   --breakpoint-split: 900px;
 }

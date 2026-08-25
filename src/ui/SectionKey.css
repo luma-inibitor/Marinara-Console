@@ -1,6 +1,4 @@
-/* §keys are addresses: mono, text tone, never accent (DESIGN.md §1). Ligatures
-   are off because the key is a literal string the engine stores and matches —
-   the same reason keys, code and ids carry them off everywhere else. */
+/* A section key, rendered as the literal string the engine stores. */
 .skey {
   font-family: var(--font-data);
   font-size: 11.5px;

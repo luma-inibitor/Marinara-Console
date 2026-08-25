@@ -5,5 +5,4 @@
   align-items: flex-start;
   gap: 5px;
 }
-/* the icon holds its size and sits on the first line of a wrapped sentence */
 .edu svg { flex: 0 0 auto; margin-top: 2px; }
