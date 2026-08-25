@@ -90,7 +90,13 @@ icon and tone you would otherwise have to get right yourself.
               background: "var(--canvas)" }}>
   <SearchBar value={q} onInput={setQ} label="Search entries" count={rows.length} />
 
-  <ListGroup label="Characters" count={3} defaultOpen>
+  <ListGroup
+    collapsed={collapsed}
+    onToggle={() => setCollapsed(!collapsed)}
+    label="Characters"
+    count={rows.length}
+    head={<span className="t-label">Characters</span>}
+  >
     {rows.map((r) => (
       <div key={r.id} style={{ display: "flex", alignItems: "center",
                                gap: "var(--s2)", minHeight: "var(--tap)",
@@ -103,7 +109,7 @@ icon and tone you would otherwise have to get right yourself.
   </ListGroup>
 
   {rows.length === 0 && (
-    <ListEmpty kind="filtered" what="entries" onClear={() => setQ("")} />
+    <ListEmpty kind="filtered" what="entries" onClearAll={() => setQ("")} />
   )}
 </div>
 ```

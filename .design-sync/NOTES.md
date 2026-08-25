@@ -36,6 +36,24 @@ cycle and any recursive copy through it repeats the damage described below.
 `--node-modules ./node_modules` is now the repo's own — it has react since the
 port, so the separate scratch install is no longer needed.
 
+## Playwright: the cached chromium pins the playwright version
+
+The render check needs playwright + chromium. This environment ships a browser
+cache whose build is **chromium-1194**, but the repo's own `playwright` devDep
+(1.62.1) pins **chromium@1234** — launching with the repo's copy dies on
+`Executable doesn't exist at .../chromium_headless_shell-1234/...`.
+
+**playwright 1.56.0 is the release that pins 1194.** Install it into the staged
+scripts, not the repo (it must not touch the repo's lockfile):
+
+    (cd .ds-sync && npm i playwright@1.56.0)
+
+`package-validate.mjs` runs from `.ds-sync/`, so node resolves playwright there
+first and the repo's pin is untouched. Do not run `playwright install` — the
+browsers are provisioned already (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`).
+Verify a candidate release by reading its `browsers.json` rather than guessing:
+1.56.0→1194, 1.58.0→1208, 1.59.0→1217, 1.60.0→1223, 1.62.1→1234.
+
 ## Runtime
 
 The console is **React 19**. `preact` and `@preact/signals` are uninstalled, so
@@ -225,9 +243,18 @@ where a prop should be. They are still worth authoring.
   silently — the build will NOT warn.
 - **`.ds-sync/scratch/`** is a leftover preact-era node_modules and is no longer
   used — `--node-modules ./node_modules` is the repo's own now. Safe to delete.
-- **Preview authoring is incremental**: 8 of 23 are authored, the rest ship
+- **Preview authoring is incremental**: 12 of 23 are authored, the rest ship
   floor cards. Authored files live in `.design-sync/previews/` and carry
-  forward, so any re-sync can add to them without redoing the others.
+  forward, so any re-sync can add to them without redoing the others. Still on
+  floor cards: FacetDrawer, Modal, ModePill, Picker, RawJson, SearchDisclosure,
+  Sheet. (Chip, Tag, IconButton and SearchBar have no authored preview either
+  but render fine unauthored — they need no props to draw something.)
+- **`Loading` renders a different card depending on when the shot is taken.**
+  It escalates on timers: quiet line, `slow` at 3s, `stalled` at 12s. The
+  capture lands in the first phase, so the `slow` and `stalled` states are not
+  represented on the card and cannot be without a timer hook. If a future
+  capture ever runs slow enough to cross 3s, its sheet will differ from the
+  recorded one — that is the phase, not a regression.
 - **Previews do not pass `copycheck` and are not meant to.** They carry specimen
   corpus prose — the Devi Okonkwo / Harbour Ledger world the existing seven
   established — which traces to no catalog by design. Keep new previews in that
