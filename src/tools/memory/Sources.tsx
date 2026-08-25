@@ -24,7 +24,7 @@ import { refreshLtmStatus } from "./store/status";
 import { TypeIcon } from "./icons";
 import {
   blockedDrafts, chats as chatsStore, focusSource, importSource, importSources, loadChats,
-  loadSources, pendingSources, sourceErrors, sourceRows, sourcesLoading, type Chat,
+  loadSources, readySources, sourceErrors, sourceRows, sourcesLoading, type Chat,
 } from "./store/sources";
 import { scopeChatId, setScope } from "./store/scope";
 import {
@@ -57,13 +57,15 @@ const STATE_LABEL: Record<SourceState, string> = {
   extraction_incomplete: t("sourcesworkspace.extractionIncomplete"),
   source_missing: t("reviewqueue.sourceMissing"),
 };
+/** What each state means, for the tooltip under its label. The catalog names
+ *  the states but never defines them, so these are ours — see memory.statetip.* */
 const STATE_MEANING: Record<SourceState, string> = {
-  new: "not imported yet",
-  current: "the extraction matches the source",
-  source_updated: "the source text changed after extraction",
-  context_updated: "the text is unchanged; the scope or modes around it changed",
-  extraction_incomplete: "extraction finished with rejections",
-  source_missing: "the source note is gone",
+  new: t("memory.statetip.new"),
+  current: t("memory.statetip.current"),
+  source_updated: t("memory.statetip.sourceUpdated"),
+  context_updated: t("memory.statetip.contextChanged"),
+  extraction_incomplete: t("memory.statetip.extractionIncomplete"),
+  source_missing: t("memory.statetip.sourceMissing"),
 };
 
 /** New carries no mark — it is the majority state, and marking it would put a
@@ -89,7 +91,7 @@ function Spend({ n }: { n: number }) {
 }
 
 const openRow = createStore<string | null>(null);
-const railView = createStore<"pending" | "imported" | "all">("pending");
+const railView = createStore<"ready" | "imported" | "all">("ready");
 
 /** Same collapse vocabulary as the review queue: a chevron in the control
  *  column, and a collapsed group keeps its header and its count so the
@@ -124,10 +126,10 @@ export function Sources() {
     void loadChats();
   }, [chatId]);
 
-  const { pending, imported, all } = partition(rows);
-  useEffect(() => { pendingSources.set(pending.length); }, [pending.length]);
+  const { ready, imported, all } = partition(rows);
+  useEffect(() => { readySources.set(ready.length); }, [ready.length]);
 
-  const view = rail === "pending" ? pending : rail === "imported" ? imported : all;
+  const view = rail === "ready" ? ready : rail === "imported" ? imported : all;
   const byMode = modes.size === MODES.length ? view : view.filter((r) => modes.has(r.importMode));
   // fuzzy: source titles are long and repetitive, and "hh" should find
   // "Harbour Household" without the reviewer typing the whole thing
@@ -175,7 +177,7 @@ export function Sources() {
           })} />
         </div>
         <div className="qrail">
-          <RailChip id="pending" label={t("memory.sourcesPending")} n={pending.length} />
+          <RailChip id="ready" label={t("sourcesworkspace.readyToImport")} n={ready.length} />
           <RailChip id="imported" label={t("sourcesworkspace.alreadyImported")} n={imported.length} />
           <RailChip id="all" label={t("sourcesworkspace.all")} n={all.length} />
           {blocked.length > 0 && (
@@ -268,7 +270,7 @@ export function Sources() {
   );
 }
 
-function RailChip({ id, label, n }: { id: "pending" | "imported" | "all"; label: string; n: number }) {
+function RailChip({ id, label, n }: { id: "ready" | "imported" | "all"; label: string; n: number }) {
   const rail = useStore(railView);
   return (
     <button className="qchip hit" aria-pressed={rail === id} onClick={() => { railView.set(id); }}>
@@ -579,7 +581,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
 
 // ── nothing to show, and why ────────────────────────────────────────
 function SourcesEmpty({ q, rows, view, chats }: {
-  q: string; rows: SourceRow[]; view: "pending" | "imported" | "all"; chats: Chat[];
+  q: string; rows: SourceRow[]; view: "ready" | "imported" | "all"; chats: Chat[];
 }) {
   const chatId = useStore(scopeChatId);
   const scoped = Boolean(chatId);
@@ -616,13 +618,13 @@ function SourcesEmpty({ q, rows, view, chats }: {
     <EmptyState
       tone="ok"
       icon={<AllClear size={22} stroke={1.75} aria-hidden />}
-      title={view === "pending"
+      title={view === "ready"
         ? t("sourcesworkspace.noNewOrRetryableSourcesAreReadyToImport")
         : t("sourcesworkspace.noSourcesHaveBeenImportedInThisScope")}
-      body={view === "pending"
-        ? t("memory.sources.emptyPendingBody")
+      body={view === "ready"
+        ? t("memory.sources.emptyReadyBody")
         : t("memory.sources.emptyImportedBody")}
-      actions={view === "pending" && (
+      actions={view === "ready" && (
         <button className="dock-primary t-label" onClick={() => navigate("memory/review")}>
           {t("longtermmemorydetail.openReviewQueue")}
         </button>

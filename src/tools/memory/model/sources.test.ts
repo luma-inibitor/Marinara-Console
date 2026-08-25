@@ -4,8 +4,8 @@
 // vault notes).
 //
 // The two predicates draw different lines through the same six states, and the
-// boundary between them is what the rail and the checkbox column both depend
-// on — so every state is pinned against both. The title parsing is pinned per
+// rail's "Ready to import" view rides on one of them, so every state is pinned
+// against both and again against the rail. The title parsing is pinned per
 // kind because the lorebook split is positional and a stray colon moves it.
 //
 // These tests pin CURRENT behavior, not desired behavior; where the two look
@@ -451,30 +451,61 @@ describe("buildSources — joining the note, its memories and its queue", () => 
 });
 
 describe("partition", () => {
-  it("puts `new` on the pending side and everything else on the imported side", () => {
+  // Every state is named individually rather than derived from a predicate, so
+  // a state added upstream has to be placed here by hand instead of falling
+  // into or out of the rail on whatever the default branch happens to be.
+  it.each([
+    ["new", true, false], // never imported — the whole of the old `pending`
+    ["current", false, true], // settled: nothing to import, nothing to re-extract
+    ["source_updated", true, true], // imported AND ready: the two sides overlap here
+    ["context_updated", true, true],
+    ["extraction_incomplete", true, true],
+    ["source_missing", false, true], // imported, but there is nothing left to read
+  ] as Array<[SourceState, boolean, boolean]>)(
+    "%s is ready=%s imported=%s",
+    (state, ready, imported) => {
+      const p = partition([row({ sourceId: state, state })]);
+      expect(p.ready).toHaveLength(ready ? 1 : 0);
+      expect(p.imported).toHaveLength(imported ? 1 : 0);
+    });
+
+  it("covers every state the model declares", () => {
+    // Guards the table above: a seventh state would otherwise be untested.
+    expect(STATES).toHaveLength(6);
+  });
+
+  it("lists a source under `ready` exactly when it is selectable", () => {
+    // The rail and the checkbox column must never disagree about which sources
+    // can be acted on, which is why both read the one predicate.
     const rows = STATES.map((state) => row({ sourceId: state, state }));
-    const { pending, imported } = partition(rows);
-    expect(pending.map((r) => r.state)).toEqual(["new"]);
-    expect(imported.map((r) => r.state)).toEqual(STATES.filter((s) => s !== "new"));
+    expect(partition(rows).ready).toEqual(rows.filter(isSelectable));
   });
 
-  it("lands every row in exactly one side — the totals reconcile", () => {
+  it("puts a re-extractable source in both `ready` and `imported`", () => {
+    // These are filters, not a partition. The counts overlap on purpose and
+    // must never be shown as if they summed to `all`.
+    const r = row({ sourceId: "a", state: "source_updated" });
+    const { ready, imported, all } = partition([r]);
+    expect(ready).toEqual([r]);
+    expect(imported).toEqual([r]);
+    expect(ready.length + imported.length).toBeGreaterThan(all.length);
+  });
+
+  it("leaves every row reachable from some view", () => {
     const rows = [...STATES, ...STATES].map((state, i) => row({ sourceId: `s${i}`, state }));
-    const { pending, imported, all } = partition(rows);
-    expect(pending.length + imported.length).toBe(rows.length);
+    const { ready, imported, all } = partition(rows);
     expect(all).toHaveLength(rows.length);
-    const ids = [...pending, ...imported].map((r) => r.sourceId).sort();
-    expect(ids).toEqual(rows.map((r) => r.sourceId).sort());
-    expect(pending.some((p) => imported.includes(p))).toBe(false);
+    const seen = new Set([...ready, ...imported].map((r) => r.sourceId));
+    expect([...seen].sort()).toEqual(rows.map((r) => r.sourceId).sort());
   });
 
-  it("keeps input order within each side", () => {
+  it("keeps input order within each view", () => {
     const a = row({ sourceId: "a", state: "new" });
     const b = row({ sourceId: "b", state: "current" });
-    const c = row({ sourceId: "c", state: "new" });
-    const { pending, imported } = partition([a, b, c]);
-    expect(pending.map((r) => r.sourceId)).toEqual(["a", "c"]);
-    expect(imported.map((r) => r.sourceId)).toEqual(["b"]);
+    const c = row({ sourceId: "c", state: "source_updated" });
+    const { ready, imported } = partition([a, b, c]);
+    expect(ready.map((r) => r.sourceId)).toEqual(["a", "c"]);
+    expect(imported.map((r) => r.sourceId)).toEqual(["b", "c"]);
   });
 
   it("returns the caller's own array as `all`", () => {
@@ -483,6 +514,6 @@ describe("partition", () => {
   });
 
   it("returns three empties for no rows", () => {
-    expect(partition([])).toEqual({ pending: [], imported: [], all: [] });
+    expect(partition([])).toEqual({ ready: [], imported: [], all: [] });
   });
 });

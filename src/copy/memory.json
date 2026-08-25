@@ -88,9 +88,29 @@
     "text": "Activity",
     "note": "Navigation label. The catalog has an activityview namespace but no label for the view — upstream reaches it from a menu the console does not have. One word, per the memory.nav.vault rule."
   },
-  "memory.sourcesPending": {
-    "text": "Pending",
-    "note": "Sources not yet imported; the catalog counts them but never labels the set. The Sources screen's state vocabulary is otherwise the product's (New / Already imported / Update available / Context changed / Extraction incomplete)."
+  "memory.statetip.new": {
+    "text": "the source has not been imported yet",
+    "note": "Tooltip definition of the source state \"New\", in the memory.typetip.source shape — the catalog labels every source state but defines none of them, so all six meanings are ours."
+  },
+  "memory.statetip.current": {
+    "text": "the extraction matches the source",
+    "note": "Tooltip definition of \"Current\". The catalog's sourcesworkspace.current is the bare label; the engine computes the state by comparing the source hash and extraction settings against the recorded fingerprint, which is what this says in words."
+  },
+  "memory.statetip.sourceUpdated": {
+    "text": "the source text changed after extraction",
+    "note": "Tooltip definition of \"Update available\", naming which of the two inputs moved. The catalog's memoryvault.savedButRecallIsStale is the nearest sentence and is about the index, not the source."
+  },
+  "memory.statetip.contextChanged": {
+    "text": "the text is unchanged; the scope or modes around it changed",
+    "note": "Tooltip definition of \"Context changed\", and the sentence that separates it from Update available — the two states are told apart only by which input moved, which no catalog string says."
+  },
+  "memory.statetip.extractionIncomplete": {
+    "text": "the source was imported, but its extraction never finished",
+    "note": "Tooltip definition of \"Extraction incomplete\". The catalog's sourcesworkspace.extractionDidNotFinish says the same in the label voice; this is the clause form, and it keeps the first half, because the state exists only on a source that HAS been imported and readers took the mark to mean the import failed."
+  },
+  "memory.statetip.sourceMissing": {
+    "text": "the source note is gone",
+    "note": "Tooltip definition of \"Source missing\". The catalog's reviewqueue.sourceMissing labels it and sourcesworkspace.missingSourceMemory is an action button; neither says what the condition is."
   },
   "memory.sourcesBlocked": {
     "text": "Blocked",
@@ -817,13 +837,13 @@
     "text": "Widening the import scope will show sources from other chats.",
     "note": "Body under the catalog's noLorebooksAreAvailableInThisScope, naming the way out. The catalog states the condition and stops; it never tells the reader that the scope is the thing to change."
   },
-  "memory.sources.emptyPendingBody": {
-    "text": "New chat summaries will appear here as they are written.",
-    "note": "Body of the cleared-backlog empty state, saying why the screen will fill again. The catalog's empty states describe the present only."
+  "memory.sources.emptyReadyBody": {
+    "text": "New chat summaries appear here as they are written. An imported source returns when its text or scope changes.",
+    "note": "Body of the cleared-backlog empty state, saying why the screen will fill again. The second sentence is what makes the wider Ready to import view honest: it also refills from sources already imported, which the catalog's empty states never describe because upstream this view holds only new ones."
   },
   "memory.sources.emptyImportedBody": {
     "text": "Import a source to see it here.",
-    "note": "Body under the catalog's noSourcesHaveBeenImportedInThisScope, naming the action that fills the view. Same gap as memory.sources.emptyPendingBody."
+    "note": "Body under the catalog's noSourcesHaveBeenImportedInThisScope, naming the action that fills the view. Same gap as memory.sources.emptyReadyBody."
   },
   "memory.sources.extractionTextHelp": {
     "text": "This is the text the extractor will read. Editing it does not change the chat's own summary.",
