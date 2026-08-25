@@ -56,10 +56,9 @@ export const pendingSources = createStore<number | null>(null);
  *
  *  `fetchReview` is the review queue's record, not this workspace's, and the
  *  owner of it is `store/review.ts`. Its `refresh()` is not reusable here: it
- *  also consumes the `mc-ltm-focus-source` handoff key that THIS screen writes
- *  on its way to the queue, overwrites `notesById`, and prunes the decision
- *  ledger. Sharing the record properly needs a side-effect-free `ensureReview`
- *  on that module. */
+ *  also consumes the focus handoff below, overwrites `notesById`, and prunes
+ *  the decision ledger. Sharing the record properly needs a side-effect-free
+ *  `ensureReview` on that module. */
 export async function loadSources(): Promise<void> {
   sourcesLoading.set(true);
   const next = new Map<SourceKind, ImportPreview>();
@@ -121,4 +120,20 @@ export async function importSources(batch: SourceRow[], hooks: {
     }
   }
   return { results, stopped: false };
+}
+
+// Sources → Review handoff, so neither screen imports the other. In memory,
+// not sessionStorage: a key that outlived a reload would re-filter the queue.
+let pendingFocus: string | null = null;
+
+/** Arm the queue to land pre-filtered to one source note. */
+export function focusSource(sourceNoteId: string) {
+  pendingFocus = sourceNoteId;
+}
+
+/** Take the armed source note id, if any, and disarm. */
+export function consumeFocusSource(): string | null {
+  const id = pendingFocus;
+  pendingFocus = null;
+  return id;
 }

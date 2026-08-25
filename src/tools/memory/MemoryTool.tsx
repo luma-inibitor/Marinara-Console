@@ -23,17 +23,6 @@ import { useScope, useScopeData } from "./store/scope";
 import { rebuildIndexes, rebuilding, refreshLtmStatus, status, statusFailed } from "./store/status";
 import { useStore } from "../../lib/store";
 
-/** Sources → Review handoff: land on the queue pre-filtered to one source. */
-let pendingFocusSource: string | null = null;
-export function focusSource(sourceNoteId: string) {
-  pendingFocusSource = sourceNoteId;
-}
-function consumeFocusSource(): string | null {
-  const v = pendingFocusSource;
-  pendingFocusSource = null;
-  return v;
-}
-
 // One-word labels, so the targets fit a phone without truncating. The order is
 // the workflow: material arrives in Sources, gets decided in Review, and lands
 // in the Vault. Review is the default landing view because it is the work.
@@ -60,16 +49,6 @@ export function MemoryTool({ rest }: { rest: string[] }) {
     [loadedNotes, scope.characterId, scope.chatId]);
 
   useEffect(() => { void refreshLtmStatus(); }, [view]);
-
-  // Consume a pending source focus when entering review.
-  useEffect(() => {
-    if (view !== "review") return;
-    const src = consumeFocusSource();
-    if (!src) return;
-    // The review store facets by source *title*; store the id and let the
-    // review refresh resolve it — a title may not be loaded yet.
-    sessionStorage.setItem("mc-ltm-focus-source", src);
-  }, [view]);
 
   const health = s?.indexes.health;
   const unhealthy = Boolean(s && health !== "healthy" && health !== "not_built");

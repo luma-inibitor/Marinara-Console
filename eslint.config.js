@@ -54,10 +54,4 @@ export default [
     files: ["src/shell/**"],
     rules: { "no-restricted-globals": "off" },
   },
-  {
-    // MemoryTool.tsx and Sources.tsx import each other. Queued for untangling;
-    // no other file may be added here.
-    files: ["src/tools/memory/MemoryTool.tsx", "src/tools/memory/Sources.tsx"],
-    rules: { "import/no-cycle": "off" },
-  },
 ];
