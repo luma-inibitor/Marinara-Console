@@ -10,6 +10,8 @@ behind it is vendored at `design/research/`.
 
 ## Run
 
+Use the Node version in `.nvmrc`, and switch to it before installing.
+
 ```sh
 npm install
 npm run build

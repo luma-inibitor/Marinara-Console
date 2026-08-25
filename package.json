@@ -14,6 +14,9 @@
     "layercheck": "node scripts/layercheck.mjs",
     "lint": "eslint src"
   },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
