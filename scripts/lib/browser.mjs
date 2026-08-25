@@ -43,8 +43,12 @@ export function launch(options = {}) {
 // here instead names the real cause. The re-navigation is not a retry for a
 // flaky app: a fresh index.html is what makes Vite re-emit the module graph
 // with current timestamps, and it is the only way out of a poisoned one.
-export async function openPage(browser, { viewport, hash = "", url = DEV_URL + hash, settle = 0, timeout = 60000 }) {
-  const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+//
+// `context` carries extra browser-context options. `onPage` runs before the
+// first navigation, so a caller can subscribe to load-time page errors.
+export async function openPage(browser, { viewport, hash = "", url = DEV_URL + hash, settle = 0, timeout = 60000, context = {}, onPage }) {
+  const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height }, ...context });
+  onPage?.(page);
   let refused = new Set();
   page.on("requestfailed", (r) => { if (r.url().startsWith(DEV_URL)) refused.add(`${r.url()} ${r.failure()?.errorText ?? "failed"}`); });
   page.on("response", (r) => { if (r.status() >= 400 && r.url().startsWith(DEV_URL)) refused.add(`${r.url()} HTTP ${r.status()}`); });

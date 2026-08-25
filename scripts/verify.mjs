@@ -5,7 +5,7 @@
 // overflow (fail), rows-per-screen (report), keyboard walk (desktop, fail if
 // list navigation is dead). Screenshots into shots/verify/.
 // Read-only: navigates and presses j/k only — never types into fields.
-import { launch, ALL_VIEWPORTS } from "./lib/browser.mjs";
+import { launch, openPage, ALL_VIEWPORTS } from "./lib/browser.mjs";
 import { mkdirSync } from "node:fs";
 
 // This check drives a served build, not the dev server, so it takes its origin
@@ -22,10 +22,10 @@ const TOUCH = new Set(["narrow", "phone", "tablet"]);
 // honored solely for elements matching an entry here, and every entry states
 // why the ink may sit below §1's floor; an element carrying the attribute with
 // no entry is measured like any other. A selector may name a pseudo-element.
+// An aria-hidden element needs no entry; the contrast pass skips it.
 const CONTRAST_EXEMPTIONS = [
   [".sep", "separator glyph between meta fields; punctuation, no information"],
   [".mdc-sep", "separator glyph between meta fields; punctuation, no information"],
-  [".scopesep", "aria-hidden breadcrumb chevron; the scope names carry the meaning"],
   [".meta > * + *::before", "separator glyph between meta fields; punctuation, no information"],
   ["[data-brand]", "logotype; WCAG 1.4.3 exempts brand wordmarks from contrast"],
 ];
@@ -43,21 +43,84 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) return false;
     const s = getComputedStyle(el);
-    return s.visibility !== "hidden" && s.display !== "none";
+    // Opacity does not inherit into a computed style, so ancestors are walked.
+    if (s.visibility === "hidden" || s.display === "none" || s.opacity === "0") return false;
+    for (let p = el.parentElement; p && p !== document.documentElement; p = p.parentElement) {
+      if (getComputedStyle(p).opacity === "0") return false;
+    }
+    return true;
+  };
+  // The rect an element really occupies on screen, or null if an ancestor's
+  // overflow leaves nothing of it. auto and scroll hide by scroll position, so a
+  // half-scrolled element keeps its full rect and only one scrolled entirely
+  // away is dropped. hidden and clip remove the area, so the rect shrinks.
+  const clipTo = (el, r) => {
+    const box = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    let l = r.left, t = r.top, rt = r.right, b = r.bottom; // what is on screen now
+    // A positioned box escapes ancestors outside its containing block chain:
+    // fixed escapes all of them, absolute until the first positioned ancestor.
+    let escaping = getComputedStyle(el).position;
+    if (escaping === "fixed") return box;
+    for (let p = el.parentElement; p && p !== document.documentElement; p = p.parentElement) {
+      const s = getComputedStyle(p);
+      const clipsX = s.overflowX !== "visible", clipsY = s.overflowY !== "visible";
+      if ((clipsX || clipsY) && escaping !== "absolute") {
+        // overflow clips to the padding box, so the borders come off the rect.
+        const c = p.getBoundingClientRect();
+        const edge = { left: c.left + parseFloat(s.borderLeftWidth), top: c.top + parseFloat(s.borderTopWidth),
+          right: c.right - parseFloat(s.borderRightWidth), bottom: c.bottom - parseFloat(s.borderBottomWidth) };
+        if (clipsX) {
+          l = Math.max(l, edge.left); rt = Math.min(rt, edge.right);
+          if (s.overflowX === "hidden" || s.overflowX === "clip") {
+            box.left = Math.max(box.left, edge.left); box.right = Math.min(box.right, edge.right);
+          }
+        }
+        if (clipsY) {
+          t = Math.max(t, edge.top); b = Math.min(b, edge.bottom);
+          if (s.overflowY === "hidden" || s.overflowY === "clip") {
+            box.top = Math.max(box.top, edge.top); box.bottom = Math.min(box.bottom, edge.bottom);
+          }
+        }
+        if (rt <= l || b <= t) return null;
+      }
+      if (s.position !== "static") escaping = "static";
+      if (s.position === "fixed") break;
+    }
+    return box;
+  };
+  const onScreen = (el) => vis(el) && !!clipTo(el, el.getBoundingClientRect());
+  // .hit (base.css) pads a control's hit area with a positioned ::after. The pad
+  // is read off the pseudo's own box, and clipTo can still take it back off.
+  const padBox = (el, r) => {
+    const s = getComputedStyle(el, "::after");
+    if (s.position !== "absolute" || s.content === "none") return null;
+    const cs = getComputedStyle(el);
+    const x = r.left + parseFloat(cs.borderLeftWidth) + parseFloat(s.left);
+    const y = r.top + parseFloat(cs.borderTopWidth) + parseFloat(s.top);
+    const w = parseFloat(s.width), h = parseFloat(s.height);
+    if (![x, y, w, h].every(Number.isFinite)) return null;
+    return { left: Math.min(r.left, x), top: Math.min(r.top, y), right: Math.max(r.right, x + w), bottom: Math.max(r.bottom, y + h) };
   };
   const label = (el) => (el.getAttribute("aria-label") || el.textContent || el.tagName).trim().slice(0, 40);
+  // Nearest fixed ancestor. Targets on different layers are never reached by the
+  // same tap, so the distance between them is not a clearance.
+  const layerOf = (el) => {
+    for (let p = el; p && p !== document.documentElement; p = p.parentElement) {
+      if (getComputedStyle(p).position === "fixed") return p;
+    }
+    return null;
+  };
 
   // tap targets
   const targets = [];
   for (const el of document.querySelectorAll("button, a, input, select, [role=button]")) {
     if (!vis(el) || el.closest("[data-verify-exempt]")) continue;
-    // .hit (base.css) pads a control's hit area out to --tap with a positioned
-    // ::after, by construction — the visual box stays small on purpose. Reading
-    // the box would fail every one of them for a target that is really 44px.
-    if (el.classList.contains("hit")) continue;
     // A wrapping <label> forwards its clicks, so the label is the target.
     const host = (el.matches("input, select, textarea") && el.closest("label")) || el;
-    targets.push({ el, r: host.getBoundingClientRect(), group: el.closest("[role=group]") });
+    const raw = host.getBoundingClientRect();
+    const r = clipTo(host, (host.classList.contains("hit") && padBox(host, raw)) || raw);
+    if (!r) continue;
+    targets.push({ el, r: { ...r, width: r.right - r.left, height: r.bottom - r.top }, group: el.closest("[role=group]"), layer: layerOf(el) });
   }
   // Edge-to-edge distance to the nearest other target. Two members of one
   // [role=group] are segments of one control. A cross-<nav> pair reflects
@@ -69,6 +132,7 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
       if (b === a || a.el.contains(b.el) || b.el.contains(a.el)) continue;
       if (a.group && a.group === b.group) continue;
       if (aNav !== !!b.el.closest("nav")) continue;
+      if (a.layer !== b.layer) continue;
       const dx = Math.max(0, a.r.left - b.r.right, b.r.left - a.r.right);
       const dy = Math.max(0, a.r.top - b.r.bottom, b.r.top - a.r.bottom);
       best = Math.min(best, Math.hypot(dx, dy));
@@ -96,10 +160,28 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
     const f = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
     return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
   };
+  // A computed color can be rgb(), color(srgb …) or color-mix(). Painting a
+  // pixel has the browser resolve any of them. The sentinel catches a value it
+  // cannot parse, which leaves the previous fillStyle in place.
+  const ink = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+  const colors = new Map();
   const parse = (s) => {
-    const m = s.match(/rgba?\\(([\\d.]+), ?([\\d.]+), ?([\\d.]+)(?:, ?([\\d.]+))?\\)/);
-    return m ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : +m[4] } : null;
+    if (!s) return null;
+    if (colors.has(s)) return colors.get(s);
+    let v = null;
+    ink.fillStyle = "#010203";
+    ink.fillStyle = s;
+    if (ink.fillStyle !== "#010203" || s.trim() === "#010203") {
+      ink.clearRect(0, 0, 1, 1);
+      ink.fillRect(0, 0, 1, 1);
+      const d = ink.getImageData(0, 0, 1, 1).data;
+      v = { r: d[0], g: d[1], b: d[2], a: d[3] / 255 };
+    }
+    colors.set(s, v);
+    return v;
   };
+  // The node carrying the background comes back with it. Opacity at or above
+  // that node dims text and background together, so measure() stops there.
   const bgOf = (el) => {
     let node = el, acc = null;
     while (node && node !== document.documentElement) {
@@ -107,19 +189,24 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
       if (c && c.a > 0) {
         if (!acc) acc = { ...c };
         else { const a = acc.a; acc.r = acc.r * a + c.r * (1 - a); acc.g = acc.g * a + c.g * (1 - a); acc.b = acc.b * a + c.b * (1 - a); acc.a = a + c.a * (1 - a); }
-        if (acc.a >= 0.99) return acc;
+        if (acc.a >= 0.99) return { ...acc, node };
       }
       node = node.parentElement;
     }
     const root = parse(getComputedStyle(document.body).backgroundColor);
-    return acc ?? root ?? { r: 11, g: 13, b: 18, a: 1 };
+    return { ...(acc ?? root ?? { r: 11, g: 13, b: 18, a: 1 }), node: document.body };
   };
   const exempt = (el, pseudo) => exemptions.some((e) => e.pseudo === pseudo && el.matches(e.sel));
   const seen = new Set();
   const measure = (el, pseudo, text) => {
     const s = getComputedStyle(el, pseudo);
-    const fg = parse(s.color); if (!fg) return;
+    const raw = parse(s.color); if (!raw) return;
     const bg = bgOf(el);
+    // Ink composites over its background at its own alpha times every opacity
+    // between the two.
+    let a = raw.a;
+    for (let n = el; n && n !== bg.node && n !== document.documentElement; n = n.parentElement) a *= parseFloat(getComputedStyle(n).opacity);
+    const fg = { r: raw.r * a + bg.r * (1 - a), g: raw.g * a + bg.g * (1 - a), b: raw.b * a + bg.b * (1 - a) };
     const L1 = lum(fg.r, fg.g, fg.b), L2 = lum(bg.r, bg.g, bg.b);
     const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
     const px = parseFloat(s.fontSize);
@@ -132,7 +219,9 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
     out.contrast.push({ ratio: Math.round(ratio * 100) / 100, floor, px, text: (pseudo ?? "") + text.slice(0, 40) });
   };
   for (const el of document.querySelectorAll("body *")) {
-    if (!vis(el) || el.closest("[data-verify-exempt]")) continue;
+    if (!onScreen(el) || el.closest("[data-verify-exempt]")) continue;
+    // Markup that hides text from assistive readers is calling it decoration.
+    if (el.closest("[aria-hidden=true]")) continue;
     if (el.hasAttribute("data-contrast-exempt") && !exempt(el, null)) out.unjustifiedExempt++;
     const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent.trim()).join("");
     if (text && !exempt(el, null)) measure(el, null, text);
@@ -148,7 +237,7 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
   }
 
   // density: fully-visible collapsed rows, per the screen's own row selector.
-  // rowsMatched counts every visible row anywhere in the document, so a screen
+  // rowsMatched counts every laid-out row anywhere in the document, so a screen
   // whose selector matches nothing at all can be told apart from one whose rows
   // are simply taller than the viewport.
   if (rowSel) {
@@ -157,7 +246,7 @@ const AUDITS = `((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {
       if (el.parentElement?.closest(rowSel)) continue; // never count a nested row twice
       out.rowsMatched++;
       const r = el.getBoundingClientRect();
-      if (r.top >= 0 && r.bottom <= innerHeight) out.rows++;
+      if (r.top >= 0 && r.bottom <= innerHeight && clipTo(el, r)) out.rows++;
     }
     // "legitimately empty" means the list itself is empty — not the detail pane,
     // which shows its own empty state beside a full list on desktop.
@@ -219,17 +308,28 @@ const AUDIT_ARGS = (screen) => [screen.rows ?? null, EXEMPT_ARG, TAP_PRIMARY, TA
 let failures = 0, warnings = 0, blind = 0;
 for (const vp of ALL_VIEWPORTS) {
   const mobile = TOUCH.has(vp.name);
-  const ctx = await browser.newContext({
-    viewport: { width: vp.width, height: vp.height },
-    deviceScaleFactor: 2, isMobile: mobile, hasTouch: mobile,
-  });
-  const page = await ctx.newPage();
   const errors = [];
-  page.on("pageerror", (e) => errors.push(String(e.message)));
-  page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") errors.push(`${m.type()}: ${m.text()}`); });
+  // openPage waits for the app to mount and for fonts, which move text metrics.
+  const open = (url) => openPage(browser, {
+    viewport: vp,
+    url,
+    context: { deviceScaleFactor: 2, isMobile: mobile, hasTouch: mobile },
+    onPage: (p) => {
+      p.on("pageerror", (e) => errors.push(String(e.message)));
+      p.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") errors.push(`${m.type()}: ${m.text()}`); });
+    },
+  });
 
   for (const screen of SCREENS) {
-    await page.goto(URL + screen.path, { waitUntil: "networkidle" });
+    let page;
+    try {
+      page = await open(URL + screen.path);
+    } catch (e) {
+      failures++;
+      console.log(`FAIL ${vp.name}/${screen.name} — ${String(e.message).split("\n")[0]}`);
+      errors.length = 0;
+      continue;
+    }
     await page.waitForSelector(screen.waitFor, { timeout: 15000 }).catch(() => errors.push(`${screen.name}: ${screen.waitFor} never appeared`));
     await page.waitForTimeout(400);
     await page.screenshot({ path: `shots/verify/${vp.name}-${screen.name}.png` });
@@ -276,11 +376,12 @@ for (const vp of ALL_VIEWPORTS) {
       }
     }
     console.log(`ok   ${tag}${density}${softTaps.length ? ` · ${softTaps.length} spaced secondary targets ${TAP_SECONDARY}–${TAP_PRIMARY - 1}px (warn)` : ""}`);
+    await page.close();
   }
 
   // command palette check (desktop)
   if (!mobile) {
-    await page.goto(URL + "/", { waitUntil: "networkidle" });
+    const page = await open(URL + "/");
     await page.keyboard.press("ControlOrMeta+k");
     const seen = await page.waitForSelector(".palette-input", { timeout: 3000 }).catch(() => null);
     if (!seen) { failures++; console.log(`FAIL ${vp.name} — Cmd-K did not open the palette`); }
@@ -292,19 +393,21 @@ for (const vp of ALL_VIEWPORTS) {
       if (!hash.includes("presets")) { failures++; console.log(`FAIL ${vp.name} — palette Enter did not navigate (hash=${hash})`); }
       else console.log(`ok   ${vp.name}/palette — Cmd-K opens, search + Enter navigates`);
     }
+    await page.close();
     // g-sequence navigation
-    await page.goto(URL + "/#/lorebooks", { waitUntil: "networkidle" });
-    await page.keyboard.press("g");
-    await page.keyboard.press("p");
-    await page.waitForTimeout(400);
-    const gHash = await page.evaluate(() => location.hash);
+    const gPage = await open(URL + "/#/lorebooks");
+    await gPage.keyboard.press("g");
+    await gPage.keyboard.press("p");
+    await gPage.waitForTimeout(400);
+    const gHash = await gPage.evaluate(() => location.hash);
     if (!gHash.includes("presets")) { failures++; console.log(`FAIL ${vp.name} — g p did not navigate (hash=${gHash})`); }
     else console.log(`ok   ${vp.name}/hotkeys — g p navigates to presets`);
+    await gPage.close();
   }
 
   // keyboard walk on desktop audit screen
   if (!mobile && bookId) {
-    await page.goto(`${URL}/#/lorebooks/${bookId}`, { waitUntil: "networkidle" });
+    const page = await open(`${URL}/#/lorebooks/${bookId}`);
     await page.waitForSelector(".row");
     await page.click(".row .row-summary");
     const before = await page.evaluate(() => document.activeElement?.getAttribute("data-row"));
@@ -314,8 +417,8 @@ for (const vp of ALL_VIEWPORTS) {
     const after = await page.evaluate(() => document.activeElement?.getAttribute("data-row"));
     if (!after || after === before) { failures++; console.log(`FAIL ${vp.name} — j/k list navigation did not move focus`); }
     else console.log(`ok   ${vp.name}/keyboard — j/k moves row focus`);
+    await page.close();
   }
-  await ctx.close();
 }
 
 await browser.close();

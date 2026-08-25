@@ -383,11 +383,35 @@ owner decision after explanation.
 - **Re-extract on the blocked-drafts card costs real model calls** on a live
   instance (44 sources × extraction). Needs a cost-aware confirm naming the
   count and connection before firing.
-- **16 tap-target failures** from verify.mjs, four screens × four viewports.
-  Under §2's 44px floor and too tightly spaced to count as secondary: review rows `.mem-mid` 35px at 6.1px, preset-editor `.row-summary` 39px at 1px, the book audit's Test segment 42px at 7px, and the memory detail card's `.notelink` 24px and section actions 34px at 0–2.5px. Row height on the first two is a density tradeoff awaiting Luma's call.
-- **767 soft tap-target warnings** from verify.mjs (24–43px secondary targets,
+- **9 tap-target failures** from verify.mjs, re-derived after the checker was
+  repaired (clipping, `.hit` measurement, layer-aware clearance, `color-mix`
+  parsing, opacity, `fonts.ready`). Under §2's primary floor and too tightly
+  spaced to count as secondary:
+  - review rows `.mem-mid` 35px at 6.1px, all four viewports.
+  - preset-editor `.row-summary` 39px at 1px, all four viewports. Row height on
+    both is a density tradeoff awaiting Luma's call.
+  - **NEW — ModePill's interactive segments are 42px, 2px from a neighbour**
+    (Sources at 390px). `.mseg` carries `.hit`, but `.modepill` sets
+    `overflow: hidden`, which clips the 44px `::after` pad back to the pill's
+    42px padding box. The pad has never done anything on this control; the check
+    used to take it on faith and skip the segment. Fixing it means either
+    dropping the pill's `overflow: hidden` or sizing the segment itself.
+  - The memory-detail sort chips are no longer among these: they sit scrolled
+    off the end of `.chiprail` and were being measured against whatever their
+    unclipped rect landed on.
+- **213 soft tap-target warnings** from verify.mjs (24–43px secondary targets,
   correctly spaced). Within DESIGN's secondary floor, but worth one pass — the
-  chip rail and tri rail dominate the count.
+  chip rail and tri rail dominate the count. The old 767 counted controls that
+  were scrolled out of view.
+- **`ScopeBar.tsx`'s `data-contrast-exempt` is now redundant.** verify skips
+  every `aria-hidden` element, which is what that attribute and the `.scopesep`
+  exemption were arranging by hand. The `.sep` / `.mdc-sep` / `.meta::before`
+  separators are *not* aria-hidden, so those three entries stay; making them
+  aria-hidden in the markup would retire them too.
+- **verify.mjs still measures what an overlay covers.** Contrast and the density
+  numerator read elements sitting under a fixed `.stack-screen`, which a reader
+  cannot see. Clearance no longer pairs across that boundary, but the ink and
+  row counts do not know about it. No current finding depends on it.
 - **Mobile device pass on the port** — the prototype's mobile feedback round
   (bottom bar flush, facet fit, sticky toolbar) is believed carried, but only
   screenshot-verified at 390px headless, not on the phone.
