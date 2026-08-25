@@ -1,8 +1,8 @@
 # Owner review checklist — DRAFT, awaiting Luma's review
 
 **Status: PROPOSED. Do not treat as canon until Luma has reviewed each item.**
-This distills Luma's UI/UX feedback (2026-08-21 sessions) into checkable
-invariants so automated reviewers can catch regressions and repeat offenses.
+This distills Luma's UI/UX feedback into checkable invariants so automated
+reviewers can catch regressions and repeat offenses.
 Each item carries: the invariant, how a reviewer checks it, and the feedback
 it came from. Corrections belong in this file, not in reviewers' heads.
 
@@ -18,7 +18,7 @@ never restates.
   elements across sibling rows. Absent ≠ reflow: reserve the slot or anchor
   conditionals at line end. *Check: render sibling rows with and without
   optional elements; assert shared fields align column-wise.* (Group-header
-  feedback, 3:21 PM.)
+  feedback.)
 - **L2 · Titles get the full row width, then truncate.**
   A long title must not be squeezed into a narrow column beside chips.
   *Check: render with a 30+ char title; assert one line, ellipsised, and no
@@ -26,21 +26,20 @@ never restates.
 - **L3 · Bars sit flush with their viewport edge.** No stale offsets
   reserving space for chrome that is not there; safe-area padded. *Check:
   bottom bar's bottom == viewport bottom (or the visible dock top).*
-  (Prototype mobile round 1.)
+  (Prototype mobile.)
 - **L4 · Bars flow as info-line-then-actions.** Status text gets its own
   line/region; buttons form a clean wrapping row with non-wrapping labels.
-  (Round 1.)
 - **L5 · Control rows (filter/group/sort) are sticky** under the header on
-  scrollable lists. (Round 1.)
+  scrollable lists.
 - **L6 · Sticky layers may not reveal content through seams** while
   scrolling on device — guard strips/overlap required; verify on real
-  Android, not only headless. (3:21 PM sticky-gap report.)
+  Android, not only headless. (Sticky-gap report.)
 - **L7 · Equal control heights within an action row**; exactly one filled
   primary per row. *Check: measure button heights in every .group-actions /
-  dock; assert equal; count primary-styled ≤1.* (Vault editor 3:03 PM.)
+  dock; assert equal; count primary-styled ≤1.* (Vault editor.)
 - **L8 · Full option visibility for small enums.** An enum with ≤5 values
   the user can change renders as a one-tap segmented control showing every
-  state — not a dropdown. (Status feedback 3:03 PM; DESIGN §5 segmented.)
+  state — not a dropdown. (Status feedback; DESIGN §5 segmented.)
 - **L9 · Mode eligibility renders as the fixed three-segment pill**
   (conversation/DM · RP · GM/game), constant width, active/inactive per
   segment, wherever modes appear. (Interview Q6 — pill itself not yet
@@ -54,21 +53,20 @@ never restates.
   concept. Coined words are allowed only for concepts the product lacks,
   and only via the strings.ts OURS table with a rationale. *Check: grep UI
   strings against the schema/product vocabulary list; flag near-synonyms.*
-  (DIFF/overwrite feedback, 3:15 PM.)
+  (DIFF/overwrite feedback.)
 - **V2 · Every count names a user-meaningful unit, consistently.** A badge
   or number must answer a question the user has, in the unit the
   surrounding UI uses; engine packaging (drafts vs claims) must not leak
   into surfaces speaking the other unit. *Check: for each rendered count,
-  state its unit; assert siblings agree.* (Badge 2-vs-17, 2:18 PM; STORED·2,
-  3:21 PM.)
+  state its unit; assert siblings agree.* (Badge 2-vs-17; STORED·2.)
 - **V3 · A badge must earn its tap.** If tapping/expanding an indicator
   yields content the user can't map to a question ("what changes where?"),
   the indicator is wrong — redesign toward the question (e.g. touch map
-  instead of stored-section count). (3:21 PM.)
+  instead of stored-section count).
 - **V4 · No mechanism-explainer furniture.** Don't permanently teach
   mechanics the numbers already show (cap explainer under counts, rebuild
   trivia). Guidance lives at the failure/decision site, once. *Check: flag
-  static explanatory paragraphs under forms.* (3:03 PM #4.)
+  static explanatory paragraphs under forms.*
 - **V5 · Empty states name this view's condition and the next action** —
   never another screen's string, never onboarding copy over a filtered-empty
   result. (UX review adopted; owner-confirmed direction.)
@@ -77,40 +75,39 @@ never restates.
 
 - **I1 · Tap = open.** On touch, tapping a list row opens its detail;
   keyboard-only paths (Enter) must have a touch twin. *Check: tap row at
-  390px, assert detail visible.* (2:18 PM bug ×3 reviewers.)
+  390px, assert detail visible.* (Bug reported by 3 reviewers.)
 - **I2 · Non-interactive facts must not wear interactive styling.**
   Bordered chip/button skins are reserved for things that respond to a tap.
   *Check: for each chip-styled element, assert a click handler exists.*
-  (Type chip, 3:21 PM.)
+  (Type chip.)
 - **I3 · Object references navigate.** Anything naming a note/source/claim
-  is a link to it (peek or view), with a way back. (Round 1; linkage
-  review.)
+  is a link to it (peek or view), with a way back. (Linkage review.)
 - **I4 · Workflow handoff after success.** When an action completes and the
   natural next step is another surface, offer it in the result (import →
-  pre-filtered review). (Round 1.)
+  pre-filtered review).
 - **I5 · Overlays close by back gesture AND Escape regardless of focus**,
-  and restore focus. One overlay stack owns this. (Mobile round + a11y
-  review; owner-experienced.)
+  and restore focus. One overlay stack owns this. (A11y review;
+  owner-experienced.)
 - **I6 · Mobile control rail is [Filter] [Group] [Sort]** as constant-width
   buttons carrying their state (count / current key + direction), quick
-  chips after, sort direction togglable. (2:18 PM + Q7.)
+  chips after, sort direction togglable. (Q7.)
 - **I7 · Single-click for cheap reversible changes** (status flips): apply
-  optimistically with undo/rollback — not staged behind Save. (3:03 PM.)
+  optimistically with undo/rollback — not staged behind Save.
 
 ## S · Separation of concerns in detail views
 
 - **S1 · Object properties vs proposal properties never mix in one block.**
   A change-review detail separates: what the proposal does, the affected
-  object's pre-existing state, and the proposal's own metadata. (3:18 PM.)
+  object's pre-existing state, and the proposal's own metadata.
 - **S2 · Pre-existing vs proposed text is always explicitly labeled**
   (stored/proposed zone treatment) — a reader must never infer which is
-  which from position alone. (3:18 PM.)
+  which from position alone.
 
 ## T · Typography
 
 - **T1 · Hierarchy between a label and its metadata.** Section titles carry
   the visual weight; counts/limits are quiet right-aligned gutters — never
-  the same run of text at the same weight. (3:03 PM.)
+  the same run of text at the same weight.
 
 ## H · Health and history (directional, from interview)
 

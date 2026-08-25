@@ -6,10 +6,10 @@ ship, note the commit. Items marked **[Luma]** are owner feedback; do not drop
 them without asking.
 
 > **Lost message:** one batch of Luma's feedback (~2026-08-21 afternoon) never
-> arrived. The mobile round below (2:18 PM screenshot) may reconstruct part of
+> arrived. The mobile round below may reconstruct part of
 > it; Luma — if more of the lost batch surfaces, send it and it lands here.
 
-## Found during the component refactor (2026-08-22)
+## Found during the component refactor
 
 - **The Sources badge counts the wrong thing.** `MemoryTool.tsx` sets it from
   `s.notes.sourceNotes`, which is *imported* source notes. The Review badge
@@ -20,10 +20,10 @@ them without asking.
 - **Nav badge semantics need writing down** once the above is settled, so
   Activity does not have to guess when it is built.
 
-## Still open from the 2026-08-21 UX review (audited 2026-08-22)
+## Still open from the 2026-08-21 UX review
 
 Every **[critical]** and **[high]** finding in the five raw reports and the
-consolidation was re-checked against the current code on 2026-08-22 and marked
+consolidation was re-checked against the current code and marked
 inline; 24 of the 30 markers read SHIPPED. These three are what survived, and
 they are here because a live bug buried in a raw report is a bug nobody fixes.
 
@@ -64,7 +64,7 @@ Five-reviewer audit consolidated at
 fundamentals · C visibility of computed state · D linkage · E copy · F a11y ·
 G wiring).
 
-**Owner triage (2026-08-21 interview):** P0 (cluster A + mobile tap-detail +
+**Owner triage (interview):** P0 (cluster A + mobile tap-detail +
 ledger flush) ships first, as one batch. **P0 shipped** (regression-tested:
 mobile tap-detail, visible-only keyboard decisions, chip-focus safety,
 edit-leak, preflight-drop reconciliation, skippedMutationIds, ledger
@@ -96,7 +96,7 @@ owner decision after explanation.
 
 ## Owner feedback queue
 
-- **Navigation SHIPPED (2026-08-22).** Scope lives in the memory tool header
+- **Navigation SHIPPED.** Scope lives in the memory tool header
   above the views (it decides what they show, and it is the phone's order
   too); views are Sources / Vault / Review with icons and counts as badges;
   the shoehorned status line is gone. Mode is a segmented DM/RP/GM filter on
@@ -112,7 +112,7 @@ owner decision after explanation.
     it becomes an alert that is silent when fine. Not built.
 
 
-- **[Luma] Navigation + scope wireframes — IN REVIEW (2026-08-22).**
+- **[Luma] Navigation + scope wireframes — IN REVIEW.**
   public/mockups/nav-wire.html (low fidelity, greyscale, layout only). Four
   views confirmed: Review Queue / Memory Vault / Sources / **Activity** (job
   history + running jobs). Scope moves into the top navigation and stays
@@ -125,8 +125,8 @@ owner decision after explanation.
   - **Undo — backlog by owner request.** Needs durable job history first;
     Activity is the prerequisite.
   - **Mode filter is missing from this console entirely.** Upstream has a
-    Mode menu (All / roleplay / conversation). Confirmed against the engine
-    2026-08-22: it is **not** a scope level. A draft's fingerprint records
+    Mode menu (All / roleplay / conversation). Confirmed against the engine:
+    it is **not** a scope level. A draft's fingerprint records
     `scope` (chatIds, characterIds) and `modes` / `extractionMode` as separate
     fields, and every source carries its own `importMode`. Mode does not
     cascade - picking roleplay does not change which chats exist - so it
@@ -137,7 +137,7 @@ owner decision after explanation.
     and the Active toggle; none of it is reachable.
 
 
-- **Sources screen SHIPPED (2026-08-22, 5307601 + follow-ups).** Built from
+- **Sources screen SHIPPED (5307601 + follow-ups).** Built from
   the approved specimens; verify green at 390/768/1280; exercised read-only
   against the live instance (213 sources, 45 blocked drafts, no console
   errors). Still to do on this screen, deferred by the owner:
@@ -156,7 +156,7 @@ owner decision after explanation.
     signal is tool-level in store.ts, only Sources uses it so far.
 
 
-- **[Luma] Source import UI — IN REVIEW (2026-08-22).** Luma is blocked on
+- **[Luma] Source import UI — IN REVIEW.** Luma is blocked on
   using the tool for real ("i can't really use it yet... we first have to
   implement a decent source import ui"). Interview answers: (1) browse-to-
   import is the only job that happens; maintenance never does. (2) Repair
@@ -166,7 +166,7 @@ owner decision after explanation.
   default view hides them, quick rail brings them back). (7) Title + state
   only, no snippet body. Specimens: public/mockups/sources-v1.html (test
   corpus, committable).
-  **Adversarially reviewed 2026-08-22** (6 dimension reviewers + 8 verifiers
+  **Adversarially reviewed** (6 dimension reviewers + 8 verifiers
   against the guideline docs). 2 findings survived refutation, 6 were
   refuted, 13 high-severity findings were triaged by hand. Applied: state
   names and action verbs replaced with catalog strings (New / Already
@@ -180,7 +180,7 @@ owner decision after explanation.
   drawn with an autosave-draft / explicit-spend save model, dirty marker and
   resumable counter; curate path given a 390px projection with 44px targets;
   3B/3C reordered to match the real sequence.
-  **Owner round 2 (2026-08-22):** curate path rebuilt as an in-place row
+  **Owner round 2:** curate path rebuilt as an in-place row
   expander instead of a separate paged screen - measured on the live
   instance, a chat summary is ~1,772 ch (median), roughly 440 tokens, 779 at
   the worst, so it inlines comfortably; the phone therefore needs no pushed
@@ -189,14 +189,14 @@ owner decision after explanation.
   equal the selection - a separate cost chip only repeated the button).
   Result card rebuilt on the list's row grammar. Edited mark moved onto the
   row so the list says which summaries you have touched.
-  **Owner round 3 (2026-08-22):** the import result card was rebuilt around
+  **Owner round 3:** the import result card was rebuilt around
   the decision rather than the data. It now leads with the outcome as a
   sentence, gives the failed source its own block (its name was being
   truncated to "Nam..." - the one name in the card that must survive), folds
   the per-source ledger away as audit material, and carries one help line
   under one information icon. Import buttons show the price once (sparkle +
   count), not twice.
-  **Owner round 4 (2026-08-22):** phone specimens dropped at owner request;
+  **Owner round 4:** phone specimens dropped at owner request;
   added S1B import scope (tool-level control, and the specimen states that
   scope is recorded into the extraction context - the cause of the 44 blocked
   drafts), S7 what a source produced (first item in the linkage order: an
@@ -207,7 +207,7 @@ owner decision after explanation.
   Refresh vs Re-extract for "Update available", and deleting an imported
   source (the catalog already has the delete-with-or-without-memories copy).
 
-- **DIAGNOSED (2026-08-22): the live 44x `source_stale` mystery is context
+- **DIAGNOSED: the live 44x `source_stale` mystery is context
   drift, not stale text.** Compared every blocked draft's
   `extractionFingerprint` against its source note's current one: 0 of 45 have
   changed source text; 44 differ only in context (note modes widened
@@ -215,7 +215,7 @@ owner decision after explanation.
   scope); 1 has a missing source note. Re-extracting all 45 would spend 45
   model calls regenerating byte-identical claims. Open engineering question:
   does the engine expose a cheap re-bless of an unchanged fingerprint
-  (needed for the "revalidate" action Luma asked for)? **ANSWERED 2026-08-22:
+  (needed for the "revalidate" action Luma asked for)? **ANSWERED:
   no.** Tested against the local engine: the staleness check is enforced at
   preflight (`ltm_draft_source_stale` blocks every mutation), there is no
   PATCH/refresh/revalidate route for a draft, and the failure reproduces
@@ -226,13 +226,13 @@ owner decision after explanation.
   `sourceHash` is unchanged. Highest-value change to this flow; until then
   re-extraction (1 model call per source) is the only unblock.
 
-- **BUG (live, 2026-08-22): import preview reports everything as `new`.**
+- **BUG (live): import preview reports everything as `new`.**
   All 213 candidates come back `freshness: new` with `importedCount: 0`
   while the vault holds 96 source notes. Also scans cap at 100 per kind with
   no signal in the payload. The Sources UI cannot currently tell the user
   what they already imported.
 
-- **[Luma] Detail surfaces pass — SHIPPED (2026-08-22, "go fix all yes").** Luma: both detail
+- **[Luma] Detail surfaces pass — SHIPPED ("go fix all yes").** Luma: both detail
   surfaces are rough; the claim pane is the worse one ("assaulted by
   information i have no idea what to do with and how it would impact my
   memory vault"). Direction agreed: reorganize the pane around the decision
@@ -249,12 +249,12 @@ owner decision after explanation.
   stacked header shows queue position. Open leans Luma can still veto:
   4B extraction line (vs 4A fold), folding thresholds (3 preview lines /
   2 stored context lines).
-  **Feedback round 1 (2026-08-22) applied:** char footers show signed net +
+  **Feedback round 1 applied:** char footers show signed net +
   total after (+86 - 272 ch); headline is a plain sentence, op icon moved
   to the preview zone label; paragraph keys in text tone (accent is links-only
   now); extraction colon; whole-memory toggle on append/update
-  previews (superseded the open-memory peek button, owner feedback
-  2026-08-22): the preview re-renders with every section present and the
+  previews (superseded the open-memory peek button, owner
+  feedback): the preview re-renders with every section present and the
   change marked in place; diff folds open up in whole mode.
   **S7 inline-object cards — APPROVED ("s7 lgtm") and shipped:** link and
   status previews inline the object under review (vault memories first, then
@@ -263,15 +263,15 @@ owner decision after explanation.
   info-circle glyph to mark it as education.
 
 
-### Tabled by Luma (2026-08-21 evening brainstorm)
+### Tabled by Luma
 
-- **[Luma] Op icon mapping — DECIDED T5 (2026-08-21 evening).**
+- **[Luma] Op icon mapping — DECIDED T5.**
   `script-plus` create · `file-plus` append · `file-pencil` update ·
   `link-plus` link · `tags` keywords · `activity` status · `users` subjects.
   Semantics: script = whole note, file = one section; shared + = the two
   additive ops; pencil = the one op that replaces. Note types: `movie` for
   scene, masks-theater stays RP-mode only. Use `@tabler/icons-preact`.
-- **[Luma] Decision + state icons — DECIDED 2026-08-23.** `undecided` moves
+- **[Luma] Decision + state icons — DECIDED.** `undecided` moves
   `circle-dashed` → `circle-dotted`: dashed is 8 arc segments and `progress-*`
   is 5, the same visual vocabulary, so the decision family and the progress
   family were colliding; 12 dots is a different vocabulary. `keep`
@@ -284,7 +284,7 @@ owner decision after explanation.
   single `check` checkbox tick. Claim-detail high-confidence row gets
   `zoom-check` (validation passed). `alert-triangle` narrows to
   `extraction_incomplete` only.
-- **[Luma] Review redesign specimens APPROVED (2026-08-21 evening) — "let's
+- **[Luma] Review redesign specimens APPROVED — "let's
   rock". SHIPPED in 3d57d32** (row v2, header v4, detail zones, icon system,
   education pattern, unified flags; verify green at 390/768/1280).
   Edited-mark decision inside the wave: `writing` icon (bare pencil collides
@@ -301,8 +301,8 @@ owner decision after explanation.
 - **[Luma] Chars ⇄ estimated tokens toggle** on the contribution display —
   "nice to not have to divide by 4". Stopgap: moot once column controls
   exist (an est-tokens column covers it); until then, a display toggle.
-- **[Luma] New-target marker: green edge bar (2a) — chosen** 2026-08-21
-  late, superseding the dot (2b): the dot either shifted titles or floated;
+- **[Luma] New-target marker: green edge bar (2a) — chosen**, superseding
+  the dot (2b): the dot either shifted titles or floated;
   Luma killed it and took 2a's edge, explicitly accepting the color-only
   accessibility tradeoff. Applies to note group headers; rows in flat
   contexts keep the small dot beside the target ref for now.
@@ -327,7 +327,7 @@ owner decision after explanation.
   revisit when focus returns to the Sources view.
 
 
-### Mobile round 2 — 2026-08-21 2:18 PM (port build, phone)
+### Mobile round 2 (port build, phone)
 
 - **[Luma] Mode display: segmented pill.** Exactly three chat modes exist
   (conversation/DM · roleplay · GM/game). Render mode eligibility as a
@@ -336,7 +336,7 @@ owner decision after explanation.
 - **[Luma] At-a-glance information design.** The three views don't yet answer
   "lay of the land / what needs review" at a glance. Think through what
   matters most per view, then interview Luma for his user opinions. (Interview
-  sent 2026-08-21; answers pending.)
+  sent; answers pending.)
 - **[Luma] Import scope global?** Open question: should the Sources chat-scope
   selector be a tool-wide (or console-wide) scope across all views?
 - **[Luma] Facets + search constant across Review and Vault.** Same facet rail
@@ -372,9 +372,9 @@ owner decision after explanation.
   without scrolling on mobile (now in the sheet header — verify on device);
   Esc dismisses the sheet (done).
 
-## Queued from the tooling audits (2026-08-24)
+## Queued from the tooling audits
 
-Findings from four audits run this session. Reports live outside the repo at `~/code/luma/`: `scripts-audit.md`, `bespoke-audit.md`, `domsnap-evaluation.md`, `engine-harvest.md`.
+Findings from four audits. Reports live outside the repo at `~/code/luma/`: `scripts-audit.md`, `bespoke-audit.md`, `domsnap-evaluation.md`, `engine-harvest.md`.
 
 ### Defects found, not yet fixed
 
@@ -386,11 +386,15 @@ Findings from four audits run this session. Reports live outside the repo at `~/
 - **`ScopeBar.tsx` carries a `data-contrast-exempt` that is now redundant** after the `aria-hidden` skip landed.
 - **`store/sources.ts` and `store/scope.ts` both fetch the chat list.** Not a defect today; see the decision file.
 
+### Do not do yet
+
+- **Title truncation outside the review queue.** DESIGN.md §2 now says titles truncate to one line in list rows, and the vault, lorebook entries and preset section rows still wrap under one shared `.nm` rule. Luma: "dont worry about vault's list view for now, it's gonna be revamped." Leave all of them until that redesign lands.
+
 ### Adopt
 
 - **`eslint-plugin-i18next`, jsx-text mode.** Catches hardcoded UI text that `copycheck` structurally cannot — copycheck asks whether a word exists in a catalog, the rule asks whether it came from `t()`. Run on the real tree it found 25 hits, about 16 genuinely hardcoded, nine of them in directories copycheck calls clean. Four lines of config silence the unit-suffix noise. A lint rule also cannot scan nothing and report success.
 - **`noUncheckedIndexedAccess`.** Measured at roughly 60 diagnostics, half a day. Several look like live bugs, including a percentile lookup in `lorebooks/data.ts:90` and a diff-op scan in `ClaimDetail.tsx`. Deferred only until the review-queue redesign lands, to avoid colliding with it.
-- **A `CHANGELOG.md`.** We record what is owed here and what was chosen in `.decisions/`, but not what shipped, which is why the 2026-08-22 audit had to re-check thirty findings against the code by hand.
+- **A `CHANGELOG.md`.** We record what is owed here and what was chosen in `.decisions/`, but not what shipped, which is why the audit had to re-check thirty findings against the code by hand.
 - **A tracked-artifact tripwire** over `git ls-files`, after the near-miss that nearly committed 33 build artifacts.
 - **`shots.mjs` folds into `verify.mjs`**; **`components.mjs`** can be deleted.
 - **Re-evaluate `deadexports.mjs` and `deadcss.mjs` against knip.** The scripts audit kept them partly because knip, ts-prune and typescript-eslint were all believed blocked by TypeScript 7. That premise was wrong: 7.0.2 ships a working API under an "unstable" name (a run over this tree read 73 files and checked 240 exports in about a third of a second), knip dropped its TypeScript dependency in March so our version is invisible to it, and oxlint offers type-aware linting that requires TS 7 rather than breaking on it. ts-prune is archived. Only typescript-eslint is still blocked, with no date. The scripts may still win, but the comparison has to be redone on merit. See `~/code/luma/typescript7-tooling.md`.
