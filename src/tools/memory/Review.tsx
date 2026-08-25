@@ -486,6 +486,12 @@ function GroupBlock(props: { group: Group; showTarget: boolean; onActivate: (key
 function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: boolean }) {
   const [open, setOpen] = useState(false);
   const g = props.group;
+  useEffect(() => {
+    if (!open) return;
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", esc);
+    return () => document.removeEventListener("keydown", esc);
+  }, [open]);
   return (
     <span className="gmenu-wrap">
       <button className="gib gmenu" aria-label={t("memoryvault.moreActionsForValue1", { value1: g.label })} aria-expanded={open}
