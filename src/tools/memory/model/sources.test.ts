@@ -4,8 +4,8 @@
 // vault notes).
 //
 // The two predicates draw different lines through the same six states, and the
-// rail's "Ready to import" view rides on one of them, so every state is pinned
-// against both and again against the rail. The title parsing is pinned per
+// boundary between them is what the rail and the checkbox column both depend
+// on — so every state is pinned against both. The title parsing is pinned per
 // kind because the lorebook split is positional and a stray colon moves it.
 //
 // These tests pin CURRENT behavior, not desired behavior; where the two look
@@ -451,16 +451,15 @@ describe("buildSources — joining the note, its memories and its queue", () => 
 });
 
 describe("partition", () => {
-  // Every state is named individually rather than derived from a predicate, so
-  // a state added upstream has to be placed here by hand instead of falling
-  // into or out of the rail on whatever the default branch happens to be.
+  // Every state is listed by hand so a state added upstream cannot fall into
+  // the rail untested.
   it.each([
-    ["new", true, false], // never imported — the whole of the old `pending`
-    ["current", false, true], // settled: nothing to import, nothing to re-extract
-    ["source_updated", true, true], // imported AND ready: the two sides overlap here
+    ["new", true, false],
+    ["current", false, true],
+    ["source_updated", true, true],
     ["context_updated", true, true],
     ["extraction_incomplete", true, true],
-    ["source_missing", false, true], // imported, but there is nothing left to read
+    ["source_missing", false, true],
   ] as Array<[SourceState, boolean, boolean]>)(
     "%s is ready=%s imported=%s",
     (state, ready, imported) => {
@@ -470,20 +469,16 @@ describe("partition", () => {
     });
 
   it("covers every state the model declares", () => {
-    // Guards the table above: a seventh state would otherwise be untested.
+    // Fails when a state is added, so the table above cannot go stale.
     expect(STATES).toHaveLength(6);
   });
 
   it("lists a source under `ready` exactly when it is selectable", () => {
-    // The rail and the checkbox column must never disagree about which sources
-    // can be acted on, which is why both read the one predicate.
     const rows = STATES.map((state) => row({ sourceId: state, state }));
     expect(partition(rows).ready).toEqual(rows.filter(isSelectable));
   });
 
   it("puts a re-extractable source in both `ready` and `imported`", () => {
-    // These are filters, not a partition. The counts overlap on purpose and
-    // must never be shown as if they summed to `all`.
     const r = row({ sourceId: "a", state: "source_updated" });
     const { ready, imported, all } = partition([r]);
     expect(ready).toEqual([r]);

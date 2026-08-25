@@ -46,8 +46,7 @@ export function isImported(r: SourceRow): boolean {
   return r.state !== "new";
 }
 
-/** Only a source that can produce something new is worth selecting. This is
- *  also the rail's "Ready to import" set — see `partition`. */
+/** Only a source that can produce something new is worth selecting. */
 export function isSelectable(r: SourceRow): boolean {
   return r.state !== "current" && r.state !== "source_missing";
 }
@@ -143,20 +142,10 @@ function resolveState(freshness: string, blocked: string[]): SourceState {
   }
 }
 
-/** The three rail views. They are filters, not a partition: `ready` and
- *  `imported` overlap on every source that was imported and has since become
- *  re-extractable, so their counts do not add up to `all` and must never be
- *  presented as if they did.
- *
- *  `ready` is exactly `isSelectable`, on purpose rather than by coincidence —
- *  the view lists a source when, and only when, its checkbox can be ticked and
- *  the dock can act on it. Keeping it one predicate is what stops the rail and
- *  the checkbox column from drifting apart.
- *
- *  It is deliberately wider than "not yet imported". A source whose text or
- *  scope changed, or whose extraction never finished, is still work waiting;
- *  narrowing this to freshness `new` made the rail and the nav badge read 0
- *  while four sources held unreviewed drafts. */
+/** The three rail views. They are filters, not a partition: a re-extractable
+ *  source is both `ready` and `imported`, so the counts do not sum to `all`.
+ *  `ready` is `isSelectable`, so the rail lists a source exactly when its
+ *  checkbox can be ticked. */
 export function partition(rows: SourceRow[]) {
   const ready = rows.filter(isSelectable);
   const imported = rows.filter(isImported);

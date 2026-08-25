@@ -57,8 +57,6 @@ const STATE_LABEL: Record<SourceState, string> = {
   extraction_incomplete: t("sourcesworkspace.extractionIncomplete"),
   source_missing: t("reviewqueue.sourceMissing"),
 };
-/** What each state means, for the tooltip under its label. The catalog names
- *  the states but never defines them, so these are ours — see memory.statetip.* */
 const STATE_MEANING: Record<SourceState, string> = {
   new: t("memory.statetip.new"),
   current: t("memory.statetip.current"),

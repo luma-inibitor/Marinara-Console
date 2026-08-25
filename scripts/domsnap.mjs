@@ -35,8 +35,7 @@ const NOTE = process.env.MC_NOTE ?? "source_lorebook_d81a750ad0c1a6d7";
 const D = VIEWPORTS.desktop, P = VIEWPORTS.phone;
 const BOTH = [P, D];
 
-/** The sources rail lands on "Ready to import", which omits the current and
- *  missing sources. The list surfaces want every row. */
+/** The sources rail lands on "Ready to import", which omits current and missing sources. */
 const railAll = (p) => p.getByRole("button", { name: /^All/ }).click();
 
 // A surface is a route plus, where the route is not enough, the interaction
