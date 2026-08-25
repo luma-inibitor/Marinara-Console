@@ -400,7 +400,7 @@ function Preview(props: {
       <Zone eyebrow={<span className="z-lab">{opTag}{t("memory.zonePreview")}</span>}>
         <div className="linkrow">
           <Ref id={notes.has(r.targetId) ? r.targetId : undefined} title={r.targetTitle} type={r.targetType} />
-          <span className="rel t-data">— {rel} →</span>
+          <span className="rel rel-mid t-data">— {rel} →</span>
           <ClaimTarget target={m.link?.target ?? ""} chip />
         </div>
         <InlineMemory id={m.link?.target ?? ""} />

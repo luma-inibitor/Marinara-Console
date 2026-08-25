@@ -318,6 +318,8 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .nc-sec:last-of-type { margin-bottom: 0; }
 .linkrow { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s2); padding: 2px 0; }
 .rel { color: var(--text-dim); }
+/* See relationLabel: one canonical sentence-case string, lowercased by position. */
+.rel-mid { text-transform: lowercase; }
 .chip-batch { font-size: 10px; color: var(--ok); border-radius: var(--r-s); padding: 0 5px;
   border: 1px solid color-mix(in srgb, var(--ok) 45%, transparent); }
 .edu { margin: 6px 0 0; font-size: 12px; display: flex; align-items: flex-start; gap: 5px; }

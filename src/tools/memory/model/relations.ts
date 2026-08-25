@@ -3,7 +3,11 @@ import { t } from "../../../copy";
 /** Catalog labels for every link relation the product names, so a link reads
  *  as English instead of as a wire value. An unrecognized relation humanizes
  *  rather than falling through to `snake_case`: the target's title is the
- *  point of the row and the relation is only its preposition. */
+ *  point of the row and the relation is only its preposition.
+ *
+ *  One canonical form, sentence case. A caller rendering it anywhere but the
+ *  start of a row lowercases it in CSS (`.rel-mid`), so the case follows the
+ *  position rather than forking the string. */
 const RELATION_KEY = {
   extracted_from: "memoryvault.relationExtractedFrom",
   occurred_in: "memoryvault.relationOccurredIn",
