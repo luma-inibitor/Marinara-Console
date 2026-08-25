@@ -14,6 +14,7 @@
 
 import type { Note } from "../api/types";
 import { KEYWORD_CAP, SECTION_CAP } from "./caps";
+import { manualKeywords } from "./keywords";
 import { type Row, sectionTextOf } from "./review";
 import { capPercent, rowOverflows, type SectionPressure } from "./pressure";
 import { t } from "../../../copy";
@@ -131,7 +132,10 @@ export function flagsOf(r: Row, ctx: FlagContext): RowFlag[] {
   if (r.mutation.kind === "create_note" && !(r.mutation.note?.keywords ?? []).length) {
     f.push({ label: FLAG.noKeywords, severity: "warn", sentence: t("memory.flag.noKeywordsSentence") });
   }
-  const targetKeywords = ((ctx.notesById.get(r.targetId) as Note | undefined)?.keywords ?? []).length;
+  // The cap counts only what a person added: the engine caps each keyword
+  // array separately, so derived keywords never crowd out manual ones.
+  const target = ctx.notesById.get(r.targetId) as Note | undefined;
+  const targetKeywords = target ? manualKeywords(target).length : 0;
   if (targetKeywords >= KEYWORD_CAP) {
     f.push({
       label: FLAG.keywordCapFull, severity: "warn",

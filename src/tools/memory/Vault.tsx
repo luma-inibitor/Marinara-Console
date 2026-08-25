@@ -12,6 +12,7 @@ import { type Note, type NoteSection, type NoteType } from "./api/types";
 import { KEYWORD_CAP, SECTION_CAP } from "./model/caps";
 import { t } from "../../copy";
 import { dedupeLines } from "./model/derived";
+import { effectiveKeywords, manualKeywords } from "./model/keywords";
 import { NoteRef } from "./NotePeek";
 import { allNotes, archiveNote, discardNote, loadNotes, notesError, notesLoaded, saveNoteSections, setNoteStatus } from "./store/notes";
 import { isScoped, noteInScope } from "./model/scope";
@@ -27,7 +28,9 @@ function pressureOf(n: Note): number {
   for (const s of Object.values(n.sections ?? {})) {
     worst = Math.max(worst, (s.text?.length ?? 0) / SECTION_CAP);
   }
-  return Math.max(worst, (n.keywords?.length ?? 0) / KEYWORD_CAP);
+  // Only manual keywords press against the cap; the derived ones are capped
+  // separately by the engine and cannot refuse a person's next add.
+  return Math.max(worst, manualKeywords(n).length / KEYWORD_CAP);
 }
 
 /** The open memory is route state (`#/memory/vault/:id`), not component state,
@@ -290,7 +293,7 @@ function NoteEditor(props: { note: Note; onClose: () => void }) {
           </span>
         </div>
         <div><span className="k">modes</span>{(n.modes ?? []).join(", ")}</div>
-        <div><span className="k">keywords</span>{(n.keywords ?? []).join(", ") || "—"} <span className="dim">{(n.keywords ?? []).length}/{KEYWORD_CAP}</span></div>
+        <div><span className="k">keywords</span>{effectiveKeywords(n).join(", ") || "—"} <span className="dim">{t("memoryvault.addedManually")} {manualKeywords(n).length}/{KEYWORD_CAP}</span></div>
         {(n.links ?? []).length > 0 && (
           <div><span className="k">{t("memory.vault.links")}</span>
             <span>{n.links.map((l, i) => <span key={i} className="linkline"><span className="dim">{l.relation}</span> → <NoteRef id={l.target} /> </span>)}</span>

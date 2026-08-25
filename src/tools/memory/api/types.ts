@@ -24,7 +24,14 @@ export interface Note {
   status: NoteStatus;
   modes: string[];
   tags?: string[];
+  /** What the engine derived. Not the whole recall list, and not the list the
+   *  30 cap is measured against — see `model/keywords.ts`. */
   keywords?: string[];
+  /** What a person typed. Absent on notes written before the engine split the
+   *  arrays, which is why its absence has to be distinguished from empty. */
+  manualKeywords?: string[];
+  /** Derived keywords a person removed; recall skips them. */
+  suppressedKeywords?: string[];
   links: Array<{ target: string; relation: string }>;
   sections: Record<string, NoteSection>;
   conflicts?: Conflict[];

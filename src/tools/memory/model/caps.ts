@@ -8,5 +8,7 @@
  *  than over; every reading of the cap in this tool draws the line there. */
 export const SECTION_CAP = 20000;
 
-/** Note keywords max. */
+/** Max length of ONE keyword array. The engine caps its derived, manual and
+ *  suppressed lists separately, so a person fills this against the manual list
+ *  alone and the merged list may hold more; `keywords.ts` does the splitting. */
 export const KEYWORD_CAP = 30;
