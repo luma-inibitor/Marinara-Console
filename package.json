@@ -20,8 +20,7 @@
     "domsnap": "node scripts/domsnap.mjs",
     "faceprobe": "node scripts/faceprobe.mjs",
     "lint": "eslint src",
-    "check": "npm run typecheck && npm run lint && npm test && npm run layercheck && npm run copycheck && npm run build",
-    "check:report": "npm run deadexports && npm run deadcss",
+    "check": "npm run typecheck && npm run lint && npm test && npm run layercheck && npm run copycheck && npm run deadexports && npm run deadcss && npm run build",
     "check:browser": "npm run verify && npm run overlaycheck"
   },
   "engines": {
@@ -48,6 +47,7 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "playwright": "^1.62.1",
+    "playwright-core": "^1.62.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",

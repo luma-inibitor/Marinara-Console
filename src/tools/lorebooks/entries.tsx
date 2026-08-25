@@ -270,5 +270,3 @@ function KeyAdd(props: { onAdd: (vals: string[]) => void }) {
     />
   );
 }
-
-export { FullscreenText } from "../../ui/FullscreenText";

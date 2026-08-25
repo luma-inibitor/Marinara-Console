@@ -2,6 +2,8 @@
 // Report CSS classes no .tsx/.ts file appears to use.
 //
 //   node scripts/deadcss.mjs
+//   node scripts/deadcss.mjs --adopt   # record today's set as the baseline
+//   node scripts/deadcss.mjs --prune   # drop baseline entries that no longer appear
 //
 // This is a CANDIDATE list, not a delete list. Read every hit before removing
 // anything. Class names reach the DOM three ways here and all three have to be
@@ -15,8 +17,23 @@
 // in the source, not only class attributes. That over-reports live classes,
 // which is the safe direction to be wrong in: a false "live" costs a dead rule
 // nobody deletes, a false "dead" costs a bug.
+//
+// ── The baseline ratchet (design/deadcss-baseline.json) ───────────────────
+// The list is candidates, so failing on all of it would block PRs on somebody
+// else's judgement calls. Today's set is recorded and only growth fails, which
+// is the question a reviewer has: did this change strand a rule? See
+// scripts/lib/baseline.mjs.
+//
+// Exit codes: 0 clean · 1 a candidate outside the baseline · 2 the baseline is
+// unreadable.
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { ratchet, reportRatchet } from "./lib/baseline.mjs";
+
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+const BASELINE_PATH = path.join(ROOT, "design", "deadcss-baseline.json");
+const flags = new Set(process.argv.slice(2).filter((a) => a.startsWith("--")));
 
 // Every stylesheet under src/, found rather than listed. §8 gives each
 // component its own sheet, so any hardcoded list goes stale the moment a
@@ -43,7 +60,7 @@ const src = [];
     if (e.isDirectory()) walk(p);
     else if (/\.(tsx|ts)$/.test(e.name)) src.push(fs.readFileSync(p, "utf8"));
   }
-})("src");
+})(path.join(ROOT, "src"));
 const code = src.join("\n");
 
 const live = new Set();
@@ -74,18 +91,33 @@ const SHEETS = [];
     if (e.isDirectory()) sheets(p);
     else if (e.name.endsWith(".css")) SHEETS.push(p);
   }
-})("src");
+})(path.join(ROOT, "src"));
 
+const findings = [];
 let total = 0;
-for (const f of SHEETS) {
-  const css = fs.readFileSync(f, "utf8")
+for (const abs of SHEETS) {
+  const f = path.relative(ROOT, abs).split(path.sep).join("/");
+  const css = fs.readFileSync(abs, "utf8")
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/^\s*@(?:import|charset|use)[^;]*;/gm, "");   // URLs are not selectors
   const names = new Set();
   for (const m of css.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) names.add(m[1]);
   const dead = [...names].filter((n) => !live.has(n)).sort();
   total += dead.length;
+  for (const n of dead) findings.push({ file: f, item: n });
   if (names.size) console.log(`${f}: ${names.size} classes, ${dead.length} unused`);
   if (dead.length) console.log("   " + dead.join(" "));
 }
 console.log(total === 0 ? "\nno candidates" : `\n${total} candidates — verify each before deleting`);
+
+const adopt = flags.has("--adopt");
+const prune = flags.has("--prune");
+process.exit(
+  reportRatchet({
+    ...ratchet(BASELINE_PATH, findings, { adopt, prune }),
+    label: "design/deadcss-baseline.json",
+    noun: "dead class",
+    adopt,
+    prune,
+  }),
+);
