@@ -2,15 +2,9 @@
 // Refuse to let a build artifact, a captured image, an alternate lockfile or a
 // local scratch directory sit in the index.
 //
-//   node scripts/notracked.mjs
-//
-// This asks git what is TRACKED, which is the half .gitignore cannot answer:
-// once a file is committed, .gitignore never looks at it again, and a `git add
-// -f` or a blanket `git add -A` from a dirty tree is how it gets there. The
-// second check below re-reads .gitignore against the index for exactly that
-// case; the list here is the floor that survives someone editing .gitignore.
-//
-// Exit codes: 0 clean · 1 something is tracked that must not be · 2 git failed.
+// RULES is not redundant with .gitignore: once a file is committed .gitignore
+// never looks at it again, so the list is the floor that survives someone
+// editing .gitignore.
 import { execFileSync } from "node:child_process";
 
 const RULES = [
