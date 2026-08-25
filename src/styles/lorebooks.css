@@ -24,8 +24,8 @@
   margin: 0; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .probe { display: flex; gap: 6px; margin-top: var(--s2); }
-/* The frame is an outline rather than a border so it costs the segments no
-   height: they stretch to the probe row and have to reach the 44px floor. */
+/* outline, not border: a border would eat height the segments need to reach
+   the touch floor. */
 .modeswap { display: flex; flex: 0 0 auto; outline: var(--hairline); outline-offset: -1px;
   border-radius: var(--r-m); overflow: hidden; background: var(--surface-1); }
 .modeswap button { width: 48px; color: var(--text-dim);
@@ -52,8 +52,7 @@
 .mval { font-size: 10.5px; font-weight: 700; white-space: nowrap; }
 .mval .of { color: var(--text-dim); font-weight: 400; }
 
-/* chip rail: §2's secondary spacing, plus a right-edge fade so an overflowing
-   rail advertises itself. One rule — every tool shares this class. */
+/* ── chip rail (shared by every tool) ── */
 .chiprail { display: flex; gap: var(--s2); margin-top: var(--s2); overflow-x: auto;
   scrollbar-width: none; padding-bottom: var(--s2); align-items: center;
   mask-image: linear-gradient(90deg, #000 94%, transparent); }
@@ -61,8 +60,8 @@
 .selcount { font-weight: 700; color: var(--accent); white-space: nowrap; margin-right: 4px; }
 
 /* ══ rows ══ */
-/* .dock-actions is sticky and therefore IN FLOW — it needs no scroll padding
-   to clear it. Only breathing room below the last row. */
+/* .dock-actions is sticky and therefore in flow, so no scroll padding is
+   needed to clear it — this is breathing room below the last row only. */
 .rows { flex: 1; padding-bottom: calc(var(--s3) + env(safe-area-inset-bottom)); }
 .grouphead { position: sticky; top: 0; z-index: 5; display: flex; align-items: center;
   gap: var(--s2); padding: 5px var(--s3); background: var(--surface-2);
@@ -140,9 +139,6 @@
 .ta.is-mono { font-family: var(--font-data); font-size: var(--fs-data); line-height: 1.6;
   font-variant-ligatures: none; }
 .ta:focus { border-color: var(--accent); }
-/* A name is user-authored content, so it takes the prose face — the label face
-   at body size read as a static heading, not an editable field (§1 type roles).
-   Height meets the 44px touch floor. */
 .tin { width: 100%; min-height: var(--tap); background: var(--canvas); border: var(--hairline);
   border-radius: var(--r-m); color: var(--text); font-family: var(--font-prose);
   font-weight: 500; font-size: var(--fs-prose); padding: 0 var(--s3); outline: none; }

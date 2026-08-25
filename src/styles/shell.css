@@ -1,5 +1,4 @@
-/* Shell: desktop = visible left rail (no hamburgers, DESIGN.md §4);
-   mobile = bottom dock. One markup, two layouts. */
+/* App shell: nav rail/dock, screen scaffolding, command palette, cheat sheet. */
 
 .shell {
   height: 100%;
@@ -78,7 +77,7 @@
   margin: 0;
 }
 
-/* audit card (picker rows) — precursor to the full audit-row pattern */
+/* ── audit card (picker rows) ── */
 .card {
   display: block;
   width: 100%;

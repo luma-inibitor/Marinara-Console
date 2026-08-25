@@ -1,6 +1,5 @@
-/* The chevron lives in the group header's control column. Its box is the
-   caller's — the review queue gives it a 40px grid cell, the sources list a
-   30px flex slot — so this sets only what is true either way. */
+/* Collapsible list group. The chevron's box is sized by the caller, so this
+   sets no width or height. */
 .gexp {
   display: flex;
   align-items: center;

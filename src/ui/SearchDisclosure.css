@@ -1,7 +1,5 @@
 .disclosure { position: relative; }
 
-/* Reads as part of a sentence, not as a boxed control: the caret and the hover
-   fill carry the affordance, so a row of these is a path rather than a fence. */
 .disclosure-trigger {
   display: inline-flex;
   align-items: center;
@@ -28,8 +26,8 @@
   font-size: 13px;
 }
 
-/* Anchored to the control, but never past the viewport: a trigger near the
-   right edge would otherwise open a panel that runs off screen. */
+/* The viewport clamp keeps a trigger near the right edge from opening a panel
+   that runs off screen. */
 .disclosure-pop {
   position: absolute;
   z-index: 60;

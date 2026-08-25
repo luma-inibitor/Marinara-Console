@@ -1,6 +1,4 @@
-/* The quietest of the three states. Body-size prose in the dim color, so a
-   brief wait does not read louder than the content it is waiting for.
-   Preflight zeroes the tag margin, so the breathing room is this padding. */
+/* Loading placeholder. */
 .loadingstate {
   padding: var(--s6) var(--s4);
   margin: 0;
@@ -8,6 +6,4 @@
   color: var(--text-dim);
 }
 
-/* The admission that it is slow rides on the same line rather than adding a
-   second one, so the pane does not change height while the reader waits. */
 .loading-slow { color: var(--text-faint, var(--text-dim)); }

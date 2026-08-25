@@ -10,9 +10,8 @@
   line-height: 1.55;
 }
 
-/* Pinned inside the block: no row of its own, and it stays put while the
-   content scrolls beneath it. The wash is opaque enough that a long line
-   passing underneath cannot be mistaken for part of a control. */
+/* Floated and sticky, so the controls sit inside the block and stay put while
+   the content scrolls beneath them. */
 .jsonview-tools {
   position: sticky;
   top: 0;
@@ -48,7 +47,7 @@
 }
 .jsonview-tree { font-family: var(--font-data); color: var(--text-dim); }
 
-/* the first line clears the control cluster; deeper lines run full width */
+/* 84px clears the floated control cluster; deeper lines run full width. */
 .jsonview-tree > .jgroup > .jn:first-child { padding-right: 84px; }
 .jsonview-raw::first-line { /* raw text wraps around the float on its own */ }
 
@@ -59,7 +58,6 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-/* the whole line is the target for a foldable node */
 .jn-head {
   width: 100%;
   border: 0;
@@ -86,7 +84,6 @@
 .jk { color: var(--text); flex: 0 0 auto; }
 .jb { color: var(--text-faint); }
 .jc { color: var(--text-faint); }
-/* how much a fold hides, stated rather than implied */
 .jn-count {
   margin: 0 4px;
   padding: 0 5px;

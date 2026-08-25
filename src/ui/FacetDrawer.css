@@ -1,7 +1,6 @@
 .facet-src { color: var(--accent); margin: var(--s2) 0 2px; }
 .facet-block { margin-bottom: var(--s2); }
 
-/* label column then value column, so wrapped chips align under the first chip */
 .facet-line {
   display: grid;
   grid-template-columns: 76px minmax(0, 1fr);
@@ -25,7 +24,6 @@
   font-family: var(--font-data);
   font-size: 11px;
 }
-/* a value can be long; its count never truncates because it is one glyph wide */
 .facet-v { max-width: 148px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .facet-n { color: var(--text-faint); font-size: 10px; }
 
@@ -34,5 +32,4 @@
   color: var(--text);
   background: var(--accent-wash);
 }
-/* the tick, so selection is not carried by color alone */
 .facet-chip[aria-pressed="true"]::before { content: "✓"; color: var(--accent); font-size: 10px; }

@@ -5,8 +5,6 @@
   min-width: 0;
   max-width: 100%;
 }
-/* the value is the point, so it wraps rather than truncating
-   (design/CHECKLIST.md §4: the most important value never truncates) */
 .copyable-v { min-width: 0; overflow-wrap: anywhere; color: inherit; }
 
 .copyable-b {

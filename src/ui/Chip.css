@@ -1,5 +1,4 @@
-/* Chip and Tag share a silhouette on purpose — they are the same size of
-   thought — but only Chip can light up, because only Chip does anything. */
+/* Chip (interactive) and Tag (static), which share a silhouette. */
 .chip, .tag {
   flex: 0 0 auto;
   min-height: var(--tap-2);

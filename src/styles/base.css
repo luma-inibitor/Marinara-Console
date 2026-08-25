@@ -48,16 +48,13 @@ input, textarea, select { font-family: inherit; color: inherit; }
 .t-data {
   font-family: var(--font-data);
   font-size: var(--fs-data);
-  font-variant-ligatures: none;       /* literal characters matter */
+  font-variant-ligatures: none;
   font-variant-numeric: tabular-nums;
 }
 .t-num { font-variant-numeric: tabular-nums; font-family: var(--font-data); }
-/* Restores the prose face inside a label or data context, which is the only
-   place it is needed — the body default is already prose. The resets are the
-   point: switching family without undoing the context's caps, tracking and
-   tabular figures leaves label-shaped prose. Deliberately sets neither size nor
-   weight: size belongs to the component rule, and several sites are
-   <b class="t-prose">. */
+/* Restores the prose face inside a label or data context. The resets are load-
+   bearing: switching family alone leaves the context's caps, tracking and
+   tabular figures in place. Sets neither size nor weight, on purpose. */
 .t-prose {
   font-family: var(--font-prose);
   letter-spacing: normal;
@@ -75,7 +72,6 @@ input, textarea, select { font-family: inherit; color: inherit; }
 .hit { position: relative; }
 .hit::after { content: ""; position: absolute; inset: calc((var(--tap) - 100%) / -2); }
 
-/* scrollbars: thin, quiet */
 * { scrollbar-width: thin; scrollbar-color: var(--surface-3) transparent; }
 
 @media (prefers-reduced-motion: reduce) {

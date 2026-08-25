@@ -1,6 +1,4 @@
-/* The tooltip is a ::after on the term itself: no portal, no positioning
-   library, and it cannot outlive the element it explains. Max-width is a
-   measure, not a guess — definitions run to about forty words. */
+/* Glossary term and its tooltip, which is a ::after on the term itself. */
 .term { position: relative; display: inline-flex; align-items: center;
   cursor: help; font-family: var(--font-data); font-size: 11.5px; color: var(--text-dim); }
 .term-chip { border: var(--hairline); border-radius: var(--r-s); padding: 2px 8px;

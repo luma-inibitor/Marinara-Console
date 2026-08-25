@@ -1,5 +1,5 @@
-/* Below the split breakpoint a sheet rises from the bottom edge; above it, the
-   same sheet is a right-hand panel. One markup, two projections. */
+/* Sheet and Modal: bottom sheet below the split breakpoint, right-hand panel
+   above it. */
 .peek-scrim { position: fixed; inset: 0; z-index: 60; background: var(--scrim); }
 
 .sheet {
@@ -23,7 +23,6 @@
     border-left: 1px solid var(--edge-strong);
   }
 }
-/* option lists are short — a half-height sheet keeps the list behind it visible */
 .sheet.option-sheet { max-height: 50vh; }
 
 .sheet-head {
@@ -39,13 +38,12 @@
   border-bottom: var(--hairline);
 }
 .sheet-title { flex: 1; min-width: 0; font-weight: 600; }
-/* grid/place-items so the close ICON centers in the 38px box; a bare button
-   baseline-aligns its svg and the mark sits low. Same recipe as .toast-x. */
+/* grid/place-items, or the button baseline-aligns its svg and the mark sits
+   low in the box. */
 .sheet-x { display: grid; place-items: center; color: var(--text-dim); width: 38px; height: 38px; }
 
-/* A modal interrupts, so it sits in the middle rather than arriving from an
-   edge. Above the sheet layer: a confirm raised from a sheet must sit on top
-   of it, never behind. */
+/* z-index 62 is above the sheet layer, so a confirm raised from a sheet is not
+   drawn behind it. */
 .modal {
   position: fixed;
   z-index: 62;
