@@ -145,6 +145,10 @@
     "other": "{{count}} records in {{context}} did not match what this console expects and were left out. Check the browser console.",
     "note": "Raised when elements of a list fail their schema and the rest still render, so the reader is told the list is short before they notice something missing. Upstream quarantines malformed notes on the server and reports a count afterwards (memorysettings.resultNoMalformedNotes); nothing there describes a client declining to display them."
   },
+  "shell.wire.writeMismatch": {
+    "text": "Your change was made, but the engine's reply to {{context}} is in a shape this console does not recognise. Reload before editing again. Check the browser console.",
+    "note": "Raised when a write succeeds and its response fails its schema, which is the one case where the screen and the engine disagree about a change the person has already been told about. Upstream has no string for it: the product is compiled against its own engine, and its write failures (errors.interfaceStopped, longtermmemorydetail.vaultCorrupt) are all about the write not happening rather than about it happening unreadably."
+  },
   "shell.wire.notAList": {
     "text": "expected a list",
     "note": "The single issue line recorded when a route that returns a collection returned something else. Reads as a schema issue beside valibot's own, not as a sentence to a person, and the catalog has no vocabulary at that level."

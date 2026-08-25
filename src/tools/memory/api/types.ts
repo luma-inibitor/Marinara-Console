@@ -9,11 +9,11 @@
 // mirror the package schema and draft-projector — fidelity beats elegance. The
 // caps themselves are rules rather than payload, and live in model/caps.ts.
 //
-// The types down to ReviewResponse are inferred from the schemas in schema.ts
+// The types down to ExtractResponse are inferred from the schemas in schema.ts
 // that check them; everything below is still asserted with `as T`.
 
 import type * as v from "valibot";
-import type { ConflictSchema, MutationSchema, NoteSchema, NoteSectionSchema, NOTE_TYPES, ReviewChangeSchema, ReviewResponseSchema } from "./schema";
+import type { ConflictSchema, ExtractResponseSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteSectionSchema, NOTE_TYPES, ReviewChangeSchema, ReviewResponseSchema } from "./schema";
 
 export type NoteType = (typeof NOTE_TYPES)[number];
 export type Disposition = "new" | "merge" | "rewrite";
@@ -32,6 +32,10 @@ export type Mutation = v.InferOutput<typeof MutationSchema>;
 export type ReviewChange = v.InferOutput<typeof ReviewChangeSchema>;
 
 export type ReviewResponse = v.InferOutput<typeof ReviewResponseSchema>;
+
+export type NoteArchive = v.InferOutput<typeof NoteArchiveSchema>;
+
+export type ExtractResponse = v.InferOutput<typeof ExtractResponseSchema>;
 
 export interface PreflightResponse {
   draftId: string;

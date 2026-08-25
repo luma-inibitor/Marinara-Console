@@ -32,17 +32,8 @@ export function loadAllNotes(): Promise<Note[]> {
 }
 
 /** Merged rather than replaced: the review queue's index is the same map, and
- *  a note fetched elsewhere must not be evicted by this write.
- *
- *  Throws on anything without a usable id rather than keying it under
- *  `undefined`: the map is shared, a junk entry reaches every screen reading
- *  it, and it outlives the write that made it because loadNotes merges. A
- *  failed write surfaces as an error the screen can report; a poisoned map
- *  surfaces as a crash somewhere else entirely. */
+ *  a note fetched elsewhere must not be evicted by this write. */
 export function putNote(note: Note) {
-  if (!note || typeof note.id !== "string" || note.id === "") {
-    throw new TypeError("Refusing to store a memory without an id.");
-  }
   notesById.set(new Map(notesById.get()).set(note.id, note));
 }
 
@@ -94,9 +85,8 @@ export function archiveNote(id: string): Promise<void> {
  *  `active`. */
 export async function archiveNoteWithExtracted(id: string): Promise<Note[]> {
   const { notes } = await deleteNote(id);
-  const archived = notes ?? [];
-  for (const note of archived) putNote(note);
-  return archived;
+  for (const note of notes) putNote(note);
+  return notes;
 }
 
 /** Run extraction over a source memory again. What it produces is drafts, which
