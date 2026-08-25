@@ -72,6 +72,29 @@ for numeric columns)
 There is also `.hit`, which expands a small control's tap target without changing
 its box.
 
+## Icons
+
+The console's icon set ships with the system, so `icon` props have something to
+put in them and you never need another icon library. Import them by name
+alongside the components:
+
+```jsx
+<EmptyState icon={<FirstRun size={22} stroke={1.75} aria-hidden />} title="No entries yet" />
+<IconButton label="Download this memory"><Download size={ICON_SIZE.xl} stroke={1.75} aria-hidden /></IconButton>
+```
+
+Names are **semantic, not pictorial** — `Failure`, `Missing`, `FirstRun`,
+`AllClear`, `Flag`, `Cost`, `Download`, `Copy`, `Edit`, `Add`, `Remove`,
+`Refresh`, `More`, `Back`, `Close`, `Info`, `Preview`, `Raw`, `Search`. That is
+deliberate: one icon per concept and one concept per icon, so a state looks the
+same wherever it appears. Pick by what the thing *means*, never by what the
+glyph looks like, and never introduce a second glyph for a concept that already
+has one.
+
+Four maps cover the domain sets: `TYPE_ICON` (the eight memory types),
+`MODE_ICON`, `VIEW_ICON`, `SCOPE_ICON`. `ICON_SIZE` carries the size ramp — use
+it rather than bare pixel numbers.
+
 ## Where the truth is
 
 Read these before styling anything — they beat this summary:

@@ -1,12 +1,17 @@
 import type { ReactNode } from "react";
-import { Chip, SheetHead, Tag } from "marinara-console";
+import { Chip, SheetHead, Tag, TYPE_ICON, ICON_SIZE } from "marinara-console";
+
+// The real type glyph, not a hand-drawn stand-in: TYPE_ICON is the console's
+// own one-icon-per-type map, so a card that draws its own would teach the
+// wrong glyph (design/CHECKLIST.md §4).
+const Character = TYPE_ICON.character;
 
 /** The head is written to sit at the top edge of a sheet body — it pulls itself
  *  out to the panel's padding with negative margins. This stands in for that
  *  body so the rule lands where it was designed to. */
 function Panel(props: { children: ReactNode }) {
   return (
-    <div style={{ width: 380, padding: "var(--s3)", background: "var(--surface-1)",
+    <div style={{ width: "100%", padding: "var(--s3)", background: "var(--surface-1)",
                   border: "var(--hairline)", borderRadius: "var(--r-l)",
                   overflow: "hidden" }}>
       {props.children}
@@ -14,22 +19,10 @@ function Panel(props: { children: ReactNode }) {
   );
 }
 
-/** A type glyph, standing in for the icon a note peek passes. */
-function Glyph() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-         stroke="var(--type-character)" strokeWidth="1.75" strokeLinecap="round"
-         aria-hidden="true">
-      <circle cx="12" cy="8" r="4" />
-      <path d="M5 20a7 7 0 0 1 14 0" />
-    </svg>
-  );
-}
-
 export function Titled() {
   return (
     <Panel>
-      <SheetHead icon={<Glyph />} title="Devi Okonkwo" />
+      <SheetHead icon={<Character size={ICON_SIZE.md} stroke={1.75} aria-hidden />} title="Devi Okonkwo" />
       <p className="t-prose" style={{ margin: 0, color: "var(--text-dim)" }}>
         Harbour clerk who keeps the writ ledger.
       </p>
@@ -56,7 +49,7 @@ export function Wrapping() {
   return (
     <Panel>
       <SheetHead
-        icon={<Glyph />}
+        icon={<Character size={ICON_SIZE.md} stroke={1.75} aria-hidden />}
         title="The writ of passage Devi withheld from the harbour ledger"
       />
       <div className="t-data" style={{ color: "var(--text-dim)" }}>

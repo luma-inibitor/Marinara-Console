@@ -4,6 +4,9 @@
   "pkg": "marinara-console",
   "globalName": "MarinaraConsole",
   "srcDir": "src",
+  "extraEntries": [
+    "./.design-sync/ds-icons.ts"
+  ],
   "tsconfig": "./tsconfig.json",
   "cssEntry": "./.design-sync/ds-entry.css",
   "componentSrcMap": {
@@ -66,8 +69,79 @@
     "Term": "tip: string;\n    children: React.ReactNode;\n    chip?: boolean;\n    /** -1 takes it out of the tab order, for a Term inside a roving composite. */\n    tabIndex?: number;"
   },
   "overrides": {
+    "Chip": {
+      "viewport": "1200x348"
+    },
+    "CopyableText": {
+      "viewport": "1200x250"
+    },
+    "DetailSection": {
+      "viewport": "1200x278"
+    },
+    "Edu": {
+      "viewport": "1200x226"
+    },
+    "EmptyState": {
+      "viewport": "1200x300"
+    },
+    "ErrorState": {
+      "viewport": "1200x294"
+    },
+    "FacetDrawer": {
+      "cardMode": "single",
+      "viewport": "960x720"
+    },
+    "IconButton": {
+      "viewport": "1200x172"
+    },
+    "ListEmpty": {
+      "viewport": "1200x317"
+    },
+    "ListGroup": {
+      "viewport": "1200x351"
+    },
+    "Loading": {
+      "viewport": "1200x197"
+    },
+    "Modal": {
+      "cardMode": "single",
+      "viewport": "860x560"
+    },
+    "ModePill": {
+      "cardMode": "column",
+      "viewport": "900x600"
+    },
+    "NotFound": {
+      "viewport": "1200x294"
+    },
+    "Picker": {
+      "cardMode": "single",
+      "viewport": "860x620"
+    },
+    "RawJson": {
+      "viewport": "1200x291"
+    },
+    "SearchBar": {
+      "viewport": "1200x176"
+    },
+    "SearchDisclosure": {
+      "viewport": "1200x160"
+    },
+    "SectionKey": {
+      "viewport": "1200x238"
+    },
+    "Sheet": {
+      "cardMode": "single",
+      "viewport": "960x620"
+    },
     "SheetHead": {
-      "cardMode": "column"
+      "viewport": "1200x281"
+    },
+    "Tag": {
+      "viewport": "1200x246"
+    },
+    "Term": {
+      "viewport": "1200x197"
     }
   }
 }

@@ -129,6 +129,24 @@ Two edges pull `src/shell/` in: `src/ui/ErrorState.tsx` imports `ApiError` from
 `shell/toast.tsx`. Both are gone — preact is uninstalled and that module split
 into `shell/toast.ts` + `shell/Toaster.tsx`.)
 
+## The icon vocabulary ships via extraEntries
+
+`src/ui/icons.tsx` is deliberately not in the barrel — inside the app every
+screen imports it directly. But the DS is a different consumer: `EmptyState`,
+`ErrorState` and `SheetHead` all take an `icon` prop, and with no icon exports a
+design agent has nothing to put in one and will reach for a foreign icon set.
+
+`.design-sync/ds-icons.ts` re-exports the module and is wired through
+`cfg.extraEntries`. The glyphs are already inlined (the components import them),
+so this cost ~32KB and took the namespace from 23 exports to 77. **It does not
+touch `src/ui/index.ts`** — the app's own public surface is unchanged.
+
+Do NOT instead add `@tabler/icons-react` to `extraEntries`: that merges the
+whole package (thousands of icons, many MB) and tells the design agent the DS
+owns glyphs it has no opinion about. The console's semantic names — `Failure`,
+`FirstRun`, `Missing` — are the point, because they carry the one-icon-per-
+concept rule that a raw icon package does not.
+
 ## Components excluded from the DS
 
 `JsonView` and `CollapseButton` are real components but were removed from the
@@ -152,6 +170,47 @@ name looks verified, but the `.type-character` *class* is defined in
 `memory.css`/`MemoryDetail.css`. The tint would silently never appear in any
 design built with the DS. When validating the header, grep for the **class**
 (`\.type-character`), not just the token.
+
+## Overlays render blank unless the preview gives them a sized stage
+
+`Sheet`, `Modal`, `Picker` and `FacetDrawer` all render `.peek-scrim`
+(`position: fixed; inset: 0`). The generated card wraps a single-mode story in
+`.ds-single { transform: translateZ(0) }` — and **a transform makes that element
+the containing block for `position: fixed` descendants**. So `inset: 0` resolves
+against a box whose only child is itself fixed, which collapses to 0px. Symptom
+is `[RENDER_THIN] … rendered height is 0px` or a `[RENDER_BLANK]`, and the
+screenshot shows a sliver of panel clipped at the top edge.
+
+The fix lives in the preview, not the config: wrap the overlay in a relatively
+positioned `Stage` of explicit height (see any of those four `.tsx` files). Do
+not fork `lib/emit.mjs` to drop the transform — it defines the output contract.
+
+Their viewports also decide which projection renders: `.sheet` flips to a
+400px right-hand panel at `min-width: 900px`. `Sheet` and `FacetDrawer` are set
+at 960 wide so the card shows the desktop panel; `Picker` is deliberately left
+at 860 so it shows the bottom sheet, which is the projection it exists for.
+
+## Card viewports are sized to content — re-measure when a preview changes
+
+Every component carries an explicit `cfg.overrides.<Name>.viewport`. Without one
+the product renders a 1200x800 card, and since these previews are 128–319px
+tall that left every card 60–84% empty. With them, cards sit at 80–91% filled.
+
+Re-measure whenever you add or remove a cell — a card that CLIPS is worse than
+one that is sparse. Two throwaway scripts do it (write them fresh; they are not
+committed):
+
+- measure: load `<Name>.html` at width 1200, read
+  `document.getElementById("g").getBoundingClientRect().height + 48`, set the
+  viewport to that + ~24 slack. **`documentElement.scrollHeight` does not work**
+  — it floors at the viewport height and reports 900 for everything.
+- fit-check: load each card AT its declared viewport and assert
+  `scrollHeight - innerHeight <= 1`.
+
+Cell count drives this more than content does: the grid is
+`repeat(auto-fit, minmax(320px, 1fr))`, so at 1200 wide it is 3 columns and a
+4th cell adds a whole row. `ModePill` is `cardMode: column`, so every cell is a
+full-width row and its height is the sum, not the max.
 
 ## Known render warns (triaged — a warn NOT on this list is new)
 
@@ -280,6 +339,13 @@ declarations on one line, so a `^`-anchored per-line regex reports false misses.
   designed — grades follow authored previews and preview-affecting config, not
   DS source edits — but it does mean a source rewrite this large ships without
   re-grading. Read the contact sheets yourself when the source has churned.
+- **The component list is hand-maintained and nothing checks it.** Auto-discovery
+  contributes nothing here (the build logs `exported PascalCase symbols: 0`,
+  because the repo has `noEmit: true` and ships no `.d.ts`), so the shipped set
+  is exactly `componentSrcMap`'s non-null keys. A new `src/ui/index.ts` export
+  is invisible to the DS until someone adds it by hand — which is how
+  `SectionKey` shipped four commits before reaching the design system. Diff the
+  barrel's component exports against `componentSrcMap` on every sync.
 - **`conventions.md` rots silently and nothing else checks it.** It is inlined
   into the design agent's prompt, so a wrong prop name there is wrong in every
   design built with this system, and no build step validates it. Re-run the
@@ -289,12 +355,9 @@ declarations on one line, so a `^`-anchored per-line regex reports false misses.
   silently — the build will NOT warn.
 - **`.ds-sync/scratch/`** is a leftover preact-era node_modules and is no longer
   used — `--node-modules ./node_modules` is the repo's own now. Safe to delete.
-- **Preview authoring is incremental**: 12 of 23 are authored, the rest ship
-  floor cards. Authored files live in `.design-sync/previews/` and carry
-  forward, so any re-sync can add to them without redoing the others. Still on
-  floor cards: FacetDrawer, Modal, ModePill, Picker, RawJson, SearchDisclosure,
-  Sheet. (Chip, Tag, IconButton and SearchBar have no authored preview either
-  but render fine unauthored — they need no props to draw something.)
+- **All 23 components are authored** — no floor cards remain. 61 cells, all
+  graded `good`. Adding a component means authoring its preview too, or the DS
+  regresses to a floor card for it.
 - **`Loading` renders a different card depending on when the shot is taken.**
   It escalates on timers: quiet line, `slow` at 3s, `stalled` at 12s. The
   capture lands in the first phase, so the `slow` and `stalled` states are not
