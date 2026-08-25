@@ -94,7 +94,7 @@
   },
   "memory.sourcesBlocked": {
     "text": "Blocked",
-    "note": "Drafts held before review; the catalog says \"blocked\" only inside sentences and never as a label for the set of them."
+    "note": "Drafts held before review; the catalog says \"blocked\" only inside sentences and never as a label for the set of them. Also the per-row marker in the review queue, which is the same claim about one draft."
   },
   "memory.sourcesReviewEach": {
     "text": "Review each",
@@ -721,6 +721,21 @@
   "memory.vault.id": {
     "text": "id",
     "note": "Key in the editor's key/value header. The catalog never exposes a note id as a labeled field — upstream ids live in diagnostics — so the one word this column needs has no source. Lowercase to match the column, whose other keys are catalog words rendered lowercase."
+  },
+  "memory.vault.type": {
+    "text": "type",
+    "despite": "memoryvault.type",
+    "note": "Key in the editor's key/value header. memoryvault.type is \"Type\", a filter heading in a vault that titles its controls; this column runs lowercase keys against their values, and a capital here would be the only one in the run."
+  },
+  "memory.vault.status": {
+    "text": "status",
+    "despite": "memoryvault.status",
+    "note": "Key in the editor's key/value header, over the three status buttons. Declines memoryvault.status (\"Status\") for the same reason as memory.vault.type: the column is lowercase, and the capital form is still used as the button group's accessible name."
+  },
+  "memory.vault.keywords": {
+    "text": "keywords",
+    "despite": "memoryvault.keywords",
+    "note": "Key in the editor's key/value header, over the memory's effective keywords. Declines memoryvault.keywords (\"Keywords\") for the same reason as memory.vault.type; the words are the catalog's, only the case is the column's."
   },
   "memory.vault.links": {
     "text": "links",

@@ -5,14 +5,6 @@
     "src/tools": "baselined",
     "src/tools/memory": "clean",
     "src/tools/lorebooks": "clean",
-    "src/tools/presets": "baselined"
-  },
-  "src/tools/presets/PresetsTool.tsx": [
-    "\u0000 unsaved \u0000",
-    "change",
-    "changes",
-    "fields",
-    "this section was updated elsewhere while you were editing \u0000 . saving now would overwrite that.",
-    "— the same \u0000 you changed"
-  ]
+    "src/tools/presets": "clean"
+  }
 }

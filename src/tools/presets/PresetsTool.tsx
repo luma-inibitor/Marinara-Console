@@ -10,7 +10,7 @@ import { useDraft, type Draft } from "../../shell/draft";
 import { ApiError } from "../../shell/api";
 import { tokensOf } from "../../shell/api";
 import { FullscreenText } from "../../ui/FullscreenText";
-import { t, tAny } from "../../copy";
+import { joinList, t, tAny } from "../../copy";
 import {
   type PresetFull, type PromptPreset, type PromptSection, type PresetLoad,
   fetchPresets, fetchFull, patchPreset, patchSection, createSection, deleteSection,
@@ -456,7 +456,7 @@ function Editor({ presetId }: { presetId: string }) {
             <Chip onClick={() => setFs({ kind: "preset", field: "gamePrompt" })}>
               {t("presets.gamePrompt")} <b className="t-num">{tokensOf(expand(full.preset.gamePrompt, full.preset))}</b>
             </Chip>
-            <Chip onClick={() => setFs({ kind: "preset", field: "description" })}>Description</Chip>
+            <Chip onClick={() => setFs({ kind: "preset", field: "description" })}>{t("lorebooks.entry.subDescription")}</Chip>
           </div>
         </header>
 
@@ -670,7 +670,7 @@ function SectionDetail(props: {
               <>
                 <button className="edit-content" onClick={props.onExpand}>
                   <span className="ec-label t-label t-label-s">
-                    <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />Edit in full screen
+                    <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />{t("lorebooks.record.editFullscreen")}
                   </span>
                   <span className="ec-meta t-data">{s.content.length.toLocaleString()} {t("presets.chRaw")}</span>
                 </button>
@@ -721,15 +721,20 @@ function SectionSaveBar(props: { draft: Draft<PromptSection>; onSave: () => Prom
   if (d.conflict) {
     return (
       <div className="savebar has-conflict" role="alertdialog">
-        <p className="t-label">Changed by someone else</p>
+        <p className="t-label">{t("lorebooks.record.conflictTitle")}</p>
         <p className="prose-note">
-          This section was updated elsewhere while you were editing
-          {d.conflict.fields.length > 0 && <> — the same {d.conflict.fields.length === 1 ? "field" : "fields"} you changed ({d.conflict.fields.join(", ")})</>}
-          . Saving now would overwrite that.
+          {t("presets.section.conflictBody", {
+            detail: d.conflict.fields.length > 0
+              ? t("lorebooks.record.conflictFields", {
+                  count: d.conflict.fields.length,
+                  list: joinList(d.conflict.fields),
+                })
+              : "",
+          })}
         </p>
         <div className="savebar-acts">
-          <button className="dbtn" onClick={d.takeTheirs}>Discard mine, load theirs</button>
-          <button className="dbtn is-primary" onClick={d.keepMine}>Re-apply mine over theirs</button>
+          <button className="dbtn" onClick={d.takeTheirs}>{t("lorebooks.record.takeTheirs")}</button>
+          <button className="dbtn is-primary" onClick={d.keepMine}>{t("lorebooks.record.keepMine")}</button>
         </div>
       </div>
     );
@@ -739,11 +744,11 @@ function SectionSaveBar(props: { draft: Draft<PromptSection>; onSave: () => Prom
       <span className="savebar-state t-data">
         {d.saving ? "Saving…"
           : d.error ? <span className="is-err">{d.error}</span>
-          : d.dirty ? <><b>{d.dirtyFields.length}</b> unsaved {d.dirtyFields.length === 1 ? "change" : "changes"}</>
+          : d.dirty ? t("lorebooks.record.unsavedChanges", { count: d.dirtyFields.length })
           : "No changes"}
       </span>
       <div className="savebar-acts">
-        <button className="dbtn" disabled={!d.dirty || d.saving} onClick={d.cancel}>Cancel</button>
+        <button className="dbtn" disabled={!d.dirty || d.saving} onClick={d.cancel}>{t("lorebooks.record.cancel")}</button>
         <button className="dbtn is-primary" disabled={!d.dirty || d.saving} onClick={() => void props.onSave()}>
           {d.saving ? "Saving…" : "Save changes"}
         </button>

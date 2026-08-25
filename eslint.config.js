@@ -1,4 +1,5 @@
 import babelParser from "@babel/eslint-parser";
+import i18next from "eslint-plugin-i18next";
 import importPlugin from "eslint-plugin-import";
 import reactHooks from "eslint-plugin-react-hooks";
 
@@ -29,13 +30,37 @@ export default [
         },
       },
     },
-    plugins: { "react-hooks": reactHooks, import: importPlugin },
+    plugins: { "react-hooks": reactHooks, import: importPlugin, i18next },
     settings: {
       // Resolution is the node resolver's, over TypeScript extensions.
       "import/resolver": { node: { extensions: [".ts", ".tsx", ".js", ".json"] } },
       "import/parsers": { "@babel/eslint-parser": [".ts", ".tsx"] },
     },
     rules: {
+      // Copy that reaches the reader as JSX text must come out of t().
+      // scripts/copycheck.mjs asks a different question — whether the words
+      // exist in a catalog — so a hand-typed <span>status</span> passes it
+      // forever, and reworking that catalog entry leaves the screen behind.
+      //
+      // jsx-text-only reads JSX text nodes and nothing else: attributes, class
+      // names, route ids and the `t("…")` key itself are all invisible to it.
+      // copycheck still owns the attribute copy (aria-label, title, placeholder)
+      // and the copy tables in .ts files.
+      //
+      // The `words` list replaces the plugin's defaults wholesale rather than
+      // extending them, so anything not listed here is copy.
+      "i18next/no-literal-string": [
+        "error",
+        {
+          mode: "jsx-text-only",
+          words: {
+            exclude: [
+              /^[^\p{L}]+$/u, // no letter anywhere: a number, a separator, a glyph
+              /^[kst]$/, // unit suffixes glued to a number: k, seconds, tokens
+            ],
+          },
+        },
+      ],
       "react-hooks/exhaustive-deps": "error",
       "react-hooks/rules-of-hooks": "error",
       // No module may take part in an import cycle.
