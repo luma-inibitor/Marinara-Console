@@ -1,5 +1,4 @@
-// A preset's sections: which of them the assembler keeps, what order they
-// reach it in, what each costs, and where a group's run begins and ends.
+// Which sections the assembler keeps, in what order, at what cost, in what run.
 import { tokensOf } from "../../../lib/tokens";
 import type { PresetFull, PromptGroup, PromptPreset, PromptSection } from "../api/schema";
 import { expand } from "./macros";

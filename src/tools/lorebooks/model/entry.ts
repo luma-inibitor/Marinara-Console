@@ -1,5 +1,4 @@
-// What one entry is: its status, what it costs, whether a search matches it,
-// and the advanced fields the editor offers with the engine's own defaults.
+// One entry's status, cost, search match, and advanced fields.
 import { tokensOf } from "../../../lib/tokens";
 import type { Entry } from "../api/schema";
 

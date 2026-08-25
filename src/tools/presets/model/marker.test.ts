@@ -1,5 +1,4 @@
-// Copy is stubbed to the catalog key, so an assertion names the key rather
-// than the English in src/copy/presets.json.
+// Copy is stubbed to the catalog key, so a reword is not a test failure.
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../../../copy", () => ({ tAny: (key: string) => key }));

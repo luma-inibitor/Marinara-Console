@@ -69,6 +69,4 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
 let onResult: ((err: unknown | null) => void) | null = null;
 export const setResultHook = (fn: (err: unknown | null) => void) => { onResult = fn; };
 
-/** The token estimate is a primitive, not transport; it is re-exported here
- *  because a screen counting characters reaches for it beside `api`. */
 export { tokensOf } from "../lib/tokens";
