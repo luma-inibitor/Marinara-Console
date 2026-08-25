@@ -6,11 +6,6 @@ import { LTM } from "./routes";
 import { NoteSchema } from "./schema";
 import type { Note } from "./types";
 
-/** A memory that fails its schema is dropped and reported, and the rest of the
- *  vault still loads — the alternative is an empty screen because one record
- *  out of thirty-one grew a shape we do not know. `parseWire` below is the
- *  other half of that: one memory is the whole response, so there is nothing
- *  left to show and it throws. */
 export const fetchNotes = async (query: Record<string, string | number> = {}): Promise<Note[]> => {
   const qs = new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString();
   const path = `${LTM}/notes${qs ? `?${qs}` : ""}`;

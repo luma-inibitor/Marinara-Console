@@ -1,9 +1,5 @@
-// The two failure modes, pinned: an envelope mismatch throws, an element
-// mismatch drops that element and keeps the rest, and neither is silent.
-//
-// Copy is stubbed to `key|param=value`, so what these assert is the catalog
-// key a person would see rather than the sentence — rewording shell.json must
-// not fail them.
+// Pins the failure contract in wire.ts. Copy is stubbed to `key|param=value`
+// so the assertions name catalog keys rather than English.
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -27,12 +23,10 @@ import { parseItems, parseWire, WireMismatchError } from "./wire";
 
 const Thing = v.looseObject({ id: v.string(), on: v.boolean() });
 
-/** The toast is raised from a lazy `import()`, so it lands a microtask after
- *  the call that caused it. */
+/** The toast comes from a lazy `import()`, a microtask behind its caller. */
 const settled = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-// Flush before clearing: a test that does not wait still leaves its toast in
-// flight, and it would otherwise land in the next test's list.
+// Flush before clearing, or a toast still in flight lands in the next test.
 afterEach(async () => {
   await settled();
   raised.length = 0;
@@ -58,8 +52,7 @@ describe("parseWire", () => {
     expect((thrown as WireMismatchError).context).toBe("GET /thing");
   });
 
-  // The precedent this whole module exists for: `"false"` is truthy, so an
-  // engine that starts sending booleans as strings reads as `true` everywhere.
+  // `"false"` is truthy, so believing it reads as `true` everywhere.
   it("rejects a boolean sent as the string \"false\" rather than believing it", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     expect(() => parseWire(Thing, { id: "a", on: "false" }, "GET /thing")).toThrow(WireMismatchError);

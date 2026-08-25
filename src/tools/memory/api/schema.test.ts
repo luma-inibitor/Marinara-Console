@@ -1,10 +1,6 @@
-// What these schemas must accept, and what they must not.
-//
-// The fixtures below are shaped from what the dev engine actually returned for
-// GET /notes, GET /notes/:id and GET /drafts/review — including every field
-// `types.ts` never described — with the contents replaced. The point of each
-// "accepts" case is that the engine already sends it; if one of them starts
-// failing, the schema drifted from the engine rather than the other way round.
+// Fixtures are shaped from real dev-engine responses with the contents
+// replaced, so an "accepts" case failing means the schema drifted, not the
+// fixture.
 
 import { describe, expect, it } from "vitest";
 import * as v from "valibot";
@@ -12,7 +8,6 @@ import { MutationSchema, NoteSchema, ReviewResponseSchema } from "./schema";
 
 const ok = (schema: Parameters<typeof v.safeParse>[0], value: unknown) => v.safeParse(schema, value).success;
 
-/** A memory as the live engine sends one, undocumented fields and all. */
 const note = () => ({
   id: "char_example",
   title: "Example",
@@ -59,8 +54,6 @@ describe("NoteSchema", () => {
     expect(ok(NoteSchema, { ...note(), somethingNewUpstream: { nested: true } })).toBe(true);
   });
 
-  // `subjects` was typed `string[]` and never was: the engine sends scoped
-  // identity keys, and an npc with no host record carries a key and no ref.
   it("accepts a subject with no resolved ref", () => {
     expect(ok(NoteSchema, { ...note(), subjects: [{ key: "npc:watson" }] })).toBe(true);
   });
@@ -79,8 +72,7 @@ describe("NoteSchema", () => {
     expect(ok(NoteSchema, { ...note(), sections: {} })).toBe(true);
   });
 
-  // The poisoned-map bug: a memory with no usable id keys `notesById` under
-  // `undefined` and reaches every screen reading it.
+  // A memory with no usable id keys `notesById` under `undefined`.
   it("rejects a memory with no id", () => {
     const { id, ...rest } = note();
     void id;
@@ -95,8 +87,6 @@ describe("NoteSchema", () => {
     expect(ok(NoteSchema, { note: note(), rebuild: {} })).toBe(false);
   });
 
-  // Every type and status has exactly one label in the copy catalog and there
-  // is no fallback, so an unknown member has nothing to render as.
   it("rejects a memory type the copy catalog cannot label", () => {
     expect(ok(NoteSchema, { ...note(), type: "faction" })).toBe(false);
   });

@@ -1,30 +1,13 @@
-// The wire shapes of the read paths the vault and the review queue depend on,
-// as schemas that run rather than interfaces that are asserted.
+// Validates GET /notes, GET /notes/:id and GET /drafts/review; `types.ts`
+// infers its types from here.
 //
-// These are the runtime half of `types.ts`, and the types there are inferred
-// from here so the two cannot drift. What is NOT here stays hand-written in
-// `types.ts` for now — the write paths, import, status, backup, chats,
-// characters and the ledger — and those still travel on an unchecked `as T`.
-//
-// Two rules shape every schema below.
-//
-// Loose, everywhere. `v.looseObject` keeps the fields it does not name. The
-// live engine already sends more than `types.ts` ever described — `scope`,
-// `createdAt` and `extractionFingerprint` on every note, `deduplications`
-// beside every draft — and a schema that rejected those would fail against the
-// engine it was written from. Unknown fields are not evidence of a problem.
-//
-// Narrow, deliberately. A field is required here only when the console cannot
-// do its job without it, because required is what turns a mismatch into a
-// dropped record. `id` is required because a memory without one poisons the
-// notes map under the key `undefined`. `type` and `status` are closed sets
-// because the copy catalog has one label per member and no fallback. Salience,
-// confidence and the rest of the engine's scoring ride through unnamed: the
-// console shows them at most, and showing nothing beats dropping the memory.
+// Every object is loose, so the fields the engine sends and the console never
+// reads pass through unnamed. A field is required below only where the console
+// cannot work without it, since required is what drops a record.
 import * as v from "valibot";
 
-/** Every memory type the copy catalog can label. A note carrying anything else
- *  is a real engine change, and is reported rather than rendered blank. */
+// Closed sets rather than `v.string()`: the copy catalog holds one label per
+// member and no fallback, so an unknown member has nothing to render as.
 export const NOTE_TYPES = ["source", "timeline_event", "character", "relationship", "scene", "thread", "world", "tone"] as const;
 const NOTE_STATUSES = ["active", "resolved", "archived"] as const;
 const DISPOSITIONS = ["new", "merge", "rewrite"] as const;
@@ -32,6 +15,7 @@ const RISKS = ["low", "medium", "high"] as const;
 const MUTATION_KINDS = ["create_note", "append_section", "update_section", "add_link", "set_keywords", "set_status", "set_subjects"] as const;
 const CHANGE_KINDS = ["section", "link", "keywords", "status", "subjects"] as const;
 
+/** Non-empty: a memory with a blank id keys the notes map under `undefined`. */
 const id = v.pipe(v.string(), v.minLength(1));
 const strings = v.array(v.string());
 
@@ -40,12 +24,9 @@ export const NoteSectionSchema = v.looseObject({
   importance: v.optional(v.string()),
 });
 
-/** Who a memory is about. `types.ts` called this `string[]` and it never was:
- *  the engine sends `{key, ref?}`, where `key` is a scoped identity
- *  ("character:sPXZ…", "npc:watson") and `ref` resolves it to a host record
- *  when there is one to resolve. An npc that exists only in the prose has a
- *  key and no ref. Nothing in the console reads the values yet, which is why
- *  the wrong type survived. */
+/** Not `string[]`, whatever `types.ts` used to say: the engine sends a scoped
+ *  identity key ("character:sPXZ…", "npc:watson"), and `ref` only when that key
+ *  resolves to a host record. */
 const SubjectSchema = v.looseObject({
   key: v.string(),
   ref: v.optional(v.looseObject({ kind: v.optional(v.string()), id: v.optional(v.string()) })),

@@ -9,11 +9,8 @@
 // mirror the package schema and draft-projector — fidelity beats elegance. The
 // caps themselves are rules rather than payload, and live in model/caps.ts.
 //
-// The shapes the read paths carry — a memory, a mutation, the review queue —
-// are INFERRED from the schemas in `schema.ts` that check them at runtime, so
-// there is one description of each and it is the one that runs. Everything
-// below `PreflightResponse` is still a hand-written interface asserted with
-// `as T`, and is listed as remaining work in BACKLOG.md.
+// The types down to ReviewResponse are inferred from the schemas in schema.ts
+// that check them; everything below is still asserted with `as T`.
 
 import type * as v from "valibot";
 import type { ConflictSchema, MutationSchema, NoteSchema, NoteSectionSchema, NOTE_TYPES, ReviewChangeSchema, ReviewResponseSchema } from "./schema";
@@ -21,22 +18,11 @@ import type { ConflictSchema, MutationSchema, NoteSchema, NoteSectionSchema, NOT
 export type NoteType = (typeof NOTE_TYPES)[number];
 export type Disposition = "new" | "merge" | "rewrite";
 
-/** One block of a memory's body. `text` is the block; the engine's scoring
- *  fields ride through unnamed rather than being described here. */
 export type NoteSection = v.InferOutput<typeof NoteSectionSchema>;
 
-/**
- * A stored memory. Beyond the fields `schema.ts` names:
- * `keywords` is what the engine derived — not the whole recall list, and not
- * the list the 30 cap is measured against (`model/keywords.ts`).
- * `manualKeywords` is what a person typed, and is absent rather than empty on
- * notes written before the engine split the two arrays.
- * `suppressedKeywords` are derived keywords a person removed; recall skips them.
- * `provenance` says where an imported source note came from, and only source
- * notes carry it. `version` is bumped by the engine on every write.
- * `subjects` names who a memory is about — one entry on a character memory,
- * two on a relationship — as scoped identity keys, not note ids.
- */
+/** `keywords` is what the engine derived, and is not the list the 30 cap is
+ *  measured against; see model/keywords.ts. `manualKeywords` is absent, not
+ *  empty, on notes written before the engine split the two arrays. */
 export type Note = v.InferOutput<typeof NoteSchema>;
 
 export type Conflict = v.InferOutput<typeof ConflictSchema>;

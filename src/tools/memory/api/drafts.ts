@@ -9,8 +9,6 @@ import { LTM } from "./routes";
 import { ReviewResponseSchema } from "./schema";
 import type { AcceptResponse, Mutation, PreflightResponse, ReviewResponse } from "./types";
 
-/** The queue arrives as one document, so there is no element to drop: a
- *  mismatch throws and the screen shows the load error it already has. */
 export const fetchReview = async (): Promise<ReviewResponse> =>
   parseWire(ReviewResponseSchema, await api(`${LTM}/drafts/review`), `GET ${LTM}/drafts/review`);
 export const preflightDraft = (draftId: string, body: { mutationIds: string[]; editedMutations?: Mutation[] }) =>
