@@ -31,8 +31,8 @@ export function launch(options = {}) {
   return chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH, ...options });
 }
 
-// `settle` is the pause after mount: the app finishes its first data render
-// after the network has gone quiet, so networkidle alone is too early.
+// `settle` is how long #app must go without a DOM mutation before the page is
+// ready. A fixed wait can return while a screen is still loading.
 //
 // Mounting is waited on rather than assumed. Vite rewrites every module URL
 // with a `?t=` cache-buster when a file changes, so a file edited, moved or
@@ -61,6 +61,33 @@ export async function openPage(browser, { viewport, hash = "", url = DEV_URL + h
       await page.reload({ waitUntil: "networkidle", timeout });
     }
   }
-  if (settle) await page.waitForTimeout(settle);
+  // The app's only loading marker (src/ui/Loading.tsx). It self-times-out at
+  // 12s, so this cannot hang.
+  try {
+    await page.waitForFunction(() => !document.querySelector("#app .loadingstate"), null, { timeout: 20000 });
+  } catch {
+    throw new Error(`screen never finished loading at ${url}`);
+  }
+  // Web fonts change metrics, which moves anything measured from layout.
+  await page.evaluate(() => document.fonts.ready.then(() => true));
+  if (settle && !(await quiet(page, settle))) {
+    console.warn(`warning: ${url} never held still for ${settle}ms — reading it anyway`);
+  }
   return page;
+}
+
+/** True once #app has gone `span` ms without a mutation, false if it never
+ *  does. Attributes count: a flipped class is a change worth catching. */
+function quiet(page, span, cap = Math.max(span * 4, 8000)) {
+  return page.evaluate(([span, cap]) => new Promise((resolve) => {
+    const root = document.getElementById("app");
+    if (!root) return resolve(true);
+    let idle;
+    const observer = new MutationObserver(() => arm());
+    const stop = (settled) => { observer.disconnect(); clearTimeout(idle); clearTimeout(giveUp); resolve(settled); };
+    const giveUp = setTimeout(() => stop(false), cap);
+    const arm = () => { clearTimeout(idle); idle = setTimeout(() => stop(true), span); };
+    observer.observe(root, { childList: true, subtree: true, attributes: true, characterData: true });
+    arm();
+  }), [span, cap]);
 }
