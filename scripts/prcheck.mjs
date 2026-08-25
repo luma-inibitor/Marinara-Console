@@ -1,30 +1,13 @@
 #!/usr/bin/env node
-// A pull request's title and its opening paragraph.
+// Checks a pull request's title against the commit-subject rule (a squash merge
+// writes the title as the commit subject) and its opening paragraph.
 //
-//   node scripts/prcheck.mjs                       # reads $GITHUB_EVENT_PATH
-//   node scripts/prcheck.mjs --title "fix: …" --body-file body.md
+//   node scripts/prcheck.mjs [--title <text> --body-file <path>]  # else $GITHUB_EVENT_PATH
 //
-// ── The title ─────────────────────────────────────────────────────────────
-// Held to the same Conventional Commits rule as a commit subject, because a
-// squash merge writes the PR title as the commit subject — an unconventional
-// title lands an unconventional commit on main whatever the branch's own
-// commits looked like.
+// Nothing is asserted about sentence length, reading grade or word choice: such
+// a rule fires on good openings, and the check is then switched off.
 //
-// ── The opening ───────────────────────────────────────────────────────────
-// Luma reads the first two sentences and often nothing after them, so they
-// have to say what was wrong and what this does about it, to someone who has
-// not seen the code. Only what can be judged mechanically is asserted here:
-// that an opening paragraph exists, that it is prose rather than a heading or
-// a list, that it is at least two sentences, and that it does not open in the
-// vocabulary of the diff — a path, a code span, a `#123`, an identifier.
-//
-// Deliberately NOT checked: whether the two sentences are actually the problem
-// and the solution, sentence length, reading grade, and any word list. A check
-// that fires on a good opening gets switched off within the week, and none of
-// those can tell a good opening from a bad one.
-//
-// Exit codes: 0 clean · 1 the title or the opening breaks a rule · 2 the check
-// could not run and must never read as a pass.
+// Exit codes: 0 clean · 1 a rule broken · 2 could not run, never a pass.
 
 import { readFileSync } from "node:fs";
 import { conventionalHelp, conventionalProblem } from "./lib/conventional.mjs";
@@ -40,9 +23,6 @@ function die(reason) {
   process.exit(2);
 }
 
-// ── Reading the opening ───────────────────────────────────────────────────
-
-// A comment is markup the reader never sees, so it is not the opening.
 const COMMENT = /<!--[\s\S]*?-->/g;
 
 const BLOCK_OPENERS = [
@@ -57,22 +37,17 @@ const BLOCK_OPENERS = [
   [/^<\w/, "raw HTML"],
 ];
 
-// Each pattern is a way of naming a thing that only exists inside the diff.
 const DIFF_VOCABULARY = [
   [/`/, "a code span"],
   [/(^|[\s(])#\d+\b/, "a `#123` cross-reference"],
   [/\b[\w-]+\.(ts|tsx|js|jsx|mjs|cjs|css|json|md|ya?ml|html|sh|toml|lock)\b/i, "a file name"],
   [/(^|\s)(src|scripts|design|public|packages|node_modules|\.github)\//, "a file path"],
   [/\b\w+\(\)/, "a function call"],
-  // camelCase and snake_case are identifiers in every language here; a word a
-  // person would type in a sentence is neither.
   [/\b[a-z][a-z0-9]*[A-Z][A-Za-z0-9]*\b/, "a camelCase identifier"],
   [/\b[a-z0-9]+_[a-z0-9_]+\b/, "a snake_case identifier"],
 ];
 
-// A period that ends an abbreviation is not the end of a sentence. Only the
-// ones that turn up in prose about software are listed; an unknown one costs a
-// sentence, and the floor is two.
+// An unlisted abbreviation costs a sentence against a floor of two.
 const ABBREVIATIONS = /\b(e\.g|i\.e|etc|vs|cf|approx|Mr|Mrs|Ms|Dr|no|fig|al)\.$/i;
 
 export function openingOf(body) {
@@ -83,9 +58,6 @@ export function openingOf(body) {
 }
 
 export function countSentences(paragraph) {
-  // Split after terminal punctuation followed by whitespace, keeping the
-  // terminator with the sentence it ends, then drop the pieces that ended on an
-  // abbreviation by gluing them to what follows.
   const pieces = paragraph.split(/(?<=[.!?]["')\]]?)\s+/);
   let count = 0;
   let carrying = false;
@@ -98,8 +70,6 @@ export function countSentences(paragraph) {
     count += 1;
     carrying = false;
   }
-  // A paragraph whose last sentence has no terminal punctuation still said
-  // something; count it.
   if (carrying) count += 1;
   return count;
 }
@@ -123,9 +93,7 @@ export function bodyProblems(body) {
   return problems;
 }
 
-// ── Running it ────────────────────────────────────────────────────────────
-
-// The rules above are imported by the tests; only a direct run checks a PR.
+// The tests import the rules above; only a direct run checks a PR.
 if (import.meta.filename === process.argv[1]) main();
 
 function main() {

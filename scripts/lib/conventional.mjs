@@ -1,27 +1,18 @@
-// The Conventional Commits 1.0.0 subject rule, and the one place it is stated.
-// The commit-msg hook, the CI commit sweep and the PR-title check all read it
-// from here so a skipped hook and a green build cannot disagree about the rule.
-//
-// Spec: https://www.conventionalcommits.org/en/v1.0.0/
+// The commit-subject rule, read from here by the hook, the CI sweep and the
+// pull request title check. Spec: https://www.conventionalcommits.org/en/v1.0.0/
 
 export const TYPES = ["feat", "fix", "chore", "docs", "refactor", "test", "perf", "build", "ci"];
 
-// `type(scope)!: description` — scope and `!` optional, exactly one space after
-// the colon, description non-empty.
-// The type is matched in any case so a capitalized one can be reported as the
-// case error it is rather than as an unrecognizable subject.
+// The type matches in any case so a capitalized one reports as a case error.
 const SUBJECT = /^(?<type>[A-Za-z]+)(?:\((?<scope>[^()\n]*)\))?(?<breaking>!)?: (?<description>.+)$/;
 
-// Git writes these itself or a later command consumes them; holding them to the
-// subject rule would fail commits nobody typed the subject of.
 const GENERATED = [/^Merge /, /^Revert "/, /^fixup! /, /^squash! /, /^amend! /];
 
 export function isGenerated(subject) {
   return GENERATED.some((pattern) => pattern.test(subject));
 }
 
-// The commit message as git hands it to the hook: the editor template's `#`
-// lines, and everything past the `--verbose` diff marker, are not the message.
+// The editor template's `#` lines and the `--verbose` diff are not the message.
 export function subjectOf(message) {
   const scissors = message.indexOf("\n# ------------------------ >8 ");
   const body = scissors === -1 ? message : message.slice(0, scissors);
@@ -31,8 +22,6 @@ export function subjectOf(message) {
   return (first ?? "").trimEnd();
 }
 
-// Returns null when the subject is fine, or a one-line statement of what is
-// wrong with it.
 export function conventionalProblem(subject) {
   if (subject.trim() === "") return "the subject line is empty";
   const match = SUBJECT.exec(subject);

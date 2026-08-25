@@ -1,9 +1,6 @@
 name: Conventions
 
-# The commit-msg hook can be skipped with --no-verify, and a pull request's
-# title and body never pass through a hook at all. This is where those are
-# enforced. Separate from Check so editing a title or body re-runs this alone
-# rather than the whole build.
+# Separate from Check so editing a title or body re-runs this alone.
 on:
   pull_request:
     types: [opened, reopened, synchronize, edited, ready_for_review]
@@ -23,8 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # The commit sweep walks base..head, so the branch's history has to
-          # be here in full.
+          # The sweep walks base..head.
           fetch-depth: 0
           persist-credentials: false
 
@@ -33,8 +29,7 @@ jobs:
         with:
           node-version-file: .nvmrc
 
-      # Both checks import nothing outside node's standard library, so there is
-      # no npm ci step here.
+      # Both checks import only node's standard library, so no npm ci.
       - name: Commit subjects
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}

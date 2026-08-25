@@ -1,6 +1,4 @@
-// The pull request rules, in both directions. The openings that must pass are
-// real ones, taken from pull requests written to Luma's standard: a rule that
-// fires on a good opening is worse than no rule, because it gets switched off.
+// The pull request rules, in both directions.
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
@@ -17,7 +15,7 @@ function run(title, body) {
   return { code: r.status, out: r.stdout + r.stderr };
 }
 
-// PRs #58, #50 and #65 as merged.
+// Real openings, so a rule that fires on a good one fails here first.
 const REAL_OPENINGS = [
   "Undo on an archived memory stopped working a few seconds before the message offering it disappeared, and nothing on screen showed that the window had closed. This gives those toasts the full undo window and the countdown that goes with it.",
   "Keywords you add to a memory by hand can silently stop working: the engine only ever matches on the first thirty of a note's keywords, and the ones it generated itself take those slots first. This teaches the console that limit and gives it a way to count the keywords that are stored but never used, so nothing changes on screen yet.",

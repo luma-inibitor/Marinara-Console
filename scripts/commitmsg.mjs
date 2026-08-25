@@ -1,18 +1,10 @@
 #!/usr/bin/env node
-// Commit subjects follow Conventional Commits 1.0.0. Same rule in two places it
-// can be applied: the local commit-msg hook, and a sweep over a pull request's
-// commits in CI, because a hook can be skipped.
+// Checks commit subjects: one for the commit-msg hook, or a range for CI, which
+// is where a subject committed with --no-verify is caught.
 //
-//   node scripts/commitmsg.mjs .git/COMMIT_EDITMSG   # what the hook passes
-//   node scripts/commitmsg.mjs --message "feat: add a thing"
-//   node scripts/commitmsg.mjs --range origin/main..HEAD
+//   node scripts/commitmsg.mjs <message-file> | --message <text> | --range <a..b>
 //
-// Merge, revert and fixup subjects are git's own wording, not the author's, and
-// are skipped. History before this check exists is not swept: the rule applies
-// to what a branch adds, so the range is the pull request's commits.
-//
-// Exit codes: 0 clean · 1 a subject breaks the rule · 2 the check could not run
-// and must never read as a pass.
+// Exit codes: 0 clean · 1 a subject breaks the rule · 2 could not run, never a pass.
 
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -40,8 +32,6 @@ if (rangeAt !== -1) {
   if (!range) die("--range needs a revision range");
   let log;
   try {
-    // A NUL between records; a subject cannot contain one, a body can contain
-    // anything else a delimiter might have used.
     log = execFileSync("git", ["log", "--no-merges", "--format=%s%x00", range], { encoding: "utf8" });
   } catch (error) {
     die(`git log ${range} failed: ${error.message}`);

@@ -1,5 +1,4 @@
-// The commit subject rule, in both directions: conventional subjects pass, and
-// each way of breaking the rule is rejected by name.
+// The commit subject rule, in both directions.
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
