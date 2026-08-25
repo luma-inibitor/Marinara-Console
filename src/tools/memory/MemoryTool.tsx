@@ -96,11 +96,6 @@ export function MemoryTool({ rest }: { rest: string[] }) {
           // /status is likewise a server-wide aggregate that cannot see scope.
           // Both remain the fallback for the moment before anything has loaded,
           // where the alternative is a badge reading zero over a full vault.
-          //
-          // The vault badge reads the loaded notes whether or not a scope is
-          // set, because the list drops archived memories and `savedMemories`
-          // counts them: a server total is only close enough to the truth
-          // before the records this tab lists have arrived.
           const count = id === "review" ? (reviewData ? scopedRows.length : s?.notes.pendingDrafts ?? 0)
             : id === "vault" ? (loadedNotes.size ? listedMemories : s?.notes.savedMemories ?? 0)
             : (pending ?? 0);

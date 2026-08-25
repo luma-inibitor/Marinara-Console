@@ -1,8 +1,3 @@
-// Archiving is the only status that takes a memory out of the vault list.
-// Pinned as a predicate rather than as an inline filter because the list, the
-// two tab counts and the type chips all have to agree about it — three call
-// sites reading one rule.
-
 import { describe, expect, it } from "vitest";
 import { makeNote } from "../test/factories";
 import { listedInVault } from "./listing";

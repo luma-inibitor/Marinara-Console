@@ -88,15 +88,10 @@ export function archiveNote(id: string): Promise<void> {
   return setNoteStatus(id, "archived");
 }
 
-/** Archives the memory together with everything extracted from it. The engine's
- *  DELETE route is a cascading archive, not a removal — it answers with every
- *  note it touched — so those go back into the map carrying their new status
- *  rather than being dropped from it. Dropping them would leave the extracted
- *  memories in the map still reading `active`, which is the one thing this
- *  write is not.
- *
- *  Permanent removal is a different route (`POST /notes/permanent-delete`) that
- *  the console never calls. Returns every note archived, the target first. */
+/** Archives the memory together with everything extracted from it, and returns
+ *  every note archived. Each one is stored rather than dropped: dropping the
+ *  target leaves the memories extracted from it in the map still reading
+ *  `active`. */
 export async function archiveNoteWithExtracted(id: string): Promise<Note[]> {
   const { notes } = await deleteNote(id);
   const archived = notes ?? [];

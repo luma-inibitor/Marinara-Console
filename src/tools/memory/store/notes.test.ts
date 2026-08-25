@@ -38,10 +38,6 @@ describe("patchNote", () => {
   });
 });
 
-// The route named DELETE archives; nothing it touches leaves the store. A
-// version of this that dropped the target left the memories extracted from it
-// sitting in the map still reading "active", which is the one status the write
-// had just made false.
 describe("archiveNoteWithExtracted", () => {
   const SOURCE: Note = { id: "source_x", type: "source", status: "archived", modes: [], links: [], sections: {} };
   const DERIVED: Note = { ...NOTE, id: "world_x", type: "world", status: "archived" };

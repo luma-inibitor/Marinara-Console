@@ -14,10 +14,9 @@ export const fetchNote = (id: string) => api<Note>(`${LTM}/notes/${id}`);
  *  off — `{note, rebuild}`, never a bare note. Unwrapping here keeps the
  *  envelope out of the store, which stores memories. */
 interface NoteWrite { note: Note; rebuild?: unknown }
-/** DELETE archives the note and everything extracted from it — nothing is
- *  removed — so the reply carries the whole set it archived. Permanent removal
- *  is a different route (`POST /notes/permanent-delete`), which this console
- *  does not call. */
+/** DELETE archives the note and everything extracted from it, so the reply
+ *  carries the whole set. Permanent removal is `POST /notes/permanent-delete`,
+ *  which this console does not call. */
 interface NoteDelete { archived: boolean; note: Note; notes: Note[]; rebuild?: unknown }
 
 export const patchNote = async (id: string, patch: Record<string, unknown>): Promise<Note> =>

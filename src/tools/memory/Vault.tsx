@@ -1,9 +1,7 @@
 // Memory Vault — browse and correct what is stored.
 // Source notes are audit records, not memories: excluded by default, behind a
 // toggle. Cap pressure reads as a gradient on the row. Both write controls
-// archive — one this memory, one it and everything extracted from it — and
-// nothing here removes a memory: the engine's DELETE route is a cascading
-// archive, and its permanent-delete route is not called from this console.
+// archive; nothing on this screen removes a memory.
 
 import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../../lib/store";
@@ -74,9 +72,6 @@ export function Vault(props: { noteId?: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [notes, scope.characterId, scope.chatId]);
 
-  // Archived memories are out of the list, and out of everything that counts
-  // it: a chip tallying rows the list does not show is a header contradicting
-  // its own rows just as much as an unscoped tally would be.
   const listed = useMemo(() => inScope.filter(listedInVault), [inScope]);
 
   const visible = useMemo(() => {
@@ -90,8 +85,6 @@ export function Vault(props: { noteId?: string }) {
         fuzzyScore(query, n.title ?? n.id) !== null ||
         Object.values(n.sections ?? {}).some((s) => s.text?.toLowerCase().includes(q)));
     }
-    // No archived rank: the list has none, and a rank for a status that cannot
-    // appear is a claim about ordering nobody can check.
     const statusRank: Record<string, number> = { active: 0, resolved: 1 };
     const cmp: Record<SortKey, (a: Note, b: Note) => number> = {
       updated: (a, b) => String(b.updatedAt ?? "").localeCompare(String(a.updatedAt ?? "")),
@@ -116,9 +109,6 @@ export function Vault(props: { noteId?: string }) {
 
   const memoriesN = listed.filter((n) => n.type !== "source").length;
   const sourcesN = listed.length - memoriesN;
-  // Whether archiving is what emptied the tab being looked at. An empty list
-  // with archived records behind it is not the same screen as an empty vault,
-  // and only this tab's own archived records can explain this tab being empty.
   const archivedHere = inScope.some((n) =>
     !listedInVault(n) && (showSources ? n.type === "source" : n.type !== "source"));
   const open = openId ? notes.find((n) => n.id === openId) ?? null : null;
@@ -177,8 +167,6 @@ export function Vault(props: { noteId?: string }) {
               ? <EmptyState
                   icon={<NoMatches size={22} stroke={1.75} aria-hidden />}
                   title={t("memoryvault.filteredEmptyDescription", { value1: query.trim() ? t("memoryvault.filteredEmptySearch", { value1: query.trim() }) : (typeFilter ?? "") })} />
-              // Archiving emptied it, and the records are still stored. Saying
-              // "no memories yet" over memories someone put away reads as loss.
               : archivedHere
                 ? <EmptyState title={t("memory.vault.emptyAllArchived")} />
               // Scope hid them, not the vault being empty. Saying "no memories
@@ -274,16 +262,12 @@ function NoteEditor(props: { note: Note; onClose: () => void }) {
     }
   };
 
-  // The cascade is the same route for every type, so the confirm does not
-  // branch on one: a memory with nothing extracted from it simply archives
-  // alone, which "any memories extracted from it" already covers.
   const archiveWithExtracted = async () => {
     const title = n.title ?? n.id;
     if (!confirm(t("memory.vault.archiveWithExtractedConfirm", { title }))) return;
     try {
       const archived = await archiveNoteWithExtracted(n.id);
-      // The reply counts the target alongside what it reached, and the toast
-      // names the target separately, so it must not be counted twice.
+      // The reply includes the target, which the toast names separately.
       const extracted = Math.max(0, archived.length - 1);
       toast(extracted
         ? t("memory.vault.archivedWithExtracted", { title, count: extracted })
