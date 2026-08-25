@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { t } from "../copy";
 import { openOverlay, closeTopOverlay } from "../shell/overlays";
 import { Close, ICON_SIZE } from "./icons";
@@ -40,7 +41,15 @@ export function Modal(props: {
 }
 
 /** Scrim, dialog semantics, and the overlay-stack registration that every
- *  layered surface needs. */
+ *  layered surface needs.
+ *
+ *  Radix's dialog supplies what `aria-modal="true"` has always promised and
+ *  the hand-rolled version never delivered: a focus trap, a scroll lock, and
+ *  `aria-hidden` on everything behind. It owns none of the dismissal —
+ *  `overlays.ts` does, because dismissal here is a history traversal so the
+ *  Android back gesture reaches every layer. Every Radix dismissal route is
+ *  therefore cancelled and re-routed through the stack, or the two would each
+ *  close a layer for one gesture. */
 function Overlay(props: {
   label: string;
   onClose: () => void;
@@ -53,18 +62,33 @@ function Overlay(props: {
   close.current = props.onClose;
   useEffect(() => openOverlay(() => close.current()), []);
 
+  // The opener has to be read during this render: by the time any effect runs,
+  // the trap below has already moved focus into the surface, so the stack entry
+  // records a control that is about to be removed and restores nothing.
+  const [opener] = useState(() => document.activeElement as HTMLElement | null);
+
   return (
-    <div className="peek-scrim" onClick={closeTopOverlay}>
-      <aside
-        className={props.surface}
-        role="dialog"
-        aria-modal="true"
-        aria-label={props.label}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {props.children}
-      </aside>
-    </div>
+    <Dialog.Root open modal>
+      <Dialog.Overlay className="peek-scrim">
+        <Dialog.Content
+          asChild
+          // Escape already has a handler: overlays.ts's document listener, which
+          // runs in the same capture phase and cannot be stopped from here
+          // (stopPropagation does not reach a listener on the same node). Both
+          // firing pops two history entries for one press.
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => { e.preventDefault(); closeTopOverlay(); }}
+          // Restoring on unmount rather than letting the stack entry do it: the
+          // entry restores during dismissal, while the trap is still up, and the
+          // trap pulls focus straight back in.
+          onCloseAutoFocus={(e) => { e.preventDefault(); if (opener?.isConnected) opener.focus(); }}
+        >
+          <aside className={props.surface} aria-modal="true" aria-label={props.label}>
+            {props.children}
+          </aside>
+        </Dialog.Content>
+      </Dialog.Overlay>
+    </Dialog.Root>
   );
 }
 

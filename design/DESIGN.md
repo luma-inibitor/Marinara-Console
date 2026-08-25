@@ -441,7 +441,7 @@ including the presets tool.
 | `IconButton` | a square icon control; its name is a required prop | — |
 | `SearchBar` | a search field, its magnifier, its match tally | — |
 | `fuzzyFilter` / `fuzzyScore` | subsequence matching with a score | — |
-| `Sheet` / `Modal` | a layered surface and its dismissal contract | — |
+| `Sheet` / `Modal` | a layered surface, its dismissal contract, and its focus trap | — |
 | `SheetHead` | a sheet's sticky title row | — |
 | `Picker` | choose one, short fixed list, bottom sheet | `SearchDisclosure` if long |
 | `SearchDisclosure` | choose one, long list, anchored popover | `Picker` on a thumb rail |
@@ -511,4 +511,8 @@ place on. Measured before and after in the claim detail at a 1600px viewport:
   tap, on Escape, and on back. The import confirm answered only one of those
   for weeks, because each sheet registered with the overlay stack by hand and
   one forgot. `Sheet` and `Modal` now do it, so the check guards a rule the
-  code already enforces rather than a habit.
+  code already enforces rather than a habit. The trap, the scroll lock and the
+  `aria-hidden` on everything behind come from a Radix dialog inside `Sheet`;
+  dismissal does not, because it is a history traversal here and Radix has no
+  opinion about history. Both of Radix's dismissal routes are cancelled and
+  re-routed through `overlays.ts`, so this check still measures the same three.
