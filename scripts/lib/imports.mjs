@@ -66,7 +66,7 @@ export function sourceFiles(paths, fallback = "src") {
 const EXTS = ["", ".ts", ".tsx", "/index.ts", "/index.tsx"];
 
 /** Resolve a specifier as written in `fromAbs` to an absolute file, or null. */
-export function resolveSpecifier(fromAbs, spec) {
+function resolveSpecifier(fromAbs, spec) {
   if (!spec.startsWith(".")) return null;
   const base = join(dirname(fromAbs), spec);
   for (const e of EXTS) {

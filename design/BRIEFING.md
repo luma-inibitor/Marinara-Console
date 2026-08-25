@@ -207,7 +207,8 @@ Not optional, and not judgment calls:
 |---|---|
 | `node scripts/verify.mjs` | Contrast, tap targets, console errors, keyboard walk, density |
 | `node scripts/copycheck.mjs <file>` | Every user-visible string traces to the catalog or `OURS` |
-| `node scripts/deadcss.mjs` | CSS classes nothing uses |
+| `node scripts/deadcss.mjs` | CSS classes nothing uses — fails when the list grows past `design/deadcss-baseline.json` |
+| `node scripts/deadexports.mjs` | Symbols exported but used only where declared, dead re-exports included — same baseline ratchet |
 | `node scripts/domsnap.mjs before` / `after --diff` | A refactor renders identically, and what it did not reach |
 | `node scripts/overlaycheck.mjs` | Every layered surface closes on scrim, Escape and back |
 | `node scripts/shots.mjs <url>` | Screenshots at 390 / 486 / 768 / 1280 |

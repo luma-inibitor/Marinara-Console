@@ -9,7 +9,7 @@ import { chromium } from "playwright-core";
 
 // Trailing slash matters: callers append "#/route" and a hash on a bare origin
 // is not a same-document URL Vite will serve.
-export const DEV_URL = (process.env.MC_DEV_URL ?? "http://127.0.0.1:5233") + "/";
+const DEV_URL = (process.env.MC_DEV_URL ?? "http://127.0.0.1:5233") + "/";
 
 // The standard viewports (design/DESIGN.md §7). 390 is the narrow floor
 // (iPhone-class). 486 is Luma's actual device (1080 physical at DPR 2.22) and

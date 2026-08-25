@@ -481,7 +481,10 @@ place on. Measured before and after in the claim detail at a 1600px viewport:
 - `node scripts/deadcss.mjs` — CSS classes nothing appears to use. A **candidate**
   list: class names reach the DOM literally, composed as `` `type-${n.type}` ``,
   and as bare strings passed to a `cls` prop. Read every hit. The first version
-  of this script reported 36 dead classes of which 20 were live.
+  of this script reported 36 dead classes of which 20 were live. Because the
+  list is candidates, it fails only when the list **grows** past
+  `design/deadcss-baseline.json`; delete a class and drop its line, or record a
+  new one with `--adopt` and say why.
 - `node scripts/domsnap.mjs before` / `... after --diff` — snapshots the rendered
   element tree and its class hooks across the routes plus the overlays, selected
   rows and expanded editors a URL cannot reach. Any refactor claiming "renders
