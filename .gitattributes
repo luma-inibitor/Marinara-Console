@@ -1,0 +1,4 @@
+# BACKLOG.md is an append-heavy list, not prose. Union keeps both sides of a
+# concurrent edit instead of conflicting; re-read the section after a merge, since
+# union can leave a duplicate.
+BACKLOG.md merge=union
