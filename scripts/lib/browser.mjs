@@ -31,8 +31,19 @@ export function launch(options = {}) {
   return chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH, ...options });
 }
 
-// `settle` is the pause after mount: the app finishes its first data render
-// after the network has gone quiet, so networkidle alone is too early.
+// `settle` is how long #app must go without a DOM mutation before the page
+// counts as ready — a condition, not a sleep.
+//
+// A fixed pause was wrong in both directions and wrong invisibly. Mounting is
+// satisfied by the shell, which renders before any screen has its data, so the
+// gate below it was a stopwatch: on a cold dev server the module graph is still
+// being transformed while the clock runs, the screen is still on its <Loading>
+// line when the clock stops, and the caller records a spinner as if it were the
+// finished render. On a snapshot check that reads as every element of the screen
+// disappearing — a diff with no code behind it, on whichever screens happened to
+// lose the race. Waiting for the loading line to clear and then for the tree to
+// hold still ties the wait to what the app is actually doing, and it costs the
+// same on a warm server as the sleep it replaced.
 //
 // Mounting is waited on rather than assumed. Vite rewrites every module URL
 // with a `?t=` cache-buster when a file changes, so a file edited, moved or
@@ -61,6 +72,37 @@ export async function openPage(browser, { viewport, hash = "", url = DEV_URL + h
       await page.reload({ waitUntil: "networkidle", timeout });
     }
   }
-  if (settle) await page.waitForTimeout(settle);
+  // `.loadingstate` is the one loading marker in the app (src/ui/Loading.tsx),
+  // so its absence is the screen saying its data arrived. It is not a forever
+  // wait even when the engine is down: the same component gives up at twelve
+  // seconds and becomes an error state, which clears this and gets recorded as
+  // the deterministic render it is.
+  try {
+    await page.waitForFunction(() => !document.querySelector("#app .loadingstate"), null, { timeout: 20000 });
+  } catch {
+    throw new Error(`screen never finished loading at ${url}`);
+  }
+  // Web fonts change metrics, which moves anything measured from layout.
+  await page.evaluate(() => document.fonts.ready.then(() => true));
+  if (settle && !(await quiet(page, settle))) {
+    console.warn(`warning: ${url} never held still for ${settle}ms — reading it anyway`);
+  }
   return page;
+}
+
+/** Resolve true once #app has gone `span` ms without a mutation, false if it
+ *  never does. Attributes count: a class that flips is exactly the kind of
+ *  change the snapshot check exists to notice. */
+function quiet(page, span, cap = Math.max(span * 4, 8000)) {
+  return page.evaluate(([span, cap]) => new Promise((resolve) => {
+    const root = document.getElementById("app");
+    if (!root) return resolve(true);
+    let idle;
+    const observer = new MutationObserver(() => arm());
+    const stop = (settled) => { observer.disconnect(); clearTimeout(idle); clearTimeout(giveUp); resolve(settled); };
+    const giveUp = setTimeout(() => stop(false), cap);
+    const arm = () => { clearTimeout(idle); idle = setTimeout(() => stop(true), span); };
+    observer.observe(root, { childList: true, subtree: true, attributes: true, characterData: true });
+    arm();
+  }), [span, cap]);
 }

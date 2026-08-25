@@ -10,9 +10,10 @@
 // component extraction actually raises.
 //
 // Do not run this while something else is driving the same dev server. The
-// settle window is generous but finite, and a loaded server can leave a page
-// mid-render — which reports as every element vanishing rather than as a
-// timeout, and reads like catastrophe instead of contention.
+// harness waits for the screen to load and then to hold still rather than for
+// a fixed span, so contention costs time instead of correctness — but a page
+// the server keeps repainting will exhaust that wait and warn, and a warning
+// is easy to scroll past.
 import { launch, openPage, VIEWPORTS } from "./lib/browser.mjs";
 import fs from "node:fs";
 
