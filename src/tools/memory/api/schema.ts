@@ -1,5 +1,5 @@
-// Validates the note read paths, the note write paths and GET /drafts/review;
-// `types.ts` infers its types from here.
+// Validates every long-term-memory route the console calls; `types.ts` infers
+// its types from here.
 //
 // Every object is loose, so the fields the engine sends and the console never
 // reads pass through unnamed. A field is required below only where the console
@@ -10,7 +10,7 @@ import * as v from "valibot";
 // member and no fallback, so an unknown member has nothing to render as.
 export const NOTE_TYPES = ["source", "timeline_event", "character", "relationship", "scene", "thread", "world", "tone"] as const;
 const NOTE_STATUSES = ["active", "resolved", "archived"] as const;
-const DISPOSITIONS = ["new", "merge", "rewrite"] as const;
+export const DISPOSITIONS = ["new", "merge", "rewrite"] as const;
 const RISKS = ["low", "medium", "high"] as const;
 const MUTATION_KINDS = ["create_note", "append_section", "update_section", "add_link", "set_keywords", "set_status", "set_subjects"] as const;
 const CHANGE_KINDS = ["section", "link", "keywords", "status", "subjects"] as const;
@@ -163,4 +163,105 @@ export const NoteArchiveSchema = v.looseObject({
 export const ExtractResponseSchema = v.looseObject({
   operationId: v.string(),
   draft: v.nullish(DraftSchema),
+});
+
+/** Open sets: the banner compares these two rather than labelling them. */
+export const LtmStatusSchema = v.looseObject({
+  notes: v.looseObject({
+    total: v.number(),
+    sourceNotes: v.number(),
+    savedMemories: v.number(),
+    pendingDrafts: v.number(),
+    byType: v.record(v.string(), v.number()),
+    byStatus: v.record(v.string(), v.number()),
+  }),
+  indexes: v.looseObject({
+    health: v.string(),
+    dirty: v.boolean(),
+    rebuildState: v.string(),
+    embeddingsAvailable: v.boolean(),
+  }),
+});
+
+/** Two shapes upstream, split on `status`. An imported sample names the source
+ *  note it became; a pending one has no note yet. */
+const ImportSampleSchema = v.looseObject({
+  sourceId: v.string(),
+  title: v.string(),
+  importMode: v.string(),
+  mutationCount: v.number(),
+  summary: v.string(),
+  snippet: v.string(),
+  freshness: v.string(),
+  status: v.optional(v.string()),
+  existingNoteId: v.optional(v.string()),
+  existingNoteTitle: v.optional(v.string()),
+});
+
+export const ImportPreviewSchema = v.looseObject({
+  source: v.string(),
+  scanned: v.number(),
+  draftable: v.number(),
+  importedCount: v.number(),
+  samples: v.array(ImportSampleSchema),
+});
+
+/** The engine sends this tally twice, on the imported entry and on its draft. */
+const AccountingSchema = v.looseObject({
+  providerCandidates: v.number(),
+  normalizedAdditions: v.number(),
+  parserRejections: v.number(),
+  validationRejections: v.number(),
+  deduplications: v.number(),
+  keptUnits: v.number(),
+});
+
+export const ImportResultSchema = v.looseObject({
+  batchStatus: v.string(),
+  source: v.string(),
+  imported: v.array(v.looseObject({
+    sourceId: v.string(),
+    title: v.string(),
+    note: v.optional(NoteSchema),
+    draft: v.nullish(v.looseObject({ ...DraftSchema.entries, accounting: v.optional(AccountingSchema) })),
+    accounting: v.optional(AccountingSchema),
+  })),
+});
+
+export const PreflightResponseSchema = v.looseObject({
+  draftId: v.string(),
+  selectedMutationIds: strings,
+  readyMutationIds: strings,
+  blockedMutationIds: strings,
+  autoIncludedMutationIds: strings,
+  rows: v.array(v.looseObject({
+    mutationId: v.string(),
+    targetId: v.string(),
+    disposition: v.picklist(DISPOSITIONS),
+    status: v.picklist(["ready", "blocked"]),
+    autoIncluded: v.boolean(),
+    blockers: v.array(v.looseObject({ code: v.string(), message: v.string() })),
+    conflicts: v.array(ConflictSchema),
+  })),
+});
+
+/** The reply names the index rebuild twice. Only the draft's copy is stored. */
+export const AcceptResponseSchema = v.looseObject({
+  draft: v.looseObject({
+    id,
+    status: v.string(),
+    indexRebuildStatus: v.optional(v.string()),
+    indexRebuildError: v.optional(v.string()),
+  }),
+  appliedMutationIds: v.optional(strings),
+  skippedMutationIds: v.optional(strings),
+  autoIncludedMutationIds: v.optional(strings),
+});
+
+/** `deleted` is true on every reply that gets this far. A draft that was not
+ *  pending, or a mutation that was not there, answers 409 or 404 instead. */
+export const SkipResponseSchema = v.looseObject({
+  deleted: v.boolean(),
+  draftId: v.optional(v.string()),
+  mutationIds: strings,
 });
