@@ -27,6 +27,7 @@
     "preview": "vite preview",
     "prose": "vale --no-global .",
     "prosecheck": "node scripts/prosecheck.mjs",
+    "specificity": "node scripts/specificity.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:watch": "vitest",
