@@ -1,11 +1,7 @@
 # Check script migration plan
 
-> This document uses ASD-STE100 Simplified Technical English writing rules.
-> Sentences have a maximum of 25 words. Paragraphs have a maximum of 6 sentences.
-> The voice is active. Each word has one meaning.
-> Command text, file paths, and tool output do not obey these rules. They are literal text.
-> Note: an approved-dictionary check with a tool such as HyperSTE did not occur.
-> The writing rules are applied. Full dictionary conformance is not certified.
+> Prose here follows the repo's Vale rules (`npm run prose`). Command text,
+> file paths and tool output are literal and aren't linted.
 
 ## 1. Summary
 
@@ -29,7 +25,7 @@ The longest chain of dependent work is the browser test track. This chain has fo
 The total work in this chain is 24 hours.
 
 The two decisions in section 2 are complete.
-This plan hardens `layercheck.mjs` in the repository. This plan does not use dependency-cruiser.
+This plan hardens `layercheck.mjs` in the repository. This plan doesn't use dependency-cruiser.
 This plan adds `.decisions/README.md` to the repository. The directory `design/research/` stays local.
 No work in this plan is blocked.
 
@@ -37,9 +33,9 @@ No work in this plan is blocked.
 
 ## 2. Decisions
 
-### 2.1 Do not use dependency-cruiser. Harden `layercheck.mjs` instead
+### 2.1 Rejecting dependency-cruiser, and hardening `layercheck.mjs` instead
 
-**Decision: do not use dependency-cruiser.**
+**Decision: don't use dependency-cruiser.**
 Keep `scripts/layercheck.mjs`. Write it again with `typescript/unstable/*`.
 
 dependency-cruiser needs a second TypeScript installation. This repository must not have one.
@@ -73,8 +69,8 @@ This method keeps five functions. A change to dependency-cruiser removes these f
 5. The exit code 2 for a damaged run.
 
 Merge `chore/eslint-transport-client` in wave 1.
-This pull request moves one half of the layer ownership rule into ESLint.
-ESLint is the correct place for this half. This is true for any decision about the other half.
+This pull request moves one half of the layer ownership rule into eslint.
+eslint is the correct place for this half. This is true for any decision about the other half.
 
 ### 2.2 `design/research/` and `.decisions/`
 
@@ -98,18 +94,28 @@ Change the three text references. The new text must say that the directory is lo
 
 **For `.decisions/`:** add `.decisions/README.md` to the repository.
 Exclude the other files with `.decisions/*` and `!.decisions/README.md`.
-A work rule in `CLAUDE.md` is not a rule if no other person can read its format document.
+A work rule in `CLAUDE.md` isn't a rule if no other person can read its format document.
 
-### 2.3 The typescript@7 condition for each tool
+### 2.3 Prose linting applies to every later wave
+
+Main now runs Vale on pull requests (`.github/workflows/prose.yml`, `filter_mode: added`).
+The job is advisory: `fail_on_error: false`, so it never blocks a merge.
+But each wave in this plan writes documentation, and each will collect annotations.
+Run `npm run prose` before you open a pull request.
+Add a new tool name to `scripts/genvocab.py`, then regenerate the vocabulary. Never edit
+`accept.txt` by hand.
+The Microsoft style requires contractions, so write “doesn't” rather than the long form.
+
+### 2.4 Support for TypeScript 7, tool by tool
 
 A test of each tool occurred. Only dependency-cruiser fails.
 
 | Tool | Result | Evidence |
 |---|---|---|
-| knip 6 | Good | `npm view knip@6.32.2 dependencies` lists `oxc-parser`, `oxc-resolver`, and 11 more. It does not list `typescript`. Its `peerDependencies` is empty. knip@5.88.1 sets `peerDependencies.typescript` to `>=5.0.4 <7` and fails. Use version `^6`. A test installed knip@6.32.2 with typescript@7.0.2 in a copy of the repository. The result was `added 21 packages in 1s`. The tool then made a full report. |
-| stylelint 17 | Good | The tool uses PostCSS only. A test installed it. The result was `added 116 packages`. The tool examined real CSS files. It does not use typescript. |
+| knip 6 | Good | `npm view knip@6.32.2 dependencies` lists `oxc-parser`, `oxc-resolver`, and 11 more. It doesn't list `typescript`. Its `peerDependencies` is empty. knip@5.88.1 sets `peerDependencies.typescript` to `>=5.0.4 <7` and fails. Use version `^6`. A test installed knip@6.32.2 with typescript@7.0.2 in a copy of the repository. The result was `added 21 packages in 1s`. The tool then made a full report. |
+| stylelint 17 | Good | The tool uses PostCSS only. A test installed it. The result was `added 116 packages`. The tool examined real CSS files. It doesn't use typescript. |
 | Playwright | Good | The tool has its own Babel transform for `.ts` files. |
-| eslint-plugin-i18next | Good | The plugin does not need a specific parser. It operates with `@babel/eslint-parser` today. |
+| eslint-plugin-i18next | Good | The plugin doesn't need a specific parser. It operates with `@babel/eslint-parser` today. |
 | markdown-link-check | Good | The tool reads Markdown files only. |
 | jscpd | Good | The tool has its own tokenizer. |
 | **dependency-cruiser** | **Not used** | The version range refuses typescript@7. Refer to section 2.1. |
@@ -139,10 +145,14 @@ Fifteen of the 29 pull requests must change this one line.
 `check:static` becomes `node scripts/run-checks.mjs`.
 This script reads `scripts/checks.mjs`.
 That file holds an array with one npm script name on each line.
+It holds seven names, not eight, because `test` is absent by design.
+Naming it there would run Vitest twice inside `npm run check`,
+and would put the whole suite back into the build system's `static` job.
+That's the split this wave exists to make.
 The array groups the names by track. Each track has a continuous area in the array.
 
 After this change, an addition is one new line. A removal is one deleted line.
-Git merges these changes because the areas do not touch.
+Git merges these changes because the areas don't touch.
 
 The `scripts` object in `package.json` is in the order of addition, not alphabetical order.
 The present order is `test, dev, build, copycheck, preview, kit, test:watch, typecheck, layercheck`.
@@ -156,9 +166,9 @@ Each tool in this plan installs from the top-level `package.json`.
 The command `npm ci` is sufficient for each condition in this document.
 
 The file `check.yml` gets `permissions: contents: read` at the workflow level.
-It also gets a `static` matrix and a `test` matrix.
+It also gets three plain jobs: `static`, `test`, and `build`. A one-entry matrix buys nothing.
 It gets a `build` job. The `build` job sends `dist/` to the artifact store.
-This wave does not add a browser job.
+This wave doesn't add a browser job.
 
 ---
 
@@ -171,10 +181,13 @@ Also start the longest pull request in the plan.
 **Conditions to complete this wave.**
 
 - `npm run check` gives exit code 0.
-- `grep -rn 'what="' src` gives no result.
+- Every `what` value is a dotted catalog key, and `tsc --noEmit` rejects a misspelling by name.
+  (The earlier wording said this grep must give no result. That can't happen: after the fix the
+  values are catalog keys, and emptying the grep would need pointless `what={"..."}` braces.)
 - `grep -rn 'import("./toast")' src` gives no result.
 - `npx eslint src` gives exit code 0.
-- `npx vitest run test/server.test.mjs` reports 8 tests that pass. The server file has no changes.
+- `npx vitest run test/server.test.mjs` passes, and `server.mjs` changes by at most the two
+  `MC_DIST`/`MC_PUBLIC` lines. (The suite is 87 tests. The six areas the brief names can't fit in 8.)
 - `npx playwright test` passes in the build system as a necessary job.
 - `jq -r '.devDependencies|keys[]' package.json | grep playwright` gives only `@playwright/test`.
 
@@ -184,7 +197,7 @@ Also start the longest pull request in the plan.
 | `test/server-conformance` | HTTP conformance tests for `server.mjs` | 3h | wave 0 |
 | `refactor/shared-savebar` | One shared `SaveBar` for lorebook entries and preset sections | 1.5h | — |
 | `fix/what-prop-copy` | Give the `what` property the copy `Key` type | 1.5h | — |
-| `chore/eslint-transport-client` | Move one half of the layer ownership rule into ESLint | 1h | — |
+| `chore/eslint-transport-client` | Move one half of the layer ownership rule into eslint | 1h | — |
 | `chore/deadcss-drift` | Test that the `DOMAINS` table stays correct | 0.5h | — |
 | `fix/toast-static-import` | Import `toast` statically in `api.ts` and `wire.ts` | 0.5h | — |
 
@@ -193,8 +206,8 @@ Also start the longest pull request in the plan.
 The work is 11 hours. This is more than the first estimate of 7.25 hours.
 This pull request has three parts.
 
-**Part 1: the fixture set.** The first list of six fixtures was not correct.
-The route `/api/long-term-memory/sources` does not exist.
+**Part 1: the fixture set.** The first list of six fixtures wasn't correct.
+The route `/api/long-term-memory/sources` doesn't exist.
 `src/tools/memory/store/sources.ts:15-17` builds that screen from `fetchChats`, `fetchReview`, and `importPreview`.
 Four necessary routes were absent from the first list:
 
@@ -206,20 +219,22 @@ Four necessary routes were absent from the first list:
 The full set is about ten routes.
 
 **Part 2: the schema test is smaller than the first estimate.**
-The command `grep -rln valibot src` gives six files:
+The command `grep -rln Valibot src` gives six files:
 `src/copy/shell.json`, `src/shell/wire.ts`, `src/shell/wire.test.ts`, and three files in `src/tools/memory/api/`.
 No schema exists for lorebook entries or presets.
-Thus a test of each fixture against the valibot schemas covers about one half of the set.
-Write schemas for the `Entry`, `PromptPreset`, and `PromptSection` types.
-Or write in the pull request text that the tests cover the memory fixtures only.
+Thus a test of each fixture against the Valibot schemas covers about one half of the set.
+Write in the pull request text that the tests cover the memory fixtures only.
+The other option, schemas for `Entry`, `PromptPreset`, and `PromptSection`, is worse here:
+it needs edits to `src/tools/lorebooks/data.ts` and `src/tools/presets/data.ts`,
+and other branches in the same wave own those files.
 
 **Part 3: this pull request owns the browser job.**
 The job is necessary from the day of the merge.
 The first plan put this job in wave 4. That delay was an error.
-With that delay, 15 pull requests and 33.5 hours of work merge while the tests do not operate.
+With that delay, 15 pull requests, and 33.5 hours of work merge while the tests don't operate.
 These pull requests include the CSS changes and the text changes.
 Those changes are the most probable cause of a test failure.
-The deletion of `verify.mjs` is not a condition for the operation of `test:e2e`.
+The deletion of `verify.mjs` isn't a condition for the operation of `test:e2e`.
 
 The job holds the `~/.cache/ms-playwright` cache.
 The cache key is `hashFiles('package-lock.json')`.
@@ -235,11 +250,11 @@ This change also makes knip correct in wave 2 with no `ignoreDependencies` entry
 
 Write this note in the pull request text:
 a person who runs `npm run check:browser` locally must run `npx playwright install chromium` one time.
-The package `playwright-core` does not get the browser files.
+The package `playwright-core` doesn't get the browser files.
 
 **Tests for this pull request.**
 `npx playwright test` passes for the four viewport projects.
-`npx knip --dependencies` does not report `playwright`.
+`npx knip --dependencies` doesn't report `playwright`.
 
 #### `test/server-conformance`
 
@@ -269,21 +284,21 @@ The four findings are at `PresetsTool.tsx:745`, `:748`, and `:753` two times.
 This pull request exports `Key` from `src/copy/index.ts`.
 It gives the `what` property the `Key` type on `Loading`, `NotFound`, and `ListEmpty`.
 
-The linter cannot correct this group of errors at any setting.
+The linter can't correct this group of errors at any setting.
 Seven of the twelve `what="…"` errors are one lowercase word.
 The word rules that make `mode:"all"` usable must permit those words.
-The type system finds what the linter cannot find.
+The type system finds what the linter can't find.
 `tsc --noEmit` refuses an incorrect key by its name.
 
 #### `chore/eslint-transport-client`
 
 This pull request adds a `no-restricted-imports` block.
 The block sets `importNames` to `["api","default"]`.
-The block applies to the presentation layer. It does not apply to `src/shell/**`.
+The block applies to the presentation layer. It doesn't apply to `src/shell/**`.
 
 This pull request is the only owner of `eslint.config.js` in this wave.
 The i18next block waits for wave 2.
-Then two configuration blocks do not go to the same array end at the same time.
+Then two configuration blocks don't go to the same array end at the same time.
 
 #### `chore/deadcss-drift`
 
@@ -304,7 +319,7 @@ Thus that method hides 50 names and gives no advantage.
 The problem was drift, not the table. Thus correct the drift.
 
 Limit the prefix search to the `className=`, `cls=`, and `surface=` positions.
-Do not search each template string in the repository.
+Don't search each template string in the repository.
 Then test that each prefix in those positions has a `DOMAINS` entry.
 Exit with code 2 if a prefix has no entry.
 
@@ -313,14 +328,14 @@ A test of this method gives these results:
 - The search of class positions finds five prefixes: `dec-`, `is-`, `ln-`, `st-`, and `type-`.
 - Each of the five prefixes is already in the table. Thus the test passes today.
 - The unlimited search also finds `draft-`, `mut-`, and `note-`.
-- Those three are identifier templates at `src/tools/memory/test/factories.ts:28,43,63`. They are not class names.
+- Those three are identifier templates at `src/tools/memory/test/factories.ts:28,43,63`. They're not class names.
 - Thus with the first method, a test file can hide a full CSS name group.
 - The same test shows that `kw-` and `es-` are table entries with no use in a class position.
 - Delete `kw-`. Its `.kw-add` and `.kw-edit` classes are literal in `src/tools/memory/ClaimDetail.tsx`.
-- Examine `es-` manually. It is inside a second template. The class position pattern cannot see it.
+- Examine `es-` manually. It's inside a second template. The class position pattern can't see it.
 
 Keep the one entry `is-danger-act` in `design/deadcss-baseline.json`.
-That file does not become empty. The empty file in the first plan was a result of the hidden names.
+That file doesn't become empty. The empty file in the first plan was a result of the hidden names.
 
 #### `fix/toast-static-import`
 
@@ -332,7 +347,7 @@ There is no cycle.
 Thirteen modules already import `toast` statically.
 
 This pull request must come before `chore/fatal-build-warnings`.
-If it does not, that pull request has a configuration change and a code correction together. It then fails.
+If it doesn't, that pull request has a configuration change and a code correction together. It then fails.
 
 ---
 
@@ -349,6 +364,9 @@ Also complete the Playwright test files.
 - `npx stylelint "src/**/*.css"` reports exactly 89 problems. Each problem comes from `marinara/font-size-token`.
 - `npx eslint src` reports 0 problems with `mode:"all"`.
 - `npm run build` gives exit code 0 with fatal warnings.
+  Note: the chunk-size line survives the toast fix. `[plugin builtin:vite-reporter]` emits it,
+  not a Rolldown warning code, so `onwarn` may not see it. Raise `chunkSizeWarningLimit`
+  or exempt it explicitly.
 - `npx playwright test` covers the smoke test, contrast, tap targets, overlays, and the keyboard.
 
 | Branch | Title | Work | Depends on |
@@ -365,7 +383,7 @@ Also complete the Playwright test files.
 #### `test/e2e-tap-targets`
 
 The work is 6.5 hours, not 4 hours.
-The statement "about 95 lines move without change" is not correct.
+The statement "about 95 lines move without change" isn't correct.
 
 `scripts/verify.mjs:40` starts with this text:
 `const AUDITS = \`((rowSel, exemptions, TAP_PRIMARY, TAP_SECONDARY, TAP_GAP) => {`.
@@ -379,7 +397,7 @@ The work is a division of one function into parts.
 Put the common helpers into one complete module. Add it with `addInitScript`.
 Each test file then calls that module.
 
-There is a second problem. The first plan did not find it.
+There is a second problem. The first plan didn't find it.
 
 `scripts/verify.mjs:148` grades a small target with this rule:
 `secondary: min >= TAP_SECONDARY && !(gap < TAP_GAP)`.
@@ -392,11 +410,11 @@ Each of the three recorded cases comes from adjacent elements.
 `BACKLOG.md:403-411` gives the measurements against a live engine:
 `.mem-mid` is 35px with 6.1px clearance, `.row-summary` is 39px with 1px, and `.mseg` is 42px with 2px.
 
-Thus the test for this pull request cannot be "the array must hold the nine entries that `verify.mjs` reports today".
+Thus the test for this pull request can't be "the array must hold the nine entries that `verify.mjs` reports today."
 That test is only correct if the fixtures have the same row density as the live engine.
 Add this condition to `chore/playwright-harness`:
 each list screen needs sufficient adjacent rows to give clearance below 8px.
-If this is not possible, record the values that the fixtures give. Write the reason in the pull request text.
+If this isn't possible, record the values that the fixtures give. Write the reason in the pull request text.
 
 #### `chore/copy-eslint-mode-all`
 
@@ -407,7 +425,7 @@ It decreases the count from 3,038 findings to 27 findings.
 But two of its seven patterns permit each lowercase word.
 This is a loss against the rules that operate on `main` today.
 
-A test used the ESLint 9.39.5 of this repository with both configurations.
+A test used the eslint 9.39.5 of this repository with both configurations.
 
 With the present configuration at `eslint.config.js:44-49`:
 
@@ -426,9 +444,9 @@ This loss is real, not theoretical.
 `src/copy/*.json` holds 452 strings for the screen. 53 of them have this shape.
 Examples are `lorebooks.row.idle` = `"idle"`, `lorebooks.valueYes` = `"yes"`, and `lorebooks.entry.advChanged` = `"changed"`.
 `scripts/copycheck.mjs:103-104` refuses this exemption on purpose.
-Its comment says that "the bare word `keep` (no separator) [is] NOT [exempt]".
+Its comment says that "the bare word `keep` (no separator) [is] **not** [exempt]."
 
-The obvious correction does not operate. A test shows this.
+The obvious correction doesn't operate. A test shows this.
 
 Make `/^_*[a-z][A-Za-z0-9]*$/` stricter with a necessary capital letter. Nothing changes.
 The reason is the second pattern for routes and classes:
@@ -449,7 +467,7 @@ Almost each finding is an enumeration value or a union value:
 This count is too large to use.
 
 The correct method is a second rule in the same configuration block.
-The rule matches the JSX text position only. The word rules do not apply there.
+The rule matches the JSX text position only. The word rules don't apply there.
 
 ```js
 "no-restricted-syntax": ["error", {
@@ -470,14 +488,14 @@ A test of the full configuration against the real `src/` gives these results:
 This pull request corrects **20 findings, not 24**. The count comes from this calculation:
 
 - 27 findings in total.
-- Subtract the three `what=` properties that `fix/what-prop-copy` removes. They are at `BookAudit.tsx:262,265` and `PresetsTool.tsx:363`.
-- Subtract the four strings that `refactor/shared-savebar` removes. They are at `PresetsTool.tsx:745,748,753,753`.
+- Subtract the three `what=` properties that `fix/what-prop-copy` removes. They're at `BookAudit.tsx:262,265` and `PresetsTool.tsx:363`.
+- Subtract the four strings that `refactor/shared-savebar` removes. They're at `PresetsTool.tsx:745,748,753,753`.
 
 Almost each of the 20 corrections is a change to a key. The finding gives the key name.
 
 #### `test/e2e-keyboard-overlays`
 
-This pull request does **not** delete `scripts/overlaycheck.mjs` or its npm script.
+Don't delete `scripts/overlaycheck.mjs` or its npm script in this pull request.
 The first plan deleted them. That was an error.
 
 `package.json` sets `"check:browser"` to `"npm run verify && npm run overlaycheck"`.
@@ -485,7 +503,7 @@ A deletion of one half in wave 2 leaves `npm run check:browser` with a failure f
 The failure text is `npm error Missing script`.
 
 The deletion moves to `chore/retire-verify`. That pull request already removes the script.
-Thus this pull request does not write to `package.json`.
+Thus this pull request doesn't write to `package.json`.
 
 #### `chore/stylelint-typescale`
 
@@ -517,8 +535,8 @@ Put each such failure into the integrity array. The run then gives exit code 2.
 
 **Change 2: this pull request must add the `csslint` script now.**
 The first plan gave this option: leave the script out, because `npm run typescale` uses the full configuration.
-The measurement above shows that this is not correct.
-The adapter removes each warning with a rule name that is not `marinara/font-size-token`.
+The measurement above shows that this isn't correct.
+The adapter removes each warning with a rule name that's not `marinara/font-size-token`.
 Add `"csslint": "stylelint \"src/**/*.css\""`. Add one line to `scripts/checks.mjs`.
 The wave 3 rules then have a place to operate.
 
@@ -543,10 +561,12 @@ Unused files (1)
 This still applies: an npm script that calls the `lychee` program gives `Unlisted binaries (1)`.
 This is one of the two reasons for `markdown-link-check` in wave 5.
 `jscpd` gives the same finding until it becomes a real `devDependency`. That occurs in wave 3.
+knip also reports `Unlisted binaries (1): vale`, from main's `prose` script. That one is main's,
+not any branch's, but it lands in the same report.
 
-Order note: do not put a path into `ignore` before the path exists.
+Order note: don't put a path into `ignore` before the path exists.
 knip then gives a `Configuration hints` line with the text `<path> knip.json Remove from ignore`.
-A hint does not fail the build. But each pull request must add its own line.
+A hint doesn't fail the build. But each pull request must add its own line.
 
 ---
 
@@ -599,7 +619,7 @@ openPage        function  scripts/lib/browser.mjs:49:23
 Delete both in the same commit. Or mark them `/** @public */` if they must stay.
 Add `scripts/lib/browser.mjs` to the file list for this pull request.
 
-Do not delete `shots.mjs` without a replacement.
+Don't delete `shots.mjs` without a replacement.
 `design/MOCKUP-KIT.md:48` and `design/DESIGN.md:342` tell a person to use it for mockup screen captures.
 Move its four viewport loop into `tests/e2e/shots.spec.ts`.
 Protect the test with `test.skip(!process.env.MC_SHOTS)`. Read the address from `MC_SHOT_URL`.
@@ -608,7 +628,7 @@ Correct both documents.
 `design/ARCHITECTURE.md:46` says that `layercheck.mjs` finds a write to a store from a `.tsx` file.
 A read of each of the 323 lines shows no such test.
 `chore/layercheck-harden` corrects that sentence. That pull request owns `ARCHITECTURE.md` in this wave.
-That file is not in the list above. Thus the two pull requests can operate together.
+That file isn't in the list above. Thus the two pull requests can operate together.
 
 #### `chore/layercheck-harden`
 
@@ -633,7 +653,7 @@ This pull request deletes 784 lines. It also deletes `design/copy-baseline.json`
 That file holds only `_areas`. It hides nothing today.
 
 It adds `scripts/copycatalog.mjs`. The new file has 84 lines.
-The file tests only what the program does not test at run time:
+The file tests only what the program doesn't test at run time:
 
 1. The shape of each entry.
 2. The length of each coinage note.
@@ -643,7 +663,7 @@ The file tests only what the program does not test at run time:
 
 It also adds `src/copy/copy.test.ts`. That file has five lines.
 The reason is important.
-The DEV assertions at `src/copy/index.ts:104-122` operate in the build system today.
+The dev-only assertions at `src/copy/index.ts:104-122` operate in the build system today.
 They operate only because two unrelated store tests import the module.
 One change to those tests removes the assertions with no message.
 
@@ -685,8 +705,8 @@ Each of the five named types is already in `design/deadexports-baseline.json:6-1
 
 This pull request owns `README.md` in this wave.
 It must correct two statements that become wrong.
-`README.md:35` calls `server.mjs` a "zero-dep proxy".
-`design/ARCHITECTURE.md:13` calls it "a dependency-free proxy".
+`README.md:35` calls `server.mjs` a "zero-dep proxy."
+`design/ARCHITECTURE.md:13` calls it "a dependency-free proxy."
 
 Three test results are important. Write them in the pull request text.
 
@@ -694,7 +714,7 @@ Three test results are important. Write them in the pull request text.
    It does this for each content type.
    Thus it repeats the 595 MB memory fault that this work corrects.
    The `embedding` removal must be a manual `on.proxyRes` handler with a content type test.
-2. `on.proxyReq` cannot wait for an asynchronous operation.
+2. `on.proxyReq` can't wait for an asynchronous operation.
    The request goes to the engine about 3 ms after the start.
    An asynchronous handler completes about 300 ms later.
    Thus the restore point stays an `await` in the `node:http` handler. It runs before the middleware.
@@ -712,14 +732,14 @@ stylelint examines one file at a time. Thus it reports nothing for this fault.
 
 Use the form that compares a selector and a property together.
 That form gives 23 findings at four real places.
-The simple form compares a class name in two files. That form gives 65 findings and is not useful.
+The simple form compares a class name in two files. That form gives 65 findings and isn't useful.
 
-Use a record file. Do not correct each of the 23 findings in this pull request.
+Use a record file. Don't correct each of the 23 findings in this pull request.
 The condition above is then possible to meet.
 
 #### `chore/package-hygiene`
 
-This pull request is not the last one to write to `package.json`. Wave 5 has two more.
+This pull request isn't the last one to write to `package.json`. Wave 5 has two more.
 The correct reason for its position is different.
 It must come after the last dependency addition and after the last change to its four fields.
 Wave 4 meets both conditions.
@@ -729,8 +749,8 @@ The real work is `npm pkg delete main description keywords author`.
 Then set the licence with `npm pkg set license=UNLICENSED`.
 The deletion of `main` also removes the last knip configuration hint.
 
-`.gitignore` has `shots/` two times, at lines 5 and 24.
-It has `.decisions` two times, at lines 9 and 10.
+`.gitignore` repeats `shots/` (lines 5 and 24).
+It repeats `.decisions` (lines 9 and 10).
 
 ---
 
@@ -749,7 +769,7 @@ It has `.decisions` two times, at lines 9 and 10.
 
 #### `chore/linkcheck`
 
-Use `markdown-link-check`. Do not use lychee.
+Use `markdown-link-check`. Don't use lychee.
 A test of `markdown-link-check` in this repository with node 24.19.0 gives this result:
 
 ```
@@ -759,9 +779,9 @@ ERROR: 1 dead link found in design/DESIGN.md !
 
 The tool gives exit code 1 for a dead link and exit code 0 for no dead link.
 It has an `ignorePatterns` option for offline operation. It installs 69 packages.
-It is an npm package. Thus knip sees the program in the package list.
+It's an npm package. Thus knip sees the program in the package list.
 There is no external GitHub Action to pin.
-lychee needs `lycheeverse/lychee-action`. That is a new supply chain risk.
+lychee needs `lycheeverse/lychee-action`. That's a new supply chain risk.
 lychee also gives a permanent `Unlisted binaries` finding in knip.
 
 Be honest about the value of this test.
@@ -775,7 +795,7 @@ Those references become real Markdown links.
 Then any link tool can see them in the future.
 
 You can take the document corrections and remove the test.
-That is a reasonable decision. It saves 30 minutes and one entry in `check:static`.
+That's a reasonable decision. It saves 30 minutes and one entry in `check:static`.
 
 #### `perf/precompress-dist`
 
@@ -786,13 +806,13 @@ A measurement gives this result:
 
 ## 4. Lost coverage
 
-Examine this section carefully. This section hides nothing.
+This is the section to scrutinise. It hides nothing.
 
 ### Losses that are acceptable
 
 **Lowercase words outside JSX text.**
 With the `no-restricted-syntax` rule, `<span>keep</span>` still gives an error.
-But `title="keep"`, `toast("saved")`, and `{cond ? "keep" : "drop"}` do not give an error.
+But `title="keep"`, `toast("saved")`, and `{cond ? "keep" : "drop"}` don't give an error.
 The word rules apply to each position in `mode:"all"`.
 `src/copy/*.json` holds 452 strings for the screen. 53 of them have this shape.
 A measurement of the alternative gives 254 findings, not 27. Almost each is an enumeration value.
@@ -816,8 +836,8 @@ A second `no-restricted-syntax` selector corrects this. It costs three lines.
 **Sentence reconstruction.**
 `scripts/copycheck.mjs:410-425` builds a full sentence from `<>adds to <Skey/> of {ref}</>`.
 It then compares the sentence with the catalog text `"adds to {{section}} of {{ref}}"`.
-That code removes findings. It does not create findings.
-`mode:"all"` reports each part separately. That is stricter, not weaker.
+That code removes findings. It doesn't create findings.
+`mode:"all"` reports each part as its own finding. That's stricter, not weaker.
 
 **The copycheck HTML mode and its record file.**
 `scripts/copycheck.mjs:598-620` operates only with an `.html` path.
@@ -837,7 +857,7 @@ Each of the three occurs in the property type of the exported component next to 
 knip has no equivalent of the `deadexports` table.
 That table gives lines such as `src/ui  30 files  117 exports  9 used only in their own file`.
 `scripts/components.mjs` gives that information now.
-knip finds two items that `deadexports` cannot find.
+knip finds two items that `deadexports` can't find.
 The reason is that `deadexports` searches `/\.tsx?$/` in `src/` only.
 The two items are `testKeyword` at `src/lib/lorebook-keyword-matching.js:30`
 and `loadBaseline` at `scripts/lib/baseline.mjs:16`.
@@ -847,21 +867,21 @@ and `loadBaseline` at `scripts/lib/baseline.mjs:16`.
 knip follows them. This is different, not worse.
 
 **The `font` shorthand property.**
-`src/ui/JsonView.css:67` has `font: inherit`. The scale cannot name that size.
-The old scanner does not find it. The stylelint rule does not find it.
-Thus the coverage does not change.
+`src/ui/JsonView.css:67` has `font: inherit`. The scale can't name that size.
+The old scanner doesn't find it. The stylelint rule doesn't find it.
+Thus the coverage doesn't change.
 
 **Compression at run time, and `If-Modified-Since`.**
 After `perf/precompress-dist`, the server sends only the compressed files that exist.
 A new file in `public/mockups/` goes without compression until the script operates again.
-sirv supports `If-None-Match`. It does not support `If-Modified-Since`.
+sirv supports `If-None-Match`. It doesn't support `If-Modified-Since`.
 The present server supports neither. Thus this is still an improvement.
 
 **Generated content, placeholder contrast, and the two-level tap rule.**
-axe does not examine `::before`, `::after`, or `::placeholder` text.
-axe cannot express the rule `>=44 OR (>=24 AND edge-gap>=8)`.
+axe doesn't examine `::before`, `::after`, or `::placeholder` text.
+axe can't express the rule `>=44 OR (>=24 AND edge-gap>=8)`.
 Its `any: [target-size, target-offset]` is an OR condition.
-This plan keeps the special measurement in `test/e2e-tap-targets`. Thus it does not lose these tests.
+This plan keeps the special measurement in `test/e2e-tap-targets`. Thus it doesn't lose these tests.
 But the measurement has the fixture density condition in wave 2.
 
 **The `data-contrast-exempt` warning.**
@@ -882,7 +902,7 @@ This was the largest item in the first plan. Section 2.1 removes it.
 4. The count of files for each directory.
 5. The exit code 2 for a damaged run.
 
-dependency-cruiser gives only the pair of file names. It does not give the import name.
+dependency-cruiser gives only the pair of file names. It doesn't give the import name.
 
 ### Losses to examine a second time
 
@@ -901,15 +921,15 @@ Three real duplicates stay below the limit:
 - `Review.tsx:217` and `Review.tsx:248` (6 lines).
 
 The configuration excludes test files.
-Thus it does not report the 14-line duplicate between `facets.test.ts:17` and `flags.test.ts:13`.
+Thus it doesn't report the 14-line duplicate between `facets.test.ts:17` and `flags.test.ts:13`.
 With test files, the value goes from 0.19% to 0.50%. The limit then has no use.
 The configuration excludes CSS files.
-Thus it does not report `RetrievalCard.css:51` and `SectionRow.css:72`.
+Thus it doesn't report `RetrievalCard.css:51` and `SectionRow.css:72`.
 
 **The chunk size warning has a limit, not a failure.**
 Vite gives this warning through the reporter plugin logger.
-`onwarn` does not receive it.
-Thus a bundle above 700 kB gives only a message.
+`onwarn` doesn't receive it.
+Thus a bundle above 700 KB gives only a message.
 `src/` has no `React.lazy` call today.
 A division by route is a new feature, not a build system change.
 
@@ -921,8 +941,8 @@ The rule `at-rule-no-unknown` is off. It gives an incorrect error for the Tailwi
 `src/styles/lorebooks.css:79` holds the only base rule.
 `src/styles/presets.css:54,58` hold only descendant rules.
 Thus one tool holds the base rule and another tool holds the variants.
-This is not a duplicate definition.
-`no-duplicate-selectors` does not report it. The cross-file test does not report it.
+This isn't a duplicate definition.
+`no-duplicate-selectors` doesn't report it. The cross-file test doesn't report it.
 The general test that finds it gives 65 findings. It includes `.is-open` across five files.
 `eslint.config.js:18-19` gives the reason to avoid that quantity of noise.
 
@@ -948,13 +968,13 @@ Then each addition is one new line. Each removal is one deleted line in a differ
 The object is in the order of addition, not alphabetical order.
 Thus two pull requests that add scripts write to adjacent lines.
 Wave 0 sorts the object one time.
-The first plan did not list two pairs:
+The first plan didn't list two pairs:
 `chore/knip` with `chore/wire-components` in wave 2,
 and `chore/jscpd` with `chore/copycheck-to-copycatalog` in wave 3.
 
 **`package-lock.json`.**
 Additions to `devDependencies` are separate lines in a sorted object. Git merges them.
-Git does not merge the lock file. Never merge it manually.
+Git doesn't merge the lock file. Never merge it manually.
 For a conflict, use these steps:
 
 1. Take the lock file from `main`.
@@ -976,11 +996,11 @@ Three pull requests own this file, one for each wave:
 **`knip.json`.**
 The `ignore` array accepts new lines. Each line holds one path.
 Each pull request that needs an ignored path adds its own line.
-Do not add a path before the pull request that creates it.
+Don't add a path before the pull request that creates it.
 This avoids the `Remove from ignore` configuration hint.
 `ignoreBinaries` is empty. Wave 5 uses `markdown-link-check`, which is an npm package.
 
-**`README.md`, lines 9 and 35 to 38.**
+**`README.md` (line 9, plus lines 35 to 38).**
 Four pull requests write inside the three-line context window of git.
 Thus one pull request owns the file in each wave:
 
@@ -994,7 +1014,7 @@ Divide these by file, not by wave.
 `chore/layercheck-harden` writes only to `design/ARCHITECTURE.md`, sections 1, 2, 5, and line 46.
 `chore/retire-verify` owns `DESIGN.md`, `BRIEFING.md`, `CHECKLIST.md`, and `CLAUDE.md`.
 Thus the two can operate together in wave 3.
-`chore/server-sirv-proxy` writes to `ARCHITECTURE.md:13` one wave later. That is a different section.
+`chore/server-sirv-proxy` writes to `ARCHITECTURE.md:13` one wave later. That's a different section.
 
 **`src/tools/presets/PresetsTool.tsx`.**
 Three pull requests write to this file of 758 lines.
@@ -1007,7 +1027,7 @@ That delay also removes four of its own findings.
 **`eslint.config.js`.**
 `chore/eslint-transport-client` and `chore/copy-eslint-mode-all` both add a block to the same array end.
 Put them in wave 1 and wave 2.
-Do not try to merge two configuration additions together.
+Don't try to merge two configuration additions together.
 
 **`src/styles/memory.css` and `src/styles/lorebooks.css`.**
 `chore/stylelint-hygiene` joins the four duplicate selectors in wave 3.
@@ -1024,14 +1044,14 @@ The same rule applies to `scripts/lib/imports.mjs`. `components.mjs:71` still im
 
 ## 6. Work that this plan excludes
 
-**Search libraries.** uFuzzy and MiniSearch are in the backlog. This plan does not change the search.
+**Search libraries.** uFuzzy and MiniSearch are in the backlog. This plan doesn't change the search.
 
 **Component work.** `todo/components.md` holds this work.
-The one exception is the `SaveBar` extraction. It is in this plan because the jscpd limit needs it.
+The one exception is the `SaveBar` extraction. It's in this plan because the jscpd limit needs it.
 
 **`scripts/domsnap.mjs` (200 lines) and `scripts/components.mjs` (505 lines).**
 Both files stay.
-`BACKLOG.md:417` puts domsnap under "Decided, do not revisit without a reason".
+`BACKLOG.md:417` puts domsnap under "Decided, don't revisit without a reason."
 domsnap needs the Vite development server.
 `scripts/lib/browser.mjs:113` reads component names from the React fiber tree.
 That code fails on a minified bundle.
@@ -1044,12 +1064,12 @@ No other tool tests CSS class use in this way.
 **dependency-cruiser.** Section 2.1 gives the decision.
 `layercheck.mjs` gets the improvement instead.
 
-**syncpack.** This plan does not use it.
+**syncpack.** This plan doesn't use it.
 `npm pkg fix` and `scripts/pkgcheck.mjs` in `chore/package-hygiene` do this work.
 
 **typescript-eslint, oxlint `--type-aware`, and `typescript-native-bridge`.**
 `typescript7-tooling.md` section 8 examines each of the three. This plan uses none of them.
-The oxlint option is interesting because it needs TypeScript 7. But it is separate work.
+The oxlint option is interesting because it needs TypeScript 7. But it's separate work.
 
 **Code division by route.**
 The comment for `chunkSizeWarningLimit: 700` names this as the next step.

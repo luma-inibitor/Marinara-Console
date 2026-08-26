@@ -1,11 +1,7 @@
 # Component work queue
 
-> This document uses ASD-STE100 Simplified Technical English writing rules.
-> Sentences have a maximum of 25 words. Paragraphs have a maximum of 6 sentences.
-> The voice is active. Each word has one meaning.
-> Command text, file paths, class names, and tool output do not obey these rules. They are literal text.
-> Note: an approved-dictionary check with a tool such as HyperSTE did not occur.
-> The writing rules are applied. Full dictionary conformance is not certified.
+> Prose here follows the repo's Vale rules (`npm run prose`). Command text,
+> file paths and tool output are literal and aren't linted.
 
 This document holds component work only.
 `todo/tooling-migration.md` holds the tool work.
@@ -13,11 +9,11 @@ This document holds component work only.
 The design rules for this work are in `design/DESIGN.md` section 8 and `design/ARCHITECTURE.md` section 2.
 
 A check of each item against `origin/main` (commit 5586c9c) occurred.
-Each item gives its evidence. A person cannot act on an item without evidence.
+Each item gives its evidence. A person can't act on an item without evidence.
 Each measurement in this document comes from a test, not from an estimate.
 
 Items with the mark **[ask Luma first]** change a decision that the owner made before.
-Do not do those items without permission.
+Don't do those items without permission.
 
 ---
 
@@ -25,13 +21,13 @@ Do not do those items without permission.
 
 The two files are `src/tools/lorebooks/entries.tsx:209-247` and `src/tools/presets/PresetsTool.tsx:719-757`.
 
-jscpd measures this as the largest duplicate in the repository. It is 45 lines and 560 tokens.
+jscpd measures this as the largest duplicate in the repository. It's 45 lines and 560 tokens.
 The two versions have the same structure:
 a conflict branch, a state line, a cancel button, and a save button.
-They are different in one copy key only.
+They're different in one copy key only.
 `entries.tsx` uses `lorebooks.entry.conflictBody`. `PresetsTool.tsx` uses `presets.section.conflictBody`.
-The comment on the presets version already says "mirrors the lorebook drawer's".
-Thus a person found the duplicate and wrote it down. That person did not remove it.
+The comment on the presets version already says "mirrors the lorebook drawer's."
+Thus a person found the duplicate and wrote it down. That person didn't remove it.
 
 The copy became worse during the duplication.
 `PresetsTool.tsx:743-753` holds three literal strings: `"Saving…"`, `"No changes"`, and `"Save changes"`.
@@ -64,6 +60,7 @@ The list of standard components in `design/todo.md` has **list item** with no im
 Most of that list is complete.
 `src/ui/` holds `Chip`, `Term`, `Edu`, `Picker`, `FacetDrawer`, `SearchBar`,
 `SearchDisclosure`, `ModePill`, `ListGroup`, `RawJson`, and `CopyableText`.
+(`FacetDrawer` and `Picker` have since moved into `src/tools/memory/review/`.)
 `SectionRow` gives the "memory detail section" item.
 `ListGroup` gives the group heading. But each row below the heading stays in its tool.
 
@@ -73,9 +70,9 @@ The second item is the memory detail view for each type:
 character, relationship, timeline event, thread, world, and tone.
 `MemoryDetail.tsx` sends each type through one path.
 It calls `sectionViews(n)` at line 46 and shows a `TypeIcon` in the heading.
-Thus the work for each type did not start.
-That second item is a design question before it is a component question.
-Thus the order at the end of this document does not include it.
+Thus the work for each type didn't start.
+That second item is a design question before it's a component question.
+Thus the order at the end of this document doesn't include it.
 
 **Action.** The four rows have sufficient common structure:
 a first cell, a body with a title and a data line, and a last cell with a number.
@@ -89,7 +86,7 @@ node scripts/domsnap.mjs after --diff
 ```
 
 This is the largest item in this document.
-Do one screen for each pull request. Do not do the four screens together.
+Do one screen for each pull request. Don't do the four screens together.
 
 ---
 
@@ -182,11 +179,11 @@ These three screens build an `<input>` element instead:
 
 The palette is a possible exception.
 A command palette field has different focus behaviour and different keyboard behaviour.
-Thus treat the palette as a separate decision. Do not change it with the other two.
+Thus treat the palette as a separate decision. Don't change it with the other two.
 
 The match rules behind the fields are also different.
 But the correction there is a library decision: uFuzzy for names and MiniSearch for text.
-`BACKLOG.md` holds that work. It is not a component change.
+`BACKLOG.md` holds that work. It's not a component change.
 
 ---
 
@@ -195,7 +192,7 @@ But the correction there is a library decision: uFuzzy for names and MiniSearch 
 `src/ui/index.ts` gives the rule:
 "Each component owns its own stylesheet, so deleting the component deletes its rules."
 
-Twenty-four files obey the rule. Three files do not. The three files are large:
+Twenty-four files obey the rule. Three files don't. The three files are large:
 
 - `src/styles/memory.css` has 506 lines.
 - `src/styles/presets.css` has 276 lines.
@@ -203,7 +200,7 @@ Twenty-four files obey the rule. Three files do not. The three files are large:
 
 `src/main.tsx:7-13` loads each of the three globally.
 Thus nothing limits them. Nothing prevents their growth.
-Item 3 is the first fault from this condition. It will not be the last fault.
+Item 3 is the first fault from this condition. It won't be the last fault.
 
 **Action.** Add a check that the three global files can only decrease in size.
 This stops the growth during the migration. It costs much less than the migration.
@@ -229,7 +226,7 @@ Those rules belong next to `src/shell/Toaster.tsx`.
 
 The token exists. No file uses it.
 
-A CSS media query cannot use a `var()` value. This is the reason for the repetition.
+A CSS media query can't use a `var()` value. This is the reason for the repetition.
 But Tailwind v4 makes a `split:` variant from that token. The project already uses Tailwind.
 The media queries can use that variant after the Tailwind work in `design/todo.md` is complete.
 The value then has one definition.
@@ -241,36 +238,33 @@ The value then has one definition.
 
 ## 9. Component exports with no external use
 
-These exports have use inside their own file only. Remove the export or delete the code:
+**Main has moved since this item was written, so most of it no longer applies.**
+`src/ui/FacetDrawer.tsx` and `src/ui/Picker.tsx` were deleted. Their contents moved into
+`src/tools/memory/review/` as `FilterSheet.tsx` and `ViewSheet.tsx`.
+So `FacetValue`, `FacetLine`, `FacetGroup` and `PickerOption` no longer exist to un-export.
+Re-check the survivors against the current tree before you act on any of them.
+
+What may remain:
 
 - `CollapseButton` at `src/ui/ListGroup.tsx:11`
-- `FacetValue`, `FacetLine`, and `FacetGroup` at `src/ui/FacetDrawer.tsx:6,15,18`
-- `PickerOption` at `src/ui/Picker.tsx:5`
 - `DisclosureOption` at `src/ui/SearchDisclosure.tsx:9`
 
-Examine each of the five types before you delete it.
-An exported property type is sometimes intentional.
-It lets another file build a value for the component.
-Look at each use before you remove it.
+Examine each before you delete it. An exported property type is sometimes intentional, because it's
+how another file builds a value for the component. Read the call sites first.
 
 **Two cautions.**
 
-**Caution 1.** `scripts/deadexports.mjs` already reports each of the six items.
-Its header at line 15 is clear: "Any import of the name from another file, TYPE IMPORTS INCLUDED".
-Each of the six is already in `design/deadexports-baseline.json`.
-Thus these are recorded decisions, not new discoveries.
-This item removes the record. It does not find new code.
+**Caution 1.** `scripts/deadexports.mjs` already reports these. Its header at line 15 is explicit:
+"Any import of the name from another file, type imports included." Each one already sits in
+`design/deadexports-baseline.json`. These are recorded decisions, not new discoveries, so this item
+is about emptying that baseline rather than finding anything.
 
-**Caution 2. Do not remove the export of `SheetHead`.**
-A `knip` run with no configuration reports the line at `src/ui/index.ts:27` as unused.
-That report is incorrect.
-`.design-sync/previews/SheetHead.tsx:2` imports it as `from "marinara-console"`.
-That name resolves through the design-sync tool, not through this repository.
-Thus each line in the file looks unused from inside `src/`.
-`scripts/deadexports.mjs:34-38` gives this exact warning. It excludes `src/ui/index.ts` for this reason.
-The removal of that line breaks the preview.
-
----
+**Caution 2. Don't un-export `SheetHead`.**
+A bare `knip` run reports the line at `src/ui/index.ts:27` as unused. That report is wrong.
+`.design-sync/previews/SheetHead.tsx:2` imports it as `from "marinara-console"`, a bare specifier
+that resolves through the design-sync harness rather than through this tree. So every barrel line
+looks orphaned from inside `src/`. `scripts/deadexports.mjs:34-38` documents this exact trap and
+exempts `src/ui/index.ts` for it. Removing the line breaks the preview.
 
 ## 10. Component counts
 
@@ -284,7 +278,7 @@ domain + violating: 34 of 202 — the ones props alone cannot move
 
 The 34 domain functions are the limit on each item in this document.
 Each of the 34 reads a store, the model, or the endpoint layer directly.
-It does not get that data through a property.
+It doesn't get that data through a property.
 Thus no property change lets two screens share such a function.
 
 Twenty-two of the 34 are in three files:
@@ -300,7 +294,7 @@ The one `violating` function is `Palette` at `src/shell/palette.tsx:85`.
 `scripts/components.mjs` has 505 lines. No npm script calls it.
 Only text in `design/` names it.
 The tool is useful. This section is its output.
-Thus add it to `package.json`. Do not delete it.
+Thus add it to `package.json`. Don't delete it.
 `todo/tooling-migration.md` holds that work.
 
 ---
@@ -308,10 +302,10 @@ Thus add it to `package.json`. Do not delete it.
 ## Order of work
 
 1. Item 9 and the `rail-cell` part of item 3. These are small and separate. They have no risk.
-2. Item 1, the shared `SaveBar`. It is complete in itself. It also corrects a live copy fault.
-3. The size check in item 7. It is cheap. It stops the growth of the global stylesheets.
-4. Item 4, `TypeBadge` and `StatusPill` in the Vault. It is small. It is practice for item 2.
-5. Item 6, the `SearchBar` change. It is small.
+2. Item 1, the shared `SaveBar`. It's complete in itself. It also corrects a live copy fault.
+3. The size check in item 7. It's cheap. It stops the growth of the global stylesheets.
+4. Item 4, `TypeBadge` and `StatusPill` in the Vault. It's small. It's practice for item 2.
+5. Item 6, the `SearchBar` change. It's small.
 6. Item 2, `ListRow`. Do one screen for each pull request. Use `domsnap` for each screen.
    This completes item 3. It also makes most of item 7 possible.
 7. Item 5 and item 8 need a decision before a person can plan them.
