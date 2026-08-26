@@ -52,14 +52,13 @@ repo-wide. When a rule fires on a word that means something specific here, put
 the word in the project vocabulary, which Vale skips in every check.
 
 `.vale/styles/Luma/` holds hand-written rules, which `vale sync` leaves alone.
-Two come from `ASD-STE100`, the Simplified Technical English standard, and catch
-what neither Google nor Microsoft does: gerunds and present participles, and the
-perfect tenses. Both match on part-of-speech tags rather than on spelling, so
-`during` and `has a value` stay quiet.
+One comes from `ASD-STE100`, the Simplified Technical English standard, and
+catches the perfect tenses, which neither Google nor Microsoft check. It matches
+on part-of-speech tags rather than on spelling, so `has a value` stays quiet.
 
-One caveat matters here. The vocabulary doesn't apply to those two rules,
-because Vale skips vocabulary terms for every check except `sequence`. To exempt
-a word from them, edit the rule.
+One caveat matters here. The vocabulary doesn't apply to that rule, because Vale
+skips vocabulary terms for every check except `sequence`. To exempt a word from
+it, edit the rule.
 
 Vocabulary lives in `scripts/genvocab.py`, which expands plain word lists into the
 patterns Vale wants. Add the word there, re-run the script, commit both files:

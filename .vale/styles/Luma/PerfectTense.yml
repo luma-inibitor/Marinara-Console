@@ -1,4 +1,8 @@
 # Perfect tenses, which ASD-STE100 does not allow.
+#
+# Gotcha: the project vocabulary does not reach a sequence check. A word in
+# accept.txt still reports here, and the only way to exempt one is to edit
+# this file.
 extends: sequence
 message: "Perfect tense with '%s'; prefer the simple past."
 link: https://www.asd-europe.org/standards-specifications/simplified-technical-english/
