@@ -40,6 +40,8 @@ export const checks = [
   "deadexports",
   "deadcss",
   "knip",
+  // Duplication
+  "jscpd",
   // Design system
   "typescale",
 ];

@@ -1,0 +1,8 @@
+{
+  "path": ["src"],
+  "format": ["typescript", "tsx"],
+  "ignore": ["**/*.test.ts", "**/*.test.tsx", "src/tools/*/test/**", "src/lib/*.d.ts"],
+  "minLines": 5,
+  "threshold": 0.3,
+  "reporters": ["console"]
+}
