@@ -1,20 +1,13 @@
 import { joinList, t } from "../copy";
 import type { Draft } from "../shell/draft";
 
-/** The sticky commit bar over an explicit-save draft: staged-change count on
- *  the left, Cancel and Save on the right, conflict resolution in place of both
- *  when the record moved mid-edit.
- *
- *  The conflict sentence names the record kind, so the caller passes its copy
- *  key rather than a bare noun this file drops into a hole.
- *
- *  No stylesheet of its own: `.savebar` lives in src/styles/presets.css, which
- *  main.tsx loads on every screen. Moving it belongs to the sheet migration. */
+/** The sticky commit bar over an explicit-save draft: change count on the left,
+ *  Cancel and Save on the right, conflict resolution in place of both when the
+ *  record moved mid-edit. `conflictBody` is the copy key of that sentence. */
 export function SaveBar<T extends { id: string }>(props: {
   draft: Draft<T>;
   onSave: () => Promise<boolean>;
-  /** The conflict sentence, named per record kind. These two are the only
-   *  records the console saves explicitly; both live in the catalog already. */
+  /** The conflict sentence, per record kind. */
   conflictBody: "lorebooks.entry.conflictBody" | "presets.section.conflictBody";
 }) {
   const d = props.draft;
