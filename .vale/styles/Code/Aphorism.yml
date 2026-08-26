@@ -1,10 +1,9 @@
 # A balanced two-clause construction that lands a point instead of stating a
-# fact. DESIGN.md's comment rule calls these out by name.
+# fact. DESIGN.md's comment rule names these.
 #
-# `scope: text`, not `scope: sentence`, and that is load-bearing. Vale never
-# segments code comments into sentences, so a sentence-scoped rule silently
-# matches nothing in a .ts file — it does not error, it just never fires. Any
-# rule meant to reach a comment has to anchor itself.
+# Gotcha: `scope: text`, not `scope: sentence`. Vale never segments code
+# comments into sentences, so a sentence-scoped rule silently matches nothing
+# in a .ts file. It does not error; it never fires. Anchor in the pattern.
 extends: existence
 message: "Balanced aphorism ('%s'). State the fact instead."
 level: warning

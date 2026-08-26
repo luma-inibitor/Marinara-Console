@@ -1,10 +1,8 @@
-# A comment arguing against the alternative that was not chosen. Per DESIGN.md,
-# that reasoning belongs in the design document, not beside the code.
+# A comment arguing against the alternative that was not chosen. DESIGN.md puts
+# that reasoning in the design document, not beside the code.
 #
-# See Aphorism.yml for why this is `scope: text`.
-#
-# Deliberately narrow. A wider pattern on "would ..." reports every gotcha that
-# explains what breaks, which is one of the four kinds of comment worth keeping.
+# Narrow on purpose: a wider `would ...` pattern reports every gotcha. See
+# Aphorism.yml for the `scope: text` gotcha.
 extends: existence
 message: "Arguing against an alternative ('%s'). The design doc is where that goes."
 level: warning
