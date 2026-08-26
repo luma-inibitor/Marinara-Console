@@ -5,7 +5,8 @@
 
 # Exact casing on purpose, so Vale.Terms flags "vite" -> "Vite".
 proper = """
-Archivo JSDoc Luma Mira Preact Radix Tabler Valibot Vite Vitest
+Archivo JSDoc Luma Mira MiniSearch Playwright Preact Radix Rolldown Tabler
+Valibot Vite Vitest
 """
 
 # Words a Microsoft rule wants swapped, which mean something specific here.
@@ -16,15 +17,20 @@ accessible backend click disabled extraction glyph
 # Jargon and common nouns: accept either casing and the usual inflections.
 common = """
 affordance agent attr autoadvance autoapplied autoapply autoinclude
+brotli bundler
 autosave backlink boolean charset chiprail clearable compat
 config copycheck debounce dedup dedupe deduplicate deps destructure
-destructuring dev devtools discardable discoverability domsnap edu ellipsised
+deadexports destructuring dev devtools discardable discoverability domsnap
+edu ellipsised eslint
 enum esc exceedance expander fullscreen greppable greyscale grouphead hardcode
 hoc hotspot impactful implementer inline jsdom keydown keypress knip lgtm
-loopback lorebook metaline misaligning mockup nullable numerics onboarding
+jscpd loopback lorebook metaline middleware misaligning mockup nullable
+numerics onboarding
 oxlint padding param pressable proxied proxying refetch reflow reimplement repo
-revisitable roleplay rollup scrollable scrollbar skimmable snake_case subline
-substate tabbable tabindex teleport togglable tooltip tri triaged unauthored
+revisitable roleplay rollup savebar scrollable scrollbar sirv skimmable
+snake_case stylelint subline syncpack
+substate tabbable tabindex teleport tokenizer togglable tooltip tri triaged
+typescale uFuzzy unauthored
 unawaited unclipped undecide undeciding undrawn unenumerable unlayered unmocked
 unmount unrendered unscoped unstyled untraced unwired upstream vendored
 viewport virtualize wireframe
