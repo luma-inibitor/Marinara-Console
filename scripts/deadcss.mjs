@@ -2,6 +2,7 @@
 // Report CSS classes no .tsx/.ts file appears to use.
 //
 //   node scripts/deadcss.mjs
+//   node scripts/deadcss.mjs scripts/fixtures/deadcss/registered   # one tree
 //   node scripts/deadcss.mjs --adopt   # record today's set as the baseline
 //   node scripts/deadcss.mjs --prune   # drop baseline entries that no longer appear
 //
@@ -24,8 +25,9 @@
 // is the question a reviewer has: did this change strand a rule? See
 // scripts/lib/baseline.mjs.
 //
-// Exit codes: 0 clean · 1 a candidate outside the baseline · 2 the baseline is
-// unreadable.
+// Exit codes: 0 clean · 1 a candidate outside the baseline · 2 the check is
+// compromised (a class position composes a prefix DOMAINS does not name, or
+// the baseline is unreadable).
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -35,12 +37,25 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE_PATH = path.join(ROOT, "design", "deadcss-baseline.json");
 const flags = new Set(process.argv.slice(2).filter((a) => a.startsWith("--")));
 
+// A path argument scans that tree instead of src/, which is how the miniature
+// trees under scripts/fixtures/deadcss are read. The ratchet is scoped to the
+// same path below, so a fixture run neither calls the real baseline's entries
+// vanished nor prunes them away.
+const [arg] = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+const SCAN = path.resolve(ROOT, arg ?? "src");
+const scanned = path.relative(ROOT, SCAN).split(path.sep).join("/");
+if (!fs.existsSync(SCAN)) {
+  console.error(`NOTHING TO CHECK — "${arg}" is not a path in this tree`);
+  process.exit(2);
+}
+
 // Every stylesheet under src/, found rather than listed. §8 gives each
 // component its own sheet, so any hardcoded list goes stale the moment a
 // component is added and silently stops scanning where the dead rules are.
 
 // Composed prefixes and their value domains, read off the types in source.
-// Add an entry here whenever a new `prefix-${...}` appears in the JSX.
+// Add an entry here whenever a new `prefix-${...}` appears in the JSX — the
+// drift test below fails the run rather than trusting anyone to remember.
 const DOMAINS = {
   "type-": ["character", "relationship", "timeline_event", "thread", "world", "tone", "scene", "source"],
   "dec-": ["keep", "drop", "undecided"],
@@ -49,7 +64,6 @@ const DOMAINS = {
   // SavePill (dirty/saved/err) plus the group-run boundaries the presets audit
   // composes as `is-${run}` — see groupRunBoundaries in src/tools/presets/data.ts.
   "is-": ["dirty", "saved", "err", "start", "mid", "end", "solo"],
-  "kw-": ["add", "del"],
   "es-": ["ok", "danger"],          // EmptyState tone
 };
 
@@ -60,7 +74,7 @@ const src = [];
     if (e.isDirectory()) walk(p);
     else if (/\.(tsx|ts)$/.test(e.name)) src.push(fs.readFileSync(p, "utf8"));
   }
-})(path.join(ROOT, "src"));
+})(SCAN);
 const code = src.join("\n");
 
 const live = new Set();
@@ -81,8 +95,51 @@ for (const m of code.matchAll(/`([^`]*)`/g)) add(m[1]);
 // closing backtick — nesting one template inside another desynchronises the
 // pairing above for everything after it in the file.
 for (const m of code.matchAll(/`([^`$]+)\$\{/g)) add(m[1]);
-for (const m of code.matchAll(/([a-z][\w-]*-)\$\{/g))
-  for (const v of DOMAINS[m[1]] ?? []) live.add(m[1] + v);
+
+// ── composed prefixes, and the drift test on DOMAINS ──────────────────────
+// A prefix counts only where it is composed into a class: `className=`, `cls=`
+// and `surface=`. `${}` builds ids and keys too — src/tools/memory/test/
+// factories.ts composes `draft-${n}`, `mut-${n}` and `note-${n}` — and a scan
+// of every template in the tree cannot tell one of those from a class name.
+//
+// The expression is read by counting braces rather than by matching one pair
+// of backticks. EmptyState nests a template inside its class template,
+// `es-icon ${tone ? `es-${tone}` : ""}`, and a pattern that stops at the first
+// inner backtick loses `es-` and strands both .es-* rules.
+const classExpressions = [];
+for (const m of code.matchAll(/\b(?:className|cls|surface)=\{/g)) {
+  const start = m.index + m[0].length;
+  let i = start, depth = 1;
+  while (i < code.length && depth) {
+    if (code[i] === "{") depth++;
+    else if (code[i] === "}") depth--;
+    i++;
+  }
+  classExpressions.push(code.slice(start, i - 1));
+}
+
+const prefixes = new Set();
+for (const expr of classExpressions)
+  for (const m of expr.matchAll(/([a-z][\w-]*-)\$\{/g)) prefixes.add(m[1]);
+
+// DOMAINS is maintained by hand, so it goes stale in silence: a prefix nobody
+// added means every rule in that namespace reads as dead, and the report says
+// only that the rules are unused. That is not a candidate for a reader to
+// weigh — it is a namespace the check never scanned — so it exits 2 with the
+// compromised-check code.
+const unregistered = [...prefixes].filter((p) => !(p in DOMAINS)).sort();
+if (unregistered.length) {
+  console.log("\nUNREGISTERED CLASS PREFIX — the check itself is compromised:");
+  for (const p of unregistered) console.log(`  \`${p}\${...}\` is composed in a class position and DOMAINS has no entry`);
+  console.log("\nAdd each prefix and its value domain to DOMAINS in scripts/deadcss.mjs.");
+  process.exit(2);
+}
+// The test runs one way only. An entry no class position composes contributes
+// nothing, and is still not a finding: the reader above cannot see through
+// every construction, so deleting an entry on that evidence is how a namespace
+// gets stranded. Unused entries are retired by hand — `kw-` was one, and its
+// .kw-add/.kw-del/.kw-edit are literal in src/tools/memory/ClaimDetail.tsx.
+for (const p of prefixes) for (const v of DOMAINS[p]) live.add(p + v);
 
 const SHEETS = [];
 (function sheets(dir) {
@@ -91,7 +148,7 @@ const SHEETS = [];
     if (e.isDirectory()) sheets(p);
     else if (e.name.endsWith(".css")) SHEETS.push(p);
   }
-})(path.join(ROOT, "src"));
+})(SCAN);
 
 const findings = [];
 let total = 0;
@@ -114,7 +171,7 @@ const adopt = flags.has("--adopt");
 const prune = flags.has("--prune");
 process.exit(
   reportRatchet({
-    ...ratchet(BASELINE_PATH, findings, { adopt, prune }),
+    ...ratchet(BASELINE_PATH, findings, { adopt, prune, scope: (f) => f.startsWith(scanned + "/") }),
     label: "design/deadcss-baseline.json",
     noun: "dead class",
     adopt,
