@@ -23,12 +23,7 @@ import { parseItems, parseWire, parseWrite, WireMismatchError } from "./wire";
 
 const Thing = v.looseObject({ id: v.string(), on: v.boolean() });
 
-/** The toast comes from a lazy `import()`, a microtask behind its caller. */
-const settled = () => new Promise((resolve) => setTimeout(resolve, 0));
-
-// Flush before clearing, or a toast still in flight lands in the next test.
-afterEach(async () => {
-  await settled();
+afterEach(() => {
   raised.length = 0;
   vi.restoreAllMocks();
 });
@@ -58,10 +53,9 @@ describe("parseWire", () => {
     expect(() => parseWire(Thing, { id: "a", on: "false" }, "GET /thing")).toThrow(WireMismatchError);
   });
 
-  it("reports the mismatch to the console and to a toast", async () => {
+  it("reports the mismatch to the console and to a toast", () => {
     const logged = vi.spyOn(console, "error").mockImplementation(() => {});
     expect(() => parseWire(Thing, { id: "a" }, "GET /thing")).toThrow();
-    await settled();
     expect(logged).toHaveBeenCalled();
     expect(raised).toEqual([{ message: "shell.wire.mismatch|context=GET /thing", kind: "error" }]);
   });
@@ -84,10 +78,9 @@ describe("parseWrite", () => {
     expect((thrown as Error).message).toBe("shell.wire.writeMismatch|context=PATCH /thing");
   });
 
-  it("logs the issues but raises no toast of its own", async () => {
+  it("logs the issues but raises no toast of its own", () => {
     const logged = vi.spyOn(console, "error").mockImplementation(() => {});
     expect(() => parseWrite(Thing, { id: "a" }, "PATCH /thing")).toThrow();
-    await settled();
     expect(logged).toHaveBeenCalled();
     expect(raised).toEqual([]);
   });
@@ -99,31 +92,27 @@ describe("parseItems", () => {
     expect(parseItems(Thing, items, "GET /things")).toEqual(items);
   });
 
-  it("keeps the good elements and drops the bad one", async () => {
+  it("keeps the good elements and drops the bad one", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     const kept = parseItems(Thing, [{ id: "a", on: true }, { id: "b" }, { id: "c", on: false }], "GET /things");
     expect(kept.map((k) => k.id)).toEqual(["a", "c"]);
-    await settled();
     expect(raised).toEqual([{ message: "shell.wire.dropped|count=1,context=GET /things", kind: "error" }]);
   });
 
-  it("counts every dropped element in the one report", async () => {
+  it("counts every dropped element in the one report", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     parseItems(Thing, [{ id: "a" }, { id: "b" }], "GET /things");
-    await settled();
     expect(raised).toEqual([{ message: "shell.wire.dropped|count=2,context=GET /things", kind: "error" }]);
   });
 
-  it("says nothing when nothing was dropped", async () => {
+  it("says nothing when nothing was dropped", () => {
     parseItems(Thing, [{ id: "a", on: true }], "GET /things");
-    await settled();
     expect(raised).toEqual([]);
   });
 
-  it("throws when the response is not a list at all", async () => {
+  it("throws when the response is not a list at all", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     expect(() => parseItems(Thing, { id: "a", on: true }, "GET /things")).toThrow(WireMismatchError);
-    await settled();
     expect(raised).toEqual([{ message: "shell.wire.mismatch|context=GET /things", kind: "error" }]);
   });
 });

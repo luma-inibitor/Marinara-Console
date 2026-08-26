@@ -8,6 +8,7 @@
 // Writing is all or nothing — see parseWrite.
 import * as v from "valibot";
 import { t } from "../copy";
+import { toast } from "./toast";
 
 export class WireMismatchError extends Error {
   issues: string[];
@@ -28,14 +29,9 @@ const describe = (issues: readonly v.BaseIssue<unknown>[]): string[] =>
     return path ? `${path}: ${issue.message}` : issue.message;
   });
 
-/** Lazy: a static import of the toast queue puts this module in a cycle. */
-function announce(message: string) {
-  void import("./toast").then(({ toast }) => toast(message, { kind: "error" }));
-}
-
 function report(context: string, issues: string[], message: string) {
   console.error(`[wire] ${context}`, issues);
-  announce(message);
+  toast(message, { kind: "error" });
 }
 
 export function parseWire<S extends Schema>(schema: S, value: unknown, context: string): v.InferOutput<S> {
@@ -52,7 +48,7 @@ export function parseWire<S extends Schema>(schema: S, value: unknown, context: 
  *  instead, carrying copy that says the change did land and the view did not.
  *
  *  No toast: every caller of a write already reports what it catches, and the
- *  read paths' announce would make that two. */
+ *  read paths' toast would make that two. */
 export function parseWrite<S extends Schema>(schema: S, value: unknown, context: string): v.InferOutput<S> {
   const result = v.safeParse(schema, value);
   if (result.success) return result.output;

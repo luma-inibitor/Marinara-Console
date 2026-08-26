@@ -1,6 +1,7 @@
 // API client: everything goes through server.mjs (/api proxy → engine, with
 // embedding strip).
 import { t } from "../copy";
+import { toast } from "./toast";
 
 /**
  * An error carrying what the engine actually said. The engine returns
@@ -41,9 +42,7 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
   }
   if (!restorePointWarned && res.headers.get("x-ltm-restore-point") === "failed") {
     restorePointWarned = true;
-    // Lazy import avoids a cycle (toast lives beside the shell).
-    void import("./toast").then(({ toast }) =>
-      toast(t("shell.api.restorePointFailed"), { kind: "error" }));
+    toast(t("shell.api.restorePointFailed"), { kind: "error" });
   }
   if (!res.ok) {
     let payload: { error?: string; detail?: string; details?: unknown } = {};
