@@ -7,7 +7,11 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts", "scripts/**/*.test.mjs"],
+    // test/ holds the HTTP conformance suite for server.mjs. It is separate
+    // from src/ and scripts/ because it tests neither: it stands the real
+    // server on a port and talks to it, so it must outlive any rewrite of the
+    // file it covers.
+    include: ["src/**/*.test.ts", "scripts/**/*.test.mjs", "test/**/*.test.mjs"],
     setupFiles: ["src/tools/memory/test/setup.ts"],
   },
 });

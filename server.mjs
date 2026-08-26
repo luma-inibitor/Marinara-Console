@@ -12,8 +12,10 @@ import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = resolve(fileURLToPath(import.meta.url), "..");
-const DIST = join(HERE, "dist");       // built console (vite)
-const PUBLIC = join(HERE, "public");   // design mockups, served at /mockups/
+// MC_DIST/MC_PUBLIC exist so test/server.test.mjs can aim the two static roots
+// at fixture trees. Unset — which is every real run — both are what they were.
+const DIST = resolve(process.env.MC_DIST ?? join(HERE, "dist"));       // built console (vite)
+const PUBLIC = resolve(process.env.MC_PUBLIC ?? join(HERE, "public")); // design mockups, served at /mockups/
 
 const PORT = Number(process.env.PORT ?? 7872);
 const HOST = process.env.HOST ?? "0.0.0.0";
