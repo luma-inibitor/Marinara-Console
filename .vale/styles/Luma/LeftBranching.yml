@@ -1,0 +1,14 @@
+# A sentence that defers its main clause behind a fronted subordinate one.
+#
+# `scope: sentence` is load-bearing. Vale flattens a document to one string, so
+# an unscoped `^` anchors at the file, not at each sentence.
+extends: existence
+message: "Left-branching opener: '%s'. Prefer leading with the main clause."
+link: https://docs.vale.sh/topics/scopes
+level: suggestion
+nonword: true
+scope: sentence
+raw:
+  - '^\s*(?:Although|Though|While|Whereas|Because|Since|When|Whenever|If|Unless'
+  - '|Until|After|Before|Once|Given that|Despite|Rather than|By \w+ing'
+  - '|Having \w+)\b[^.!?]{5,}?,\s'

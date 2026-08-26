@@ -1,0 +1,14 @@
+# An em-dash joining two independent clauses.
+#
+# PRP|DT, not a bare plural: the tagger reads "stats" as a verb, so a wider
+# subject makes "**Tag panel** — group stats with bars" report as a clause.
+extends: sequence
+message: "Em-dash joins two independent clauses. Use a period or a semicolon."
+link: https://docs.vale.sh/checks/sequence
+level: suggestion
+tokens:
+  - pattern: '—'
+  - tag: PRP|DT
+  - tag: VBZ|VBD|VBP|MD
+    skip: 2
+    target: true
