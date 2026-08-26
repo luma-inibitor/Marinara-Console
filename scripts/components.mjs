@@ -106,8 +106,6 @@ function walkWithin(n, visit) {
   }
 }
 
-const isJSX = (n) => n.type === "JSXElement" || n.type === "JSXFragment";
-
 // A return can wrap its markup in a handful of ways that are still "returns
 // markup". Anything else — a call, a member access — is not looked through,
 // because the JSX inside it belongs to whatever that expression owns.

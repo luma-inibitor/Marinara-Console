@@ -1,14 +1,20 @@
+import js from "@eslint/js";
+import globals from "globals";
 import babelParser from "@babel/eslint-parser";
 import i18next from "eslint-plugin-i18next";
 import importPlugin from "eslint-plugin-import";
 import reactHooks from "eslint-plugin-react-hooks";
 
-// Babel, not typescript-eslint, parses the TypeScript here. The project
-// compiles with typescript@7 — the native compiler — whose npm package exposes
-// no JS Compiler API at all (`ts.createSourceFile` is undefined), so any parser
-// built on it would need a second, older TypeScript installed alongside. Babel
-// strips the types syntactically and needs no compiler, which is enough: the
-// rules below are not type-aware.
+// Babel, not typescript-eslint, parses the TypeScript here. typescript@7 — the
+// native compiler — exports only `version` from the package root, so anything
+// that does `import * as ts from "typescript"` and reaches for
+// `ts.createSourceFile` gets undefined. typescript-eslint does exactly that.
+// Babel strips the types syntactically instead, which is enough: the rules
+// below are not type-aware.
+//
+// The compiler API does exist, under `typescript/unstable/*`: `ast` carries the
+// scanner and the node factory, `sync` carries Program and Checker. A tool of
+// our own can use it. Only the root-export assumption is unavailable.
 //
 // This also pins eslint to 9.x, because @babel/eslint-parser does not accept
 // eslint 10 as a peer.
@@ -89,5 +95,39 @@ export default [
         },
       ],
     },
+  },
+  {
+    // scripts/ takes the recommended preset, which src/ does not, because
+    // nothing else checks it: tsconfig.json includes only src, so these 3,900
+    // lines have no compiler over them at all. The preset earns its place here
+    // for the same reason it would be redundant there.
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: "module",
+      globals: { ...globals.node },
+    },
+    plugins: { import: importPlugin },
+    rules: {
+      ...js.configs.recommended.rules,
+      // copycheck masks catalog placeholders with a NUL sentinel and matches
+      // it back out, so a control character in a regex is the design.
+      "no-control-regex": "off",
+      "import/no-cycle": ["error", { ignoreExternal: true }],
+    },
+  },
+  {
+    // These five drive a real Chromium. The callback inside page.evaluate runs
+    // in the page, so document and friends are defined there and nowhere else
+    // in scripts/ -- listing the files keeps a stray `document` in a Node-only
+    // script reportable.
+    files: [
+      "scripts/domsnap.mjs",
+      "scripts/faceprobe.mjs",
+      "scripts/shots.mjs",
+      "scripts/verify.mjs",
+      "scripts/lib/browser.mjs",
+    ],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 ];

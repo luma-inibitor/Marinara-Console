@@ -18,10 +18,10 @@
   file or deciding where one goes. `npm run layercheck` enforces the dependency
   rule; a module in no layer directory is unchecked, which is a gap, not a pass.
 - **Queue choices in `.decisions/`** instead of asking inline or fixing on a
-  hunch. The directory is the index, `.decisions/README.md` is the format, and
-  a defect found while doing something else belongs there rather than in the
-  diff that found it. A decision that changes is rewritten correct at the top,
-  never appended to.
+  hunch. The directory sits outside version control. It's the index,
+  `.decisions/README.md` is the format, and a defect found while doing something
+  else belongs there rather than in the diff that found it. A decision that
+  changes is rewritten correct at the top, never appended to.
 - Validate: `npx tsc --noEmit && npm test && npm run layercheck && npm run build`,
   then the checks in DESIGN.md §7 (screenshot at 390/768/1280, zero console errors, contrast +
   tap-target floors).

@@ -103,7 +103,7 @@ const norm = (s) =>
 // NOT — a one-word lowercase coinage must still be registered.
 const SEP = /^\/?[a-z0-9]+([_./:-][a-z0-9]+)+\/?$/;
 // Punctuation, counts, bare sentinels: nothing a reader could call a word.
-const GLYPH = /^[\s\u0000\d·—–…✓✗×+−(){}[\]%\/.,:;!?'"|@#*&_-]*$/;
+const GLYPH = /^[\s\u0000\d·—–…✓✗×+−(){}[\]%/.,:;!?'"|@#*&_-]*$/;
 const HAS_LETTER = /[a-zA-Z]/;
 
 function isCandidate(raw) {
@@ -588,7 +588,7 @@ function mockupMode(path, CAT, OUR) {
   for (const m of stripped.matchAll(/<(button|span|div|b|h3|h4|summary)\b([^>]*)>([^<>]{2,90})</g)) {
     if (META_CLASSES.test(m[2])) continue;
     const t = m[3].replace(/\s+/g, " ").trim();
-    if (!t || /^[\d\s·—…✓✗+−(){}[\]%\/.,-]+$/.test(t)) continue;
+    if (!t || /^[\d\s·—…✓✗+−(){}[\]%/.,-]+$/.test(t)) continue;
     strings.add(t);
   }
   const covered = (s) => CAT.has(norm(s)) || OUR.has(norm(s));
