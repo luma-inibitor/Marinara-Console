@@ -698,6 +698,22 @@ This pull request must **not** delete `scripts/lib/baseline.mjs`.
 This plan has no replacement for `deadcss`. Thus `baseline.mjs` continues after the migration.
 The same is true for `scripts/lib/imports.mjs`. `components.mjs:71` imports it.
 
+The deletion leaves a reference to `scripts/deadexports.mjs` in three files this pull request doesn't own.
+`design/ARCHITECTURE.md:210` describes the script and its baseline ratchet.
+`docs/architecture-prose` rewrites that document, and its commit `7b17d81` drops the paragraph.
+`design/BRIEFING.md:211` lists `node scripts/deadexports.mjs` as a command a person runs.
+`chore/retire-verify` owns that file in wave 3, and the head of that branch still holds the row.
+Delete the row there.
+`scripts/lib/baseline.mjs:50` gives `deadexports src/ui` as an example inside a comment.
+`fix/baseline-ghosts` and `chore/deadcss-drift` both write to that file, so the correction belongs to whichever lands first.
+`linkcheck` reports none of the three, because each reference is inline code rather than a Markdown link.
+
+This pull request adds `scripts/publicexports.mjs` and the `publicexports` npm script.
+knip prints nothing about an export that carries a `/** @public */` tag.
+Neither `--tags=-public` nor `--tags=+public` brings such an export back into the report.
+`deadexports` listed every baseline finding on each run and suppressed only the exit code.
+`publicexports` restores that visibility for the tagged exports. The script is an inventory and always exits 0.
+
 This pull request also corrects `docs/todo/components.md:184-185`.
 Both statements there are wrong.
 `deadexports.mjs` does examine exported types. Its header at `scripts/deadexports.mjs:15-19` says so.
@@ -874,13 +890,18 @@ Its two files are `src/tools/lorebooks/data.ts` and `src/tools/presets/data.ts`.
 Neither file holds an English string. Thus the marker does nothing today.
 
 **Three deadexports findings and the count for each directory.**
-knip accepts one level of reference from the declaration of a used export.
-Thus `FacetGroup`, `PickerOption`, and `DisclosureOption` become invisible.
+knip counts an exported type as used when a used export names it in a signature.
+This is a rule, not a fact about three symbols.
+Every exported type of that shape stays invisible, the ones written later included.
+`FacetGroup`, `PickerOption`, and `DisclosureOption` were the instances on the tree at the time.
 Each of the three occurs in the property type of the exported component next to it.
 `FacetValue` and `FacetLine` occur only inside another type. knip still finds them.
+No knip option closes this gap. `npx knip --trace-export DisclosureOption` prints `(no imports found)` and a tick.
 knip has no equivalent of the `deadexports` table.
 That table gives lines such as `src/ui  30 files  117 exports  9 used only in their own file`.
-`scripts/components.mjs` gives that information now.
+Nothing replaces that table.
+`scripts/components.mjs` prints a component inventory with an `exp` and a `refs` column for each component.
+It prints no export count and no over-export count for each directory.
 knip finds two items that `deadexports` can't find.
 The reason is that `deadexports` searches `/\.tsx?$/` in `src/` only.
 The two items are `testKeyword` at `src/lib/lorebook-keyword-matching.js:30`

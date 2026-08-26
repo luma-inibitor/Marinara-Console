@@ -258,8 +258,17 @@ how another file builds a value for the component. Read the call sites first.
 `scripts/deadexports.mjs`, and it passes over both, for two different reasons. `CollapseButton`
 carries a `/** @public */` tag at `src/ui/ListGroup.tsx:12`, and knip reads that tag as a statement
 that the export is deliberate. `DisclosureOption` appears in the props of `SearchDisclosure`, which
-other files import, and knip counts a type in the signature of a used export as used. So settle
-these two by reading the call sites. No check will raise them for you.
+other files import. knip counts an exported type as used when a used export names it in a signature.
+The second reason is a rule rather than a fact about this one type. Every exported type of that
+shape is invisible to knip, the ones written after today included. So settle these two by reading
+the call sites. No check will raise them for you.
+
+The two mechanisms also differ in who may grant the exemption and in how visible the grant is.
+An entry in `design/deadexports-baseline.json` took a `--adopt` run, a line in the pull request body,
+and a reviewer reading that diff. That file also carried an integrity field. A `/** @public */` tag
+is one line directly before the symbol, anyone can add it alone, and it leaves no artifact to review.
+`npm run publicexports` lists every tagged export, so that class of exemption stays readable.
+Nothing lists the exported types that a signature hides.
 
 **Caution 2. Don't un-export `SheetHead`.**
 `.design-sync/previews/SheetHead.tsx:2` imports it as `from "marinara-console"`, a bare specifier
