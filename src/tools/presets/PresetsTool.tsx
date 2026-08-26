@@ -67,7 +67,7 @@ function Browser() {
   }, [reloadKey]);
 
   if (error) return <div className="screen is-narrow"><ErrorState error={error} onRetry={reload} /></div>;
-  if (!presets) return <div className="screen is-narrow"><Loading what="presets" onRetry={reload} /></div>;
+  if (!presets) return <div className="screen is-narrow"><Loading what="shell.tool.presets" onRetry={reload} /></div>;
 
   const visible = presets
     .filter((p) => !query.trim() || (p.name + " " + p.description + " " + p.author).toLowerCase().includes(query.toLowerCase()))
@@ -144,8 +144,8 @@ function Browser() {
         );
       })}
       {visible.length === 0 && (presets.length === 0
-        ? <ListEmpty kind="first-run" what="presets" />
-        : <ListEmpty kind="filtered" what="presets"
+        ? <ListEmpty kind="first-run" what="shell.tool.presets" />
+        : <ListEmpty kind="filtered" what="shell.tool.presets"
             filters={query.trim()
               ? [{ label: t("memoryvault.filteredEmptySearch", { value1: query.trim() }), clear: () => setQuery("") }]
               : []}
@@ -360,9 +360,9 @@ function Editor({ presetId }: { presetId: string }) {
     } else if (ev.key === "Escape") navigate("presets");
   }, [sections, focusId, move, openRow]);
 
-  if (missing) return <div className="screen"><NotFound what="Preset" id={presetId} backTo="presets" backLabel={t("presets.back")} /></div>;
+  if (missing) return <div className="screen"><NotFound what="presets.preset" id={presetId} backTo="presets" backLabel={t("presets.back")} /></div>;
   if (error) return <div className="screen"><ErrorState error={error} onRetry={reloadEditor} /></div>;
-  if (!full) return <div className="screen"><Loading what="preset" onRetry={reloadEditor} /></div>;
+  if (!full) return <div className="screen"><Loading what="presets.preset" onRetry={reloadEditor} /></div>;
 
   const conv = presetLoad(full, "conversation");
   const game = presetLoad(full, "game");
@@ -462,7 +462,7 @@ function Editor({ presetId }: { presetId: string }) {
 
         <main className="rows">
           {sections.length === 0 && (
-            <ListEmpty kind="first-run" what="sections" />
+            <ListEmpty kind="first-run" what="ui.sections" />
           )}
           {sections.map((s, i) => {
             const isOpen = !desktop && open.has(s.id);

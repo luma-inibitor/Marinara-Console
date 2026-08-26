@@ -259,10 +259,10 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     }
   }, [roving, focusId, desktop]);
 
-  if (missing) return <div className="screen"><NotFound what="Lorebook" id={bookId} /></div>;
+  if (missing) return <div className="screen"><NotFound what="lorebooks.book" id={bookId} /></div>;
   if (error) return <div className="screen"><ErrorState error={error} onRetry={() => setReloadKey((k) => k + 1)} /></div>;
   if (!entries || !book) {
-    return <div className="screen"><Loading what="lorebook entries" onRetry={() => setReloadKey((k) => k + 1)} /></div>;
+    return <div className="screen"><Loading what="lorebooks.entries" onRetry={() => setReloadKey((k) => k + 1)} /></div>;
   }
 
   const flaggedN = entries.filter(isFlagged).length;
@@ -387,8 +387,8 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
               ? <EmptyState title={t("lorebooks.empty.testTitle")}
                   body={t("lorebooks.empty.testBody")} />
               : entries.length === 0
-                ? <ListEmpty kind="first-run" what="entries" action={{ label: t("lorebooks.entry.add"), run: addEntry }} />
-                : <ListEmpty kind="filtered" what="entries"
+                ? <ListEmpty kind="first-run" what="lorebooks.entries" action={{ label: t("lorebooks.entry.add"), run: addEntry }} />
+                : <ListEmpty kind="filtered" what="lorebooks.entries"
                     filters={[
                       ...(query.trim()
                         ? [{ label: t("memoryvault.filteredEmptySearch", { value1: query.trim() }), clear: () => setQuery("") }]

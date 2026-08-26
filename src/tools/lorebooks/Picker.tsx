@@ -43,7 +43,7 @@ export function Picker() {
   const retry = () => { setError(null); setBooks(null); loadAll(setBooks, setError, loadStats); };
 
   if (error) return <div className="screen"><ErrorState error={error} onRetry={retry} /></div>;
-  if (!books) return <div className="screen"><Loading what="lorebooks" onRetry={retry} /></div>;
+  if (!books) return <div className="screen"><Loading what="lorebooks.title" onRetry={retry} /></div>;
 
   return (
     <div className="screen">
@@ -51,7 +51,7 @@ export function Picker() {
         <h1 className="screen-title">{t("lorebooks.title")}</h1>
         <span className="meta"><span>{t("lorebooks.bookCount", { count: books.length })}</span></span>
       </div>
-      {books.length === 0 && <ListEmpty kind="first-run" what="lorebooks" />}
+      {books.length === 0 && <ListEmpty kind="first-run" what="lorebooks.title" />}
       {books.map((b) => {
         const s = stats[b.id];
         const ok = s?.state === "ok" ? s : null;

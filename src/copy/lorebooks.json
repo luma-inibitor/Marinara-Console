@@ -4,6 +4,10 @@
   "lorebooks.title": {
     "use": "sourcesworkspace.lorebooks"
   },
+  "lorebooks.book": {
+    "use": "memoryvault.lorebook",
+    "note": "One book, as the subject the audit screen hands to the shared not-found state ('Lorebook not found'). Kept apart from lorebooks.title rather than case-folded out of it: the picker is titled after the collection and this names a single record, which is a different word and not a different casing."
+  },
   "lorebooks.bookCount": {
     "one": "{{count}} book",
     "other": "{{count}} books",
@@ -13,6 +17,10 @@
     "one": "{{count}} entry",
     "other": "{{count}} entries",
     "note": "How many entries a lorebook or a tag group holds. Carries the figure itself because the bare plural is already spoken for by the palette's result-group heading (shell.palette.groupEntries) and one string may have only one key. The catalog's only 'entries' is sourcesworkspace.entries, the fragment 'entries ·' welded to a separator inside a source row."
+  },
+  "lorebooks.entries": {
+    "text": "lorebook entries",
+    "note": "The subject the audit screen hands to the shared loading and empty states, which build their own sentences around it — 'Loading lorebook entries…', 'No lorebook entries yet'. Qualified rather than bare for the same reason lorebooks.entryCount is: 'Entries' belongs to the palette group heading and one string may have only one key. Upstream reaches inside a book only to count what it can import (sourcesworkspace.entries, 'entries ·')."
   },
   "lorebooks.unitTokens": {
     "use": "activityview.tokens"

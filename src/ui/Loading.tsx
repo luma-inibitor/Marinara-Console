@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { EmptyState } from "./EmptyState";
-import { t } from "../copy";
+import { t, type Key } from "../copy";
 import "./Loading.css";
 
 /** A view that has not arrived yet.
@@ -15,9 +15,12 @@ import "./Loading.css";
  *  claiming to be loading and becomes a state you can act on. That last phase
  *  is the one exception to "no actions"; `onRetry` is the way out of it.
  *
- *  Give it `what` ("lorebooks") and it writes the sentence, or `label` for a
- *  caller that already has a fully formed one. */
-export function Loading(props: { what?: string; label?: string; onRetry?: () => void }) {
+ *  Give it `what` — the copy key of the subject, `"lorebooks.title"` — and it
+ *  writes the sentence, or `label` for a caller that already has a fully formed
+ *  one. `what` is a key rather than a noun because the sentence is assembled
+ *  here: a subject passed as English would be user-visible copy sitting in a
+ *  prop, where neither the copy check nor the linter can reach it. */
+export function Loading(props: { what?: Key; label?: string; onRetry?: () => void }) {
   const [phase, setPhase] = useState<"normal" | "slow" | "stalled">("normal");
   useEffect(() => {
     const slow = setTimeout(() => setPhase("slow"), 3_000);
@@ -25,7 +28,7 @@ export function Loading(props: { what?: string; label?: string; onRetry?: () => 
     return () => { clearTimeout(slow); clearTimeout(stalled); };
   }, []);
 
-  const subject = props.what ?? t("ui.loading.subject");
+  const subject = t(props.what ?? "ui.loading.subject");
   const line = props.label ?? t("ui.loading.line", { destination: subject });
 
   if (phase === "stalled") {

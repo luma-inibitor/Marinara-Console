@@ -1,6 +1,10 @@
 {
   "_readme": "presets area copy. The vendored catalog is the long-term-memory agent's string table: it has no concept of a prompt preset, a section, a marker or an injection order, so most of this area is necessarily coined. `extractionprompttemplates.*` is the nearest upstream neighbour — read-only built-in prompt templates you copy to edit — and every entry below that could borrow from it does. Keys beginning with an underscore are metadata and are never copy.",
 
+  "presets.preset": {
+    "text": "Preset",
+    "note": "One preset, as the subject the editor hands to the shared not-found and loading states — 'Preset not found', 'Loading Preset…'. Capitalised because the only places the catalog says the word at all capitalise it inside a longer name (longtermmemorydetail.openPromptPresetEditor, 'Open Prompt Preset Editor'); it has no bare noun for a single preset. The browser's loading and empty states name the collection instead, and take shell.tool.presets."
+  },
   "presets.count": {
     "one": "1 preset",
     "other": "{{count}} presets",

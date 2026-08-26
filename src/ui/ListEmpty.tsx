@@ -1,7 +1,7 @@
 import { FirstRun, NoMatches, AllClear, Remove, Add, ICON_SIZE } from "./icons";
 import { Chip } from "./Chip";
 import { EmptyState } from "./EmptyState";
-import { t } from "../copy";
+import { t, type Key } from "../copy";
 
 /** A list with nothing in it, rendered by the reason it is empty.
  *
@@ -9,20 +9,26 @@ import { t } from "../copy";
  *  copy over a filtered list tells a reader with forty-seven entries that they
  *  have none. A named composition of `EmptyState`, like `ErrorState` and
  *  `NotFound`. The filtered case is the only empty state that offers a way out
- *  of itself, by naming the filters responsible. */
+ *  of itself, by naming the filters responsible.
+ *
+ *  `what` is the copy key of the list's subject; all three sentences are built
+ *  around it here, so a caller that passed English would be writing copy no
+ *  check could see. */
 export function ListEmpty(props: {
   kind: "first-run" | "filtered" | "cleared";
-  what: string;
+  what: Key;
   /** Active filters, for the diagnostic treatment. */
   filters?: Array<{ label: string; clear: () => void }>;
   onClearAll?: () => void;
   action?: { label: string; run: () => void };
 }) {
+  const what = t(props.what);
+
   if (props.kind === "filtered") {
     return (
       <EmptyState
         icon={<NoMatches size={22} stroke={1.75} aria-hidden />}
-        title={t("ui.list.filteredTitle", { what: props.what })}
+        title={t("ui.list.filteredTitle", { what })}
         body={props.filters?.length ? t("ui.list.filteredBody") : undefined}
         actions={
           <>
@@ -42,7 +48,7 @@ export function ListEmpty(props: {
         tone="ok"
         icon={<AllClear size={22} stroke={1.75} aria-hidden />}
         title={t("ui.list.clearedTitle")}
-        body={t("ui.list.clearedBody", { what: props.what })}
+        body={t("ui.list.clearedBody", { what })}
       />
     );
   }
@@ -50,8 +56,8 @@ export function ListEmpty(props: {
   return (
     <EmptyState
       icon={<FirstRun size={22} stroke={1.75} aria-hidden />}
-      title={t("ui.list.firstRunTitle", { what: props.what })}
-      body={t("ui.list.firstRunBody", { what: props.what })}
+      title={t("ui.list.firstRunTitle", { what })}
+      body={t("ui.list.firstRunBody", { what })}
       actions={props.action && (
         <button className="dbtn is-primary" onClick={props.action.run}>
           {/* First-run's only action is "make the first one", so the glyph is
