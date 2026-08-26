@@ -14,11 +14,8 @@ import { fileURLToPath } from "node:url";
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const FIXTURES = join(ROOT, "test", "fixtures");
 
-// A port the OS just handed out and does not have open any more. There is a
-// window between the close and the child's listen, but nothing else in this
-// suite competes for ports, and the alternative — parsing a port out of the
-// server's startup log — needs a change to server.mjs that this pull request
-// is not allowed to make.
+// A port the OS just handed out and closed. Racy in principle; nothing else
+// here competes for ports.
 async function freePort() {
   const probe = createServer();
   probe.listen(0, "127.0.0.1");
@@ -34,20 +31,14 @@ async function freePort() {
  */
 export function req(base, path, { method = "GET", headers = {}, body } = {}) {
   const { hostname, port } = new URL(base);
-  // Content-Length rather than chunked, because node's http client does not
-  // frame a body on a DELETE unless one of the two headers says there is one:
-  // it sends the request line, then writes the bytes after it, and the server
-  // reads them as the start of a second request. Every method frames the same
-  // way here, so a test can send the same body under any verb.
+  // Gotcha: node's http client does not frame a body on DELETE unless a length
+  // header says so, and the server then reads the bytes as a second request.
   if (body !== undefined && headers["content-length"] === undefined) {
     headers = { ...headers, "content-length": String(Buffer.byteLength(body)) };
   }
   return new Promise((resolve, reject) => {
-    // `agent: false` is one connection per request. server.mjs answers 405 and
-    // 400 without draining the request body, so node destroys that socket once
-    // the response is out; on the shared keep-alive agent the NEXT test picks
-    // up the dead socket and reads ECONNRESET. One connection per request also
-    // means no test can be affected by the order of the tests before it.
+    // Gotcha: server.mjs answers 405 and 400 without draining the body, so the
+    // socket dies. On a keep-alive agent the next test reads ECONNRESET.
     const r = httpRequest({ hostname, port, method, path, headers, agent: false }, (res) => {
       const chunks = [];
       res.on("data", (c) => chunks.push(c));
@@ -100,9 +91,8 @@ export async function startStub(handler) {
  */
 export async function startConsole({
   target = "http://127.0.0.1:1",
-  // Named client/ and not dist/ because `dist/` in .gitignore matches at any
-  // depth: called dist/, the fixture tree is untracked, and the suite passes
-  // for whoever wrote it and fails in every fresh clone.
+  // Gotcha: named client/, not dist/ — `dist/` in .gitignore matches at any
+  // depth, so the fixture tree would be untracked and fail in a fresh clone.
   dist = join(FIXTURES, "client"),
   pub = join(FIXTURES, "public"),
   env: extra = {},

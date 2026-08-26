@@ -12,8 +12,7 @@ import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = resolve(fileURLToPath(import.meta.url), "..");
-// MC_DIST/MC_PUBLIC exist so test/server.test.mjs can aim the two static roots
-// at fixture trees. Unset — which is every real run — both are what they were.
+// MC_DIST/MC_PUBLIC let the conformance suite aim the static roots at fixtures.
 const DIST = resolve(process.env.MC_DIST ?? join(HERE, "dist"));       // built console (vite)
 const PUBLIC = resolve(process.env.MC_PUBLIC ?? join(HERE, "public")); // design mockups, served at /mockups/
 

@@ -1,12 +1,7 @@
 // The observable HTTP behaviour of server.mjs, pinned before the sirv rewrite.
 //
-// At the wire, not the function: `stripVectors` and `isLtmWrite` are not
-// exported and do not survive the rewrite, so a unit test of either would be
-// deleted along with its host and take the evidence with it.
-//
 // Every assertion states what the server does TODAY, including where that is
-// wrong; those cases are marked. A failure here after the rewrite is a question,
-// not automatically a defect.
+// wrong; those cases are marked.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { readdir, rm } from "node:fs/promises";
 import { join } from "node:path";
@@ -72,8 +67,7 @@ function engine(req, res) {
     return;
   }
   if (pathname === "/api/long-term-memory/backup/export") {
-    // The restore point cannot be taken. Every LTM write then reports the miss
-    // in a header instead of hiding it, which is how the predicate is read.
+    // Restore point unavailable: every LTM write reports the miss in a header.
     res.writeHead(503, { "content-type": "text/plain" });
     res.end("export unavailable");
     return;
@@ -148,9 +142,8 @@ describe("static · dist at /", () => {
     expect((await mc.request("/assets/")).status).toBe(404);
   });
 
-  // No percent-decoding happens anywhere between `req.url` and `join()`, so a
-  // file whose name needs escaping in a URL cannot be fetched. Vite emits only
-  // unreserved characters, which is why nothing has noticed.
+  // Gotcha: nothing percent-decodes between `req.url` and `join()`, so a file
+  // whose name needs escaping cannot be fetched. Vite emits none.
   it("does not percent-decode the path, so /index%2Ehtml misses", async () => {
     expect((await mc.request("/index%2Ehtml")).status).toBe(404);
   });
@@ -167,12 +160,10 @@ describe("static · MIME", () => {
     expect((await mc.request(path)).headers["content-type"]).toBe(type);
   });
 
-  // The MIME table has six entries. Everything else falls to
-  // application/octet-stream, which for .ico is wrong — a browser will not use
-  // it as a favicon — and for .txt makes the file download instead of display.
-  // ASSERTING THE BUG ON PURPOSE: sirv carries a full mime database, so the
-  // wave 4 rewrite is expected to fail these two and be right to. Update them
-  // to image/x-icon and text/plain then; do not delete them.
+  // ASSERTING A BUG ON PURPOSE. The MIME table has six entries; .ico and .txt
+  // fall to application/octet-stream, which is wrong for both. The wave 4
+  // rewrite should fail these two. Update them to image/x-icon and text/plain
+  // then, do not delete them.
   it.each([
     ["/favicon.ico", "application/octet-stream"],
     ["/notes.txt", "application/octet-stream"],
@@ -208,9 +199,8 @@ describe("static · public at /mockups/", () => {
     expect((await mc.request("/mockups/detail?variant=2")).headers.location).toBe("/mockups/detail/");
   });
 
-  // `new URL("//mockups/", base)` reads `mockups` as a HOST, not a path
-  // segment, so the pathname the server sees is "/" and it answers from dist.
-  // Recorded because it is the one input that crosses the two static roots.
+  // Gotcha: `new URL("//mockups/", base)` reads `mockups` as a HOST, so the
+  // pathname is "/" and the server answers from dist.
   it("treats a doubled leading slash as a host and falls back to dist", async () => {
     const res = await mc.request("//mockups/");
     expect(res.status).toBe(200);
@@ -219,14 +209,8 @@ describe("static · public at /mockups/", () => {
 });
 
 // ── path traversal ────────────────────────────────────────────────
-// The defence is `normalize()` plus a `startsWith(root)` containment check, in
-// front of a WHATWG URL parse that has already resolved dot segments. The
-// fixture tree puts outside-root.txt one level above both static roots: any
-// response that carries OUTSIDE-ROOT-MARKER is an escape.
-//
-// The client here sends the request line verbatim (see helpers/harness.mjs).
-// `fetch` would normalise these paths away and every case would pass without
-// the server being asked anything.
+// outside-root.txt sits one level above both static roots: any response
+// carrying OUTSIDE-ROOT-MARKER is an escape.
 describe("static · path traversal", () => {
   it.each([
     ["plain", "/../outside-root.txt"],
@@ -247,10 +231,8 @@ describe("static · path traversal", () => {
   ])("refuses to escape the static root: %s", async (_name, path) => {
     const res = await mc.request(path);
     expect(res.body).not.toContain("OUTSIDE-ROOT-MARKER");
-    // 404 rather than 403 for all of them: the URL parse resolves the dot
-    // segments, so the containment check never sees a path to reject and the
-    // request simply misses inside the root. The 403 branch at server.mjs:224
-    // is unreachable from HTTP today. It is still the right belt to wear.
+    // 404, not 403: the URL parse resolves dot segments before the containment
+    // check sees them, so the 403 branch at server.mjs:224 is unreachable.
     expect(res.status).toBe(404);
   });
 });
