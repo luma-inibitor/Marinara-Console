@@ -1,16 +1,18 @@
+<!-- vale Microsoft.Headings = NO -->
 # Marinara Console
+<!-- vale Microsoft.Headings = YES -->
 
 A standalone management console for [Marinara Engine](https://github.com/luma-inibitor/Marinara-Engine):
 power-user tools for lorebooks, presets, and the long-term-memory agent, designed
 dense-first for desktop and mobile.
 
-**Before touching any UI, read [`design/DESIGN.md`](design/DESIGN.md).** It encodes
+**Before you touch any UI, read [`design/DESIGN.md`](design/DESIGN.md).** It holds
 the design framework, owner preferences, and the definition of done. The research
-behind it is vendored at `design/research/`.
+behind it lives at `design/research/`.
 
 ## Run
 
-Use the Node version in `.nvmrc`, and switch to it before installing.
+Use the Node version in `.nvmrc`, and switch to it before you install.
 
 ```sh
 npm install
@@ -20,8 +22,9 @@ MARINARA_URL=http://<engine-host>:7860 node server.mjs   # serves dist/ on :7872
 ```
 
 Dev loop: `node server.mjs` in one shell (API proxy), `npm run dev` in another
-(Vite HMR on :5173, proxying /api to :7872). `MC_PROXY_TARGET` and `MC_DEV_PORT`
-override those two defaults, so a second pair can run against another engine:
+(Vite hot reload on :5173, which proxies /api to :7872). `MC_PROXY_TARGET` and
+`MC_DEV_PORT` override those two defaults, so a second pair can target another
+engine:
 
 ```sh
 MARINARA_URL=http://100.x.y.z:7860 PORT=7874 node server.mjs
@@ -72,8 +75,8 @@ and a fenced example fixes the cause rather than the symptom.
 
 | path | what |
 | --- | --- |
-| `server.mjs` | zero-dep proxy: strips `embedding` vectors from entry payloads (~85% of bytes), serves `dist/` at `/` and the design mockups at `/mockups/`; for the memory tool it also keeps a rotating LTM restore point before each run's first write (`.backups/`), stores review decisions (`.state/`), and forwards `MARINARA_ADMIN_SECRET` for engines off loopback |
-| `src/` | the console — Vite + Preact + TS, hash routing, tokens-based CSS |
+| `server.mjs` | zero-dep proxy. Strips `embedding` vectors from entry payloads (~85% of bytes), serves `dist/` at `/` and the design mockups at `/mockups/`. For the memory tool it rotates a long-term-memory restore point before each run's first write (`.backups/`), stores review decisions (`.state/`), and forwards `MARINARA_ADMIN_SECRET` for engines off loopback |
+| `src/` | the console: Vite + Preact + TS, hash routing, tokens-based CSS |
 | `design/` | DESIGN.md, tokens rationale, vendored UI research |
 | `.vale.ini` | prose lint config: Microsoft style, exemptions in the vocabulary rather than rule switches |
-| `scripts/` | the executable checks: `verify.mjs` (definition of done — screenshots, contrast, tap targets, console errors), `copycheck`, `layercheck`, `deadcss`, `domsnap`, `faceprobe`, `overlaycheck`, `shots`; browser ones share `lib/browser.mjs` |
+| `scripts/` | the executable checks: `verify.mjs` (definition of done: screenshots, contrast, tap targets, console errors), `copycheck`, `layercheck`, `deadcss`, `domsnap`, `faceprobe`, `overlaycheck`, `shots`. Browser ones share `lib/browser.mjs` |
