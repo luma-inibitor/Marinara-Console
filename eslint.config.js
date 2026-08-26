@@ -69,4 +69,25 @@ export default [
     files: ["src/shell/**"],
     rules: { "no-restricted-globals": "off" },
   },
+  {
+    // The binding half of the fetch rule above. layercheck.mjs passes this:
+    // presentation reaching the transport client points downward.
+    files: ["src/**/*.tsx", "src/**/components/**/*.ts", "src/**/screens/**/*.ts"],
+    ignores: ["src/shell/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/shell/api"],
+              // The binding, not the module: `ApiError` and `tokensOf` are fine.
+              importNames: ["api", "default"],
+              message: "Only src/shell owns a request. A screen gets data from a hook (ARCHITECTURE.md §3).",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];
