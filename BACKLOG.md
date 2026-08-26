@@ -462,6 +462,15 @@ Luma is separately deciding whether to lower the primary floor from 44px, so the
 - **Mobile device pass on the port** — the prototype's mobile feedback round
   (bottom bar flush, facet fit, sticky toolbar) is believed carried, but only
   screenshot-verified at 390px headless, not on the phone.
+- **Two `.qrail` blocks in `src/styles/memory.css` disagree about `gap`.** The
+  block in the review section sets `gap: var(--s2)`, and the block in the
+  sources section sets `gap: 6px`. Both blocks match the same class, so the
+  later one wins for every element that carries it, and the review queue's
+  quick rail is spaced by a rule written for the sources rail. The duplicate is
+  held by an inline `stylelint-disable-next-line no-duplicate-selectors`,
+  because merging the two blocks would change what one of the two screens
+  renders. Fix by giving the two rails their own class names, then check the
+  spacing on both screens.
 
 ## Mined prior-art not yet carried (review workbench / triage app)
 

@@ -456,8 +456,7 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .gsp { flex: 1 1 auto; }
 .scopelab { color: var(--text-dim); }
 .sbar { display: flex; gap: var(--s2); margin-bottom: var(--s2); }
-/* stylelint-disable-next-line no-duplicate-selectors -- Review and Sources
-   both render .qrail, and the two blocks set different values. */
+/* stylelint-disable-next-line no-duplicate-selectors -- this gap overrides the earlier .qrail block everywhere the class is used. */
 .qrail { display: flex; gap: 6px; flex-wrap: wrap; padding-bottom: var(--s2); }
 .qchip { display: inline-flex; align-items: center; gap: 5px; background: none; border: var(--hairline);
   border-radius: var(--r-s); color: var(--text-dim); font-family: var(--font-data);
