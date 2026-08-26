@@ -30,7 +30,7 @@ Corpus counts throughout are from the local seeded corpus, measured
 The ID prefix is enforced against the type. `world` is the only type with more
 than one allowed prefix.
 
-Any mutation touching a `scene_*` note is excluded from auto-apply, as target,
+Any mutation touching a `scene_*` note is excluded from autoapply, as target,
 `noteId`, or link target.
 
 ---
@@ -99,7 +99,7 @@ The Section schema is `.strip()` — unknown keys are dropped, not rejected.
 | `dimensions` | Dimensions | no | absolute scores | 1/38 |
 | `dimensionChanges` | DimensionChanges | no | deltas | 0/38 |
 
-`importance` and the dimensions are structured fields by design. They are not
+`importance` and the dimensions are structured fields by design. They're not
 to be parsed out of `text`.
 
 ### `contributions[]`
@@ -127,7 +127,7 @@ than zero. `dimensionChanges` is deltas, −100 to 100.
 
 ## Section merge behavior by type
 
-Whether an `append_section` merges into the existing text or rewrites it is
+Whether an `append_section` merges into the existing text or rewrites it's
 decided by `isAdditiveLtmSection(note, sectionKey)`. When additive, new text is
 line-merged and duplicate normalized lines are dropped; otherwise the section
 is replaced.
@@ -255,7 +255,7 @@ None present in the corpus.
 
 ## Related shapes
 
-These are not notes and should not be rendered as one.
+These aren't notes and shouldn't be rendered as one.
 
 ### `GET /notes/:id/derived` → `memories[]` item
 

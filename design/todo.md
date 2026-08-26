@@ -31,7 +31,7 @@
     - decision status line
 
 
-# schema: memory entry 
+# schema: Memory entry 
 
 ```jsonc
 {
@@ -58,7 +58,7 @@
 }
 ```
 
-# schema: memory entry section
+# schema: Memory entry section
 
 ```jsonc
 {
