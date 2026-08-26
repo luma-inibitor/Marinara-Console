@@ -1,0 +1,16 @@
+# A balanced two-clause construction that lands a point instead of stating a
+# fact. DESIGN.md's comment rule names these.
+#
+# Gotcha: `scope: text`, not `scope: sentence`. Vale never segments code
+# comments into sentences, so a sentence-scoped rule silently matches nothing
+# in a .ts file. It does not error; it never fires. Anchor in the pattern.
+extends: existence
+message: "Balanced aphorism ('%s'). State the fact instead."
+level: warning
+scope: text
+nonword: true
+tokens:
+  # "The cost is one extra build; the saving is the whole of build's wall clock."
+  - '\b[Tt]he (?:cost|saving|savings|price|gain|win|loss|benefit|tradeoff|trade) is\b[^;.]{0,70};\s+the \w+ is\b'
+  # "It is not a fact about the wire, it is a rule about the model."
+  - '\b(?:is|was) not (?:a|an|the) \w+[,;] (?:it|that) (?:is|was) (?:a|an|the)\b'

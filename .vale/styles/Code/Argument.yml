@@ -1,0 +1,14 @@
+# A comment arguing against the alternative that was not chosen. DESIGN.md puts
+# that reasoning in the design document, not beside the code.
+#
+# Narrow on purpose: a wider `would ...` pattern reports every gotcha. See
+# Aphorism.yml for the `scope: text` gotcha.
+extends: existence
+message: "Arguing against an alternative ('%s'). The design doc is where that goes."
+level: warning
+scope: text
+nonword: true
+tokens:
+  - '\bwould (?:be|have been) (?:worse|a worse|the worse)\b'
+  - '\bwhich is (?:worse|a worse|the worse)\b'
+  - '\bbuys? (?:nothing|us nothing|(?:a|an|the) \w+ nothing)\b'

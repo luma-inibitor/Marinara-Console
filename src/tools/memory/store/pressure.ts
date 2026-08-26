@@ -1,17 +1,10 @@
 // Owns the cap-pressure map: how full every section the queue writes to would
 // be if the queue were applied. Nothing else writes it.
 //
-// It is kept current by SUBSCRIBING to its three inputs rather than by being
-// called from each site that changes one. The subscriptions are set up when
-// this module first runs, so pressure only tracks its inputs while something
-// imports this module — an import cleanup that drops the last importer would
-// silently freeze the map with no type error.
+// Kept current by SUBSCRIBING to its three inputs, not by a call from each site
+// that changes one. Drop the last importer and the map silently freezes.
 //
-// The import edge is one-way on purpose: this module reads `./decisions` and
-// `./review`, and neither may read this one. Those modules install
-// subscriptions at module scope and the stores derived from them compute
-// eagerly at construction — a cycle would evaluate one of those `const`s
-// before its initializer ran and throw at import time.
+// Import edges in `store/` are one-way; see ARCHITECTURE.md, "Why `store/` is acyclic".
 
 import { createStore } from "../../../lib/store";
 import { computePressure, type SectionPressure } from "../model/pressure";

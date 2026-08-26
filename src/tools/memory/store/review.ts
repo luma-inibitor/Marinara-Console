@@ -6,15 +6,12 @@
 // ledger, and `./decisions.ts` reads nothing from `store/`. Pruning after a
 // refresh goes through `pruneLedger`, so the queue never writes the ledger's
 // stores itself. Modules that derive from the queue — pressure, preflight,
-// tally, apply — read this one and must never be read by it: `derived()`
-// computes eagerly at construction, so a cycle would evaluate a `const` before
-// its initializer ran and throw at import time.
+// tally, apply — read this one and must never be read by it. See
+// ARCHITECTURE.md, "Why `store/` is acyclic".
 //
-// The two `scope*.subscribe(applyScope)` calls at the bottom are what make
-// scope a location rather than a filter. They are installed when this module
-// first runs, so scope only narrows the queue while something imports this
-// module — an import cleanup that dropped the last importer would silently
-// stop scope filtering, with no type error.
+// The two `scope*.subscribe(applyScope)` calls at the bottom make scope a
+// location rather than a filter. Drop the last importer and scope filtering
+// silently stops.
 
 import { createStore } from "../../../lib/store";
 import { type ReviewResponse } from "../api/types";

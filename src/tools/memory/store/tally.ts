@@ -4,13 +4,9 @@
 // each is a `derived()` over the ledger and the queue, and the arithmetic
 // itself lives in `model/tally.ts` and `model/dependencies.ts`.
 //
-// The import edge is one-way on purpose: this module reads `./decisions` and
-// `./review`, and neither may read this one. Those modules install
-// subscriptions at module scope and the stores derived from them compute
-// eagerly at construction — a cycle would evaluate one of those `const`s
-// before its initializer ran and throw at import time. Nothing else in
-// `store/` may import this module either; its only consumer is the Review
-// screen.
+// Import edges in `store/` are one-way; see ARCHITECTURE.md, "Why `store/` is acyclic".
+// Nothing else in `store/` may import this module either; its only consumer
+// is the Review screen.
 
 import { derived } from "../../../lib/store";
 import { droppedDependencies } from "../model/dependencies";

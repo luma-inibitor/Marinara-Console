@@ -1,29 +1,13 @@
-// The console's single icon import surface.
+// The console's single icon import surface. This is the ONLY module in src/ that
+// may import from "@tabler/icons-react"; everything else imports a semantic name
+// from here.
 //
-// This is the ONLY module in src/ that may import from "@tabler/icons-react".
-// Everything else imports a *semantic* name from here.
+// Silhouette families are reserved — DESIGN.md §5 has the rule and the reasoning.
+// The operative test: if you reach for a round glyph whose interior is a tick, a
+// cross, or a dotted edge, and you are not naming a decision, it's the wrong icon.
 //
-// Reserved silhouette families (DESIGN.md §5) — no icon may borrow another
-// family's silhouette:
-//
-//   decision     decision states ONLY (keep / drop / undecided). What is
-//                reserved is the INTERIOR MARK on a round outline: a solid
-//                circle holding a tick or a cross, plus the 12-dot dotted
-//                circle. A round outline holding anything else — an `i`, an
-//                `!`, an arc, a speech tail — is a different object and is
-//                free, as is the 5-segment `progress-*` arc family and the
-//                8-segment dashed circle.
-//   flag         exception flags ONLY
-//   files+script content ops — script = the whole note, file = one section;
-//                the shared + marks the two additive ops, the pencil marks the
-//                one op that replaces instead of adds
-//
-// If you reach for a round glyph whose interior is a tick, a cross, or the
-// dotted edge, and you are not naming a decision, you have the wrong icon.
-//
-// Domain mappings that are *taxonomies* (note types, mutation ops, source
-// kinds) live next to their meaning in this file too, keyed by the domain
-// value rather than by glyph — callers pass meaning, never a component.
+// Taxonomies (note types, mutation ops, source kinds) live here too, keyed by
+// domain value. Callers pass meaning, never a component.
 
 import {
   // disclosure + direction
@@ -99,7 +83,7 @@ export const Forward = IconArrowRight;          // forward navigation on an acti
 export const ExternalLink = IconExternalLink;   // leaves for another tool
 
 // search
-export const Search = IconSearch;               // the live search affordance
+export const Search = IconSearch;
 export const NoMatches = IconSearch;            // empty state: filtered to nothing
 
 // actions
