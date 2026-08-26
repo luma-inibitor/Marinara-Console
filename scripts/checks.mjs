@@ -45,6 +45,8 @@ export const checks = [
   "csslint",
   "typescale",
   "specificity",
+  // Package metadata and .gitignore
+  "pkgcheck",
   // Docs: Markdown links resolve
   "linkcheck",
 ];
