@@ -1,12 +1,10 @@
 // Plumbing for test/server.test.mjs: a real `node server.mjs` on an ephemeral
-// port, a stub engine for it to proxy to, and a client that sends the request
-// path verbatim.
+// port, a stub engine to proxy to, and a client that sends the path verbatim.
 //
-// The verbatim path is the reason this file exists rather than a few lines of
-// `fetch`. WHATWG URL parsing collapses `..` — and `%2e%2e` — before the bytes
-// ever leave the client, so `fetch("http://host/%2e%2e/secret")` tests the URL
-// parser, not the server. `http.request({ path })` writes the request line as
-// given, which is what an attacker does.
+// Gotcha: the verbatim path is why this exists instead of `fetch`. WHATWG URL
+// parsing collapses `..` and `%2e%2e` before the bytes leave the client, so
+// fetch would test the URL parser, not the server. `http.request({ path })`
+// writes the request line as given, which is what an attacker does.
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { createServer, request as httpRequest } from "node:http";

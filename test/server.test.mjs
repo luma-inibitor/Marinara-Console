@@ -1,33 +1,25 @@
-// The observable HTTP behaviour of server.mjs, pinned before it is rewritten.
+// The observable HTTP behaviour of server.mjs, pinned before the sirv rewrite.
 //
-// This suite is deliberately at the wire and not at the function. `stripVectors`
-// and `isLtmWrite` are not exported and will not survive the move to sirv and
-// http-proxy-middleware — a unit test of either is deleted along with its host
-// file, and deletes the evidence with it. A request and a response outlive the
-// implementation, so this file is the contract the replacement has to meet.
+// At the wire, not the function: `stripVectors` and `isLtmWrite` are not
+// exported and do not survive the rewrite, so a unit test of either would be
+// deleted along with its host and take the evidence with it.
 //
-// Every assertion here states what the server does TODAY. Some of what it does
-// today is wrong, and those cases are marked: the value of a conformance suite
-// is that it makes a change visible and forces someone to approve it, not that
-// it agrees with the change in advance. A failure in this file after the
-// rewrite is a question, not automatically a defect.
+// Every assertion states what the server does TODAY, including where that is
+// wrong; those cases are marked. A failure here after the rewrite is a question,
+// not automatically a defect.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { readdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { ROOT, startConsole, startStub } from "./helpers/harness.mjs";
 
-// The two directories server.mjs writes to are beside server.mjs itself and are
-// not overridable, so the suite records what was there first and removes only
-// what it added. Both are in .gitignore; neither is empty on a developer's
-// machine, and a test must not delete a real restore point.
+// Gotcha: these two directories are not overridable and hold real data on a
+// developer's machine. Record what was there first and remove only what we add.
 const SCRATCH = [join(ROOT, ".state"), join(ROOT, ".backups")];
 const preexisting = new Map();
 
 const list = async (dir) => new Set(await readdir(dir).catch(() => []));
 
-// The entry payload the strip is aimed at, in miniature: a vector at the top of
-// an entry, one an object deeper, one inside an array, and two values
-// that are not vectors at all.
+// A vector at the top, one an object deeper, one in an array, two non-vectors.
 const ENTRIES = {
   entries: [
     { id: "a", embedding: [0.1, 0.2, 0.3], meta: { embedding: [], name: "nested" } },
