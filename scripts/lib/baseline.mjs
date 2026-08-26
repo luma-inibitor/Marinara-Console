@@ -1,11 +1,9 @@
 // The baseline ratchet, shared by the two dead-code checks: record today's
 // findings, fail only on the ones that are not in the record.
 //
-// The shape follows `copycheck.mjs` and design/copy-baseline.json — baseline
-// under design/, keyed by FILE, values sorted item names with no line numbers
-// so ordinary edits do not churn it, `--adopt` to record and `--prune` to
-// retire. copycheck's `_areas` is not copied: it stages a migration through
-// directories routed one at a time, and dead code has one area, the whole tree.
+// The record lives under design/, keyed by FILE, and holds sorted item names
+// with no line numbers so ordinary edits do not churn it. `--adopt` records
+// today's findings and `--prune` retires the ones that have gone.
 //
 // Enforcement is PER ITEM, never by count. A count lets a new dead export pass
 // as long as an old one is deleted in the same change, which is the defect the

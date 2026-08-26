@@ -1,5 +1,5 @@
 {
-  "_readme": "ui area copy: the strings the SHARED components in src/ui own. A string a caller supplies stays a prop — see DESIGN.md §8. Anything here is a component's own fallback, its own structural label, or a sentence it assembles around a caller's noun. See src/copy/index.ts for the entry shapes and design/copycheck.mjs for what is enforced. Keys beginning with an underscore are metadata and are never copy.",
+  "_readme": "ui area copy: the strings the SHARED components in src/ui own. A string a caller supplies stays a prop — see DESIGN.md §8. Anything here is a component's own fallback, its own structural label, or a sentence it assembles around a caller's noun. See src/copy/index.ts for the entry shapes and scripts/copycatalog.mjs for what is enforced. Keys beginning with an underscore are metadata and are never copy.",
 
   "ui.copy.copied": {
     "use": "activityview.copied"

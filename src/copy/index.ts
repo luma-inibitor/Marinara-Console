@@ -24,10 +24,7 @@
 //
 // Keys beginning with `_` are file metadata, never copy.
 //
-// The files stay split per area: copycheck's per-directory state needs an area
-// boundary that is a *file*.
-//
-// Enforcement lives in design/copycheck.mjs. What is checked HERE, at load, is
+// Enforcement lives in scripts/copycatalog.mjs. What is checked HERE, at load, is
 // only what needs the resolved tables: a console key that shadows a product key,
 // and a `use` that points nowhere. Both throw, in dev only — in production a
 // copy fault must not take down a page that would otherwise render.

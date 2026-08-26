@@ -39,7 +39,6 @@ export function App() {
   return (
     <div className="shell">
       <nav className="rail" aria-label={t("shell.nav.tools")}>
-        {/* data-brand: copycheck skips this subtree. */}
         {/* eslint-disable-next-line i18next/no-literal-string -- the product name is not copy and has no catalog entry. */}
         <div className="rail-brand t-label-s t-label" data-brand data-contrast-exempt>Marinara<br />Console</div>
         {TOOLS.map((d) => (
