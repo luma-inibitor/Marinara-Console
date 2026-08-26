@@ -21,7 +21,7 @@
     "kit": "npx @tailwindcss/cli -i design/mockup-kit.css -o public/mockups/kit.css",
     "knip": "knip",
     "layercheck": "node scripts/layercheck.mjs",
-    "lint": "eslint src",
+    "lint": "eslint src scripts",
     "overlaycheck": "node scripts/overlaycheck.mjs",
     "preview": "vite preview",
     "prose": "vale --no-global .",
