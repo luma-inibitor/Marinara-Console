@@ -15,7 +15,7 @@ import { expect, test } from "./harness";
 const TAP_PRIMARY = 44, TAP_SECONDARY = 24, TAP_GAP = 8;
 
 interface Undersized {
-  /** `tag` plus its classes, so a copy rewording cannot move an entry. */
+  /** `tag` plus its classes. */
   sig: string;
   min: number;
   /** Edge-to-edge distance to the nearest other target, or null for Infinity. */
@@ -30,8 +30,8 @@ interface Report {
   targets: number;
 }
 
-/** Measured defects, `<viewport>/<screen>` to `<count>× <sig> <min>px`. Three
- *  of them are BACKLOG.md's "Known check failures"; a screen with none is absent. */
+/** Measured defects, `<viewport>/<screen>` to `<count>× <sig> <min>px`; a
+ *  screen with none is absent. */
 const RECORDED: Record<string, string[]> = {
   "narrow/preset-editor": ["2× button.row-summary 40px"],
   "phone/preset-editor": ["2× button.row-summary 40px"],
