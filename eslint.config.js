@@ -85,7 +85,7 @@ export default [
     },
   },
   {
-    // A fixture string reaches no reader.
+    // Fixtures.
     files: ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/test/**"],
     rules: { "i18next/no-literal-string": "off", "no-restricted-syntax": "off" },
   },

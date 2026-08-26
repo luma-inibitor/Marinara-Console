@@ -15,7 +15,7 @@ export class ApiError extends Error {
   offline: boolean;
   constructor(message: string, opts: { status: number; details?: unknown; offline?: boolean }) {
     super(message);
-    // eslint-disable-next-line i18next/no-literal-string -- the class name, which is not copy.
+    // eslint-disable-next-line i18next/no-literal-string -- a stack-trace label, not copy.
     this.name = "ApiError";
     this.status = opts.status;
     this.details = Array.isArray(opts.details) ? opts.details as Array<{ path?: string; message?: string }> : [];
