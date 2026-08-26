@@ -10,7 +10,7 @@ Companion to `DESIGN.md` (visual framework), `CHECKLIST.md` (pre-review gate), a
 
 The console has no layering problem at its edges and a real one in its middle.
 
-- The backend is already separate and already small: the engine is the backend, and `server.mjs` is a dependency-free proxy that owns the console's own state under `/console/state/:key`.
+- The backend is already separate and already small: the engine is the backend. `server.mjs` is a thin layer over `sirv` and `http-proxy-middleware` that owns the console's own state under `/console/state/:key`.
 - Inside `src/`, four things were tangled. Three are now resolved, and the fourth is narrowed:
   - `store.ts` did six jobs—state, derived selectors, persistence I/O, the decision ledger, load orchestration, preflight, and apply. Each now has its own module under `store/`.
   - `data.ts` mixed wire types and endpoint functions with domain transforms. It's gone: routes and wire shapes live in `api/`, transforms in `model/`.

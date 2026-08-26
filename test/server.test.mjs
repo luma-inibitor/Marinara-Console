@@ -1,4 +1,4 @@
-// The observable HTTP behaviour of server.mjs, pinned before the sirv rewrite.
+// The observable HTTP behaviour of server.mjs.
 //
 // Every assertion states what the server does TODAY, including where that is
 // wrong; those cases are marked.
@@ -160,14 +160,12 @@ describe("static · MIME", () => {
     expect((await mc.request(path)).headers["content-type"]).toBe(type);
   });
 
-  // ASSERTING A BUG ON PURPOSE. The MIME table has six entries; .ico and .txt
-  // fall to application/octet-stream, which is wrong for both. The wave 4
-  // rewrite should fail these two. Update them to image/x-icon and text/plain
-  // then, do not delete them.
+  // These two fell to application/octet-stream before the sirv rewrite, which
+  // was wrong for both.
   it.each([
-    ["/favicon.ico", "application/octet-stream"],
-    ["/notes.txt", "application/octet-stream"],
-  ])("%s currently serves as %s — wave 4 is expected to change this", async (path, type) => {
+    ["/favicon.ico", "image/x-icon"],
+    ["/notes.txt", "text/plain"],
+  ])("%s is %s", async (path, type) => {
     expect((await mc.request(path)).headers["content-type"]).toBe(type);
   });
 });
@@ -231,8 +229,8 @@ describe("static · path traversal", () => {
   ])("refuses to escape the static root: %s", async (_name, path) => {
     const res = await mc.request(path);
     expect(res.body).not.toContain("OUTSIDE-ROOT-MARKER");
-    // 404, not 403: the URL parse resolves dot segments before the containment
-    // check sees them, so the 403 branch at server.mjs:224 is unreachable.
+    // 404, not 403: the URL parse resolves dot segments before anything else
+    // sees them, so no request ever reaches a containment check.
     expect(res.status).toBe(404);
   });
 });
