@@ -1,15 +1,47 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+
+const advisoryWarningPlugin = "builtin:vite-reporter";
+
+let bundlerWarnings: string[] = [];
+
+// A throw inside onwarn is swallowed by rolldown: the build still exits 0.
+function fatalBundlerWarnings(): Plugin {
+  return {
+    name: "mc:fatal-bundler-warnings",
+    buildStart() {
+      bundlerWarnings = [];
+    },
+    closeBundle() {
+      if (bundlerWarnings.length > 0) {
+        this.error(`bundler warnings are fatal:\n${bundlerWarnings.join("\n")}`);
+      }
+    },
+  };
+}
 
 const proxyTarget = process.env.MC_PROXY_TARGET ?? "http://127.0.0.1:7872";
 const devPort = Number(process.env.MC_DEV_PORT ?? 5173);
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), fatalBundlerWarnings()],
   // public/ is the legacy no-build app, NOT vite's static dir — don't copy it into dist
   publicDir: false,
-  build: { outDir: "dist" },
+  build: {
+    outDir: "dist",
+    // 688 is the next whole kB above today's 687.08 kB bundle, so any growth reports.
+    chunkSizeWarningLimit: 688,
+    rolldownOptions: {
+      onwarn(warning, defaultHandler) {
+        if (warning.plugin === advisoryWarningPlugin) {
+          defaultHandler(warning);
+          return;
+        }
+        bundlerWarnings.push(`${warning.plugin ?? warning.code ?? "warning"}: ${warning.message}`);
+      },
+    },
+  },
   server: {
     port: devPort,
     // dev goes through server.mjs so the embedding strip applies in dev too
