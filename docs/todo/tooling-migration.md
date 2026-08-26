@@ -605,8 +605,8 @@ A hint doesn't fail the build. But each pull request must add its own line.
 - `npm run check` gives exit code 0.
 - `node scripts/copycatalog.mjs` reports `524 coined strings · 1171 product keys` and gives exit code 0.
   The first number counts the `text`, `one` and `other` fields in `src/copy/*.json`, so it rises whenever the console coins a string.
-  The earlier figure of 496 was correct at commit `1961a22` and the catalog has grown since.
-  Read the number as a record of the day it was taken, not as a target.
+  The earlier figure of 496 was correct at commit `1961a22`. The catalog grew after that.
+  Read the number as a record of the day someone counted it, not as a target.
 - `npm run jscpd` reports 3 duplicates at 0.19%.
 - The command `git log --oneline main -- scripts/checks.mjs` shows the order. Each new tool line comes at least one merge before the deletion of its old tool line.
 
@@ -614,7 +614,7 @@ A hint doesn't fail the build. But each pull request must add its own line.
 |---|---|---|---|
 | `chore/retire-verify` | Delete `verify.mjs`, `overlaycheck.mjs`, `shots.mjs`, `faceprobe.mjs`. Write DESIGN.md section 7 again | 3.5h | the three test pull requests |
 | `chore/layercheck-harden` | Write `layercheck.mjs` again with `typescript/unstable/*` | 3h | eslint block |
-| `chore/copycheck-to-copycatalog` | Delete `copycheck.mjs`. Keep the catalog test in 84 lines | 2.5h | mode:"all" |
+| `chore/copycheck-to-copycatalog` | Delete `copycheck.mjs`. Keep the catalog test in 122 lines | 2.5h | mode:"all" |
 | `chore/stylelint-hygiene` | Fifteen rules and the four real duplicate selectors | 1h | typescale |
 | `chore/jscpd` | Limit duplication to 0.3% | 1h | savebar |
 | `chore/drop-deadexports` | Delete `scripts/deadexports.mjs`. Use knip | 0.5h | knip |
@@ -679,9 +679,9 @@ This pull request is the only owner of `design/ARCHITECTURE.md` in this wave.
 This pull request deletes 784 lines. It also deletes `design/copy-baseline.json`.
 That file holds only `_areas`. It hides nothing today.
 
-It adds `scripts/copycatalog.mjs`. The new file has 115 lines.
-The estimate of 84 was written before the file existed and was too low.
-The five checks below are 60 lines of the total.
+It adds `scripts/copycatalog.mjs`. The new file has 122 lines.
+The estimate of 84 came before the file existed and was too low.
+The five checks below are 65 lines of the total.
 The rest is the header, the normaliser it shares with the old script, and the failure messages, which name the fix rather than the fault.
 The file tests only what the program doesn't test at run time:
 
@@ -904,10 +904,13 @@ Nothing uses either part.
 **The `@copy-strict` marker.**
 Its two files are `src/tools/lorebooks/data.ts` and `src/tools/presets/data.ts`.
 Neither file holds an English string. Thus the marker does nothing today.
-The gap it guarded against is real all the same.
-`eslint-plugin-i18next` pushes a skip for everything inside an ALL-CAPS `VariableDeclarator`, at `node_modules/eslint-plugin-i18next/lib/rules/no-literal-string.js:334`,
-The copy tables in those two files sit under ALL-CAPS names.
-`eslint.config.js` names the two files and adds a selector that reads any literal holding two words inside one of them.
+The gap it guarded is real all the same.
+`eslint-plugin-i18next` pushes a skip for everything inside an upper-case `VariableDeclarator`, at `node_modules/eslint-plugin-i18next/lib/rules/no-literal-string.js:334`.
+The copy tables in those two files sit under upper-case names.
+`eslint.config.js` names the two files and adds a selector for one narrow case inside them: a quoted string holding two words with a space between them.
+A template literal is a different node type, so the selector doesn't read one.
+A phrase whose only space sits beside a digit has no letter-space-letter run either.
+That's narrower than the `@copy-strict` pass it replaces, which read a template literal too.
 That selector gives 0 findings on those files today.
 Applying it to the whole of `src/` gives 35 findings, and 29 of them are Tailwind class lists or key notation, so it stays scoped to the two files.
 The six real ones are the facet and grouper labels in `src/tools/memory/model/facets.ts`, which `scripts/copycheck.mjs` never read either.
@@ -921,7 +924,8 @@ The exemption stays. `src/shell/toast.test.ts` no longer carries a comment that 
 **A named message when the catalog won't load.**
 `scripts/copycheck.mjs` caught a read or parse failure and exited 2.
 `scripts/copycatalog.mjs` lets the error throw.
-Either way the check exits non-zero and names the file, so a compromised check still can't read as a passing one.
+Either way the check exits non-zero, so a compromised check still can't read as a passing one.
+The message differs by cause. A missing file names its path. A parse failure names the offending token and not the file.
 
 **Three deadexports findings and the count for each directory.**
 knip counts an exported type as used when a used export names it in a signature.

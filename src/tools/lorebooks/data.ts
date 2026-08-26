@@ -2,8 +2,10 @@
 //
 // The copy TABLES below (status labels and hints, position labels) are enum ->
 // label maps under ALL-CAPS names, and eslint-plugin-i18next skips the whole
-// initialiser of an ALL-CAPS declarator. eslint.config.js names this file so a
-// label added to one of these maps without a catalog entry still fails.
+// initialiser of an ALL-CAPS declarator. eslint.config.js names this file and
+// adds back one narrow case: a quoted label holding two space-separated words.
+// A template literal is a different node, so the tables written that way are
+// still unchecked.
 import { api, tokensOf } from "../../shell/api";
 import { tAny } from "../../copy";
 import { testPrimaryKeys, testSecondaryKeys } from "../../lib/lorebook-keyword-matching.js";
