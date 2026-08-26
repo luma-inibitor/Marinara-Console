@@ -75,12 +75,10 @@ type PluralBase<K extends string> = K extends `${infer B}One`
   : never;
 
 /**
- * Every key `t()` can resolve. Exported so a component that takes a noun from
- * its caller — `Loading`, `NotFound`, `ListEmpty` — can take a key instead of a
- * string. A raw noun in a prop is copy that no check can see: it is not a JSX
- * child, not a `t()` argument, and the linter's word rules must permit bare
- * lowercase words. Typed as `Key`, a misspelled or unregistered subject is a
- * compile error.
+ * Every key `t()` can resolve. Exported so a component taking a subject noun
+ * from its caller — `Loading`, `NotFound`, `ListEmpty` — takes a key instead of
+ * a string. A raw noun in a prop is copy no check can see; typed as `Key`, a
+ * bad subject is a compile error.
  */
 export type Key = ConsoleKey | ProductKey | PluralBase<ProductKey>;
 

@@ -11,9 +11,8 @@ import { t, type Key } from "../copy";
  *  `NotFound`. The filtered case is the only empty state that offers a way out
  *  of itself, by naming the filters responsible.
  *
- *  `what` is the copy key of the list's subject; all three sentences are built
- *  around it here, so a caller that passed English would be writing copy no
- *  check could see. */
+ *  `what` is the copy key of the subject; the sentences are built around it
+ *  here, so English in that prop would be copy no check could see. */
 export function ListEmpty(props: {
   kind: "first-run" | "filtered" | "cleared";
   what: Key;
