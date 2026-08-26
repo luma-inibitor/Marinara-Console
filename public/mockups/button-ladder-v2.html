@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Button ladder v2 — rebasing primary and secondary</title>
+<link rel="stylesheet" href="/mockups/kit.css">
+<style>
+  .btn {
+    min-height: var(--tap); padding: 0 var(--s4);
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
+    border: 1px solid transparent; border-radius: var(--r-m);
+    background: none; color: var(--text);
+    font-family: var(--font-label); font-variation-settings: "wdth" 110;
+    font-weight: 600; font-size: var(--fs-label);
+    letter-spacing: 0.09em; text-transform: uppercase; cursor: pointer;
+  }
+  .btn-sm { min-height: var(--tap-2); padding: 0 var(--s3); font-size: var(--fs-label-s); }
+
+  /* The four building blocks, named for what they are rather than for a tier,
+     so an option is assembled from them without renaming anything. */
+  .fill-accent { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .wash-accent { background: var(--accent-wash); color: var(--accent); border-color: var(--accent); }
+  .box-strong  { border-color: var(--edge-strong); }
+  .box-hair    { border-color: var(--edge); }
+  .ink-text    { color: var(--text); }
+  .ink-accent  { color: var(--accent); }
+  .ink-dim     { color: var(--text-dim); }
+
+  /* ── staging ── */
+  .stage { background: var(--canvas); border: 1px solid var(--edge-strong);
+    border-radius: var(--r-l); padding: var(--s4); }
+  .ladder { display: flex; flex-wrap: wrap; align-items: stretch; gap: var(--s2); }
+  .readout { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); margin: var(--s3) 0 0;
+    padding-top: var(--s2); border-top: var(--hairline);
+    font-family: var(--font-data); font-size: 10px; color: var(--text-faint); }
+  .readout b { color: var(--text-dim); font-weight: 400; }
+
+  /* Sibling controls share a height (design/CHECKLIST.md §4): the row stretches
+     its children, so a label that wraps grows the row instead of one button. */
+  .decbar { display: flex; align-items: stretch; gap: var(--s2);
+    border-top: var(--hairline); padding: var(--s2) 0; background: var(--surface-1); }
+  .decbar .spacer { margin-left: auto; align-self: center;
+    font-family: var(--font-data); font-size: var(--fs-data-s); color: var(--text-dim); }
+  .dock { display: grid; grid-template-columns: 1fr 1fr 1.1fr; gap: 5px;
+    padding: var(--s1) var(--s2); border-top: var(--hairline); background: var(--canvas); }
+  .dock .btn { padding: 0 var(--s2); }
+  .phone { width: 390px; max-width: 100%; background: var(--canvas);
+    border: 1px solid var(--edge-strong); border-radius: var(--r-l); overflow: hidden; }
+  .phone-body { padding: var(--s3); color: var(--text-dim);
+    font-family: var(--font-prose); font-size: 13px; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--s5); }
+
+  /* Ink swatches for §1. */
+  .inks { display: flex; flex-wrap: wrap; gap: var(--s2); }
+  .ink-chip { border: var(--hairline); border-radius: var(--r-s); padding: var(--s2) var(--s3);
+    background: var(--canvas); font-family: var(--font-label); font-weight: 600;
+    font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .ink-chip small { display: block; font-family: var(--font-data); font-size: 10px;
+    letter-spacing: 0; text-transform: none; color: var(--text-faint); margin-top: 3px; }
+
+  .mk-list code, .mk-caption code, .mk-intro code, .mk-note code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<div class="mk-page">
+
+  <header>
+    <h1 class="mk-h1">Button ladder v2 — rebasing primary and secondary</h1>
+    <p class="mk-sub">Four ways to build the hierarchy once you accept what near-black surfaces can and cannot do.</p>
+    <span class="mk-band">measured · tokens only · 44px</span>
+  </header>
+
+  <section class="mk-sec">
+    <h2 class="mk-h2">1 · The two constraints, measured</h2>
+    <p class="mk-intro">
+      <b>Containers have almost no range.</b> Against the canvas, the accent fill
+      stands off at <code>7.24:1</code> and every neutral surface and border we own
+      falls between <code>1.07:1</code> and <code>1.87:1</code>. There is no middle
+      to put a tier in, which is why v1's four tertiary candidates all collapsed
+      into either "second primary" or "ghost".
+    </p>
+    <p class="mk-intro">
+      <b>And accent ink is dim.</b> This is the part I had backwards last time:
+    </p>
+    <div class="mk-spec">
+      <p class="mk-label"><b>00</b> ink brightness against the canvas</p>
+      <div class="mk-stage stage">
+        <div class="inks">
+          <span class="ink-chip" style="color:var(--text)">Apply<small>--text · 15.78:1</small></span>
+          <span class="ink-chip" style="color:var(--accent)">Apply<small>--accent · 7.24:1</small></span>
+          <span class="ink-chip" style="color:var(--text-dim)">Apply<small>--text-dim · 6.41:1</small></span>
+          <span class="ink-chip" style="color:var(--text-faint)">Apply<small>--text-faint · 3.88:1</small></span>
+        </div>
+      </div>
+      <p class="mk-caption">
+        An accent label is <b>less than half as bright</b> as a neutral one, and only
+        a hair brighter than dim. So any ladder that ranks accent ink <i>above</i>
+        neutral ink is inverted on the only axis the eye actually reads at a glance.
+        My last message proposed exactly that. It was wrong.
+      </p>
+    </div>
+    <p class="mk-note">
+      What survives: hierarchy has to be carried by <b>the box first, then ink
+      brightness</b> — and accent stops being an emphasis step at all. That is also
+      what DESIGN.md §1 already says accent is for: focus, <i>selection</i>, links.
+      Options A and B below take that seriously. C is the ladder I proposed in
+      prose, drawn so you can see the inversion. D removes the fill entirely.
+    </p>
+  </section>
+
+  <section class="mk-sec">
+    <h2 class="mk-h2">2 · Four rebases</h2>
+
+    <div class="mk-spec">
+      <p class="mk-label"><b>A</b> three tiers · box, then brightness</p>
+      <div class="mk-stage stage">
+        <div class="ladder">
+          <button class="btn fill-accent">Apply decisions</button>
+          <button class="btn box-strong ink-text">Rebuild index</button>
+          <button class="btn ink-dim">Show unchanged</button>
+        </div>
+        <div class="readout">
+          <span><b>primary</b> box 7.24 · ink 7.12</span>
+          <span><b>secondary</b> box 1.87 · ink 15.78</span>
+          <span><b>ghost</b> box — · ink 6.41</span>
+        </div>
+      </div>
+      <ul class="mk-list">
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Monotonic on both axes. Each step is visibly quieter than the one before, with no argument required.</span></li>
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Three appearances is exactly what 119 buttons in this repo already produced organically. Nothing has ever needed a fourth.</span></li>
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Secondary's border moves <code>--edge</code> → <code>--edge-strong</code> (1.35 → 1.87), so the box stops being invisible, and the fill is dropped so it stops pretending to be a surface.</span></li>
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>No home for an action that is secondary in rank but should not carry a full box.</span></li>
+      </ul>
+    </div>
+
+    <div class="mk-spec">
+      <p class="mk-label"><b>B</b> four tiers · box, then brightness</p>
+      <div class="mk-stage stage">
+        <div class="ladder">
+          <button class="btn fill-accent">Apply decisions</button>
+          <button class="btn box-strong ink-text">Rebuild index</button>
+          <button class="btn box-hair ink-dim">Export backup</button>
+          <button class="btn ink-dim">Show unchanged</button>
+        </div>
+        <div class="readout">
+          <span><b>primary</b> box 7.24 · ink 7.12</span>
+          <span><b>secondary</b> box 1.87 · ink 15.78</span>
+          <span><b>tertiary</b> box 1.35 · ink 6.41</span>
+          <span><b>ghost</b> box — · ink 6.41</span>
+        </div>
+      </div>
+      <ul class="mk-list">
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Still monotonic: the box weakens and the ink dims together, so the fourth step is a real step.</span></li>
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Accent stays unspent below primary, so pressed and selected keep their meaning.</span></li>
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>Tertiary and ghost differ only by a 1.35:1 border — the weakest distinction in any option here.</span></li>
+      </ul>
+    </div>
+
+    <div class="mk-spec">
+      <p class="mk-label"><b>C</b> four tiers · accent as the second step <i>(the one I proposed — shown to be rejected)</i></p>
+      <div class="mk-stage stage">
+        <div class="ladder">
+          <button class="btn fill-accent">Apply decisions</button>
+          <button class="btn box-strong ink-accent">Rebuild index</button>
+          <button class="btn box-hair ink-text">Export backup</button>
+          <button class="btn ink-dim">Show unchanged</button>
+        </div>
+        <div class="readout">
+          <span><b>primary</b> box 7.24 · ink 7.12</span>
+          <span><b>secondary</b> box 1.87 · ink 7.24</span>
+          <span><b>tertiary</b> box 1.35 · ink 15.78</span>
+          <span><b>ghost</b> box — · ink 6.41</span>
+        </div>
+      </div>
+      <ul class="mk-list">
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>The third step is the <b>brightest</b> label in the row (15.78 vs secondary's 7.24). Read the row quickly and "Export backup" wins.</span></li>
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>Spends accent on rank, which DESIGN.md §1 reserves for focus and selection.</span></li>
+        <li><span class="mk-tag mk-tag-n">note</span> <span>Included only so the inversion is visible rather than asserted.</span></li>
+      </ul>
+    </div>
+
+    <div class="mk-spec">
+      <p class="mk-label"><b>D</b> no solid fill · the compressed band</p>
+      <div class="mk-stage stage">
+        <div class="ladder">
+          <button class="btn wash-accent">Apply decisions</button>
+          <button class="btn box-strong ink-text">Rebuild index</button>
+          <button class="btn box-hair ink-dim">Export backup</button>
+          <button class="btn ink-dim">Show unchanged</button>
+        </div>
+        <div class="readout">
+          <span><b>primary</b> box 1.19 fill / 7.24 border · ink 7.24</span>
+          <span><b>secondary</b> box 1.87 · ink 15.78</span>
+          <span><b>tertiary</b> box 1.35 · ink 6.41</span>
+          <span><b>ghost</b> box — · ink 6.41</span>
+        </div>
+      </div>
+      <ul class="mk-list">
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>No color slabs anywhere — the most instrument-panel reading of the set, and closest to the "data is the ornament" line in §1.</span></li>
+        <li><span class="mk-tag mk-tag-s">strength</span> <span>Bringing the top down makes four tiers easy, because the whole range compresses.</span></li>
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>Primary's <i>label</i> is now 7.24 against secondary's 15.78 — the same inversion as C, just one row up.</span></li>
+        <li><span class="mk-tag mk-tag-w">weakness</span> <span>The wash is the established pressed signal; primary would be permanently wearing it.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="mk-sec">
+    <h2 class="mk-h2">3 · A and B on the real surfaces</h2>
+    <p class="mk-intro">
+      The two that survive §2, in the sticky decision bar and the 390px dock.
+      Labels are allowed to wrap here, and the rows use
+      <code>align-items: stretch</code> so a wrapped label grows the row rather
+      than making one button taller than its siblings.
+    </p>
+    <div class="grid2">
+      <div class="mk-spec">
+        <p class="mk-label"><b>A</b> in context</p>
+        <div class="mk-stage stage">
+          <div class="decbar">
+            <button class="btn fill-accent">Apply</button>
+            <button class="btn box-strong ink-text">Keep all</button>
+            <button class="btn ink-dim">Export backup</button>
+            <span class="spacer">18 decided</span>
+          </div>
+          <div class="phone" style="margin-top:16px">
+            <div class="phone-body">Review queue · 18 of 42 decided</div>
+            <div class="dock">
+              <button class="btn box-strong ink-text">Keep</button>
+              <button class="btn ink-dim">Skip</button>
+              <button class="btn fill-accent">Apply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mk-spec">
+        <p class="mk-label"><b>B</b> in context</p>
+        <div class="mk-stage stage">
+          <div class="decbar">
+            <button class="btn fill-accent">Apply</button>
+            <button class="btn box-strong ink-text">Keep all</button>
+            <button class="btn box-hair ink-dim">Export backup</button>
+            <span class="spacer">18 decided</span>
+          </div>
+          <div class="phone" style="margin-top:16px">
+            <div class="phone-body">Review queue · 18 of 42 decided</div>
+            <div class="dock">
+              <button class="btn box-strong ink-text">Keep</button>
+              <button class="btn box-hair ink-dim">Skip</button>
+              <button class="btn fill-accent">Apply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mk-sec">
+    <h2 class="mk-h2">4 · What accent is freed up to mean</h2>
+    <p class="mk-intro">
+      If accent is not an emphasis step, it goes back to being state. Same
+      buttons, pressed — which is what <code>.zbtn[aria-pressed]</code>,
+      <code>.dbtn2[data-on]</code> and <code>.segbtn.is-pos</code> already do today.
+    </p>
+    <div class="mk-spec">
+      <p class="mk-label"><b>07</b> A's ladder, resting and pressed</p>
+      <div class="mk-stage stage">
+        <div class="ladder">
+          <button class="btn box-strong ink-text">Group by source</button>
+          <button class="btn wash-accent" aria-pressed="true">Group by source</button>
+          <span style="align-self:center;color:var(--text-faint);font-family:var(--font-data);font-size:11px">← resting · pressed →</span>
+        </div>
+      </div>
+      <p class="mk-caption">The accent wash reads unambiguously as <i>on</i> precisely because nothing else in the ladder is wearing it.</p>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

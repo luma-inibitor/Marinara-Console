@@ -1,37 +1,44 @@
 /* Marinara Console — base plumbing on top of tokens.css. */
 
-*, *::before, *::after { box-sizing: border-box; }
-[hidden] { display: none !important; }   /* beats any class display rule */
+/* The element resets sit in `layer(base)`, beside preflight, because unlayered
+   CSS beats every layer: left unlayered, `button { background: none; border: 0 }`
+   silently defeated every Tailwind background, border and padding utility on
+   every button in the app. Class rules below stay unlayered on purpose — they
+   are the app's own vocabulary, not a reset. */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }   /* beats any class display rule */
 
-html, body {
-  margin: 0;
-  height: 100%;
-  background: var(--canvas);
-  color: var(--text);
-  font-family: var(--font-prose);
-  font-size: var(--fs-prose);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  overscroll-behavior-y: none;
-  color-scheme: dark;
-}
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: var(--font-prose);
+    font-size: var(--fs-prose);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+    color-scheme: dark;
+  }
 
-#app { height: 100%; }
+  #app { height: 100%; }
 
-button {
-  font-family: inherit;
-  color: inherit;
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-}
-input, textarea, select { font-family: inherit; color: inherit; }
+  button {
+    font-family: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+  input, textarea, select { font-family: inherit; color: inherit; }
 
-:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-  border-radius: var(--r-s);
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--r-s);
+  }
 }
 
 /* ── type utilities — the three faces, pre-styled ── */

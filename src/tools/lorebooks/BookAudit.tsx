@@ -15,7 +15,7 @@ import {
 import { EntryDrawer, type FullscreenCtx } from "./entries";
 import { useDraft } from "../../shell/draft";
 import { FullscreenText } from "../../ui/FullscreenText";
-import { Chip, EmptyState, ErrorState, IconButton, ListEmpty, Loading, NotFound, useIsDesktop, useRovingFocus } from "../../ui";
+import { Button, Chip, EmptyState, ErrorState, ListEmpty, Loading, NotFound, useIsDesktop, useRovingFocus } from "../../ui";
 import { t, tAny } from "../../copy";
 import { Add, Back, ICON_SIZE, SelectMode, Tags } from "../../ui/icons";
 
@@ -313,13 +313,11 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       <div className="audit-list" ref={listRef} onKeyDown={onListKey}>
         <header className="console">
           <div className="hrow">
-            <IconButton label={t("lorebooks.record.backToBooks")} onClick={() => navigate("lorebooks")}>
-              <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
-            </IconButton>
+            <Button iconOnly label={t("lorebooks.record.backToBooks")} onClick={() => navigate("lorebooks")}
+              icon={<Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />} />
             <h1 className="console-title">{book.name}</h1>
-            <IconButton label={t("lorebooks.tag.distribution")} onClick={() => setShowTags(true)}>
-              <Tags size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
-            </IconButton>
+            <Button iconOnly label={t("lorebooks.tag.distribution")} onClick={() => setShowTags(true)}
+              icon={<Tags size={ICON_SIZE.xl} stroke={1.75} aria-hidden />} />
           </div>
 
           <div className="probe">
@@ -527,9 +525,8 @@ function TagOverlay(props: {
   return (
     <div className="tagpanel">
       <div className="hrow">
-        <IconButton label={t("lorebooks.tag.backToEntries")} onClick={props.onClose}>
-          <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
-        </IconButton>
+        <Button iconOnly label={t("lorebooks.tag.backToEntries")} onClick={props.onClose}
+          icon={<Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />} />
         <h2 className="console-title">{t("lorebooks.tags")}</h2>
         <span className="meta"><span>{stats.length}</span><span>{t("lorebooks.entryCount", { count: props.entries.length })}</span></span>
       </div>

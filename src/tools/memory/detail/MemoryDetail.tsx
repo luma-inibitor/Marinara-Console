@@ -22,7 +22,7 @@ import type { Note } from "../api/types";
 import { t } from "../../../copy";
 import { TypeIcon } from "../icons";
 import { Back, Close, Edit, ExpandSet, ICON_SIZE } from "../../../ui/icons";
-import { Chip, CopyableText, IconButton, RawJson } from "../../../ui";
+import { Button, Chip, CopyableText, RawJson } from "../../../ui";
 import { StatusPill } from "../components/StatusPill";
 import { RetrievalCard } from "./RetrievalCard";
 import { SectionRow } from "./SectionRow";
@@ -107,12 +107,11 @@ export function MemoryDetail(props: {
     <div className="mdc" ref={scroller} style={{ "--mdc-head-h": `${headH}px` } as React.CSSProperties}>
       <header className="console mdc-head" ref={head}>
         <div className="hrow">
-          <IconButton className="mdc-back" autoFocus={props.peek}
-            label={props.peek ? t("ui.sheet.close") : t("memory.backToVault")} onClick={props.onBack}>
-            {props.peek
+          <Button iconOnly variant="ghost" className="mdc-back" autoFocus={props.peek}
+            label={props.peek ? t("ui.sheet.close") : t("memory.backToVault")} onClick={props.onBack}
+            icon={props.peek
               ? <Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
-              : <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />}
-          </IconButton>
+              : <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />} />
           <TypeIcon type={n.type} size={ICON_SIZE.lg} />
           {/* Titles wrap and never truncate: the title is the last thing on
               the screen that may be cut. */}

@@ -32,7 +32,7 @@ import { ViewSheet } from "./review/ViewSheet";
 import { DockSheet } from "./review/DockSheet";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./components/NoteRef";
-import { Chip, collapsedGroups, EmptyState, ErrorState, IconButton, ListGroup, Loading, MiddleTruncate, useIsDesktop, useRovingFocus } from "../../ui";
+import { Button, Chip, collapsedGroups, EmptyState, ErrorState, ListGroup, Loading, MiddleTruncate, useIsDesktop, useRovingFocus } from "../../ui";
 import { useStore } from "../../lib/store";
 
 const RESTORE_POINT_THRESHOLD = 20;
@@ -189,10 +189,10 @@ export function Review() {
                       ? <span className="is-drop">{t("activityview.failed")} <Chip onClick={retryPersist}>{t("activityview.retry")}</Chip></span>
                       : t("memoryvault.saved")}
                 </span>
-                <IconButton label={t("memory.review.refreshQueue")} onClick={() => void refresh()}><Refresh size={15} stroke={1.75} aria-hidden /></IconButton>
-                <IconButton href={backupExportUrl()} download label={t("memory.restorePoint")}>
-                  <Download size={16} stroke={1.5} aria-hidden />
-                </IconButton>
+                <Button iconOnly label={t("memory.review.refreshQueue")} onClick={() => void refresh()}
+                  icon={<Refresh size={15} stroke={1.75} aria-hidden />} />
+                <Button iconOnly href={backupExportUrl()} download label={t("memory.restorePoint")}
+                  icon={<Download size={16} stroke={1.5} aria-hidden />} />
               </div>
 
               {reviewData && (
@@ -281,7 +281,8 @@ export function Review() {
       {showDetailStack && (
         <div className="stack-screen">
           <header className="console"><div className="hrow">
-            <IconButton className="hit" label={t("memory.backToQueue")} onClick={closeTopOverlay}><Back size={18} stroke={1.75} aria-hidden /></IconButton>
+            <Button iconOnly className="hit" label={t("memory.backToQueue")} onClick={closeTopOverlay}
+              icon={<Back size={18} stroke={1.75} aria-hidden />} />
             {/* Queue position, not the target title — the headline right below
                 already names the target, and position is what j/k triage wants. */}
             <h1 className="console-title">
@@ -935,15 +936,13 @@ function ApplyDock() {
                 ? <span className="is-drop">{t("activityview.failed")} <Chip onClick={retryPersist}>{t("activityview.retry")}</Chip></span>
                 : t("memoryvault.saved")}
           </span>
-          <IconButton label={t("memory.review.refreshQueue")} onClick={() => void refresh()}>
-            <Refresh size={15} stroke={1.75} aria-hidden />
-          </IconButton>
+          <Button iconOnly label={t("memory.review.refreshQueue")} onClick={() => void refresh()}
+            icon={<Refresh size={15} stroke={1.75} aria-hidden />} />
           {/* An icon, not the desktop's labelled chip: it sits in a row of
               44px controls, and a 34px chip beside them was the one
               mismatched height in the dock. */}
-          <IconButton label={t("memoryvault.undo")} disabled={!undoable} onClick={undo}>
-            <Undo size={16} stroke={1.75} aria-hidden />
-          </IconButton>
+          <Button iconOnly label={t("memoryvault.undo")} disabled={!undoable} onClick={undo}
+            icon={<Undo size={16} stroke={1.75} aria-hidden />} />
           {/* The short label is the phone's, not a whim: the labelled form
               plus the counts overruns the row at 390px, and the value that
               must never truncate is the primary action's own name. The

@@ -39,6 +39,8 @@
   --color-accent-wash: var(--accent-wash);
   --color-flag-wash: var(--flag-wash);
   --color-warn-ink: var(--warn-ink);
+  --color-danger-ink: var(--danger-ink);
+  --color-ok-ink: var(--ok-ink);
   --color-scrim: var(--scrim);
 
   /* categorical object-type hues */

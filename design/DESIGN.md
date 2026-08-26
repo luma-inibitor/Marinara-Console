@@ -13,9 +13,10 @@ hosting power-user tools: lorebook editor, preset browser/editor, long-term-memo
 agent UI, and whatever comes next. Audience of one: an expert user who lives in the
 tool. Density is respect; every needless click is a repeated tax.
 
-**Stack:** Vite + Preact + TypeScript, `@preact/signals`, hand-written CSS on design
-tokens. Tailwind is present for its theme and utilities only, generated from the
-same tokens (§8); the component styles are still hand-written CSS, and there is no
+**Stack:** Vite + React + TypeScript, a hand-rolled store (`src/lib/store`),
+and Tailwind v4 whose theme is generated from `tokens.css` (§8). Components are
+styled with utilities; the co-located stylesheets still in the tree are legacy
+and are rewritten as the work reaches them. There is no
 CSS-in-JS. Hash routing (`#/tool/id`) for deep links without
 server routes. Engine logic (keyword matching, token estimation) is vendored from
 upstream, never reimplemented — fidelity to the engine beats elegance.
@@ -259,8 +260,13 @@ exists, use it; if it needs a new one, add it here in the same change.
   (`PartialResult`) · degraded `progress-alert` (`Degraded`) · waiting on the
   user `list-check` (`Pending`, the same binding as the Review nav tab — the
   glyph means "the review queue" in both places, so a pending count names
-  where the user should go) · info `info-circle` (`Info`) · loading **no
-  icon** (`Loading.tsx` deliberately carries none). Two more that are easy to
+  where the user should go) · info `info-circle` (`Info`) · a *pane* waiting on
+  data **no icon** (`Loading.tsx` deliberately carries none — a spinner
+  standing in for content reads as a state you can act on). A **control**
+  waiting on its own action is the narrower case and does get one:
+  `Working` (`loader-2`, spun by `Button.css`), which is the button reporting
+  on work the user already started rather than content that has not arrived.
+  Placeholder glyph, owner to revisit. Two more that are easy to
   conflate: `AllClear` is `checks` (double tick — "all of them", nothing left
   in the set) against `Confirm`'s single `check` (the checkbox tick); and
   `ValidationOk` is `zoom-check` — a check was run and it passed — on the
@@ -269,11 +275,10 @@ exists, use it; if it needs a new one, add it here in the same change.
   source-freshness state `extraction_incomplete`, which is a harvest that
   stopped short rather than a thing that failed.
   Owner-decided mapping lives in BACKLOG.md; don't re-litigate per screen.
-- **Styling** — Tailwind v4 (`@tailwindcss/vite`) with the theme generated from
-  `tokens.css`, so utilities and the hand-written stylesheets share one palette.
-  Preflight is deliberately not imported: the base reset would strip margins and
-  borders the existing CSS assumes. Utilities sit in the `utilities` layer and
-  win over the hand-written rules, which is what you want for a one-off override.
+- **Styling** — Tailwind v4 (`@tailwindcss/vite`), theme generated from
+  `tokens.css`, utilities in the JSX. The remaining hand-written stylesheets are
+  legacy; §8 says when to rewrite one. Preflight IS imported, in `layer(base)`,
+  so it reaches only properties we never set.
 - **Mockups** — one shared kit, `design/MOCKUP-KIT.md`. Books never carry their
   own palette.
 - **Copy provenance** — every user-visible string traces to the vendored
@@ -398,26 +403,67 @@ real bugs every time it was applied — treat it as part of the build, not QA.
 
 ## 8. Where UI lives — `src/ui/`
 
-Shared components live in `src/ui/`, one folder-level, each with its own
-co-located stylesheet (`Chip.tsx` + `Chip.css`). Anything used by more than one
-screen belongs there; anything used by one screen belongs beside that screen.
+Shared components live in `src/ui/`, one folder-level. Anything used by more
+than one screen belongs there; anything used by one screen belongs beside that
+screen. New components carry no stylesheet — `Button.tsx` is the reference.
 
-A screen kept beside its tool may co-locate its stylesheet the same way when it
-is a *family* rather than a single component — `src/tools/memory/detail/` is
-four components and four stylesheets. The rule it answers to is the one above:
+The co-located stylesheets still in the tree (`Chip.tsx` + `Chip.css`) are
+legacy, and so is the one case where a screen kept beside its tool co-locates
+the same way because it is a *family* rather than a single component —
+`src/tools/memory/detail/` is four components and four stylesheets. The rule
+they answer to is the one above:
 deleting the folder deletes its rules. A tool's one-off screens still belong in
 that tool's global sheet (`src/styles/memory.css`); the split is worth it only
 when the alternative is a 200-line unrelated block in a 600-line file.
 
-**Why co-located plain CSS**, and not utility classes in the JSX or CSS
-modules. The rules in this repo carry explanations that utility strings cannot
-hold — why the sticky seam guard is 3px and not more, what each channel in the
-memory list means. Those are hard-won and would be deleted rather than
-migrated. CSS modules would give compiler-enforced unique names, but they hash
-the class in devtools, and this project is debugged by looking at rendered
-output and pointing at things. Keeping `.chip` greppable is worth more than
-uniqueness in a codebase this size. Tailwind utilities remain available as the
-escape hatch for a one-off override.
+### Styling: Tailwind utilities
+
+**Components are styled with Tailwind utilities in the JSX.** The theme is
+generated from `tokens.css` (`src/styles/theme.css` bridges every token to a
+Tailwind name), so `bg-accent`, `text-dim`, `min-h-tap`, `rounded-m` and
+`text-label` are the same values the hand-written rules used. There is one
+palette and one spacing scale, whichever syntax reaches for them.
+
+**Hand-written CSS is legacy.** Most components still carry a co-located
+stylesheet. That is history, not a pattern to copy: nothing new should add one,
+and **a stylesheet you are already editing should be rewritten as utilities
+while you are in there**, in the same change, at whatever granularity the work
+touches. A file nobody is touching can stay as it is — this is a migration
+that follows the work, not a sweep to schedule.
+
+Three things survive the move, because utilities cannot hold them:
+
+- **`tokens.css` stays the source.** Utilities read the theme, the theme reads
+  the tokens. A raw value in the markup is still wrong.
+- **The reasoning goes here or into the component's doc comment**, not into a
+  class string. Why the sticky seam guard is 3px, what each channel in the
+  memory list means — those were the strongest argument for stylesheets, and
+  losing them is the real cost of this change. Write them down somewhere a
+  reader will find them.
+- **Class strings must be whole literals.** Tailwind's scanner reads source
+  text, so `bg-${tone}` generates nothing and fails as a silently unstyled
+  element rather than as an error. Spell variants out in a lookup, as
+  `Button.tsx` does.
+
+Two failure modes to know, because both fail silently and neither looks like a
+CSS problem:
+
+- **Unlayered CSS beats every layer, so a hand-written rule beats a utility.**
+  This document used to claim the opposite — that utilities "win over the
+  hand-written rules" — which was never true and had gone unnoticed because
+  nothing used utilities. `base.css`'s element resets are now in `layer(base)`
+  beside preflight; left unlayered, `button { background: none; border: 0 }`
+  defeated every background, border and padding utility on every button.
+  Converting a component whose rules fight a utility means layering those
+  rules, not fighting back with `!important`.
+- **Two utilities on one property: the sheet's order decides, not yours.**
+  `"uppercase … normal-case"` renders uppercase, because Tailwind emits them in
+  its own order. Never emit both — give each property exactly one lookup that
+  owns it, and switch which string that lookup returns.
+
+Genuinely un-utility-able CSS — keyframes with several stops, a complex
+`::after`, a container query no variant covers — belongs in an
+`@layer components` block, not in a new co-located file.
 
 ### CSS comments — four kinds, nothing else
 
@@ -467,8 +513,8 @@ including the presets tool.
 
 | Component | What it owns | Reach for instead |
 |---|---|---|
+| `Button` | every action control: variant, tone, size, pending, unavailability, icon-only | a plain `<a>` when it navigates |
 | `Chip` / `Tag` | a small pressable / a small label | — |
-| `IconButton` | a square icon control; its name is a required prop | — |
 | `SearchBar` | a search field, its magnifier, its match tally | — |
 | `fuzzyFilter` / `fuzzyScore` | subsequence matching with a score | — |
 | `Sheet` / `Modal` | a layered surface and its dismissal contract | — |
@@ -497,6 +543,74 @@ behavior, slot the shape**: `ListGroup` owns the chevron and its accessible
 name, while the review queue and the sources list keep their own header
 layouts — one shares a grid with its rows, one does not, and forcing a single
 shape would have invented a layout neither wanted.
+
+### Buttons
+
+One component, `src/ui/Button.tsx`. Before it there were 119 hand-written
+`<button>`s wearing 63 different class combinations, with `.dbtn`, `.dbtn2` and
+`.action-sec` as three copies of one appearance.
+
+**Rank is the box, then ink brightness. `--accent` is not a rank step.**
+Measured against the canvas, an accent label is 7.24:1 where `--text` is
+15.78:1 — so a tier inked in accent and ranked *above* a neutral one reads as
+louder, which is the wrong direction. Accent stays with the primary fill and
+with `pressed`.
+
+| variant | box | ink | for |
+|---|---|---|---|
+| `primary` | `--accent` fill, 7.24:1 off canvas | `--accent-ink` | the action the screen exists for |
+| `secondary` | `--edge-strong` border, no fill | `--text`, 15.78:1 | everything else with a box |
+| `ghost` | none | `--text-dim`, 6.41:1 | row actions, dismissals, dense rails |
+
+Three tiers, not five. The de-facto vocabulary that 119 buttons produced on
+their own was exactly these three, and nothing has ever reached for a fourth.
+A `tertiary` band was drawn four ways and rejected: neutral containers span
+1.07:1 to 1.87:1 against the canvas, so there is no middle for one to occupy
+(`public/mockups/button-tertiary.html`, `button-ladder-v2.html`).
+
+**`tone` is category, not rank** — `danger` and `ok` compose with every
+variant, so a destructive action can be the screen's primary or a quiet ghost
+without changing what it means. This is why `.dangerbtn`,
+`.action-sec.is-danger-act` and the decision rail's green keep can be one
+mechanism.
+
+**Other rules the component enforces**, so no call site has to remember them:
+
+- `type="button"` always. Only 21 of the previous 119 set it.
+- **Icon-only is a mode, not a component**, because every prop applies to it —
+  an icon button still goes pending, still has to say why it is unavailable,
+  still reports `pressed` and `expanded`. `iconOnly` demands `label` in the
+  type, and `label` becomes both the accessible name and the tooltip.
+- **`pending` delays its spinner 1s** and the button is inert throughout, so
+  fast work never flashes an indicator and a double-press cannot double-submit.
+  The label keeps its box and loses only its ink, so a row cannot reflow
+  mid-request. Reserve it for work expected to finish inside ~5s; anything
+  longer belongs in a progress bar outside the button.
+- **Disable rather than hide, and say why.** `disabledReason` renders through
+  `Term` and switches the control to `aria-disabled`, because a reason on a
+  control nobody can focus is a reason nobody can read.
+- **Labels wrap; they never truncate.** Sibling controls still share a height
+  because their row stretches them (CHECKLIST §4) — a wrapped label grows the
+  row, not one button.
+
+**Writing a label** (Spectrum's content standards, plus Carbon's formula):
+a verb, or verb + noun — "Create identity source", not "Identity source". One
+or two words, four at the outside, under 20 characters. Sentence case in the
+catalog, no terminal punctuation, no articles ("Migrate server", not "Migrate a
+server"), no "Yes". The uppercase you see is `text-transform`, so the source
+string and the accessible name stay sentence case; `labelCase="sentence"` opts
+a button out, and drops the tracking and gains a size step when it does.
+
+Accessible names must be unique on a screen — a repeated "Delete" should name
+what it deletes. Use `expanded` when the button controls a disclosure and
+`haspopup` when it opens a menu.
+
+**Not in scope for `Button`.** The decision rail (`.dbtn2`) is a named pattern
+in §5 with its own semantics — persisted ledger, keyboard auto-advance — and
+stays its own component. So do the list and structural affordances that happen
+to be `<button>`: `.chip`, `.card`, `.picker-opt`, `.rail-item`, `.sbox` (a
+`role="checkbox"`), the JSON tree nodes. Segmented controls stay with
+`ModePill`.
 
 ### Reading measure
 

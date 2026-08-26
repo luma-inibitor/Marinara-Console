@@ -19,14 +19,6 @@
 /* .console supplies the sticky seam and the padding. */
 .mdc-head { padding-bottom: 0; background: var(--mdc-ground); }
 
-/* Drops .icon-btn's raised surface and border. */
-.mdc-back.icon-btn {
-  background: none;
-  border: 0;
-  color: var(--text-dim);
-  border-radius: var(--r-s);
-}
-
 .mdc-title {
   flex: 1;
   min-width: 0;

@@ -38,6 +38,8 @@
 
   /* ── ink for text on a filled status chip ── */
   --warn-ink: #1a1705;
+  --danger-ink: #1a0707;
+  --ok-ink: #05140e;
 
   /* ── scrim, elevation, washes ── */
   --scrim: rgba(4, 6, 10, 0.55);

@@ -522,6 +522,18 @@ Luma is separately deciding whether to lower the primary floor from 44px, so the
   entities (note, scope, key) — but the table format is right.
 - **Prototype retirement** — `~/code/me-ltm-console` stays as the reference
   until the port reaches parity; fold anything left and archive it.
+- **`verify.mjs` measures no non-text contrast.** Its contrast pass walks
+  text-bearing elements against their first opaque ancestor, so borders and
+  fills are never measured. That is how `--edge` sat at 1.35:1 against the
+  canvas — every bordered control in the app is below WCAG 1.4.11's 3:1 for
+  non-text UI. Arguably fine, since a control's identity here is carried by its
+  label, but nothing has ever checked and nothing would notice a regression.
+  Adding a border pass needs its own baseline churn; found while rebasing the
+  button ladder.
+- **Migrate the remaining button call sites** — `Button` ships with the 10
+  former `IconButton` sites converted; `.dbtn` (23), `.action-sec` (7),
+  `.dangerbtn`, `.connbar-btn`, `.movebtn`, `.fold-btn`, `.toast-action` and
+  the rest of the 63 class combinations are still hand-written.
 
 ## Process notes
 

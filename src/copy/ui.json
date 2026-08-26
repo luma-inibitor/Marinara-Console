@@ -17,6 +17,10 @@
     "note": "Toasted when navigator.clipboard rejects, which in practice means the console is being served over plain http and the browser refuses the write. The catalog reports copy failures per subject (activityview.copyFailed, memoryvault.diagnosticsCopyFailed) and never names the cause, because upstream runs inside a secure host page where this cannot happen."
   },
 
+  "ui.button.pending": {
+    "use": "memorysettings.loading",
+    "note": "Accessible name of Button's in-flight spinner. The product's word for waiting is 'Loading', used for content arriving; a button reports on the action the user just pressed rather than on a pane, but it is the same wait and the catalog has no second word for it."
+  },
   "ui.json.viewLabel": {
     "text": "JSON view",
     "note": "Accessible name of JsonView's control group, used when the caller names no subject. The catalog reaches JSON exactly twice, both as verbs on a record (activityview.copyJson, copyRawJsonForValue1); it has no viewer, so it has no noun for one."

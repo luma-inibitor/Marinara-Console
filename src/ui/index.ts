@@ -1,8 +1,11 @@
 // The console's shared UI vocabulary. Anything used by more than one screen
 // belongs here; anything used by one screen belongs beside that screen.
 //
-// Each component owns its own stylesheet, so deleting the component deletes
-// its rules.
+// Components are styled with Tailwind utilities in the JSX (DESIGN.md §8). The
+// co-located stylesheets still here are legacy — rewrite one as utilities when
+// the work already has you editing it.
+export { Button } from "./Button";
+export type { ButtonProps } from "./Button";
 export { Chip, Tag } from "./Chip";
 export { CopyableText } from "./CopyableText";
 export { DetailSection } from "./DetailSection";
@@ -12,7 +15,6 @@ export { ErrorState } from "./ErrorState";
 export { ListEmpty } from "./ListEmpty";
 export { NotFound } from "./NotFound";
 export { Loading } from "./Loading";
-export { IconButton } from "./IconButton";
 export { ListGroup } from "./ListGroup";
 export { MiddleTruncate } from "./MiddleTruncate";
 export { MODES, ModePill } from "./ModePill";

@@ -20,7 +20,7 @@ import { listedInVault } from "./model/listing";
 import { isScoped, noteInScope } from "./model/scope";
 import { useScope } from "./store/scope";
 import { Back, ICON_SIZE, NoMatches } from "../../ui/icons";
-import { Chip, DetailSection, EmptyState, ErrorState, IconButton, Loading, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
+import { Button, Chip, DetailSection, EmptyState, ErrorState, Loading, SearchBar, Tag, fuzzyScore, useIsDesktop } from "../../ui";
 import { MemoryDetail } from "./detail/MemoryDetail";
 
 type SortKey = "updated" | "title" | "pressure" | "status";
@@ -121,9 +121,8 @@ export function Vault(props: { noteId?: string }) {
     ? (
       <>
         <header className="console"><div className="hrow">
-          <IconButton className="hit" label={t("memory.backToVault")} onClick={() => setEditing(false)}>
-            <Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />
-          </IconButton>
+          <Button iconOnly className="hit" label={t("memory.backToVault")} onClick={() => setEditing(false)}
+            icon={<Back size={ICON_SIZE.xl} stroke={1.75} aria-hidden />} />
           <h1 className="console-title">{open.title ?? open.id}</h1>
         </div></header>
         <NoteEditor note={open} onClose={closeDetail} />
