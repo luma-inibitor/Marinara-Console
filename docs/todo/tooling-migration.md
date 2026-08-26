@@ -691,9 +691,11 @@ The file tests only what the program doesn't test at run time:
 4. A coinage with text that already exists in `src/copy/vendor/ltm-en.json`.
 5. A `despite` value that resolves and that gives a real conflict.
 
-It also adds `src/copy/copy.test.ts`. That file has five lines.
-The reason is important.
-The dev-only assertions at `src/copy/index.ts:104-122` operate in the build system today.
+It also adds `src/copy/copy.test.ts`. That file has seven lines.
+The plan estimated five before the file existed.
+The reason for the file is important.
+The dev-only assertions at `src/copy/index.ts:102-118` operate in the build system today.
+That block sat at lines 104 to 122 on main. This pull request's own edit to the file moved it.
 They operate only because two unrelated store tests import the module.
 One change to those tests removes the assertions with no message.
 
