@@ -32,6 +32,8 @@ export const checks = [
   "lint",
   // Layers: imports point downward, and no component owns a fetch
   "layercheck",
+  // Inventory, not a gate: `components` always exits 0.
+  "components",
   // Copy: every user-visible string comes from the catalog
   "copycheck",
   // Dead code
