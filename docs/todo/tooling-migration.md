@@ -360,24 +360,29 @@ Also complete the Playwright test files.
 **Conditions to complete this wave.**
 
 - `npx knip` gives no output and exit code 0.
-- `npm run typescale` reports `89 literal font-size(s)` and gives exit code 0.
-- `npx stylelint "src/**/*.css"` reports exactly 89 problems. Each problem comes from `marinara/font-size-token`.
+- `npm run typescale` reports `82 literal font-size(s), 40 of them off the scale entirely` and gives exit code 0.
+- `npx stylelint "src/**/*.css"` reports exactly 82 problems. Each problem comes from `marinara/font-size-token`.
+  The first plan said 89. Wave 2 measured 83. Pull request #76 deleted
+  `src/ui/IconButton.css`, which held one literal, and the count became 82.
 - `npx eslint src` reports 0 problems with `mode:"all"`.
 - `npm run build` gives exit code 0 with fatal warnings.
-  Note: the chunk-size line survives the toast fix. `[plugin builtin:vite-reporter]` emits it,
-  not a Rolldown warning code, so `onwarn` may not see it. Raise `chunkSizeWarningLimit`
-  or exempt it explicitly.
+  Note: the chunk-size line survives the toast fix. `onwarn` receives it as a plugin warning
+  from `builtin:vite-reporter`. A `chunkSizeWarningLimit` of 100 makes the build exit 1
+  with `Error [RolldownError]: bundler warnings are fatal`.
+  A `throw` inside `onwarn` doesn't fail the build. Rolldown swallows it.
+  The build then gives exit code 0 and prints no message.
+  Thus `onwarn` must collect each warning. `closeBundle` must raise them.
 - `npx playwright test` covers the smoke test, contrast, tap targets, overlays, and the keyboard.
 
 | Branch | Title | Work | Depends on |
 |---|---|---|---|
 | `test/e2e-tap-targets` | Keep the tap target measurement. Compare it with axe | 6.5h | harness |
-| `chore/copy-eslint-mode-all` | i18next `mode:"all"`, a JSX text rule, and 20 corrections | 4h | what-prop, savebar |
+| `chore/copy-eslint-mode-all` | i18next `mode:"all"`, a JSX text rule, and 23 corrections | 4h | what-prop, savebar |
 | `test/e2e-keyboard-overlays` | Move the overlay tests and the keyboard test into test files | 4h | harness |
 | `chore/stylelint-typescale` | Replace the special CSS scanner with a stylelint rule | 3.5h | wave 0 |
 | `test/e2e-axe-contrast` | Move the contrast tests to axe. Keep the exemption reasons | 3h | harness |
 | `chore/knip` | Add knip 6 and `knip.json`. Mark the intentional exports | 1.5h | harness |
-| `chore/fatal-build-warnings` | Make bundler warnings fatal with `build.rolldownOptions.onwarn` | 1h | toast fix |
+| `chore/fatal-build-warnings` | Make bundler warnings fatal with `onwarn` and `closeBundle` | 1h | toast fix |
 | `chore/wire-components` | Add `scripts/components.mjs` to `package.json` | 0.75h | — |
 
 #### `test/e2e-tap-targets`
@@ -487,13 +492,23 @@ Running the full configuration over the real `src/` gives these results:
 - Without the `:not()` part, the rule finds the three unit letters at `src/shell/Toaster.tsx:30`, `src/tools/lorebooks/BookAudit.tsx:405`, and `src/tools/memory/Vault.tsx:213`.
 - Thus the selector operates correctly.
 
-This pull request corrects **20 findings, not 24**. The count comes from this calculation:
+This pull request corrects **23 findings**. A run of the full configuration over `src/` gives that count.
+
+The first plan gave 20. It reached that number by this calculation:
 
 - 27 findings in total.
 - Subtract the three `what=` properties that `fix/what-prop-copy` removes. They're at `BookAudit.tsx:262,265` and `PresetsTool.tsx:363`.
 - Subtract the four strings that `refactor/shared-savebar` removes. They're at `PresetsTool.tsx:745,748,753,753`.
 
-Almost each of the 20 corrections is a change to a key. The finding gives the key name.
+That calculation is incomplete. It leaves out the exclusions that the configuration also needs.
+One of them is a block for test files. It turns off `i18next/no-literal-string` and `no-restricted-syntax` there.
+A fixture string reaches no reader.
+Use the measured count of 23. Don't use the calculation.
+
+Nineteen of the 23 corrections are a change to a key. The finding gives the key name.
+The other four are a literal that no reader sees.
+Examples are `this.name = "ApiError"` at `src/shell/api.ts:18` and `window.matchMedia("(min-width: 900px)")` at `src/tools/presets/PresetsTool.tsx:185`.
+Each of those four carries a disable comment with a reason.
 
 #### `test/e2e-keyboard-overlays`
 
@@ -512,6 +527,13 @@ Thus this pull request doesn't write to `package.json`.
 This pull request keeps `design/typescale-baseline.json` and `scripts/lib/baseline.mjs`.
 The `--suppress` option of stylelint counts findings.
 Thus it permits one correction together with one new violation. A test shows this.
+
+The two tools give the same set of findings, except for one baseline key.
+The old scanner reads characters. It resets its selector buffer at a `;`.
+The header comment of `src/tools/memory/components/NoteRef.css` holds a `;`.
+Thus the old scanner records the selector as `this file owns the default. */ .notelink`.
+PostCSS gives `.notelink`. This is a defect in the outgoing scanner.
+Correct the key in `design/typescale-baseline.json` in this pull request.
 
 There are two changes to the first plan.
 
@@ -928,10 +950,10 @@ With test files, the value goes from 0.19% to 0.50%. The limit then has no use.
 The configuration excludes CSS files.
 Thus it doesn't report `RetrievalCard.css:51` and `SectionRow.css:72`.
 
-**The chunk size warning has a limit, not a failure.**
+**The chunk size warning has a limit of 700 KB.**
 Vite gives this warning through the reporter plugin logger.
-`onwarn` doesn't receive it.
-So a bundle larger than 700 KB still only prints a message.
+`onwarn` receives it. Thus a bundle larger than 700 KB fails the build.
+But the bundle is 684 KB today. So the limit gives about 16 KB of room.
 `src/` has no `React.lazy` call today.
 A division by route is a new feature, not a build system change.
 
