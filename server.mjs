@@ -124,8 +124,6 @@ async function handleState(req, res, name) {
 }
 
 // ── API proxy ─────────────────────────────────────────────────────
-// `selfHandleResponse` keeps the response out of memory unless it is JSON, and
-// keeps every upstream response header off the wire.
 const apiProxy = createProxyMiddleware({
   target: TARGET,
   changeOrigin: true,
@@ -144,7 +142,8 @@ const apiProxy = createProxyMiddleware({
       const status = proxyRes.statusCode;
       const type = proxyRes.headers["content-type"] ?? "application/octet-stream";
       if (!type.includes("application/json")) {
-        res.writeHead(status, { "content-type": type });
+        const len = proxyRes.headers["content-length"];
+        res.writeHead(status, { "content-type": type, ...(len ? { "content-length": len } : {}) });
         proxyRes.pipe(res);
         return;
       }
@@ -255,8 +254,7 @@ createServer(async (req, res) => {
     if (url.pathname.startsWith("/api/")) {
       if (isLtmWrite(req.method, url.pathname)) {
         try {
-          // `on.proxyReq` cannot await, and the request reaches the engine
-          // some 3 ms in, so the restore point has to be taken here.
+          // Gotcha: `on.proxyReq` cannot await — the request is on the wire by then.
           await ensureLtmRestorePoint();
         } catch (err) {
           // Fail open: a hiccuping export route must not block every write.
