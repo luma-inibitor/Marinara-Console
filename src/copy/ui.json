@@ -250,7 +250,7 @@
 
   "ui.sections": {
     "text": "sections",
-    "note": "The count-of-sections label: the presets browser's section count and its sort chip, and the memory detail card's heading over a memory's section list. The catalog's memorySections is a memory's own detail list and renders as \"Memory details\" — a different thing under a colliding key name. Lowercase because both call sites uppercase in CSS."
+    "note": "The sections noun: the presets browser's section count and its sort chip, the memory detail card's heading over a memory's section list, and the subject the presets editor hands to its empty state ('No sections yet'). The catalog's memorySections is a memory's own detail list and renders as \"Memory details\" — a different thing under a colliding key name. Lowercase because the label call sites uppercase in CSS and the empty state wants it in prose."
   },
 
   "ui.moreCount": {
