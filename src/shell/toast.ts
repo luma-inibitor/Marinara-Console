@@ -4,8 +4,11 @@
 // The queue is not presentation, and the split is what lets a store enqueue a
 // toast without pointing upward at the screen that draws it (ARCHITECTURE.md §1).
 //
-// Undo over confirm (DESIGN.md): a toast with an action holds a pending commit.
-// The commit fires when the toast expires; the action (Undo) cancels it.
+// Undo over confirm (DESIGN.md): a toast with an action carries the undo. It
+// comes in two shapes — the write is still pending in `onExpire` and Undo
+// cancels it, or the write already landed and Undo reverses it — and both are
+// undoable. `isUndoable` is the one place that decides, because the deadline
+// and the countdown drawn against it must never disagree.
 import { createStore } from "../lib/store";
 
 export interface Toast {
@@ -29,6 +32,12 @@ const UNDO_MS = 9_000;     // long enough to notice and act on a delete
 const ERROR_MS = 8_000;
 const INFO_MS = 4_000;
 
+/** Whether Undo is on offer, and so whether this toast gets the long deadline
+ *  and shows the countdown against it. */
+export function isUndoable(t: Pick<Toast, "onAction" | "onExpire">): boolean {
+  return !!(t.onAction ?? t.onExpire);
+}
+
 function remove(id: number, expired: boolean) {
   const t = toasts.get().find((x) => x.id === id);
   if (!t) return;
@@ -47,8 +56,8 @@ export function dismissToast(id: number) {
 export function toast(message: string, opts: Partial<Omit<Toast, "id" | "message" | "count" | "expiresAt">> = {}) {
   // Coalesce a repeat of the same message — a dropped connection fails every
   // pending write at once, and N identical toasts bury the one useful fact.
-  // Never coalesce undoable toasts: each holds a distinct pending commit.
-  if (!opts.onExpire && !opts.onAction) {
+  // Never coalesce undoable toasts: each carries a distinct undo.
+  if (!isUndoable(opts)) {
     const dup = toasts.get().find((t) => t.message === message && t.kind === (opts.kind ?? "info"));
     if (dup) {
       const ttl = (opts.kind === "error" ? ERROR_MS : INFO_MS);
@@ -61,7 +70,7 @@ export function toast(message: string, opts: Partial<Omit<Toast, "id" | "message
   }
 
   const id = ++seq;
-  const ttl = opts.onExpire ? UNDO_MS : opts.kind === "error" ? ERROR_MS : INFO_MS;
+  const ttl = isUndoable(opts) ? UNDO_MS : opts.kind === "error" ? ERROR_MS : INFO_MS;
   toasts.update((list) => [...list, {
     id, message, kind: opts.kind ?? "info", count: 1, expiresAt: Date.now() + ttl, ...opts,
   }]);
