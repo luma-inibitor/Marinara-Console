@@ -90,8 +90,7 @@ export default [
         {
           patterns: [
             {
-              // The project has no path alias, so every reach for the client
-              // from outside src/shell is a relative specifier ending this way.
+              // No path alias in this project, so the reach is always relative.
               group: ["**/shell/api"],
               // `api()` is a request, so importing it into a component is the
               // same defect as calling `fetch` there. The rest of that module is
