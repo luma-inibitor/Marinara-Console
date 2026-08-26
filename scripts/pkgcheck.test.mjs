@@ -1,8 +1,8 @@
-// Each case below is one way the deleted fields or the deduplicated .gitignore
-// come back.
-import { describe, expect, it } from "vitest";
+// Each case below is one way a deleted field, the licence, the script order or
+// the deduplicated .gitignore comes back.
+import { afterAll, describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,17 +17,37 @@ function run(target) {
   return { code: r.status, out: r.stdout + r.stderr };
 }
 
+const fixtures = [];
+afterAll(() => {
+  for (const dir of fixtures) rmSync(dir, { recursive: true, force: true });
+});
+
 function fixture({ pkg = {}, gitignore = "dist/\nshots/\n" } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "pkgcheck-"));
+  fixtures.push(dir);
   writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "x", license: "UNLICENSED", ...pkg }));
   writeFileSync(join(dir, ".gitignore"), gitignore);
-  return relative(ROOT, dir);
+  return dir;
 }
 
 describe("the real repository", () => {
   const { code, out } = run();
 
   it("passes", () => {
+    expect(out).toContain("package.json clean");
+    expect(code).toBe(0);
+  });
+});
+
+describe("the root argument", () => {
+  it("accepts a relative path", () => {
+    const { code, out } = run(relative(ROOT, fixture({ pkg: { author: "" } })));
+    expect(out).toContain('package.json still has "author"');
+    expect(code).toBe(1);
+  });
+
+  it("accepts an absolute path", () => {
+    const { code, out } = run(fixture());
     expect(out).toContain("package.json clean");
     expect(code).toBe(0);
   });
@@ -52,13 +72,40 @@ describe("a deleted field that came back", () => {
 describe("the licence", () => {
   it("reports an absent one", () => {
     const { code, out } = run(fixture({ pkg: { license: undefined } }));
-    expect(out).toContain('package.json needs a non-empty "license"');
+    expect(out).toContain('package.json declares license null, not "UNLICENSED"');
     expect(code).toBe(1);
   });
 
   it("reports an empty one", () => {
     const { code } = run(fixture({ pkg: { license: "  " } }));
     expect(code).toBe(1);
+  });
+
+  it("reports the ISC this repository replaced", () => {
+    const { code, out } = run(fixture({ pkg: { license: "ISC" } }));
+    expect(out).toContain('package.json declares license "ISC", not "UNLICENSED"');
+    expect(code).toBe(1);
+  });
+});
+
+describe("the script order", () => {
+  it("reports a script appended out of alphabetical order", () => {
+    const scripts = { build: "vite build", verify: "node x.mjs", pkgcheck: "node y.mjs" };
+    const { code, out } = run(fixture({ pkg: { scripts } }));
+    expect(out).toContain('package.json lists script "pkgcheck" after "verify", out of alphabetical order');
+    expect(code).toBe(1);
+  });
+
+  it("passes an alphabetical list", () => {
+    const scripts = { build: "vite build", pkgcheck: "node y.mjs", verify: "node x.mjs" };
+    const { code, out } = run(fixture({ pkg: { scripts } }));
+    expect(out).toContain("package.json clean");
+    expect(code).toBe(0);
+  });
+
+  it("passes a package.json with no scripts at all", () => {
+    const { code } = run(fixture());
+    expect(code).toBe(0);
   });
 });
 
