@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { KEYWORD_CAP } from "./caps";
-import { effectiveKeywords, manualKeywords, splitKeywords } from "./keywords";
+import { INDEXED_KEYWORD_CAP, KEYWORD_CAP } from "./caps";
+import {
+  effectiveKeywords, ignoredKeywordCount, indexedKeywords, manualKeywords, splitKeywords,
+} from "./keywords";
 
 describe("splitKeywords", () => {
   it("reads a note with no manualKeywords array as all-manual", () => {
@@ -77,5 +79,59 @@ describe("the two counts a keyword rail and its cap tally read", () => {
   it("has the tally equal the rail on a note written before the split", () => {
     const note = { keywords: ["harbour", "cargo"] };
     expect(manualKeywords(note)).toEqual(effectiveKeywords(note));
+  });
+});
+
+describe("indexedKeywords", () => {
+  it("returns the whole merged list when it fits under the index cap", () => {
+    const note = { keywords: ["harbour", "fog"], manualKeywords: ["cargo"] };
+    expect(indexedKeywords(note)).toEqual(["harbour", "fog", "cargo"]);
+    expect(ignoredKeywordCount(note)).toBe(0);
+  });
+
+  it("returns everything when the merged list sits exactly on the cap", () => {
+    const note = {
+      keywords: Array.from({ length: INDEXED_KEYWORD_CAP - 4 }, (_, i) => `d${i}`),
+      manualKeywords: Array.from({ length: 4 }, (_, i) => `m${i}`),
+    };
+    expect(indexedKeywords(note)).toEqual(effectiveKeywords(note));
+    expect(ignoredKeywordCount(note)).toBe(0);
+  });
+
+  it("drops the manual keywords past the cap, keeping derived ones first", () => {
+    const note = {
+      keywords: Array.from({ length: INDEXED_KEYWORD_CAP }, (_, i) => `d${i}`),
+      manualKeywords: Array.from({ length: 5 }, (_, i) => `m${i}`),
+    };
+    const indexed = indexedKeywords(note);
+    expect(indexed).toHaveLength(INDEXED_KEYWORD_CAP);
+    expect(indexed).toEqual(Array.from({ length: INDEXED_KEYWORD_CAP }, (_, i) => `d${i}`));
+    expect(indexed.some((k) => k.startsWith("m"))).toBe(false);
+    expect(ignoredKeywordCount(note)).toBe(5);
+  });
+
+  it("indexes manual keywords only in the slots derived ones leave over", () => {
+    const note = {
+      keywords: Array.from({ length: INDEXED_KEYWORD_CAP - 2 }, (_, i) => `d${i}`),
+      manualKeywords: ["first", "second", "third", "fourth"],
+    };
+    const indexed = indexedKeywords(note);
+    expect(indexed.slice(-2)).toEqual(["first", "second"]);
+    expect(indexed).not.toContain("third");
+    expect(ignoredKeywordCount(note)).toBe(2);
+  });
+
+  it("counts suppressed keywords out before the cap applies", () => {
+    const keywords = Array.from({ length: INDEXED_KEYWORD_CAP }, (_, i) => `d${i}`);
+    const note = { keywords, manualKeywords: ["mine"], suppressedKeywords: ["d0", "d1"] };
+    expect(indexedKeywords(note)).toContain("mine");
+    expect(ignoredKeywordCount(note)).toBe(0);
+  });
+
+  it("indexes a pre-split note's whole list, which the engine reads as manual", () => {
+    const note = { keywords: Array.from({ length: INDEXED_KEYWORD_CAP + 3 }, (_, i) => `k${i}`) };
+    expect(manualKeywords(note)).toHaveLength(INDEXED_KEYWORD_CAP + 3);
+    expect(indexedKeywords(note)).toHaveLength(INDEXED_KEYWORD_CAP);
+    expect(ignoredKeywordCount(note)).toBe(3);
   });
 });

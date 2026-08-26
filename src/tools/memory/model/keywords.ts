@@ -4,10 +4,15 @@
 // derived itself, `manualKeywords` what a person typed, `suppressedKeywords`
 // the derived ones a person removed. Recall matches the derived and the manual
 // together, minus the suppressed — but the 30 cap is enforced on each array
-// separately, so it is the MANUAL list a person can fill, and the merged list
-// can hold more than 30 without anything being refused.
+// separately, so it is the MANUAL list a person can fill, and a write taking
+// the merged list past 30 is accepted rather than refused.
+//
+// Accepted is not the same as used. The engine indexes only the first 30 of the
+// merged list, derived ones first, so anything past that is stored and then
+// silently ignored by recall.
 
 import type { Note } from "../api/types";
+import { INDEXED_KEYWORD_CAP } from "./caps";
 
 /** Case- and whitespace-insensitive identity, as the engine folds keywords. */
 function fold(keyword: string): string {
@@ -45,10 +50,22 @@ export function manualKeywords(n: Pick<Note, "keywords" | "manualKeywords" | "su
   return splitKeywords(n).manual;
 }
 
-/** What recall actually matches on: derived and manual together, less the
- *  derived ones a person suppressed. Not capped at 30. */
+/** Derived and manual together, less the derived ones a person suppressed —
+ *  the whole stored list, which the engine then truncates before indexing. */
 export function effectiveKeywords(n: Pick<Note, "keywords" | "manualKeywords" | "suppressedKeywords">): string[] {
   const { derived, manual, suppressed } = splitKeywords(n);
   const hidden = new Set(suppressed.map(fold));
   return dedupe([...derived, ...manual]).filter((k) => !hidden.has(fold(k)));
+}
+
+/** What recall actually matches on: the first INDEXED_KEYWORD_CAP of the merged
+ *  list. Derived keywords are ordered first and so take the slots, which means a
+ *  note storing its full 30 derived indexes none of its manual keywords at all. */
+export function indexedKeywords(n: Pick<Note, "keywords" | "manualKeywords" | "suppressedKeywords">): string[] {
+  return effectiveKeywords(n).slice(0, INDEXED_KEYWORD_CAP);
+}
+
+/** How many stored keywords fall past the index cap and never match anything. */
+export function ignoredKeywordCount(n: Pick<Note, "keywords" | "manualKeywords" | "suppressedKeywords">): number {
+  return Math.max(0, effectiveKeywords(n).length - INDEXED_KEYWORD_CAP);
 }
