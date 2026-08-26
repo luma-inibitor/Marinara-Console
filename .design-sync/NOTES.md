@@ -4,12 +4,12 @@
 
 - **No Storybook, no `*.stories.*`** → `shape: "package"`.
 - **This is an app, not a published library.** `package.json` has
-  `main: "index.js"`, the npm-init default, and that file does not exist.
+  `main: "index.js"`, the npm-init default, and that file doesn't exist.
   There is no `exports`/`module`/`types` field. The real component surface is
   **`src/ui/index.ts`** — a barrel with 23 exports over 22 components. The
-  converter needs that pointed at explicitly; discovery will not find it.
+  converter needs that pointed at explicitly; discovery won't find it.
 - **`dist/` is a Vite APP build** (index.html + hashed assets), not a component
-  library build. Do not treat it as the compiled component output.
+  library build. Don't treat it as the compiled component output.
 
 ## Invocation — the flag without which nothing builds
 
@@ -19,7 +19,7 @@
 
 **`--entry ./src/ui/index.ts` is required.** Without it the converter resolves
 the package as `<node-modules>/<cfg.pkg>` and dies on
-`node_modules/marinara-console/package.json: ENOENT` — this is an app, so it is
+`node_modules/marinara-console/package.json: ENOENT` — this is an app, so it's
 not installed into its own node_modules. With `--entry`, PKG_DIR is found by
 walking up from the entry to the first `package.json` carrying a `name`, which
 lands on the repo root and is correct. Do NOT "fix" the ENOENT by symlinking the
@@ -33,7 +33,7 @@ port, so the separate scratch install is no longer needed.
 
 The console is **React 19**. `preact` and `@preact/signals` are uninstalled, so
 no compat shim is vendored and the bundle ships the same React the DS pane
-renders. Earlier syncs vendored `preact/compat` as React; that is gone.
+renders. Earlier syncs vendored `preact/compat` as React; that's gone.
 
 ## Install
 
@@ -43,7 +43,7 @@ already installed and lockfile-consistent. `npm ci` is correct for a cold clone
 only.
 
 Also note npm's optional-dependency bug bit this repo once: a missing
-`@rolldown/binding-darwin-arm64` broke vite until it was installed explicitly.
+`@rolldown/binding-darwin-arm64` broke Vite until it was installed explicitly.
 
 ## Prior attempts
 
@@ -64,11 +64,11 @@ bundle was built.
 ## Converter resolution root — a trap that cost real damage
 
 The converter needs `react` in `--node-modules` (it vendors React for preview
-cards). This repo has no react. **Do not build a scratch root by symlinking the
+cards). This repo has no react. **Don't build a scratch root by symlinking the
 repo's packages into it and then `cp -RL` through those symlinks** — `cp -RL`
 follows the link and copies a directory into itself, which EMPTIED
 `node_modules/@preact/signals` and `node_modules/@tabler/icons-preact` in the
-real repo. Nothing failed loudly: the vite dev server kept serving 200 from its
+real repo. Nothing failed loudly: the Vite dev server kept serving 200 from its
 pre-bundled cache, so the damage was invisible until an unrelated `ls`.
 
 Recovery is `npm install`, which then re-triggers the npm optional-dependency
@@ -89,10 +89,10 @@ span more than `src/ui/`.
 ## Components excluded from the DS
 
 `JsonView` and `CollapseButton` are real components but were removed from the
-`src/ui/index.ts` barrel (consumed only inside `src/ui/`), so they are not
-`window.MarinaraConsole.*` exports and cannot be component cards. They are set
+`src/ui/index.ts` barrel (consumed only inside `src/ui/`), so they're not
+`window.MarinaraConsole.*` exports and can't be component cards. They're set
 to `null` in `componentSrcMap`. To include them, re-export them from the barrel
-first — do not just un-null them, or their cards will reference a missing export.
+first — don't just un-null them, or their cards will reference a missing export.
 
 ## Known render warns (triaged — a warn NOT on this list is new)
 
@@ -101,10 +101,10 @@ first — do not just un-null them, or their cards will reference a missing expo
   `"Archivo Variable", "Archivo", system-ui, sans-serif` — the *Variable* faces
   ship (16 `@font-face` rules via `cfg.extraFonts` pointing at the
   `@fontsource-variable/*` packages), and the bare names are deliberate
-  fallbacks for a locally-installed static version. Validate cannot tell a
-  fallback from a missing family. Do not "fix" by adding static woff2s.
+  fallbacks for a locally-installed static version. Validate can't tell a
+  fallback from a missing family. Don't "fix" by adding static woff2s.
 
-## Prop extraction — the step that is easy to skip and shouldn't be
+## Prop extraction — the step that's easy to skip and shouldn't be
 
 The converter emits `[key: string]: unknown` for every component unless it can
 parse real declarations. This repo has `noEmit: true` and ships no `.d.ts`, so
@@ -120,7 +120,7 @@ npx tsc -p tsconfig.dts.json          # emits .ds-sync/types/ (gitignored)
 Then regenerate `cfg.dtsPropsFor` from those declarations. `tsconfig.dts.json`
 is committed at the repo root. Extraction detail: the generator matches
 `export declare function Name(props: {…})`; **`Edu` destructures its params**
-(`function Edu({ children }: {…})`) so it is hand-written in the config. Any
+(`function Edu({ children }: {…})`) so it's hand-written in the config. Any
 future destructured component needs the same treatment.
 
 The generated bodies map `ComponentChildren` → `React.ReactNode` and
@@ -135,7 +135,7 @@ started destructuring and needs hand-writing too.
 
 ## CSS entry must be a concatenation, not an import list
 
-The converter appends `cfg.cssEntry` **raw** — it does not follow `@import`. An
+The converter appends `cfg.cssEntry` **raw** — it doesn't follow `@import`. An
 entry file containing `@import "../src/styles/tokens.css"` ships an
 unresolvable import and silently loses every token. `.design-sync/ds-entry.css`
 is therefore GENERATED by `.design-sync/build-css-entry.sh`, which cats
@@ -144,7 +144,7 @@ is therefore GENERATED by `.design-sync/build-css-entry.sh`, which cats
 `base.css` matters because `src/ui` components apply `.t-data` / `.t-label` /
 `.t-num` / `.hit` by class name; without it they render unstyled.
 
-## Preview cards render on the console's own canvas — do not lose this
+## Preview cards render on the console's own canvas — don't lose this
 
 The generated card template ends its `<head>` with
 `<style>body{margin:0;padding:24px;background:#fff}</style>`, emitted **after**
@@ -163,7 +163,7 @@ Symptom if it regresses: cards go white and the blank count jumps.
 ## Reading the render check
 
 `[RENDER_BLANK]` is a **PNG-size heuristic** (<5KB), and a uniformly dark card
-compresses just as small as a uniformly white one. It cannot tell "broken" from
+compresses just as small as a uniformly white one. It can't tell "broken" from
 "correctly dark and sparse". Look at `_screenshots/contact-sheet-*.png` before
 believing it.
 
@@ -179,15 +179,15 @@ deferred it.
 
 - **Copy churn**: `.prompt.md` files quote JSDoc, which drifts. Previews are
   floor cards, so no copy is baked into a card.
-- **`sourceKeys` did not move across the React port**, so the driver reported
-  22 verified-by-upload and graded nothing. That is the trust model working as
+- **`sourceKeys` didn't move across the React port**, so the driver reported
+  22 verified-by-upload and graded nothing. That's the trust model working as
   designed — grades follow authored previews and preview-affecting config, not
   DS source edits — but it does mean a source rewrite this large ships without
   re-grading. Read the contact sheets yourself when the source has churned.
-- **`dtsPropsFor` is a snapshot.** It does not track prop changes. Re-emit
+- **`dtsPropsFor` is a snapshot.** It doesn't track prop changes. Re-emit
   declarations and regenerate it on every re-sync, or contracts go stale
   silently — the build will NOT warn.
-- **`.ds-sync/scratch/`** is a leftover preact-era node_modules and is no longer
+- **`.ds-sync/scratch/`** is a leftover Preact-era node_modules and is no longer
   used — `--node-modules ./node_modules` is the repo's own now. Safe to delete.
 - **Preview authoring is the standing offer**: all 22 ship floor cards. Any
   re-sync can author previews incrementally; authored files live in
