@@ -603,7 +603,10 @@ A hint doesn't fail the build. But each pull request must add its own line.
 - The command `ls scripts/deadexports.mjs scripts/layercheck.mjs scripts/copycheck.mjs scripts/verify.mjs scripts/overlaycheck.mjs scripts/faceprobe.mjs` shows that each file is absent.
 - The command `ls scripts/lib/baseline.mjs scripts/lib/imports.mjs scripts/deadcss.mjs scripts/components.mjs scripts/domsnap.mjs` shows that each file is present.
 - `npm run check` gives exit code 0.
-- `node scripts/copycatalog.mjs` reports `496 coined strings · 1171 product keys` and gives exit code 0.
+- `node scripts/copycatalog.mjs` reports `524 coined strings · 1171 product keys` and gives exit code 0.
+  The first number counts the `text`, `one` and `other` fields in `src/copy/*.json`, so it rises whenever the console coins a string.
+  The earlier figure of 496 was correct at commit `1961a22` and the catalog has grown since.
+  Read the number as a record of the day it was taken, not as a target.
 - `npm run jscpd` reports 3 duplicates at 0.19%.
 - The command `git log --oneline main -- scripts/checks.mjs` shows the order. Each new tool line comes at least one merge before the deletion of its old tool line.
 
@@ -676,7 +679,10 @@ This pull request is the only owner of `design/ARCHITECTURE.md` in this wave.
 This pull request deletes 784 lines. It also deletes `design/copy-baseline.json`.
 That file holds only `_areas`. It hides nothing today.
 
-It adds `scripts/copycatalog.mjs`. The new file has 84 lines.
+It adds `scripts/copycatalog.mjs`. The new file has 115 lines.
+The estimate of 84 was written before the file existed and was too low.
+The five checks below are 60 lines of the total.
+The rest is the header, the normaliser it shares with the old script, and the failure messages, which name the fix rather than the fault.
 The file tests only what the program doesn't test at run time:
 
 1. The shape of each entry.
@@ -858,12 +864,13 @@ This is the section to scrutinise. It hides nothing.
 
 ### Losses that are acceptable
 
-**Lowercase words outside JSX text.**
-With the `no-restricted-syntax` rule, `<span>keep</span>` still gives an error.
-But `title="keep"`, `toast("saved")`, and `{cond ? "keep" : "drop"}` don't give an error.
-The word rules apply to each position in `mode:"all"`.
-`src/copy/*.json` holds 452 strings for the screen. 53 of them have this shape.
-A measurement of the alternative gives 254 findings, not 27. Almost each is an enumeration value.
+**Lowercase words outside a copy position.**
+A third `no-restricted-syntax` selector now covers the copy-carrying attributes and the component copy props,
+so `title="keep"` and `<EmptyState label="keep" />` give an error.
+The same selector reads a `camelCase` word, and the JSX-text selector now reads one too.
+Applying all three to the whole tree gives 0 findings, so they cost nothing to adopt.
+`toast("saved")` and `{cond ? "keep" : "drop"}` still don't give an error.
+Dropping the identifier word rule instead of adding the selectors gives 19 findings, and each one is an enumeration value or a field name.
 `scripts/copycatalog.mjs` still controls the registration of such a string.
 The `what: Key` type is the general answer for a property.
 
@@ -878,8 +885,9 @@ It ignores each other attribute on a DOM element. It does this before it reads t
 A test confirms that `<span aria-valuetext="3 of 8" />` gives no error.
 No file uses the four missing attributes today.
 The command `grep -rn 'aria-description\|aria-placeholder\|aria-valuetext\|aria-roledescription' src` gives no result.
-But the loss becomes permanent.
-A second `no-restricted-syntax` selector corrects this. It costs three lines.
+A second `no-restricted-syntax` selector corrects this and is now in `eslint.config.js`.
+`scripts/fixtures/eslint/aria.tsx` holds an untraced sentence in each of the four attributes and a `t()` call in each of the same four.
+`scripts/eslintcopy.test.mjs` asserts that eslint reports the first four and nothing else.
 
 **Sentence reconstruction.**
 `scripts/copycheck.mjs:410-425` builds a full sentence from `<>adds to <Skey/> of {ref}</>`.
@@ -896,6 +904,24 @@ Nothing uses either part.
 **The `@copy-strict` marker.**
 Its two files are `src/tools/lorebooks/data.ts` and `src/tools/presets/data.ts`.
 Neither file holds an English string. Thus the marker does nothing today.
+The gap it guarded against is real all the same.
+`eslint-plugin-i18next` pushes a skip for everything inside an ALL-CAPS `VariableDeclarator`, at `node_modules/eslint-plugin-i18next/lib/rules/no-literal-string.js:334`,
+The copy tables in those two files sit under ALL-CAPS names.
+`eslint.config.js` names the two files and adds a selector that reads any literal holding two words inside one of them.
+That selector gives 0 findings on those files today.
+Applying it to the whole of `src/` gives 35 findings, and 29 of them are Tailwind class lists or key notation, so it stays scoped to the two files.
+The six real ones are the facet and grouper labels in `src/tools/memory/model/facets.ts`, which `scripts/copycheck.mjs` never read either.
+
+**User-visible literals inside a test file.**
+`scripts/copycheck.mjs` scanned `src/**/*.test.ts` and `src/**/*.test.tsx`.
+The eslint block for those paths switches both copy rules off.
+Turning them on gives 844 findings, and they're test data rather than copy.
+The exemption stays. `src/shell/toast.test.ts` no longer carries a comment that depends on the old behaviour.
+
+**A named message when the catalog won't load.**
+`scripts/copycheck.mjs` caught a read or parse failure and exited 2.
+`scripts/copycatalog.mjs` lets the error throw.
+Either way the check exits non-zero and names the file, so a compromised check still can't read as a passing one.
 
 **Three deadexports findings and the count for each directory.**
 knip counts an exported type as used when a used export names it in a signature.
