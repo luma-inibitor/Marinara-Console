@@ -43,5 +43,6 @@ export const checks = [
   // Duplication
   "jscpd",
   // Design system
+  "csslint",
   "typescale",
 ];

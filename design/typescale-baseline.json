@@ -71,7 +71,7 @@
     ".rail-glyph → 16px"
   ],
   "src/tools/memory/components/NoteRef.css": [
-    "this file owns the default. */ .notelink → 12px"
+    ".notelink → 12px"
   ],
   "src/tools/memory/detail/MemoryDetail.css": [
     ".mdc-record → 10.5px",
@@ -96,21 +96,9 @@
     ".es-body → 12.5px",
     ".es-title → 14px"
   ],
-  "src/ui/FacetDrawer.css": [
-    ".facet-chip → 11px",
-    ".facet-chip[aria-pressed=\"true\"]::before → 10px",
-    ".facet-n → 10px"
-  ],
-  "src/ui/IconButton.css": [
-    ".icon-btn → 16px"
-  ],
   "src/ui/JsonView.css": [
     ".jn-count → 9.5px",
     ".jsonview → 11px"
-  ],
-  "src/ui/Picker.css": [
-    ".picker-label → 12px",
-    ".picker-opt.is-on::before → 11px"
   ],
   "src/ui/RawJson.css": [
     ".rawjson summary::before → 10px"
