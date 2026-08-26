@@ -706,13 +706,15 @@ The deletion leaves a reference to `scripts/deadexports.mjs` in three files this
 Delete the row there.
 `scripts/lib/baseline.mjs:50` gives `deadexports src/ui` as an example inside a comment.
 `fix/baseline-ghosts` and `chore/deadcss-drift` both write to that file, so the correction belongs to whichever lands first.
-`linkcheck` reports none of the three, because each reference is inline code rather than a Markdown link.
+`linkcheck` reports neither Markdown reference, because each one is inline code rather than a Markdown link.
+It never opens `scripts/lib/baseline.mjs`, because `package.json:23` hands it `README.md`, `CLAUDE.md`, `BACKLOG.md` and `design/*.md` only.
 
-This pull request adds `scripts/publicexports.mjs` and the `publicexports` npm script.
+This pull request adds no check to replace the listing `deadexports` printed.
+`deadexports` named every baseline finding on every run and suppressed only the exit code.
 knip prints nothing about an export that carries a `/** @public */` tag.
-Neither `--tags=-public` nor `--tags=+public` brings such an export back into the report.
-`deadexports` listed every baseline finding on each run and suppressed only the exit code.
-`publicexports` restores that visibility for the tagged exports. The script is an inventory and always exits 0.
+`npx knip --exports --tags=+public` prints nothing either, so knip offers no way to list the tagged exports.
+A reader who wants the list runs `grep -rn -A1 '@public' src`, which prints each tag with the line below it.
+The tree carries seven tags today, in `src/ui/ListGroup.tsx`, `src/ui/icons.tsx`, `src/ui/index.ts` and `src/tools/memory/detail/model.ts`.
 
 This pull request also corrects `docs/todo/components.md:184-185`.
 Both statements there are wrong.

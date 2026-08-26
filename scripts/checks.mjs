@@ -39,8 +39,6 @@ export const checks = [
   // Dead code
   "deadcss",
   "knip",
-  // The `/** @public */` exemptions knip honours: `publicexports` always exits 0.
-  "publicexports",
   // Duplication
   "jscpd",
   // Design system

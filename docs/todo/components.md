@@ -267,7 +267,7 @@ The two mechanisms also differ in who may grant the exemption and in how visible
 An entry in `design/deadexports-baseline.json` took a `--adopt` run, a line in the pull request body,
 and a reviewer reading that diff. That file also carried an integrity field. A `/** @public */` tag
 is one line directly before the symbol, anyone can add it alone, and it leaves no artifact to review.
-`npm run publicexports` lists every tagged export, so that class of exemption stays readable.
+A reader lists that class of exemption with `grep -rn -A1 '@public' src`, so it stays readable on demand.
 Nothing lists the exported types that a signature hides.
 
 **Caution 2. Don't un-export `SheetHead`.**
