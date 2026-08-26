@@ -33,6 +33,7 @@
 
 # schema: memory entry 
 
+```jsonc
 {
   "id": "char_mira_solace",          // string, lowercase snake_case, 1–120 chars
   "title": "Mira Solace",            // string 1–240, OPTIONAL
@@ -55,9 +56,11 @@
   "extractionFingerprint": { /* source notes only */ },
   "extracted": true                  // legacy v1 flag, OPTIONAL
 }
+```
 
 # schema: memory entry section
 
+```jsonc
 {
   "text": "…",                        // string 1–24000, user-editable prose
   "updatedAt": "2026-08-22T10:05:00.000Z",
@@ -72,5 +75,6 @@
     { "owner": "manual", "text": "…", "updatedAt": "…" }
   ]
 }
+```
 
 

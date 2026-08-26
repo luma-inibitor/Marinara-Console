@@ -21,6 +21,7 @@
     "domsnap": "node scripts/domsnap.mjs",
     "faceprobe": "node scripts/faceprobe.mjs",
     "lint": "eslint src",
+    "prose": "vale --no-global .",
     "check": "npm run typecheck && npm run lint && npm test && npm run layercheck && npm run copycheck && npm run deadexports && npm run deadcss && npm run typescale && npm run build",
     "check:browser": "npm run verify && npm run overlaycheck"
   },

@@ -1,0 +1,12 @@
+# Gerunds and present participles, which ASD-STE100 does not allow.
+#
+# Gotcha: the project vocabulary does not reach a sequence check. A word in
+# accept.txt still reports here, and the only way to exempt one is to edit
+# this file.
+extends: sequence
+message: "'%s' is a gerund or present participle; prefer a simple tense."
+link: https://www.asd-europe.org/standards-specifications/simplified-technical-english/
+level: suggestion
+tokens:
+  - tag: VBG
+    target: true

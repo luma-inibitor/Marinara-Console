@@ -1,0 +1,11 @@
+# Perfect tenses, which ASD-STE100 does not allow.
+extends: sequence
+message: "Perfect tense with '%s'; prefer the simple past."
+link: https://www.asd-europe.org/standards-specifications/simplified-technical-english/
+level: suggestion
+tokens:
+  - pattern: (?i)has|have|had
+  - tag: VBN
+    # 1, to let an adverb sit between the two: "have already caught".
+    skip: 1
+    target: true
