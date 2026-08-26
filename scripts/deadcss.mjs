@@ -37,10 +37,8 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE_PATH = path.join(ROOT, "design", "deadcss-baseline.json");
 const flags = new Set(process.argv.slice(2).filter((a) => a.startsWith("--")));
 
-// A path argument scans that tree instead of src/, which is how the miniature
-// trees under scripts/fixtures/deadcss are read. The ratchet is scoped to the
-// same path below, so a fixture run neither calls the real baseline's entries
-// vanished nor prunes them away.
+// A path argument scans that tree instead of src/. The ratchet is scoped to the
+// same path, so a fixture run leaves the real baseline alone.
 const [arg] = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const SCAN = path.resolve(ROOT, arg ?? "src");
 const scanned = path.relative(ROOT, SCAN).split(path.sep).join("/");
@@ -54,8 +52,8 @@ if (!fs.existsSync(SCAN)) {
 // component is added and silently stops scanning where the dead rules are.
 
 // Composed prefixes and their value domains, read off the types in source.
-// Add an entry here whenever a new `prefix-${...}` appears in the JSX — the
-// drift test below fails the run rather than trusting anyone to remember.
+// Add an entry whenever a new `prefix-${...}` appears in a class position; the
+// drift test below fails the run rather than relying on memory.
 const DOMAINS = {
   "type-": ["character", "relationship", "timeline_event", "thread", "world", "tone", "scene", "source"],
   "dec-": ["keep", "drop", "undecided"],
