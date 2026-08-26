@@ -55,7 +55,16 @@ function layerOf(rel) {
 function openProject(roots) {
   const dir = mkdtempSync(join(tmpdir(), "layercheck-"));
   const config = join(dir, "tsconfig.json");
-  writeFileSync(config, JSON.stringify({ extends: join(ROOT, "tsconfig.json"), include: roots }));
+  writeFileSync(
+    config,
+    // `typeRoots` is repeated because it resolves against the config file, and
+    // this config is in a temp directory with no node_modules beside it.
+    JSON.stringify({
+      extends: join(ROOT, "tsconfig.json"),
+      compilerOptions: { typeRoots: [join(ROOT, "node_modules", "@types")] },
+      include: roots,
+    })
+  );
   const api = new API({ cwd: ROOT });
   const project = api.updateSnapshot({ openProjects: [config] }).getProjects()[0];
   return {
