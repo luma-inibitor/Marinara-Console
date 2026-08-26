@@ -1,0 +1,63 @@
+name: Prose
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+concurrency:
+  group: prose-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  VALE_VERSION: 3.18.0
+  VALE_SHA256: a6f71a75a12fe689345b754f2412b90367fe33648abb7d200fa19eaadc2dbf6d
+
+jobs:
+  vale:
+    runs-on: ubuntu-latest
+
+    # Advisory only. Vale reports house-style suggestions on the docs; it never
+    # blocks a merge. Read the job summary, act on what's worth acting on.
+    continue-on-error: true
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Vale
+        run: |
+          set -euo pipefail
+          archive="vale_${VALE_VERSION}_Linux_64-bit.tar.gz"
+          curl -fsSL -o "$archive" \
+            "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/${archive}"
+          echo "${VALE_SHA256}  ${archive}" | sha256sum --check --strict
+          tar -xzf "$archive" vale
+          sudo install -m 0755 vale /usr/local/bin/vale
+          vale --version
+
+      - name: Sync styles
+        run: vale --no-global sync
+
+      - name: Lint prose
+        run: |
+          set -uo pipefail
+          vale --no-global --output=line . | tee vale.out
+          status=${PIPESTATUS[0]}
+          {
+            echo '## Vale'
+            if [ -s vale.out ]; then
+              echo
+              echo '```'
+              cat vale.out
+              echo '```'
+            else
+              echo
+              echo 'No alerts.'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
