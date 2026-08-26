@@ -5,7 +5,6 @@ import tailwindcss from "@tailwindcss/vite";
 const bundlerWarnings: string[] = [];
 
 // A throw inside onwarn is swallowed by rolldown: the build still exits 0.
-// The warnings have to be collected there and raised after the bundle closes.
 function fatalBundlerWarnings(): Plugin {
   return {
     name: "mc:fatal-bundler-warnings",
@@ -26,8 +25,7 @@ export default defineConfig({
   publicDir: false,
   build: {
     outDir: "dist",
-    // 700 clears today's 684 kB bundle. The reporter plugin's chunk-size line
-    // arrives at onwarn with no warning code, so a lower limit fails the build.
+    // 700 clears today's 684 kB bundle. A lower limit fails the build.
     chunkSizeWarningLimit: 700,
     rolldownOptions: {
       onwarn(warning) {
