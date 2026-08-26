@@ -12,8 +12,8 @@ import {
   STATUS_LABEL, STATUS_HINT, POS_COMPACT, POS_FULL, ADVANCED_FIELDS,
   statusOf, entryTokens,
 } from "./data";
-import { Chip } from "../../ui";
-import { joinList, t } from "../../copy";
+import { Chip, SaveBar } from "../../ui";
+import { t } from "../../copy";
 import { Fullscreen, ICON_SIZE, Remove } from "../../ui/icons";
 
 export interface FullscreenCtx { id: string; field: "content" | "description"; }
@@ -200,49 +200,7 @@ export function EntryDrawer(props: {
           </>
         ), !!err("name"))}
 
-      {draft && <SaveBar draft={draft} onSave={props.onSave} />}
-    </div>
-  );
-}
-
-/** Sticky commit bar — the only thing in this tool that writes. */
-function SaveBar(props: { draft: Draft<Entry>; onSave: () => Promise<boolean> }) {
-  const d = props.draft;
-  if (d.conflict) {
-    return (
-      <div className="savebar has-conflict" role="alertdialog">
-        <p className="t-label">{t("lorebooks.record.conflictTitle")}</p>
-        <p className="prose-note">
-          {t("lorebooks.entry.conflictBody", {
-            detail: d.conflict.fields.length > 0
-              ? t("lorebooks.record.conflictFields", {
-                  count: d.conflict.fields.length,
-                  list: joinList(d.conflict.fields),
-                })
-              : "",
-          })}
-        </p>
-        <div className="savebar-acts">
-          <button className="dbtn" onClick={d.takeTheirs}>{t("lorebooks.record.takeTheirs")}</button>
-          <button className="dbtn is-primary" onClick={d.keepMine}>{t("lorebooks.record.keepMine")}</button>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className={`savebar ${d.dirty ? "is-dirty" : ""}`}>
-      <span className="savebar-state t-data">
-        {d.saving ? t("lorebooks.record.saving")
-          : d.error ? <span className="is-err">{d.error}</span>
-          : d.dirty ? t("lorebooks.record.unsavedChanges", { count: d.dirtyFields.length })
-          : t("lorebooks.record.noChanges")}
-      </span>
-      <div className="savebar-acts">
-        <button className="dbtn" disabled={!d.dirty || d.saving} onClick={d.cancel}>{t("lorebooks.record.cancel")}</button>
-        <button className="dbtn is-primary" disabled={!d.dirty || d.saving} onClick={() => void props.onSave()}>
-          {d.saving ? t("lorebooks.record.saving") : t("lorebooks.record.saveChanges")}
-        </button>
-      </div>
+      {draft && <SaveBar draft={draft} onSave={props.onSave} conflictBody="lorebooks.entry.conflictBody" />}
     </div>
   );
 }
