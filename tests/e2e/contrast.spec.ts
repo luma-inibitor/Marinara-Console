@@ -106,7 +106,7 @@ const leaf = (target: string) => target.split(">").pop()!.trim().replace(/:nth-c
 function measurable({ targets, exempt }: { targets: string[]; exempt: string[] }): boolean[] {
   return targets.map((target) => {
     const el = document.querySelector(target);
-    return !!el && window.pageHelpers.vis(el) && !exempt.some((sel) => el.matches(sel));
+    return !!el && window.mcHelpers.vis(el) && !exempt.some((sel) => el.matches(sel));
   });
 }
 
@@ -116,7 +116,7 @@ function measureInk({ exemptions, unresolved }: {
   exemptions: Exemptions;
   unresolved: { target: string; label: string }[];
 }): { findings: string[]; unlisted: string[] } {
-  const { vis } = window.pageHelpers;
+  const { vis } = window.mcHelpers;
   const findings: string[] = [];
   const unlisted: string[] = [];
 
