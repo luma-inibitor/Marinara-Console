@@ -116,8 +116,15 @@ Density modes via `data-density` on `<html>`: `comfortable` (default) and `compa
 - One primary tap target per row. Primary controls ≥44px; secondary chips may be
   smaller but spaced (≥8px) with padded hit areas.
 - Reuse the engine's own UI copy (en.json vocabulary) when a concept exists upstream.
-- Field-level PATCH autosave with a visible save state (`Autosaving… / Saved /
+- Field-level PATCH autosave with a visible save state (`Saving / Saved /
   Failed`); debounce ~700ms, flush on blur. Never send fields the user didn't touch.
+  The in-progress word is the catalog's `memoryvault.saving`, not the coined
+  "Autosaving…" this rule used to mandate: the console had declined the
+  catalog string on the grounds that a debounced ledger write promises
+  something different from a save the user pressed, and that distinction was
+  judged not worth a coined word (owner-decided 2026-08-24). The longer string
+  also overflowed the review dock's status row, which is the tightest place
+  the pill has to fit.
 - **Undo over confirm**: destructive-but-recoverable actions get soft-delete + undo
   toast. `confirm()` only for genuinely irreversible operations.
 - Numbers shown are computed from real data, engine-faithful (`Math.ceil(len/4)` for
@@ -199,10 +206,33 @@ exists, use it; if it needs a new one, add it here in the same change.
   a *persisted local ledger* (server-side, keyed by engine target), separate from
   transmission: nothing is sent until an explicit Apply over everything decided,
   so a review resumes across days and devices. Undo stack over the ledger.
-- **Facet sheet** — multi-select facets grouped by provenance (computed signals /
-  from the model / yours), so a heuristic and a schema field never carry the same
-  visual authority. Counts exclude the facet's own filter ("what would I get if I
-  toggled this"). 3-5 quick chips stay inline; the sheet holds the long tail.
+- **Facet sheet** (`src/tools/memory/review/FilterSheet.tsx`) — multi-select
+  facets, ordered by how often they are reached for rather than by provenance:
+  the exception filter ("has quality flags", one toggle plus a drill-in to the
+  named flags) · the short taxonomies as tiles (memory type, decision) · the
+  long tail behind search (sources) and behind a disclosure (the model's
+  enums). Provenance grouping — computed / from the model / yours — was the
+  earlier shape and is retired here: it answered "who asserted this", a
+  question about trust, while a reviewer opening the filter has a question
+  about narrowing. Authority still separates the console's own signals from
+  the model's, by level rather than by a labelled block.
+  Counts exclude the facet's own filter ("what would I get if I toggled
+  this"), and two facets narrowing one set exclude each other (`countsIgnore`
+  — flags ↔ anyFlag). **A facet lists its whole vocabulary, always**, from a
+  declared `domain` or from the unfiltered rows: a value at zero renders
+  disabled rather than vanishing, because an axis that shrinks as you narrow
+  it tells the reviewer the missing choices do not exist (owner-decided
+  2026-08-24 — the risk facet was hiding "high" on a batch with none, and the
+  decision facet was offering nothing but "undecided").
+- **Arrange rail** (phone) — one row: filter as glyph + active count, then
+  group and sort as glyph + value sharing the leftover width. Active filters
+  sit in a removable-chip track beneath it (DESIGN.md §4). The phone's console
+  header carries nothing else: the title, generation line and decision meter
+  were three rows of chrome above the first claim, and the meter's keep/drop
+  was the dock's keep/drop said twice. The **dock is the phone's status
+  surface** in exchange — always mounted, carrying the tally, the save state,
+  refresh and undo at one shared height, with the meter as its bottom edge and
+  the apply row appearing only once something is decided.
 - **Icon vocabulary** (`@tabler/icons-preact`; memory tool: `icons.tsx`) — icons
   are reserved silhouette families: the decision family = decision states, the
   flag = exception flags, files/scripts = content ops (script = whole note,
@@ -443,9 +473,7 @@ including the presets tool.
 | `fuzzyFilter` / `fuzzyScore` | subsequence matching with a score | — |
 | `Sheet` / `Modal` | a layered surface and its dismissal contract | — |
 | `SheetHead` | a sheet's sticky title row | — |
-| `Picker` | choose one, short fixed list, bottom sheet | `SearchDisclosure` if long |
-| `SearchDisclosure` | choose one, long list, anchored popover | `Picker` on a thumb rail |
-| `FacetDrawer` | every facet in a slice, with counts, as toggles | — |
+| `SearchDisclosure` | choose one, long list, anchored popover | — |
 | `ListGroup` / `CollapseButton` | collapse behavior and its accessible name | — |
 | `MiddleTruncate` | a one-line title that elides its middle | a plain ellipsis where the end is what distinguishes |
 | `DetailSection` | a §section heading and its body | — |

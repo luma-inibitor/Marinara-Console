@@ -1,0 +1,130 @@
+/* The filter sheet. Three levels of prominence — the flag toggle, the pinned
+   taxonomies, the disclosed tail — read as three because they differ in
+   density, not because rules are drawn between them.
+
+   One rule governs the whole sheet: the count on a row's right edge is always
+   `.fs-n`, always mono, always in the same column position, so "how many would
+   this give me" is answered in one place at every level. */
+
+.filter-sheet { display: flex; flex-direction: column; }
+
+/* ── head ── */
+.fs-back { display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap-2);
+  padding: 0 4px 0 0; background: none; border: 0; color: var(--accent); cursor: pointer; }
+.fs-meta { margin-left: auto; font-size: var(--fs-label); color: var(--text-dim); white-space: nowrap; }
+.fs-clear { min-height: var(--tap-2); padding: 0 6px; background: none; border: 0;
+  color: var(--text-dim); cursor: pointer; }
+.fs-clear:hover { color: var(--text); }
+
+.fs-body { flex: 1; min-height: 0; overflow-y: auto; }
+
+/* ── the flag row ──
+   Two targets in one band: the label toggles "any flag", the count drills in.
+   The divider between them is the only thing that says so, so it stays. */
+.fs-any { display: flex; align-items: stretch; border-bottom: var(--hairline); }
+.fs-any.is-on { background: var(--flag-wash); }
+.fs-any-t { flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px;
+  min-height: var(--tap); padding: 6px var(--s2) 6px var(--s3);
+  background: none; border: 0; cursor: pointer; text-align: left; }
+.fs-any-i { display: inline-flex; color: var(--flag); flex: none; }
+.fs-any-l { flex: none; color: var(--text-dim); }
+.fs-any.is-on .fs-any-l { color: var(--text); }
+.fs-drill { display: flex; align-items: center; gap: 5px; min-height: var(--tap);
+  padding: 6px var(--s3); background: none; border: 0; border-left: var(--hairline);
+  color: var(--text-dim); cursor: pointer; }
+.fs-drill:hover { color: var(--text); }
+
+/* The unnarrowed summary is a secondary reading — it says what the filter
+   would accept, and must never crowd out the label it sits beside. */
+.fs-sum { flex: 1; min-width: 0; font-size: var(--fs-label); color: var(--text-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── plain rows: the source drill-in and the More disclosure ── */
+.fs-row { display: flex; align-items: center; gap: 9px; width: 100%;
+  min-height: var(--tap); padding: 6px var(--s3); background: none; border: 0;
+  border-bottom: var(--hairline); color: var(--text-dim); cursor: pointer; text-align: left; }
+.fs-row:hover { background: var(--surface-2); }
+.fs-row-l { flex: none; color: var(--text); }
+.fs-more { background: var(--canvas); border-top: var(--hairline); }
+
+/* ── section heads inside the sheet ── */
+.fs-sub { display: flex; align-items: baseline; gap: 7px;
+  padding: 10px calc(var(--s3) + var(--fs-trail)) 5px var(--s3); }
+.fs-sub .fs-row-l { flex: 1; }
+
+/* ── the count column ──
+   The header comment above promises every count shares one column position.
+   It did not: the count landed wherever whatever followed it left room, so
+   "sources 6" sat 22px left of "memory type 6" directly beneath it, and the
+   More-filters count sat against its own label instead of the right edge.
+
+   The slot is what makes the promise true. A row with a drill-in chevron and
+   a row without now reserve the same trailing width, so the numbers line up
+   whether or not the row leads anywhere. `margin-left: auto` covers the rows
+   that have no flexible sibling to push the count over. */
+.fs-n { flex: none; margin-left: auto; font-size: var(--fs-label); color: var(--text-dim);
+  font-variant-numeric: tabular-nums; }
+.fs-n.is-on { color: var(--accent); }
+.fs-chev { flex: none; }
+/* chevron + the row gap it sits behind */
+.filter-sheet { --fs-trail: 22px; }
+
+/* ── checkable rows ── */
+.fs-checks { display: grid; grid-template-columns: 1fr 1fr; }
+.fs-check { display: flex; align-items: center; gap: 9px; width: 100%;
+  min-height: var(--tap-2); padding: 6px var(--s3); background: none; border: 0;
+  border-bottom: var(--hairline); cursor: pointer; text-align: left; }
+.fs-checks .fs-check { border-right: var(--hairline); }
+.fs-check:hover:not(:disabled) { background: var(--surface-2); }
+.fs-check.is-on { background: var(--accent-wash); }
+.fs-check:disabled { opacity: 0.45; cursor: not-allowed; }
+.fs-check-l { flex: 1; min-width: 0; font-size: var(--fs-data-s); color: var(--text-dim);
+  line-height: 1.3; overflow-wrap: anywhere; }
+.fs-check.is-on .fs-check-l { color: var(--text); }
+
+/* ── the toggle mark ──
+   A box, never a dot: these are multi-select, and the shape has to say so
+   before the accent does (DESIGN.md §1 — color is never the only carrier). */
+.fs-box { flex: none; width: 14px; height: 14px; border-radius: 3px;
+  border: 1px solid var(--edge-strong); display: inline-flex;
+  align-items: center; justify-content: center; color: var(--accent-ink); }
+.fs-box.is-on { border-color: var(--accent); background: var(--accent); }
+.fs-box.is-flag.is-on { border-color: var(--flag); background: var(--flag); }
+/* Partial: named flags are chosen, so the set IS narrowed, but "any" is not
+   what is on. Neither empty nor ticked would be true. */
+.fs-dash { width: 8px; height: 2px; border-radius: 1px; background: var(--flag); }
+.fs-box.is-flag:has(.fs-dash) { background: transparent; border-color: var(--flag); }
+
+/* ── tiles ── */
+.fs-tiles-w { border-bottom: var(--hairline); }
+/* Two across, not three. At 390px a third column leaves ~105px, and the
+   longest type names — relationship, timeline event — break mid-word in it.
+   The tile grid exists so the vocabulary is readable at a glance; a column
+   that hyphenates the vocabulary defeats it. */
+.fs-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
+  padding: 0 var(--s3) 9px; }
+.fs-tile { display: flex; align-items: center; gap: 5px; min-height: var(--tap-2);
+  padding: 3px 6px; background: var(--canvas); border: 1px solid var(--edge);
+  border-radius: 4px; cursor: pointer; text-align: left; }
+.fs-tile:hover:not(:disabled) { border-color: var(--edge-strong); }
+.fs-tile.is-on { background: var(--accent-wash); border-color: var(--accent); }
+.fs-tile:disabled { opacity: 0.45; cursor: not-allowed; }
+.fs-tile-l { flex: 1; min-width: 0; font-size: var(--fs-label); color: var(--text-dim);
+  line-height: 1.25; overflow-wrap: anywhere; }
+.fs-tile.is-on .fs-tile-l { color: var(--text); }
+
+/* ── source search ── */
+.fs-search { padding: var(--s2) var(--s3); border-bottom: var(--hairline); }
+.fs-empty { padding: 20px var(--s3); font-size: var(--fs-data); }
+
+/* ── foot ──
+   The running result sits with the Done that dismisses the sheet, so the
+   selection states its effect at the moment you leave it. */
+.fs-foot { display: flex; align-items: center; gap: var(--s2);
+  padding: var(--s2) var(--s3); border-top: var(--hairline); background: var(--canvas); }
+.fs-shown { flex: 1; font-size: var(--fs-data-s); color: var(--text);
+  font-variant-numeric: tabular-nums; }
+.fs-done { min-height: var(--tap-2); padding: 0 var(--s3);
+  border: 1px solid var(--edge-strong); border-radius: var(--r-s);
+  background: var(--surface-3); color: var(--text); cursor: pointer; }
+.fs-done:hover { border-color: var(--accent); }

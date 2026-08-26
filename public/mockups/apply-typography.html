@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apply sheet — text size options</title>
+<link rel="stylesheet" href="kit.css">
+<!-- Load the app's real fonts. Without these the page falls back to whatever
+     the browser has, and then it is showing you the wrong fonts. These paths
+     only work on the vite port, so open this page at /public/mockups/ — the
+     other address has the stylesheet but not the fonts. -->
+<link rel="stylesheet" href="/node_modules/@fontsource-variable/archivo/wdth.css">
+<link rel="stylesheet" href="/node_modules/@fontsource-variable/jetbrains-mono/index.css">
+<link rel="stylesheet" href="/node_modules/@fontsource-variable/source-sans-3/index.css">
+<style>
+  /* the list of every text size we have today */
+  .lad { display: grid; gap: 0; border: 1px solid var(--edge-strong); border-radius: var(--r-m); overflow: hidden; }
+  .lad-r { display: flex; align-items: baseline; gap: 14px; padding: 9px 12px; border-bottom: 1px solid var(--edge); }
+  .lad-r:last-child { border-bottom: none; }
+  .lad-r.is-gap { background: color-mix(in srgb, var(--flag) 9%, transparent); }
+  .lad-k { flex: 0 0 128px; font-family: var(--font-data); font-size: 10.5px; color: var(--text-faint); letter-spacing: .06em; }
+  .lad-v { flex: 1; min-width: 0; color: var(--text); }
+  .lad-n { flex: 0 0 44px; text-align: right; font-family: var(--font-data); font-size: 10.5px; color: var(--text-faint); }
+
+  /* the example: one apply sheet, at phone width */
+  .sh { width: 100%; max-width: 486px; background: var(--surface-1);
+    border: 1px solid var(--edge-strong); border-radius: var(--r-l); overflow: hidden; }
+  .sh-h { display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+    border-bottom: 1px solid var(--edge); font-family: var(--font-label);
+    font-size: 9.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--text); }
+  .sh-h span { margin-left: auto; color: var(--text-dim); font-size: 15px; letter-spacing: 0; }
+  .sh-b { padding: 14px; }
+
+  /* the big number — the only thing that changes between examples */
+  .hero { font-family: var(--font-data); font-variant-numeric: tabular-nums;
+    color: var(--text); margin: 0 0 2px; line-height: 1.05; }
+  .hero i { font-style: normal; }
+
+  .acts { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 10px 0 0;
+    font-family: var(--font-data); font-size: 11px; color: var(--text-dim); }
+  .acts b { color: var(--text); font-weight: 700; }
+
+  .zone { margin-top: 22px; border-left: 2px solid var(--danger); padding-left: 12px; }
+  .zone-h { font-family: var(--font-label); font-size: 9.5px; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--text); margin: 0; }
+  .zone-w { font-family: var(--font-prose); font-size: 14px; line-height: 1.4;
+    color: var(--text-dim); margin: 4px 0 0; }
+  .claim { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--edge); }
+  .claim-t { font-family: var(--font-data); font-size: 11.5px; color: var(--t-char, var(--accent)); }
+  .claim-x { font-family: var(--font-prose); font-size: 14px; line-height: 1.45;
+    color: var(--text-dim); margin: 2px 0 0; }
+
+  .apply { display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; min-height: 44px; margin-top: 22px; border: none; border-radius: var(--r-m);
+    background: var(--accent); color: #0a0f1c; font-family: var(--font-label);
+    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+
+  /* These boxes are 458px because that is how much room the number really
+     gets on the phone. If they shrank on a narrow screen the text would wrap
+     sooner and the test would be measuring the box instead of the sheet, so
+     they scroll sideways instead. */
+  .ws-wrap { display: flex; flex-wrap: wrap; gap: 18px; overflow-x: auto; }
+  .ws-blk { flex: 0 0 auto; }
+  .ws-k { font-family: var(--font-data); font-size: 10.5px; color: var(--text-faint);
+    letter-spacing: .06em; margin: 0 0 4px; }
+  .ws-k b { color: var(--text-dim); font-weight: 400; }
+  .ws-box { width: 458px; border: 1px solid var(--edge-strong); border-radius: var(--r-m); }
+  .ws-r { display: flex; align-items: baseline; gap: 10px; padding: 7px 12px; border-bottom: 1px solid var(--edge); }
+  .ws-r:last-child { border-bottom: none; }
+  .ws-n { flex: 0 0 42px; font-family: var(--font-data); font-size: 10px; color: var(--text-faint); }
+  .ws-r .hero { margin: 0; flex: 1; min-width: 0; }
+
+  .grid2 { display: grid; gap: 26px; }
+  @media (min-width: 1040px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="mk-page">
+
+  <h1 class="mk-h1">Apply sheet — how big should the number be?</h1>
+  <p class="mk-sub">Pick a size, then pick an arrangement. Every example below is identical except for the number at the top, so that is the only thing you are judging.</p>
+  <div class="mk-band">shown at phone width · 486px · real fonts</div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="mk-sec">
+    <h2 class="mk-h2"><span class="mk-no">§0</span> Every text size we have</h2>
+    <p class="mk-intro">Every text size in the app, biggest first. The thing to notice is the last row: <b>we have nothing bigger than 17px</b>. So the largest thing any screen can say is barely bigger than ordinary body text. That is why the sheet looks flat however you arrange it — there is no big size to reach for.</p>
+
+    <div class="mk-spec">
+      <p class="mk-label">all our text sizes <b>· src/styles/tokens.css</b></p>
+      <div class="lad">
+        <div class="lad-r"><span class="lad-k">--fs-head</span><span class="lad-v" style="font-family:var(--font-label);font-size:17px">Screen headings</span><span class="lad-n">17px</span></div>
+        <div class="lad-r"><span class="lad-k">--fs-title</span><span class="lad-v" style="font-family:var(--font-prose);font-size:15px">Row titles</span><span class="lad-n">15px</span></div>
+        <div class="lad-r"><span class="lad-k">--fs-prose</span><span class="lad-v" style="font-family:var(--font-prose);font-size:14px">Sentences you read</span><span class="lad-n">14px</span></div>
+        <div class="lad-r"><span class="lad-k">--fs-data-l</span><span class="lad-v" style="font-family:var(--font-data);font-size:14px">9 memory writes</span><span class="lad-n">14px</span></div>
+        <div class="lad-r"><span class="lad-k">--fs-data</span><span class="lad-v" style="font-family:var(--font-data);font-size:12.5px">Counts and small print</span><span class="lad-n">12.5</span></div>
+        <div class="lad-r"><span class="lad-k">--fs-data-s</span><span class="lad-v" style="font-family:var(--font-data);font-size:11px">Quieter numbers</span><span class="lad-n">11px</span></div>
+        <div class="lad-r"><span class="lad-k">--fs-label</span><span class="lad-v" style="font-family:var(--font-label);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase">Buttons and tabs</span><span class="lad-n">10.5</span></div>
+        <div class="lad-r"><span class="lad-k">--fs-label-s</span><span class="lad-v" style="font-family:var(--font-label);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase">Section headings</span><span class="lad-n">9.5px</span></div>
+        <div class="lad-r is-gap"><span class="lad-k">— nothing —</span><span class="lad-v" style="color:var(--text-dim)">no bigger size exists</span><span class="lad-n">—</span></div>
+      </div>
+      <p class="mk-caption">Everything sits between <b>9.5px and 17px</b>. When every size is nearly the same, the only ways left to make something look important are bold and colour. That is the flatness you spotted.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="mk-sec">
+    <h2 class="mk-h2"><span class="mk-no">§1</span> The four sizes</h2>
+    <p class="mk-intro">The arrangement stays the same in all four — number and words on one line. Only the size changes. Look at these on your phone, not on a laptop.</p>
+
+    <div class="grid2">
+
+      <div class="mk-spec">
+        <p class="mk-label">A <b>· what we have now — 14px bold</b></p>
+        <div class="sh">
+          <div class="sh-h">What Apply will send <span>&times;</span></div>
+          <div class="sh-b">
+            <p class="hero" style="font-size:14px;font-weight:700"><i>9</i> memory writes</p>
+            <p class="acts"><b>2</b> new memories<span>·</span><b>4</b> text changes<span>·</span><b>3</b> metadata changes</p>
+            <div class="zone">
+              <h3 class="zone-h">1 dropped claim is needed</h3>
+              <p class="zone-w">A claim you kept depends on it, but Apply honours the drop and leaves it out.</p>
+              <div class="claim">
+                <p class="claim-t">Baker Street — the front room</p>
+                <p class="claim-x">Link the tenant register entry to the Baker Street timeline.</p>
+              </div>
+            </div>
+            <button class="apply">Apply &rsaquo;</button>
+          </div>
+        </div>
+        <p class="mk-caption">This is today. The number is the same size as the sentence three lines below it.</p>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label">B <b>· 24px bold</b></p>
+        <div class="sh">
+          <div class="sh-h">What Apply will send <span>&times;</span></div>
+          <div class="sh-b">
+            <p class="hero" style="font-size:24px;font-weight:700"><i>9</i> memory writes</p>
+            <p class="acts"><b>2</b> new memories<span>·</span><b>4</b> text changes<span>·</span><b>3</b> metadata changes</p>
+            <div class="zone">
+              <h3 class="zone-h">1 dropped claim is needed</h3>
+              <p class="zone-w">A claim you kept depends on it, but Apply honours the drop and leaves it out.</p>
+              <div class="claim">
+                <p class="claim-t">Baker Street — the front room</p>
+                <p class="claim-x">Link the tenant register entry to the Baker Street timeline.</p>
+              </div>
+            </div>
+            <button class="apply">Apply &rsaquo;</button>
+          </div>
+        </div>
+        <p class="mk-caption">Clearly the first thing you read, but still sits comfortably with the rest. The safe choice.</p>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label">C <b>· 32px bold — what I would pick</b></p>
+        <div class="sh">
+          <div class="sh-h">What Apply will send <span>&times;</span></div>
+          <div class="sh-b">
+            <p class="hero" style="font-size:32px;font-weight:700"><i>9</i> memory writes</p>
+            <p class="acts"><b>2</b> new memories<span>·</span><b>4</b> text changes<span>·</span><b>3</b> metadata changes</p>
+            <div class="zone">
+              <h3 class="zone-h">1 dropped claim is needed</h3>
+              <p class="zone-w">A claim you kept depends on it, but Apply honours the drop and leaves it out.</p>
+              <div class="claim">
+                <p class="claim-t">Baker Street — the front room</p>
+                <p class="claim-x">Link the tenant register entry to the Baker Street timeline.</p>
+              </div>
+            </div>
+            <button class="apply">Apply &rsaquo;</button>
+          </div>
+        </div>
+        <p class="mk-caption">There is no mistaking what to read first. The words "memory writes" are the same size here as in A — they only look smaller because the number grew.</p>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label">D <b>· 44px bold</b></p>
+        <div class="sh">
+          <div class="sh-h">What Apply will send <span>&times;</span></div>
+          <div class="sh-b">
+            <p class="hero" style="font-size:44px;font-weight:700"><i>9</i> memory writes</p>
+            <p class="acts"><b>2</b> new memories<span>·</span><b>4</b> text changes<span>·</span><b>3</b> metadata changes</p>
+            <div class="zone">
+              <h3 class="zone-h">1 dropped claim is needed</h3>
+              <p class="zone-w">A claim you kept depends on it, but Apply honours the drop and leaves it out.</p>
+              <div class="claim">
+                <p class="claim-t">Baker Street — the front room</p>
+                <p class="claim-x">Link the tenant register entry to the Baker Street timeline.</p>
+              </div>
+            </div>
+            <button class="apply">Apply &rsaquo;</button>
+          </div>
+        </div>
+        <p class="mk-caption">Here so you can see how far is too far. Whether it still works with a bigger number is not worth guessing about — the next section measures it.</p>
+      </div>
+
+    </div>
+
+    <div class="mk-spec" style="margin-top:30px">
+      <p class="mk-label">§1b <b>· the same four sizes, with bigger numbers</b></p>
+      <div class="ws-wrap">
+      <div class="ws-blk">
+        <p class="ws-k">14px <b>· today</b></p>
+        <div class="ws-box">
+          <div class="ws-r"><span class="ws-n">9</span><p class="hero" style="font-size:14px;font-weight:700">9 memory writes</p></div>
+          <div class="ws-r"><span class="ws-n">94</span><p class="hero" style="font-size:14px;font-weight:700">94 memory writes</p></div>
+          <div class="ws-r"><span class="ws-n">941</span><p class="hero" style="font-size:14px;font-weight:700">941 memory writes</p></div>
+          <div class="ws-r"><span class="ws-n">3,481</span><p class="hero" style="font-size:14px;font-weight:700">3,481 memory writes</p></div>
+        </div>
+      </div>
+      <div class="ws-blk">
+        <p class="ws-k">24px <b>· B</b></p>
+        <div class="ws-box">
+          <div class="ws-r"><span class="ws-n">9</span><p class="hero" style="font-size:24px;font-weight:700">9 memory writes</p></div>
+          <div class="ws-r"><span class="ws-n">94</span><p class="hero" style="font-size:24px;font-weight:700">94 memory writes</p></div>
+          <div class="ws-r"><span class="ws-n">941</span><p class="hero" style="font-size:24px;font-weight:700">941 memory writes</p></div>
+          <div class="ws-r"><span class="ws-n">3,481</span><p class="hero" style="font-size:24px;font-weight:700">3,481 memory writes</p></div>
+        </div>
+      </div>
+      <div class="ws-blk">
+        <p class="ws-k">32px <b>· C</b></p>
+        <div class="ws-box">
+          <div class="ws-r"><span class="ws-n">9</span><p class="hero" style="font-size:32px;font-weight:700">9 memory writes</p></div>
+          <div class="ws-r"><span class="ws-n">94</span><p class="hero" style="font-size:32px;font-weight:700">94 memory writes</p></div>
+          <div class="ws-r"><span class="ws-n">941</span><p class="hero" style="font-size:32px;font-weight:700">941 memory writes</p></div>
+          <div class="ws-r"><span class="ws-n">3,481</span><p class="hero" style="font-size:32px;font-weight:700">3,481 memory writes</p></div>
+        </div>
+      </div>
+      <div class="ws-blk">
+        <p class="ws-k">44px <b>· D</b></p>
+        <div class="ws-box">
+          <div class="ws-r"><span class="ws-n">9</span><p class="hero" style="font-size:44px;font-weight:700">9 memory writes</p></div>
+          <div class="ws-r"><span class="ws-n">94</span><p class="hero" style="font-size:44px;font-weight:700">94 memory writes</p></div>
+          <div class="ws-r"><span class="ws-n">941</span><p class="hero" style="font-size:44px;font-weight:700">941 memory writes</p></div>
+          <div class="ws-r"><span class="ws-n">3,481</span><p class="hero" style="font-size:44px;font-weight:700">3,481 memory writes</p></div>
+        </div>
+      </div>
+      </div>
+      <p class="mk-caption">Each box is <b>458px</b> wide, which is how much room the number really gets on your phone, and the little grey count on the left eats a bit more — so this test is slightly harsher than reality. Anything that fits here will fit there. The result: <b>14, 24 and 32 all cope with four digits.</b> 44px spills onto a second line at every single number, even "9". So 44 is out because I measured it, not because I dislike it.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="mk-sec">
+    <h2 class="mk-h2"><span class="mk-no">§2</span> How should it be arranged?</h2>
+    <p class="mk-intro">All three are 32px, so size is not what you are judging here. The question is whether the sheet should open with <b>a number</b> or with <b>a sentence</b>.</p>
+
+    <div class="grid2">
+
+      <div class="mk-spec">
+        <p class="mk-label">E <b>· words on the same line — same as C</b></p>
+        <div class="sh">
+          <div class="sh-h">What Apply will send <span>&times;</span></div>
+          <div class="sh-b">
+            <p class="hero" style="font-size:32px;font-weight:700"><i>9</i> memory writes</p>
+            <p class="acts"><b>2</b> new memories<span>·</span><b>4</b> text changes<span>·</span><b>3</b> metadata changes</p>
+            <button class="apply">Apply &rsaquo;</button>
+          </div>
+        </div>
+        <p class="mk-caption">Reads as one phrase. The widest of the three, so a four-digit number gets close to the edge.</p>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label">F <b>· words underneath</b></p>
+        <div class="sh">
+          <div class="sh-h">What Apply will send <span>&times;</span></div>
+          <div class="sh-b">
+            <p class="hero" style="font-size:32px;font-weight:700">9</p>
+            <p style="font-family:var(--font-label);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-dim);margin:2px 0 0">memory writes</p>
+            <p class="acts"><b>2</b> new memories<span>·</span><b>4</b> text changes<span>·</span><b>3</b> metadata changes</p>
+            <button class="apply">Apply &rsaquo;</button>
+          </div>
+        </div>
+        <p class="mk-caption">Stays narrow no matter how big the number gets. But it breaks one phrase into a number plus a caption, so "memory writes" stops being part of the sentence and turns into a tag.</p>
+      </div>
+
+      <div class="mk-spec">
+        <p class="mk-label">G <b>· a sentence, with the number enlarged</b></p>
+        <div class="sh">
+          <div class="sh-h">What Apply will send <span>&times;</span></div>
+          <div class="sh-b">
+            <p style="font-family:var(--font-prose);font-size:15px;line-height:1.45;color:var(--text);margin:0">Apply will write <span style="font-family:var(--font-data);font-size:32px;font-weight:700;vertical-align:-4px">9</span> memories to the vault.</p>
+            <p class="acts"><b>2</b> new memories<span>·</span><b>4</b> text changes<span>·</span><b>3</b> metadata changes</p>
+            <button class="apply">Apply &rsaquo;</button>
+          </div>
+        </div>
+        <p class="mk-caption">Tells you what is about to happen instead of just giving you a number, which suits a confirm screen. The problem is that a big number stuck in the middle of a sentence never lines up properly, and it gets worse as the number grows.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="mk-sec">
+    <h2 class="mk-h2"><span class="mk-no">§3</span> My recommendation</h2>
+    <p class="mk-intro"><b>C and E</b> — 32px, words on the same line. It is the only option that is both obviously the headline and still reads as one phrase. F is tempting because it stays narrow, but turning "memory writes" into a tag is exactly how the old sheet ended up with three bare numbers stacked in a column and no way to tell what they counted.</p>
+    <p class="mk-note">If 32px is too loud on your phone, 24px is the same design a bit quieter. That is a number we can nudge later, not a decision to redo.</p>
+  </section>
+
+</div>
+</body>
+</html>

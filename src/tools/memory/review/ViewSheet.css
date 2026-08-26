@@ -1,0 +1,27 @@
+/* The arrangement sheet. Two exclusive lists, so every row carries a dot
+   rather than a box — the shape says "one of these" before the accent does. */
+
+.vs-meta { margin-left: auto; font-size: var(--fs-label); color: var(--text-dim); white-space: nowrap; }
+
+.vs-sec { display: flex; align-items: baseline; gap: 7px; padding: 10px var(--s3) 5px; }
+.vs-sec-l { flex: 1; color: var(--text); }
+
+.vs-opt { display: flex; align-items: center; gap: 9px; width: 100%;
+  min-height: var(--tap); padding: 6px var(--s3); background: none; border: 0;
+  border-bottom: var(--hairline); cursor: pointer; text-align: left; }
+.vs-opt:hover { background: var(--surface-2); }
+.vs-opt.is-on { background: var(--accent-wash); }
+.vs-opt-l { flex: 1; min-width: 0; font-size: var(--fs-data-s); color: var(--text-dim); line-height: 1.3; }
+.vs-opt.is-on .vs-opt-l { color: var(--text); }
+.vs-n { flex: none; font-size: var(--fs-label); color: var(--text-dim); font-variant-numeric: tabular-nums; }
+
+.vs-dot { flex: none; width: 12px; height: 12px; border-radius: 50%;
+  border: 1px solid var(--edge-strong); }
+/* The inset ring is the surface colour, so the dot reads as a filled ring
+   rather than a disc — the same mark a radio has everywhere else. */
+.vs-dot.is-on { border-color: var(--accent); background: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--surface-1); }
+
+.vs-dir { display: inline-flex; flex: none; color: var(--accent); }
+
+.vs-hint { padding: 9px var(--s3) var(--s4); font-size: var(--fs-data); }

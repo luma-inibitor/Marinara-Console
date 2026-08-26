@@ -503,6 +503,23 @@ Luma is separately deciding whether to lower the primary floor from 44px, so the
   corpus is 124 mutations today; the study's was 1,142.
 - **Editing beyond section text** — create_note title and keywords in the claim
   editor (the accept route re-validates whatever is sent).
+- **Rename claim → proposal [Luma: backlog 2026-08-24]** — "claim" appears
+  zero times in the vendored catalog; upstream calls the same object a
+  *proposal* (19 strings, incl. "Proposals wait in Review Queue"). The
+  `memory.review.claimCount` note justifies the coinage against *mutation*, the
+  wire word, and never considered *proposal*, the user-facing one. Console-wide
+  rename, so it is its own change. keep/drop is NOT part of this — upstream's
+  Accept/Reject fire immediately at the server where ours is a deferred local
+  judgment, which is a real distinction and stays coined.
+- **Marinara ontology registry [Luma: backlog 2026-08-24]** —
+  `~/Documents/code/luma/ui-ux-design-guidelines/glossary.md` is explicitly the
+  worked example of the format a *product* registry takes: term, part of
+  speech, definition, forbidden synonyms. `src/copy/*.json` records why a
+  string exists but nothing enforces one-name-per-concept, which is how
+  claim/proposal got through. The fourth column is a grep list, so it is
+  mechanically checkable like copycheck. Their `scripts/lint-copy.mjs` is not
+  reusable as-is — its extractor reads code comments and flags our real
+  entities (note, scope, key) — but the table format is right.
 - **Prototype retirement** — `~/code/me-ltm-console` stays as the reference
   until the port reaches parity; fold anything left and archive it.
 

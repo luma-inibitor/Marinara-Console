@@ -28,10 +28,14 @@ const ALL = ["scrim", "escape", "back"];
 const CASES = [
   { name: "facet sheet",  hash: "#/memory/review",  vp: VIEWPORTS.phone, open: async (p) => {
       await p.getByRole("button", { name: /^Filter/ }).click(); }, sel: ".sheet" },
-  { name: "group sheet",  hash: "#/memory/review",  vp: VIEWPORTS.phone, open: async (p) => {
-      await p.getByRole("button", { name: /^Group/ }).click(); }, sel: ".sheet.option-sheet" },
-  { name: "sort sheet",   hash: "#/memory/review",  vp: VIEWPORTS.phone, open: async (p) => {
-      await p.getByRole("button", { name: /^Sort/ }).click(); }, sel: ".sheet.option-sheet" },
+  // Group and sort open the SAME sheet. Both openers are still checked: they
+  // are two controls onto one surface, and either could lose its wiring.
+  { name: "view sheet / from group",  hash: "#/memory/review",  vp: VIEWPORTS.phone, open: async (p) => {
+      await p.getByRole("button", { name: /^Group/ }).click(); }, sel: ".sheet.view-sheet" },
+  { name: "view sheet / from sort",   hash: "#/memory/review",  vp: VIEWPORTS.phone, open: async (p) => {
+      await p.getByRole("button", { name: /^Sort/ }).click(); }, sel: ".sheet.view-sheet" },
+  { name: "dock sheet",   hash: "#/memory/review",  vp: VIEWPORTS.phone, open: async (p) => {
+      await p.getByRole("button", { name: /What Apply will send/ }).click(); }, sel: ".sheet.dock-sheet" },
   { name: "note peek",    hash: "#/memory/vault",   vp: VIEWPORTS.desktop, open: async (p) => {
       await p.locator(".row-summary").first().click();
       // No pause between the two clicks: .notelink exists only inside a record,

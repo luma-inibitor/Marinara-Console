@@ -1,0 +1,58 @@
+/* The dock's detail sheet. Three weights, top to bottom, and they must stay
+   separable at a glance: the outcome (one figure, full --text) · exceptions
+   (tinted edge, a heading and rows) · the remainder (dim, no rule, no box).
+   The earlier version gave all three the same hairline treatment, so the
+   figures read as more claim rows. */
+
+.dock-sheet .ds-body { flex: 1; min-height: 0; overflow-y: auto; padding: var(--s3); }
+
+/* ── the outcome ──
+   The only thing on the sheet in full --text at data-l. It carries no rule of
+   its own: the space under it and the first section's tinted edge are the
+   separation, and a hairline here would have made it row four of a list. */
+.ds-out { padding: var(--s2) 0 var(--s4); }
+.ds-out-v { margin: 0; font-size: var(--fs-data-l); font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--text); }
+.ds-out-v.is-pending { font-weight: 400; color: var(--text-dim); }
+/* ── exception sections ──
+   The left edge carries the tone, not the whole surface: a filled panel would
+   put the same weight on a one-line warning as on a five-claim list. */
+.ds-sec { border-left: 2px solid var(--edge-strong); padding: 0 0 0 var(--s3);
+  margin-bottom: var(--s4); }
+.ds-sec.is-flag { border-left-color: var(--flag); }
+.ds-sec.is-danger { border-left-color: var(--danger); }
+.ds-sec-h { display: flex; align-items: flex-start; gap: 6px; margin: 0;
+  color: var(--text); line-height: 1.35; }
+.ds-sec-i { display: inline-flex; flex: none; margin-top: -1px; }
+.ds-sec.is-flag .ds-sec-i { color: var(--flag); }
+.ds-sec.is-danger .ds-sec-i { color: var(--danger); }
+/* The consequence, in prose. It is deliberately NOT tinted: the edge and the
+   glyph already carry the tone, and a third carrier would make a two-sentence
+   section read as an alarm rather than as an explanation. */
+.ds-sec-w { margin: 4px 0 0; max-width: var(--measure);
+  font-size: var(--fs-prose); line-height: 1.4; color: var(--text-dim); }
+
+/* ── one claim ──
+   `.a1-tgt` and `.claim-text` are the queue's own row parts (styles/memory.css)
+   and are reused so the two surfaces cannot drift apart. Exactly two
+   properties are relaxed, and both are the list's constraints rather than the
+   claim's nature: the target's 34%-of-row cap, which has no meaning in a
+   stacked block, and the claim's single line, whose truncation at eighty
+   characters is the whole reason this sheet exists. */
+.ds-claim { display: flex; flex-direction: column; gap: 2px; padding: var(--s2) 0;
+  border-top: var(--hairline); margin-top: var(--s2); }
+.ds-claim:first-of-type { margin-top: 6px; }
+.ds-claim .a1-tgt { max-width: 100%; }
+.ds-claim .claim-text { white-space: normal; overflow: visible;
+  max-width: var(--measure); overflow-wrap: anywhere; color: var(--text-dim); }
+.ds-claim-w { font-size: var(--fs-data-s); color: var(--danger); }
+
+/* ── the remainder ──
+   Sentences about what the queue looks like after Apply. Deliberately not a
+   figure block: nothing here is comparable with the outcome above, so nothing
+   here is right-aligned into a column with it. */
+.ds-rest { margin: 0; padding: var(--s3) 0 0; border-top: var(--hairline); list-style: none; font-size: var(--fs-data-s);
+  line-height: 1.6; color: var(--text-dim); }
+
+.ds-restore { display: inline-flex; align-items: center; gap: 6px;
+  min-height: var(--tap); color: var(--accent); }
