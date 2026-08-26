@@ -1,0 +1,31 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "server.mjs",
+    "scripts/*.mjs",
+    "test/helpers/*.mjs",
+    "tests/e2e/**/*.ts",
+    ".design-sync/previews/*.tsx"
+  ],
+  "project": [
+    "**/*.{ts,tsx,js,mjs,css}"
+  ],
+  "paths": {
+    "marinara-console": [
+      "./src/ui/index.ts"
+    ]
+  },
+  "ignore": [
+    "scripts/fixtures/**",
+    "test/fixtures/**",
+    "src/lib/lorebook-keyword-matching.js",
+    "design/mockup-kit.css",
+    "public/mockups/kit.css"
+  ],
+  "ignoreBinaries": [
+    "vale"
+  ],
+  "ignoreDependencies": [
+    "@babel/preset-typescript"
+  ]
+}

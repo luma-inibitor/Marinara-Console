@@ -37,6 +37,7 @@ export const checks = [
   // Dead code
   "deadexports",
   "deadcss",
+  "knip",
   // Design system
   "typescale",
 ];

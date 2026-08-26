@@ -7,7 +7,9 @@ import "./ListGroup.css";
  *
  *  Its own component for the accessible name: the label must say what will
  *  happen, to what, and how much is hidden — "Expand Sherlock Holmes (4)".
- *  Without it a screen reader announces a bare "button". */
+ *  Without it a screen reader announces a bare "button".
+ *
+ *  @public */
 export function CollapseButton(props: {
   collapsed: boolean;
   onToggle: () => void;

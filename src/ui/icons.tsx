@@ -141,14 +141,17 @@ export const Cost = IconSparkles;               // spends model calls
 // One glyph per state, so a banner, a row mark and an empty state that all
 // report the same condition look like the same condition.
 export const Failure = IconAlertCircle;         // error: the thing did not work
+/** @public */
 export const Incomplete = IconAlertTriangle;    // an extraction that stopped
                                                 // short — not a failure, a
                                                 // partial harvest that needs
                                                 // re-running
 // PartialResult and Degraded have no call site yet. They are the state-signal
 // vocabulary DESIGN.md §207 commits to; use these rather than a new glyph.
+/** @public */
 export const PartialResult = IconProgressX;     // partial: some of the batch
                                                 // landed, some did not
+/** @public */
 export const Degraded = IconProgressAlert;      // degraded: it ran, but on a
                                                 // fallback path or with a
                                                 // reduced guarantee
