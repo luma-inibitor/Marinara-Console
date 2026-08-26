@@ -15,10 +15,8 @@
 // not this module's to own — `api/ledger.ts` knows the key and the record, and
 // the transport under it knows that console state does not go through /api.
 //
-// This module imports NOTHING from `store/`. That is the edge that keeps the
-// state layer acyclic: `store/review.ts` reads this module, and `derived()`
-// computes eagerly at construction, so a cycle would evaluate a `const` before
-// its initializer ran and throw at import time.
+// This module imports NOTHING from `store/`, which is the edge that keeps the
+// state layer acyclic. See ARCHITECTURE.md, "Why `store/` is acyclic".
 //
 // The `visibilitychange` / `pagehide` flush listeners are registered when this
 // module first runs, so the ledger is only flushed on page-hide while

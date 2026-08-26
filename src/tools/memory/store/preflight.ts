@@ -2,17 +2,11 @@
 // pending flag while one is debounced or in flight, and the row-level index the
 // badges read off it. Nothing else writes those three.
 //
-// It is kept current by SUBSCRIBING to its three inputs rather than by being
-// called from each site that changes one. The subscriptions are set up when
-// this module first runs, so preflight only tracks its inputs while something
-// imports this module — an import cleanup that drops the last importer would
-// silently stop the queue from ever being preflighted, with no type error.
+// Kept current by SUBSCRIBING to its three inputs, not by a call from each site
+// that changes one. Drop the last importer and the queue silently stops being
+// preflighted.
 //
-// The import edge is one-way on purpose: this module reads `./decisions` and
-// `./review`, and neither may read this one. Those modules install
-// subscriptions at module scope and the stores derived from them compute
-// eagerly at construction — a cycle would evaluate one of those `const`s
-// before its initializer ran and throw at import time.
+// Import edges in `store/` are one-way; see ARCHITECTURE.md, "Why `store/` is acyclic".
 
 import { createStore, derived } from "../../../lib/store";
 import { type Mutation, type PreflightResponse } from "../api/types";

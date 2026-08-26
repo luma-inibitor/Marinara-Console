@@ -1,5 +1,5 @@
-// The host's chats. Not a long-term-memory route — scope names a chat the
-// engine already knows about, so this hangs off the app's own API root.
+// The host's chats. Not a long-term-memory route: scope names a chat the engine
+// already knows about.
 
 import { api } from "../../../shell/api";
 

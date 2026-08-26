@@ -1,9 +1,6 @@
-// A character, as the scope picker needs it: an id and a name to show.
-//
-// The host answers with the card's JSON in a string field and only sometimes
-// hoists the name out of it, so reading that name is a transform rather than a
-// wire shape — and a card that will not parse still has to name itself, or the
-// picker lists a blank row nobody can choose.
+// A character as the scope picker needs it: an id and a name to show. The host
+// buries the name in a JSON string field and only sometimes hoists it out, so
+// getting it is a transform rather than a wire shape.
 
 import type { CharacterRow } from "../api/characters";
 
