@@ -22,8 +22,7 @@ const CONTRAST_EXEMPTIONS: [selector: string, reason: string][] = [
 ];
 
 // Enforced per finding, in the deadcss/deadexports shape: a finding outside the
-// record fails, a recorded one stands. A count would let a new finding in as
-// soon as an old one was fixed.
+// record fails, a recorded one stands.
 const BASELINE: Record<string, string[]> = baseline;
 
 interface Exemptions {
@@ -73,7 +72,6 @@ for (const screen of SCREENS) {
     const accepted = new Set(BASELINE[screen.name] ?? []);
     expect(found.filter((f) => !accepted.has(f)), `${screen.name} ink below the §1 floor`)
       .toEqual([]);
-
   });
 }
 
