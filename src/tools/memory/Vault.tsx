@@ -154,7 +154,8 @@ export function Vault(props: { noteId?: string }) {
             <span className="rail-gap" />
             {(["updated", "title", "pressure", "status"] as SortKey[]).map((k) => (
               <Chip key={k} pressed={sort === k} onClick={() => setSort(k)}>
-                ↓ {{ updated: "Edited", title: "Title", pressure: "Limits", status: "Status" }[k]}
+                ↓ {{ updated: t("lorebooks.sort.edited"), title: t("memoryvault.sortTitle"),
+                     pressure: t("memory.sort.limits"), status: t("memoryvault.status") }[k]}
               </Chip>
             ))}
           </div>

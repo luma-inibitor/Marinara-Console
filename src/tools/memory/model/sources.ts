@@ -113,6 +113,7 @@ export function buildSources(
  *  icon and the group header carry the first two parts, so the row shows the
  *  entry alone. */
 function stripKind(title: string, kind: SourceKind): string {
+  // eslint-disable-next-line i18next/no-literal-string -- engine-side title format, not console copy.
   const prefix = kind === "lorebooks" ? "Lorebook - " : kind === "characters" ? "Character - " : "";
   return prefix && title.startsWith(prefix) ? title.slice(prefix.length) : title;
 }

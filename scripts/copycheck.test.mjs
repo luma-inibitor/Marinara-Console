@@ -20,7 +20,7 @@ describe("path arguments", () => {
     const relative = run("src/tools/presets").out;
     const absolute = run(join(ROOT, "src", "tools", "presets")).out;
     expect(absolute).toBe(relative);
-    expect(relative).not.toContain("0 user-visible strings");
+    expect(relative).toMatch(/source mode · [1-9]\d* files/);
   });
 
   it("exits 2 when a path argument matches no source file", () => {

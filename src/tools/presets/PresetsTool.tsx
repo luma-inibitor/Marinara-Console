@@ -1,6 +1,6 @@
 // Prompt preset browser + editor. Order is THE attribute of a prompt preset,
 // so the status rail carries the ordinal.
-import { Button, Chip, EmptyState, Loading, ErrorState, ListEmpty, NotFound, SaveBar, useIsDesktop } from "../../ui";
+import { Button, Chip, EmptyState, Loading, ErrorState, ListEmpty, NotFound, SaveBar, SPLIT, useIsDesktop } from "../../ui";
 import { Add, Back, Duplicate, Fullscreen, ICON_SIZE, SetDefault } from "../../ui/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
@@ -182,7 +182,7 @@ function Editor({ presetId }: { presetId: string }) {
       if (!alive) return;
       setFull(f);
       // Desktop detail pane is never usefully empty — select the first section.
-      if (window.matchMedia("(min-width: 900px)").matches) {
+      if (window.matchMedia(SPLIT).matches) {
         setFocusId(orderedSections(f)[0]?.id ?? null);
       }
     }).catch((e: unknown) => {
@@ -255,7 +255,9 @@ function Editor({ presetId }: { presetId: string }) {
   const beginEditSection = useCallback((sid: string) => {
     if (guard() || sid === editingId) return;
     if (sectionDraft.dirty) {
-      toast(`Save or discard your changes to "${editingSection?.name || "this section"}" first.`, { kind: "error" });
+      toast(t("lorebooks.record.saveOrDiscardFirst", {
+        name: editingSection?.name || t("presets.thisSection"),
+      }), { kind: "error" });
       return;
     }
     setEditingId(sid);
@@ -535,7 +537,7 @@ function Editor({ presetId }: { presetId: string }) {
         const titles = {
           conversationPrompt: t("presets.conversationPrompt"),
           gamePrompt: t("presets.gamePrompt"),
-          description: "Description",
+          description: t("lorebooks.entry.subDescription"),
         } as const;
         return (
           <FullscreenText title={titles[fs.field]} subtitle={full.preset.name}
@@ -658,12 +660,12 @@ function SectionDetail(props: {
         ))}
 
       {marker
-        ? sub("content", "Content", <span className="is-runtime">{t("presets.injectedAtRuntime")}</span>, () => (
+        ? sub("content", t("lorebooks.entry.subContent"), <span className="is-runtime">{t("presets.injectedAtRuntime")}</span>, () => (
             // Pass the marker label through untouched: case-folding it here
             // would be a runtime edit to copy, mangling e.g. "ID macro cards".
             <p className="prose-note">{t("presets.markerNote", { marker: markerLabel(s) ?? "" })}</p>
           ))
-        : sub("content", "Content",
+        : sub("content", t("lorebooks.entry.subContent"),
             <><b>{(macroDelta > 0 ? expanded.length : s.content.length).toLocaleString()}</b> {t("ui.editor.charUnit")} · <b>{tok}</b> {t("presets.tokens")}{macroDelta > 0 ? ` ${t("presets.expanded")}` : ""}</>,
             () => (
               <>
@@ -691,10 +693,10 @@ function SectionDetail(props: {
               </>
             ))}
 
-      {sub("advanced", "Advanced",
+      {sub("advanced", t("lorebooks.entry.subAdvanced"),
         advNonDefault.length
           ? t("presets.advSet", { count: advNonDefault.length })
-          : "all default",
+          : t("lorebooks.entry.advAllDefault"),
         () => (
           <>
             {([["injectionPosition", s.injectionPosition], ["injectionDepth", s.injectionDepth],

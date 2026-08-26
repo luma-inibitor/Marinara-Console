@@ -43,18 +43,32 @@ export default [
       "import/parsers": { "@babel/eslint-parser": [".ts", ".tsx"] },
     },
     rules: {
-      // Copy that reaches the reader as JSX text must come out of t().
+      // Copy that reaches the reader must come out of t().
       // `words` replaces the plugin's default excludes rather than extending them.
       "i18next/no-literal-string": [
         "error",
         {
-          mode: "jsx-text-only",
+          mode: "all",
           words: {
             exclude: [
               /^[^\p{L}]+$/u, // no letter anywhere: a number, a separator, a glyph
               /^[kst]$/, // unit suffixes glued to a number: k, seconds, tokens
+              /^[A-Z_-]+$/, // a constant or an engine code
+              /^_*[a-z][A-Za-z0-9]*$/, // an identifier
+              /^[.#/]{0,1}-{0,2}[a-z0-9]+(?:[_./:-][a-z0-9]+)*\/?$/, // a route, a class, a data attribute
+              /^[a-z][A-Za-z0-9]*(?:\.[A-Za-z0-9]+)+$/, // a catalog key passed as a prop
+              /^\p{Emoji}+$/u,
             ],
           },
+        },
+      ],
+      // Two of the word patterns above admit any bare lowercase word. One in
+      // JSX text position is copy, and only this rule still sees it.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: 'JSXText[value=/^\\s*[a-z][a-z0-9]*\\s*$/]:not([value=/^\\s*[kst]\\s*$/])',
+          message: "bare lowercase JSX text must come from t()",
         },
       ],
       "react-hooks/exhaustive-deps": "error",
@@ -69,6 +83,11 @@ export default [
         },
       ],
     },
+  },
+  {
+    // A fixture string reaches no reader.
+    files: ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/test/**"],
+    rules: { "i18next/no-literal-string": "off", "no-restricted-syntax": "off" },
   },
   {
     // The transport layer is where a fetch belongs.
