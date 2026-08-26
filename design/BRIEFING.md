@@ -2,13 +2,13 @@
 
 Covering the work from the start of the memory tool through the component
 refactor. This is the orientation document: what the interface is
-for, what is settled, what the domain actually looks like, and what is still
+for, what's settled, what the domain actually looks like, and what's still
 open. It sits above `DESIGN.md` (the framework) and `CHECKLIST.md` (the
 pre-flight), and points into both rather than repeating them.
 
 ---
 
-## 1. What this is, and who it is for
+## 1. What this is, and who it's for
 
 The Marinara Console is a management interface for Marinara Engine. The memory
 tool inside it manages **long-term memory**: durable facts extracted from
@@ -21,7 +21,7 @@ visual work that decoration does elsewhere.
 
 **The device that matters is a 486px-wide phone** (1080 physical, DPR 2.22). A
 layout tuned only at 390 has never been seen at the width it ships to. Desktop
-matters too, but mobile is not the afterthought.
+matters too, but mobile isn't the afterthought.
 
 ## 2. The job the tool actually does
 
@@ -37,7 +37,7 @@ Material flows in one direction, and the navigation now traces it:
    Each is kept or dropped. Nothing is written until Apply. This is the work.
 3. **Vault.** The memories that survived. Browsed, searched, edited, archived.
 
-A fourth view, **Activity**, is designed but not built. It is the prerequisite
+A fourth view, **Activity**, is designed but not built. It's the prerequisite
 for undo.
 
 **The single most important design question**, and the one the detail pane was
@@ -83,10 +83,10 @@ Full detail in `DESIGN.md`. The parts that constrain new work:
 
 ## 5. Requirements that are settled
 
-Owner-confirmed. Do not re-litigate; see `DESIGN.md` §2 for the full list.
+Owner-confirmed. Don't re-litigate; see `DESIGN.md` §2 for the full list.
 
 - Titles **truncate to one line** in list rows.
-- Collapsed headers still carry data — counts, totals, status. Closed is not
+- Collapsed headers still carry data — counts, totals, status. Closed isn't
   invisible. Multi-expand is the default.
 - One primary tap target per row.
 - **Undo over confirm.** `confirm()` only for genuinely irreversible operations.
@@ -115,7 +115,7 @@ it. `CHECKLIST.md` holds the full list with incidents attached.
 - **One meaning per channel.** Accent means interactive; a read-out must not
   reach for it.
 - **Split components by role, not by shape.** `Chip` and `Tag` look identical
-  and are separate, because one is pressable and the other is not.
+  and are separate, because one is pressable and the other isn't.
 - **Own the behavior, slot the shape.** `ListGroup` owns the chevron and its
   accessible name; each list keeps its own header layout.
 - **Render it and look at it.** Every occlusion, wrap and clipping defect in this
@@ -124,7 +124,7 @@ it. `CHECKLIST.md` holds the full list with incidents attached.
 ## 7. The domain — what a memory actually is
 
 Measured from the live corpus on 2026-08-23 (31 notes). **This is the evidence
-base for any per-type design work**, and it is not what you would guess.
+base for any per-type design work**, and it's not what you would guess.
 
 Full field-by-field reference in [MEMORY-SCHEMA.md](MEMORY-SCHEMA.md). The
 summary that matters for design work:
@@ -141,11 +141,11 @@ elsewhere), `extractionFingerprint` (`source` only).
 
 ### A section is more than its text
 
-Every section carries structured fields alongside `text`, and they are
+Every section carries structured fields alongside `text`, and they're
 populated: `evidence[]` and `confidence` on all 38 sections in the corpus,
 `salience` on 30, `contributions[]` on 30, `importance` on 24. `dimensions` and
 `dimensionChanges` carry ten relationship axes and appear on one. These are
-structured by design and are not to be parsed out of the prose.
+structured by design and aren't to be parsed out of the prose.
 
 ### The eight types
 
@@ -174,15 +174,15 @@ structured by design and are not to be parsed out of the prose.
   misrepresents it.
 - **Source is an order of magnitude longer than everything else** — a median of
   781 characters against 83–174 elsewhere, with a maximum of 2,818. It needs
-  folding; the others do not.
-- **Thread is the only type that reaches `resolved`.** Status is not uniformly
+  folding; the others don't.
+- **Thread is the only type that reaches `resolved`.** Status isn't uniformly
   interesting across types.
-- **Timeline events are the most numerous and the shortest.** They are read in
+- **Timeline events are the most numerous and the shortest.** They're read in
   bulk, not one at a time.
 - **`caused_by` appears only on thread, relationship and character.** A links
   section is dead weight on world and tone.
 - **Keyword count across the entire corpus is zero.** The keyword editor exists
-  and nothing uses it. Either the extractor does not populate keywords, or this
+  and nothing uses it. Either the extractor doesn't populate keywords, or this
   corpus predates it — worth confirming before designing around keywords.
 
 ## 8. Open questions
@@ -209,6 +209,6 @@ Not optional, and not judgment calls:
 | `node scripts/copycheck.mjs <file>` | Every user-visible string traces to the catalog or `OURS` |
 | `node scripts/deadcss.mjs` | CSS classes nothing uses — fails when the list grows past `design/deadcss-baseline.json` |
 | `node scripts/deadexports.mjs` | Symbols exported but used only where declared, dead re-exports included — same baseline ratchet |
-| `node scripts/domsnap.mjs before` / `after --diff` | A refactor renders identically, and what it did not reach |
+| `node scripts/domsnap.mjs before` / `after --diff` | A refactor renders identically, and what it didn't reach |
 | `node scripts/overlaycheck.mjs` | Every layered surface closes on scrim, Escape and back |
 | `node scripts/shots.mjs <url>` | Screenshots at 390 / 486 / 768 / 1280 |

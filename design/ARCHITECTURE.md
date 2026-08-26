@@ -13,7 +13,7 @@ The console has no layering problem at its edges and a real one in its middle.
 - The backend is already separate and already small: the engine is the backend, and `server.mjs` is a dependency-free proxy that owns the console's own state under `/console/state/:key`.
 - Inside `src/`, four things were tangled. Three are now resolved, and the fourth is narrowed:
   - `store.ts` did six jobs—state, derived selectors, persistence I/O, the decision ledger, load orchestration, preflight, and apply. Each now has its own module under `store/`.
-  - `data.ts` mixed wire types and endpoint functions with domain transforms. It is gone: routes and wire shapes live in `api/`, transforms in `model/`.
+  - `data.ts` mixed wire types and endpoint functions with domain transforms. It's gone: routes and wire shapes live in `api/`, transforms in `model/`.
   - Screens called the API directly, so there was no data boundary. None do now: the status record, the scope picker's names, re-extraction, the restore-point URL and the decision ledger's own persistence all sit in the layer that owns them, and `scripts/layercheck.mjs` RULE 2 fails the build if one comes back.
   - Notes had two owners, so two copies of the same record could disagree. `store/notes.ts` is now the only writer.
 
@@ -31,7 +31,7 @@ Five roles. A file belongs to exactly one.
 | **state** | stores, orchestration, invalidation | JSX |
 | **presentation** | JSX, tokens, copy | `fetch` |
 
-### State: two kinds of store, and who may write to them
+### State: Two kinds of store, and who may write to them
 
 A **component** is a function that returns markup, and React runs it again from the top every time something changes. A **hook** is how a component remembers something across those runs, or plugs into something outside itself. `useState` remembers a value that belongs to one component and dies with it. A **store** is a value that lives in a module instead of inside a component, so any file can read it and it outlives any screen. `useStore(s)` is the hook that joins the two: it reads a store and re-runs the component whenever the store changes. `lib/store.ts` deliberately offers no `.value`, so every read has to say whether it's subscribing.
 
@@ -56,13 +56,13 @@ Imports point **downward only**:
 Two directions are always wrong:
 
 - **`model` importing `state`** risks a cycle. This has already happened here: the scope predicate needed the scope stores, so we moved the stores down beside the predicate rather than importing upward.
-- **presentation importing `endpoints`** means a screen bypassed the data layer. `layercheck.mjs` RULE 2 checks this directly, because the direction rule cannot see it: presentation importing `api/` is *downward*, so it passes rule 1 while still being the violation named here. It is at zero and enforced.
+- **presentation importing `endpoints`** means a screen bypassed the data layer. `layercheck.mjs` RULE 2 checks this directly, because the direction rule can't see it: presentation importing `api/` is *downward*, so it passes rule 1 while still being the violation named here. It's at zero and enforced.
 
-**Type-only imports are exempt, and point anywhere.** The wire types live in `api/` because they describe the wire — that is the endpoints layer's own vocabulary. The model has to name those shapes to transform them, which is an upward import by the rule above. It is allowed, because `import type` erases at compile time: it creates no runtime edge and therefore no cycle. `layercheck.mjs` checks value imports and ignores type-only ones.
+**Type-only imports are exempt, and point anywhere.** The wire types live in `api/` because they describe the wire — that's the endpoints layer's own vocabulary. The model has to name those shapes to transform them, which is an upward import by the rule above. It's allowed, because `import type` erases at compile time: it creates no runtime edge and therefore no cycle. `layercheck.mjs` checks value imports and ignores type-only ones.
 
-This is the one exemption, and it is deliberately narrow: a value import pointing upward still fails, whatever it carries.
+This is the one exemption, and it's deliberately narrow: a value import pointing upward still fails, whatever it carries.
 
-The exemption is narrow enough to have caught something. `SECTION_CAP` and `KEYWORD_CAP` were sitting in `api/types.ts` and imported as values by the model, which the rule forbids — and no module in `api/` read them, because a payload does not carry a cap. They are rules about what a note may hold, so they live in `model/caps.ts`. Every remaining model import from `api/` is type-only.
+The exemption is narrow enough to have caught something. `SECTION_CAP` and `KEYWORD_CAP` were sitting in `api/types.ts` and imported as values by the model, which the rule forbids — and no module in `api/` read them, because a payload doesn't carry a cap. They're rules about what a note may hold, so they live in `model/caps.ts`. Every remaining model import from `api/` is type-only.
 
 ## 2. Layout
 
@@ -157,7 +157,7 @@ Two names sit next to each other and mean different things on purpose: `src/ui/`
 
 `SectionKey` sits in `ui/` rather than in `components/`, against the listing this file first drew, because `ui/DetailSection` is one of its three callers and `ui/` may not import a tool. The line the split actually follows is what a component has to know: a `§key` is a string with a mark in front of it, while a `NoteRef` has to reach the notes store and open a peek. Anything that needs the domain stays in the tool.
 
-The cost of layer-first: seeing everything about "sections" means looking in three directories rather than one. That is what filenames and grep are for, and it buys a property that matters more — you can tell what a file is allowed to do from where it sits, before opening it.
+The cost of layer-first: seeing everything about "sections" means looking in three directories rather than one. That's what filenames and grep are for, and it buys a property that matters more — you can tell what a file is allowed to do from where it sits, before opening it.
 
 ## 3. Rules
 
@@ -183,8 +183,8 @@ The cost of layer-first: seeing everything about "sections" means looking in thr
 
 The house habit is to encode a rule in a script rather than trust a convention—`copycheck` for copy, `deadcss` for CSS, `overlaycheck` for dismissal.
 
-- **`scripts/layercheck.mjs`** carries two rules, and both fail the build. RULE 1 reads every import and fails when a *value* import points upward; type-only imports are exempt, per §1. The directory gives it the layer without a manifest to maintain, and without a default that silently claims files nobody classified. RULE 2 checks the ownership rule rule 1 cannot express — a component reaching the endpoints layer, the transport client, or the global `fetch`. It reported without failing while the pre-rule screens were being moved onto hooks, because a check that goes red on day one and stays red teaches people to ignore it; that baseline is spent, the count is zero, and the `--strict` flag is gone with it.
-- **`scripts/deadexports.mjs`** finds symbols exported but used only where they are declared, re-exports included: `export { X } from "./x"` is judged at the barrel, and a forwarding line nobody imports from is dead in the ordinary way. Over-exporting makes a module's real surface unreadable, but every hit is a judgement call, so it fails only on **growth** — `design/deadexports-baseline.json` records today's set and a finding outside it exits 1. `deadcss` works the same way against `design/deadcss-baseline.json`. Both are in `npm run check`; a clean PR never sees either. Shrinking a baseline is an ordinary diff, growing one is `--adopt` plus a line in the PR body.
+- **`scripts/layercheck.mjs`** carries two rules, and both fail the build. RULE 1 reads every import and fails when a *value* import points upward; type-only imports are exempt, per §1. The directory gives it the layer without a manifest to maintain, and without a default that silently claims files nobody classified. RULE 2 checks the ownership rule rule 1 can't express — a component reaching the endpoints layer, the transport client, or the global `fetch`. It reported without failing while the pre-rule screens were being moved onto hooks, because a check that goes red on day one and stays red teaches people to ignore it; that baseline is spent, the count is zero, and the `--strict` flag is gone with it.
+- **`scripts/deadexports.mjs`** finds symbols exported but used only where they're declared, re-exports included: `export { X } from "./x"` is judged at the barrel, and a forwarding line nobody imports from is dead in the ordinary way. Over-exporting makes a module's real surface unreadable, but every hit is a judgement call, so it fails only on **growth** — `design/deadexports-baseline.json` records today's set and a finding outside it exits 1. `deadcss` works the same way against `design/deadcss-baseline.json`. Both are in `npm run check`; a clean PR never sees either. Shrinking a baseline is an ordinary diff, growing one is `--adopt` plus a line in the PR body.
 
 A module in no layer directory is **unchecked**, which is a gap rather than a pass. `layercheck` prints those under `UNCLASSIFIED` rather than defaulting them into a layer, for the same reason §2 rejects the filename-suffix scheme.
 

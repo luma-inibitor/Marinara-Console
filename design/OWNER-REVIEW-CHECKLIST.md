@@ -1,6 +1,6 @@
 # Owner review checklist — DRAFT, awaiting Luma's review
 
-**Status: PROPOSED. Do not treat as canon until Luma has reviewed each item.**
+**Status: PROPOSED. Don't treat as canon until Luma has reviewed each item.**
 This distills Luma's UI/UX feedback into checkable invariants so automated
 reviewers can catch regressions and repeat offenses.
 Each item carries: the invariant, how a reviewer checks it, and the feedback
@@ -24,7 +24,7 @@ never restates.
   *Check: render with a 30+ char title; assert one line, ellipsised, and no
   column narrower than ~60% of the row.*
 - **L3 · Bars sit flush with their viewport edge.** No stale offsets
-  reserving space for chrome that is not there; safe-area padded. *Check:
+  reserving space for chrome that's not there; safe-area padded. *Check:
   bottom bar's bottom == viewport bottom (or the visible dock top).*
   (Prototype mobile.)
 - **L4 · Bars flow as info-line-then-actions.** Status text gets its own
@@ -61,7 +61,7 @@ never restates.
   state its unit; assert siblings agree.* (Badge 2-vs-17; STORED·2.)
 - **V3 · A badge must earn its tap.** If tapping/expanding an indicator
   yields content the user can't map to a question ("what changes where?"),
-  the indicator is wrong — redesign toward the question (e.g. touch map
+  the indicator is wrong — redesign toward the question (for example, touch map
   instead of stored-section count).
 - **V4 · No mechanism-explainer furniture.** Don't permanently teach
   mechanics the numbers already show (cap explainer under counts, rebuild
