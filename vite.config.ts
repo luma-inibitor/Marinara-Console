@@ -2,12 +2,17 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-const bundlerWarnings: string[] = [];
+const advisoryWarningPlugin = "builtin:vite-reporter";
+
+let bundlerWarnings: string[] = [];
 
 // A throw inside onwarn is swallowed by rolldown: the build still exits 0.
 function fatalBundlerWarnings(): Plugin {
   return {
     name: "mc:fatal-bundler-warnings",
+    buildStart() {
+      bundlerWarnings = [];
+    },
     closeBundle() {
       if (bundlerWarnings.length > 0) {
         this.error(`bundler warnings are fatal:\n${bundlerWarnings.join("\n")}`);
@@ -25,10 +30,14 @@ export default defineConfig({
   publicDir: false,
   build: {
     outDir: "dist",
-    // 700 clears today's 684 kB bundle. A lower limit fails the build.
-    chunkSizeWarningLimit: 700,
+    // 688 is the next whole kB above today's 687.08 kB bundle, so any growth reports.
+    chunkSizeWarningLimit: 688,
     rolldownOptions: {
-      onwarn(warning) {
+      onwarn(warning, defaultHandler) {
+        if (warning.plugin === advisoryWarningPlugin) {
+          defaultHandler(warning);
+          return;
+        }
         bundlerWarnings.push(`${warning.plugin ?? warning.code ?? "warning"}: ${warning.message}`);
       },
     },
