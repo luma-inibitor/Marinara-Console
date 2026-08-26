@@ -159,7 +159,7 @@ const adopt = flags.has("--adopt");
 const prune = flags.has("--prune");
 process.exit(
   reportRatchet({
-    ...ratchet(BASELINE_PATH, findings, { adopt, prune, scope: (f) => f.startsWith(scanned + "/") }),
+    ...ratchet(BASELINE_PATH, findings, { adopt, prune, root: ROOT, scope: (f) => f.startsWith(scanned + "/") }),
     label: "design/deadcss-baseline.json",
     noun: "dead class",
     adopt,

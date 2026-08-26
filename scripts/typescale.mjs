@@ -70,7 +70,7 @@ console.log(`typescale · ${stylesheets} stylesheet(s) · scale: ${[...steps.key
 const off = findings.filter((f) => f.detail.endsWith("OFF THE SCALE"));
 console.log(`${findings.length} literal font-size(s), ${off.length} of them off the scale entirely`);
 
-const r = ratchet(BASELINE, findings, { adopt, prune, scope: (f) => inScope.has(f) });
+const r = ratchet(BASELINE, findings, { adopt, prune, root: ROOT, scope: (f) => inScope.has(f) });
 const code = reportRatchet({
   ...r,
   integrity: [...integrity, ...r.integrity],
