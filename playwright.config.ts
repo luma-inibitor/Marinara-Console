@@ -6,7 +6,9 @@ import { defineConfig } from "@playwright/test";
 //
 // Gotcha: `tsc --noEmit` does not cover this file. It includes src/ and tests/
 // only, and this reads `process.env` with no @types/node installed.
-const PORT = 4178;
+// MC_E2E_PORT overrides: `reuseExistingServer` silently attaches to whatever
+// already holds the default, so two worktrees running at once share one build.
+const PORT = Number(process.env.MC_E2E_PORT) || 4178;
 
 // design/DESIGN.md §7. 390 is the iPhone-class floor; 486 is Luma's device
 // (1080 physical at DPR 2.22); 768 sits between the two CSS breakpoints; 1280
