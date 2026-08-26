@@ -88,9 +88,9 @@
    35px wide is still a 35px target for a thumb. */
 .qbtn-f { flex: 0 0 auto; min-width: var(--tap); justify-content: center; padding: 0 9px; }
 .qbtn-f.is-on { color: var(--accent); }
-.qn { font-size: 11px; font-weight: 700; color: var(--accent);
+.qn { font-size: var(--fs-data-s); font-weight: 700; color: var(--accent);
   font-variant-numeric: tabular-nums; }
-.qv { flex: 1; min-width: 0; font-size: 10.5px; text-align: left;
+.qv { flex: 1; min-width: 0; font-size: var(--fs-label); text-align: left;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ══ active-filter track ══
@@ -99,14 +99,14 @@
 .ftrack { display: flex; align-items: center; gap: 5px; margin-top: 5px;
   overflow-x: auto; scrollbar-width: none; padding-bottom: var(--s2); }
 .ftrack::-webkit-scrollbar { display: none; }
-.ftrack-n { flex: none; font-size: 10px; color: var(--text-dim);
+.ftrack-n { flex: none; font-size: var(--fs-label); color: var(--text-dim);
   white-space: nowrap; font-variant-numeric: tabular-nums; }
 .fpill { flex: none; display: flex; align-items: center; gap: 4px;
   min-height: 24px; padding: 0 5px 0 7px; background: none;
   border: 1px solid var(--edge); border-radius: 3px; color: var(--text-dim);
   cursor: pointer; }
 .fpill:hover { color: var(--text); border-color: var(--edge-strong); }
-.fpill span { font-size: 10px; white-space: nowrap; }
+.fpill span { font-size: var(--fs-label); white-space: nowrap; }
 /* Clear sits at the far end, after the pills it clears — the track scrolls,
    so it cannot be pinned right without landing on top of them. */
 .fclear { flex: none; display: flex; align-items: center; justify-content: center;
@@ -276,7 +276,7 @@
    explains them. Bordered rather than bare — an inert-looking number that
    turns out to be tappable is the `Chip`/`Tag` mistake in another costume. */
 .dock-counts { display: flex; align-items: center; gap: 7px; flex: 1 1 auto;
-  white-space: nowrap; font-size: 12px; font-weight: 700;
+  white-space: nowrap; font-size: var(--fs-data); font-weight: 700;
   font-variant-numeric: tabular-nums; min-height: var(--tap);
   padding: 0 var(--s2); background: none; border: 1px solid transparent;
   border-radius: var(--r-s); color: var(--text); cursor: pointer; }
@@ -287,7 +287,7 @@
    hidden-and-quiet is not. */
 .dock-exc { display: inline-flex; align-items: center; gap: 3px; flex: none;
   padding: 0 5px; min-height: 18px; border-radius: 999px;
-  background: var(--flag-wash); color: var(--flag); font-size: 10.5px; }
+  background: var(--flag-wash); color: var(--flag); font-size: var(--fs-label); }
 .dock-counts b { display: inline-flex; align-items: center; gap: 4px; }
 .dock-counts .of { font-weight: 400; }
 .dock-tally .mem-save { flex: none; }
