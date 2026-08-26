@@ -41,9 +41,8 @@ export default defineConfig({
       use: {
         browserName: "chromium" as const,
         viewport: { width, height },
-        // Touch emulation is a property of the device, not of the width: it
-        // decides which pointer media queries match and whether the app's own
-        // desktop test agrees with the viewport it is running at.
+        // A property of the device, not the width: it decides which pointer
+        // media queries match.
         isMobile: touch,
         hasTouch: touch,
       },

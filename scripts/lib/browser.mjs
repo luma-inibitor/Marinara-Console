@@ -6,10 +6,8 @@
 // belongs in that script — this module exists to remove duplication, not to
 // become a junk drawer of one-offs.
 //
-// `@playwright/test`, not `playwright-core`: the two library packages are no
-// longer devDependencies — @playwright/test brings both transitively — and an
-// import of a package this project does not declare is one `npm ci` away from
-// disappearing. The same chromium, re-exported.
+// Imports chromium from `@playwright/test`: the bare library packages are no
+// longer devDependencies.
 import { chromium } from "@playwright/test";
 
 // Trailing slash matters: callers append "#/route" and a hash on a bare origin

@@ -36,8 +36,6 @@ export const ROUTES: Route[] = [
   { method: "GET", path: /^\/api\/chats$/, body: json(CHATS) },
 
   { method: "GET", path: /^\/api\/long-term-memory\/status$/, body: json(STATUS) },
-  // Ordered before the list route only for readability; the patterns are
-  // anchored, so `/notes/:id` and `/notes` cannot both match one request.
   { method: "GET", path: /^\/api\/long-term-memory\/notes\/([^/]+)$/, body: (m) => NOTES.find((n) => n.id === m[1]) },
   { method: "GET", path: /^\/api\/long-term-memory\/notes$/, body: json(NOTES) },
   { method: "GET", path: /^\/api\/long-term-memory\/drafts\/review$/, body: json(REVIEW) },
@@ -59,11 +57,8 @@ export interface ApiLog {
 }
 
 /**
- * Answer every request the console makes from the corpus.
- *
- * `extra` is prepended, so a test that needs one route to fail, to be slow, or
- * to answer differently states that one route and inherits the rest — which is
- * how the checks built on this harness extend the corpus without forking it.
+ * Answer every request the console makes from the corpus. `extra` is prepended,
+ * so a test can override one route and inherit the rest.
  */
 export async function installApi(page: Page, extra: Route[] = []): Promise<ApiLog> {
   const table = [...extra, ...ROUTES];
