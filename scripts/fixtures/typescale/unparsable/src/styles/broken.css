@@ -1,4 +1,3 @@
-/* An unclosed block: stylelint reports this as a warning whose rule is
-   CssSyntaxError and leaves parseErrors empty. */
+/* An unclosed block. */
 .thing {
   font-size: 13px;

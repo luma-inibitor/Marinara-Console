@@ -12,7 +12,7 @@ const ruleName = "marinara/font-size-token";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const TOKENS = join(ROOT, "src", "styles", "tokens.css");
 
-/** The scale, read from the tokens file rather than restated here. */
+/** The scale, parsed from src/styles/tokens.css. */
 export function loadScale() {
   let css;
   try {
@@ -37,7 +37,6 @@ export function loadScale() {
   return { steps, integrity };
 }
 
-/** The rule's own prelude and every prelude above it, outermost first. */
 function selectorOf(decl) {
   const parts = [];
   for (let node = decl.parent; node && node.type !== "root"; node = node.parent) {
