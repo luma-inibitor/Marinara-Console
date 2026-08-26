@@ -1,6 +1,6 @@
 // Prompt preset browser + editor. Order is THE attribute of a prompt preset,
 // so the status rail carries the ordinal.
-import { Chip, EmptyState, IconButton, Loading, ErrorState, ListEmpty, NotFound, useIsDesktop } from "../../ui";
+import { Chip, EmptyState, IconButton, Loading, ErrorState, ListEmpty, NotFound, SaveBar, useIsDesktop } from "../../ui";
 import { Add, Back, Duplicate, Fullscreen, ICON_SIZE, SetDefault } from "../../ui/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
@@ -10,7 +10,7 @@ import { useDraft, type Draft } from "../../shell/draft";
 import { ApiError } from "../../shell/api";
 import { tokensOf } from "../../shell/api";
 import { FullscreenText } from "../../ui/FullscreenText";
-import { joinList, t, tAny } from "../../copy";
+import { t, tAny } from "../../copy";
 import {
   type PresetFull, type PromptPreset, type PromptSection, type PresetLoad,
   fetchPresets, fetchFull, patchPreset, patchSection, createSection, deleteSection,
@@ -710,49 +710,8 @@ function SectionDetail(props: {
           </>
         ))}
 
-      {draft && !readOnly && <SectionSaveBar draft={draft} onSave={props.onSave} />}
+      {draft && !readOnly && <SaveBar draft={draft} onSave={props.onSave} conflictBody="presets.section.conflictBody" />}
     </div>
   );
 }
 
-/** Sticky commit bar for a section draft — mirrors the lorebook drawer's. */
-function SectionSaveBar(props: { draft: Draft<PromptSection>; onSave: () => Promise<boolean> }) {
-  const d = props.draft;
-  if (d.conflict) {
-    return (
-      <div className="savebar has-conflict" role="alertdialog">
-        <p className="t-label">{t("lorebooks.record.conflictTitle")}</p>
-        <p className="prose-note">
-          {t("presets.section.conflictBody", {
-            detail: d.conflict.fields.length > 0
-              ? t("lorebooks.record.conflictFields", {
-                  count: d.conflict.fields.length,
-                  list: joinList(d.conflict.fields),
-                })
-              : "",
-          })}
-        </p>
-        <div className="savebar-acts">
-          <button className="dbtn" onClick={d.takeTheirs}>{t("lorebooks.record.takeTheirs")}</button>
-          <button className="dbtn is-primary" onClick={d.keepMine}>{t("lorebooks.record.keepMine")}</button>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className={`savebar ${d.dirty ? "is-dirty" : ""}`}>
-      <span className="savebar-state t-data">
-        {d.saving ? "Saving…"
-          : d.error ? <span className="is-err">{d.error}</span>
-          : d.dirty ? t("lorebooks.record.unsavedChanges", { count: d.dirtyFields.length })
-          : "No changes"}
-      </span>
-      <div className="savebar-acts">
-        <button className="dbtn" disabled={!d.dirty || d.saving} onClick={d.cancel}>{t("lorebooks.record.cancel")}</button>
-        <button className="dbtn is-primary" disabled={!d.dirty || d.saving} onClick={() => void props.onSave()}>
-          {d.saving ? "Saving…" : "Save changes"}
-        </button>
-      </div>
-    </div>
-  );
-}

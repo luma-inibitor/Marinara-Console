@@ -17,6 +17,7 @@ export { ListGroup } from "./ListGroup";
 export { MiddleTruncate } from "./MiddleTruncate";
 export { MODES, ModePill } from "./ModePill";
 export { RawJson } from "./RawJson";
+export { SaveBar } from "./SaveBar";
 export { SearchBar } from "./SearchBar";
 export { SearchDisclosure } from "./SearchDisclosure";
 export { SectionKey } from "./SectionKey";
