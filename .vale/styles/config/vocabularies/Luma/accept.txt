@@ -24,6 +24,10 @@ Vitest
 [Aa]ffordance(s|es|d|ed|ing|'s)?
 [Aa]gent(s|es|d|ed|ing|'s)?
 [Aa]ttr(s|es|d|ed|ing|'s)?
+[Aa]utoadvance(s|es|d|ed|ing|'s)?
+[Aa]utoapplied(s|es|d|ed|ing|'s)?
+[Aa]utoapply(s|es|d|ed|ing|'s)?
+[Aa]utoinclude(s|es|d|ed|ing|'s)?
 [Aa]utosave(s|es|d|ed|ing|'s)?
 [Bb]acklink(s|es|d|ed|ing|'s)?
 [Bb]oolean(s|es|d|ed|ing|'s)?

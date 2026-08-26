@@ -15,7 +15,8 @@ accessible backend click disabled extraction glyph
 
 # Jargon and common nouns: accept either casing and the usual inflections.
 common = """
-affordance agent attr autosave backlink boolean charset chiprail clearable compat
+affordance agent attr autoadvance autoapplied autoapply autoinclude
+autosave backlink boolean charset chiprail clearable compat
 config copycheck debounce dedup dedupe deduplicate deps destructure
 destructuring dev devtools discardable discoverability domsnap edu ellipsised
 enum esc exceedance expander fullscreen greppable greyscale grouphead hardcode
