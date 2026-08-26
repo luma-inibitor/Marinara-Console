@@ -1,81 +1,20 @@
 #!/usr/bin/env node
-// Layer check: imports point downward only. A file's layer comes from the
-// directory it sits in, and a value import may only reach a layer at or below
-// its own — presentation → state → endpoints → transport, with model a side
-// branch that presentation and state may both reach. ARCHITECTURE.md §1 is the
-// rule; this is the enforcement of it.
+// Layer check: value imports point downward only (ARCHITECTURE.md §1), and no
+// component owns a fetch (§3).
 //
 //   node scripts/layercheck.mjs                 # whole tree
 //   node scripts/layercheck.mjs src/tools/memory
 //
-// ── What a violation costs ────────────────────────────────────────────────
-// `model` importing `state` risks a cycle, and has already happened here once.
-// A value import is a real edge in the module graph at runtime; that is the
-// thing that cycles, so that is the thing this checks.
-//
-// ── Type-only imports point anywhere ──────────────────────────────────────
-// `import type {…}` and an inline `import { type X }` erase at compile time.
-// They create no runtime edge and therefore no cycle, and the layout depends on
-// it: the wire types live in `api/` because they are the endpoints layer's own
-// vocabulary, and the model has to name those shapes to transform them. So the
-// decision is per SPECIFIER, never per statement — `import { flatten, type Row }`
-// is a value edge for `flatten` and nothing at all for `Row`. `export … from`
-// is checked the same way: a re-export is a runtime edge unless it is a type
-// re-export.
-//
-// ── Where a layer comes from ──────────────────────────────────────────────
-// The directory, per §2. A `.tsx` is presentation wherever it sits, which is a
-// fact about the file (it contains JSX) rather than an absence of one — that is
-// the objection §2 raises to a suffix scheme, and it does not apply here.
-// `lib/`, `copy/`, `test/` and anything vendored are importable from anywhere:
-// primitives, the catalog, and fixtures carry no domain and no direction.
-//
-// A `.ts` in a directory that names no layer is UNCLASSIFIED. It is neither
-// checked as a source nor restricted as a target, and it is listed by name in
-// the summary. §2 argues that the worst thing a layer scheme can do is claim a
-// file nobody classified, so an unclassified file is reported loudly rather
-// than defaulted quietly. Every one of them today is a pre-§2 module still to
-// be moved into its layer directory; each is a hole in this check until it is.
-//
-// ── Tests are checked, on the same terms as anything else ─────────────────
-// A test sits inside the layer of the module it covers, so its imports are that
-// layer's imports: a model test that needs a store value is telling you the
-// model wants the store, which is the finding. Nothing has to be special-cased
-// for factories, because `test/` is exempt as a target like `lib/` — the
-// shared-fixture directory declares no layer in §2's table and holds no domain
-// direction.
-//
-// ── The second check: who may own a fetch ─────────────────────────────────
-// Presentation reaching `api/` directly is DOWNWARD, so the direction rule
-// above passes it — and §1 still calls it wrong, for a different reason: the
-// screen bypassed the data layer instead of calling a hook (§3, "No component
-// calls fetch"). That is a rule about ownership rather than direction, so it
-// runs as a separate check below with its own heading, and its findings are
-// never mixed into the upward-import list.
-//
-// It failed nothing while the screens that predated the rule were still being
-// moved onto hooks — a check that goes red on every run from the day it lands
-// gets muted, and then it is not a check. That baseline is spent: the last of
-// them is on a hook, the count is zero, and the rule fails like any other.
-// Anything this reports is a defect to fix, not a number to watch.
-//
-// Exit codes: 0 clean · 1 one or more violations of either rule.
+// Exit codes: 0 clean · 1 one or more violations of either rule · 2 nothing to check.
 
-import { rel, sourceFiles, parseModule, valueSpecifiers } from "./lib/imports.mjs";
+import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import * as ts from "typescript/unstable/ast";
+import { API, SymbolFlags } from "typescript/unstable/sync";
+import { ROOT, rel, sourceFiles } from "./lib/imports.mjs";
 
 // ── layers ────────────────────────────────────────────────────────────────
-// Which layers a file's value imports may land in, per §1:
-//
-//     presentation → state → endpoints → transport
-//     presentation → model        state → model
-//
-// A layer always reaches its own. The model is a side branch rather than a
-// point on the line: it sits above endpoints and below state, which no single
-// ordering expresses, so this is a table instead of a rank comparison. The
-// model reaches nothing but itself.
-//
-// Presentation reaching endpoints or transport is downward and passes here.
-// RULE 2 below is where it fails.
 const REACHES = {
   transport: new Set(["transport"]),
   endpoints: new Set(["endpoints", "transport"]),
@@ -90,8 +29,6 @@ const DIR_LAYER = {
   components: "presentation",
   screens: "presentation",
 };
-// Importable from anywhere, and never checked as a source. Primitives with no
-// domain knowledge, the copy catalog, shared fixtures, vendored engine code.
 const EXEMPT_DIRS = new Set(["lib", "copy", "test", "vendor"]);
 
 /** "src/tools/memory/model/flags.ts" -> "model" | "unclassified" | null(exempt) */
@@ -100,48 +37,145 @@ function layerOf(rel) {
   const file = parts[parts.length - 1];
   const dirs = parts.slice(0, -1);
 
-  // src/lib, src/copy, any test/ or vendor/ segment anywhere.
   if (dirs.some((d) => EXEMPT_DIRS.has(d))) return null;
 
   for (const d of dirs) if (DIR_LAYER[d]) return DIR_LAYER[d];
 
-  // src/ui is shared presentation whatever the extension: index.ts and the
-  // hooks beside it are that layer's own plumbing.
   if (dirs[1] === "ui") return "presentation";
 
-  // A file that returns markup is presentation wherever it sits — including the
-  // app frame, whose Toaster and Palette are screens like any other. The rest of
-  // src/shell is the transport it wraps.
   if (file.endsWith(".tsx")) return "presentation";
   if (dirs[1] === "shell") return "transport";
 
   return "unclassified";
 }
 
+// ── the program ───────────────────────────────────────────────────────────
+// The config is generated because the fixture trees under scripts/ sit outside
+// the repo tsconfig's `include` and still have to be checked.
+function openProject(roots) {
+  const dir = mkdtempSync(join(tmpdir(), "layercheck-"));
+  const config = join(dir, "tsconfig.json");
+  writeFileSync(config, JSON.stringify({ extends: join(ROOT, "tsconfig.json"), include: roots }));
+  const api = new API({ cwd: ROOT });
+  const project = api.updateSnapshot({ openProjects: [config] }).getProjects()[0];
+  return {
+    project,
+    close() {
+      api.close();
+      rmSync(dir, { recursive: true, force: true });
+    },
+  };
+}
+
 // ── edges ─────────────────────────────────────────────────────────────────
-// The shared parse gives per-specifier kinds; the direction rule only cares
-// about the specifiers that survive to runtime.
-function valueEdges(mod) {
-  const edges = [];
-  for (const e of mod.imports) {
-    const names = valueSpecifiers(e).map((s) =>
-      s.star ? `* as ${s.local}` : s.imported
-    );
-    // A side-effect import (`import "./x"`) names nothing and is still an edge
-    // — the module runs. An import whose every specifier was type-only is not.
-    if (!names.length && !e.bare) continue;
-    edges.push({ line: e.line, spec: e.spec, resolved: e.resolved, names, kind: e.kind });
+// A specifier survives to runtime when the checker resolves it to a value, so
+// an unmarked import of a type is no edge either.
+function makeReader(project) {
+  const { checker, program } = project;
+  const realPath = new Map(program.getSourceFileNames().map((n) => [n.toLowerCase(), n]));
+
+  function resolveModule(specifier) {
+    const path = checker.getSymbolAtLocation(specifier)?.declarations?.[0]?.path;
+    if (!path) return onDisk(specifier);
+    const abs = realPath.get(path) ?? path;
+    const r = rel(abs);
+    return r.startsWith("..") || r.split("/").includes("node_modules") ? null : abs;
   }
+
+  // A stylesheet is a runtime edge the checker cannot see: it is not
+  // TypeScript, so it is not in the program.
+  function onDisk(specifier) {
+    if (!specifier.text.startsWith(".")) return null;
+    const abs = join(dirname(specifier.sourceFile.fileName), specifier.text);
+    return existsSync(abs) && statSync(abs).isFile() ? abs : null;
+  }
+
+  function isValue(name) {
+    const symbol = checker.getSymbolAtLocation(name);
+    if (!symbol) return true;
+    const target = symbol.flags & SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
+    if (checker.isUnknownSymbol(target)) return true;
+    return Boolean(target.flags & SymbolFlags.Value);
+  }
+
+  function namesOf(clause, elements) {
+    const names = [];
+    if (clause?.name && isValue(clause.name)) names.push("default");
+    for (const el of elements ?? []) {
+      if (el.isTypeOnly || !isValue(el.name)) continue;
+      names.push(el.propertyName?.text ?? el.name.text);
+    }
+    return names;
+  }
+
+  return { resolveModule, namesOf };
+}
+
+function edgesOf(source, read) {
+  const edges = [];
+  const push = (node, specifier, kind, names, bare = false) => {
+    if (!names.length && !bare) return;
+    edges.push({
+      line: source.getLineAndCharacterOfPosition(node.getStart()).line + 1,
+      spec: specifier.text,
+      resolved: read.resolveModule(specifier),
+      kind,
+      names,
+    });
+  };
+
+  for (const node of source.statements) {
+    if (ts.isImportDeclaration(node)) {
+      const clause = node.importClause;
+      if (!clause) {
+        push(node, node.moduleSpecifier, "imports", [], true);
+        continue;
+      }
+      if (clause.isTypeOnly) continue;
+      const bindings = clause.namedBindings;
+      const names =
+        bindings && ts.isNamespaceImport(bindings)
+          ? [...read.namesOf(clause, null), `* as ${bindings.name.text}`]
+          : read.namesOf(clause, bindings?.elements);
+      push(node, node.moduleSpecifier, "imports", names);
+      continue;
+    }
+
+    if (ts.isExportDeclaration(node) && node.moduleSpecifier) {
+      if (node.isTypeOnly) continue;
+      const clause = node.exportClause;
+      const names =
+        !clause ? ["*"]
+        : ts.isNamespaceExport(clause) ? [`* as ${clause.name.text}`]
+        : read.namesOf(null, clause.elements);
+      push(node, node.moduleSpecifier, "re-exports", names);
+    }
+  }
+
+  // `await import("./x")` is an edge the statement loop above cannot see.
+  walk(source, (node) => {
+    if (!ts.isCallExpression(node) || !ts.isImportExpression(node.expression)) return;
+    const specifier = node.arguments?.[0];
+    if (!specifier || !ts.isStringLiteral(specifier)) return;
+    const holder = node.parent?.kind === ts.SyntaxKind.AwaitExpression ? node.parent : node;
+    const declaration = holder.parent;
+    const pattern = declaration && ts.isVariableDeclaration(declaration) ? declaration.name : null;
+    const names =
+      pattern && ts.isObjectBindingPattern(pattern)
+        ? pattern.elements.map((e) => (e.propertyName ?? e.name).text)
+        : ["*"];
+    push(node, specifier, "imports", names);
+  });
+
   return edges;
 }
 
-// ── ownership (the second check) ───────────────────────────────────────────
-// A different question from direction: not "may this file reach that layer?"
-// but "is this file allowed to own a fetch at all?" §3: no component calls
-// `fetch`; a screen gets data by calling a hook.
+function walk(node, visit) {
+  visit(node);
+  node.forEachChild((child) => walk(child, visit));
+}
 
-// The same notion of presentation the direction check uses, so one file cannot
-// be presentation to one rule and something else to the other.
+// ── ownership (the second check) ──────────────────────────────────────────
 function isPresentation(from) {
   const parts = from.split("/");
   if (parts[parts.length - 1].endsWith(".tsx")) return true;
@@ -149,24 +183,19 @@ function isPresentation(from) {
 }
 
 // An `api/` DIRECTORY, per §2 — not a file that happens to be named api.ts.
-// The resolved path is the fact; the specifier is the fallback for a target
-// this tree does not contain.
 function isEndpointsModule(edge) {
   if (edge.resolved) return rel(edge.resolved).split("/").slice(0, -1).includes("api");
   return /(^|\/)api\//.test(edge.spec);
 }
 
-// Matched anywhere in the path, so a tree rooted outside src (the fixtures) is
-// checked by the same rule.
 const TRANSPORT_DIR = "src/shell/";
 const TRANSPORT_CLIENT = "src/shell/api.ts";
 const inTransport = (p) => p.includes(TRANSPORT_DIR);
 
 // `api()` is a request, so importing it into a component is the same defect as
-// calling `fetch` there. The rest of that module is not: `ApiError` is a shape
-// an error boundary has to name, and `tokensOf` is a pure estimate. Naming the
-// binding rather than the module is what keeps this from firing on all of them.
-// The app frame is exempt — src/shell is the transport, `.tsx` and all.
+// calling `fetch` there. `ApiError` is a shape an error boundary has to name,
+// and `tokensOf` is a pure estimate, so the binding is named rather than the
+// module.
 const TRANSPORT_REQUEST = new Set(["api", "default"]);
 
 function isTransportClient(edge, from) {
@@ -177,25 +206,41 @@ function isTransportClient(edge, from) {
 
 // `fetch` as a free identifier. `opts.refetch()` and `client.fetch` are not it:
 // a member name is a property, not the global.
-function fetchSites(mod) {
+const MEMBER_NAMES = new Set([
+  ts.SyntaxKind.PropertyAccessExpression,
+  ts.SyntaxKind.PropertyAssignment,
+  ts.SyntaxKind.PropertySignature,
+  ts.SyntaxKind.PropertyDeclaration,
+  ts.SyntaxKind.MethodSignature,
+  ts.SyntaxKind.MethodDeclaration,
+  ts.SyntaxKind.GetAccessor,
+  ts.SyntaxKind.SetAccessor,
+  ts.SyntaxKind.EnumMember,
+]);
+
+function isMemberName(node) {
+  const parent = node.parent;
+  if (!parent) return false;
+  if (parent.kind === ts.SyntaxKind.QualifiedName) return parent.right === node;
+  return MEMBER_NAMES.has(parent.kind) && parent.name === node;
+}
+
+function fetchSites(source) {
   const lines = new Set();
-  const walk = (n) => {
-    if (Array.isArray(n)) { for (const c of n) walk(c); return; }
-    if (!n || typeof n !== "object" || typeof n.type !== "string") return;
-    if (n.type === "Identifier" && n.name === "fetch" && n.loc) lines.add(n.loc.start.line);
-    for (const k of Object.keys(n)) {
-      if (k === "loc" || k.endsWith("Comments")) continue;
-      if (!n.computed && (k === "property" || k === "key")) continue;
-      walk(n[k]);
-    }
-  };
-  walk(mod.ast.program.body);
+  walk(source, (node) => {
+    if (node.kind !== ts.SyntaxKind.Identifier) return;
+    if (node.text !== "fetch" || isMemberName(node)) return;
+    lines.add(source.getLineAndCharacterOfPosition(node.getStart()).line + 1);
+  });
   return [...lines].sort((a, b) => a - b);
 }
 
 // ── main ──────────────────────────────────────────────────────────────────
 const paths = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const files = sourceFiles(paths);
+
+const session = openProject((paths.length ? paths : ["src"]).map((p) => resolve(ROOT, p)));
+const read = makeReader(session.project);
 
 const perDir = new Map();
 const violations = [];
@@ -216,9 +261,15 @@ for (const abs of files) {
 
   if (layer === "unclassified") unclassified.push(from);
 
-  const mod = parseModule(abs);
-  if (mod.parseError) { parseErrors.push(`${from}: ${mod.parseError}`); continue; }
-  const edges = valueEdges(mod);
+  const source = session.project.program.getSourceFile(abs);
+  const broken = source
+    ? session.project.program.getSyntacticDiagnostics(abs)
+    : [{ text: "not part of the program" }];
+  if (!source || broken.length) {
+    parseErrors.push(`${from}: ${broken[0].text}`);
+    continue;
+  }
+  const edges = edgesOf(source, read);
 
   // Ownership runs on every file whatever its layer: an unclassified module
   // still may not own a fetch, and that is exactly where some of them are.
@@ -236,7 +287,7 @@ for (const abs of files) {
     }
   }
   if (!inTransport(from)) {
-    for (const line of fetchSites(mod)) {
+    for (const line of fetchSites(source)) {
       ownership.push({ file: from, line, rule: "fetch", text: "calls the global fetch()" });
     }
   }
@@ -260,6 +311,8 @@ for (const abs of files) {
     });
   }
 }
+
+session.close();
 
 console.log(`layercheck · ${files.length} files · ${checked} value imports resolved to a layer\n`);
 console.log("per directory:");
