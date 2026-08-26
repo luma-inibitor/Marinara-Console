@@ -10,6 +10,7 @@
     "check:build": "vite build",
     "check:static": "node scripts/run-checks.mjs",
     "check:test": "vitest run",
+    "components": "node scripts/components.mjs",
     "copycheck": "node scripts/copycheck.mjs",
     "deadcss": "node scripts/deadcss.mjs",
     "deadexports": "node scripts/deadexports.mjs",

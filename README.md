@@ -78,4 +78,4 @@ and a fenced example fixes the cause rather than the symptom.
 | `src/` | the console: Vite + Preact + TS, hash routing, tokens-based CSS |
 | `design/` | DESIGN.md, tokens rationale, vendored UI research |
 | `.vale.ini` | prose lint config: Microsoft style, exemptions in the vocabulary rather than rule switches |
-| `scripts/` | the executable checks: `verify.mjs` (definition of done: screenshots, contrast, tap targets, console errors), `copycheck`, `layercheck`, `deadcss`, `domsnap`, `faceprobe`, `overlaycheck`, `shots`. Browser ones share `lib/browser.mjs` |
+| `scripts/` | the executable checks: `verify.mjs` (definition of done: screenshots, contrast, tap targets, console errors), `components` (inventory of what returns markup, and what each one couples to), `copycheck`, `layercheck`, `deadcss`, `domsnap`, `faceprobe`, `overlaycheck`, `shots`. Browser ones share `lib/browser.mjs` |
