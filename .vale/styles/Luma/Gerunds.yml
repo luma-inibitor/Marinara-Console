@@ -1,0 +1,18 @@
+# Mined from ASD-STE100, which allows the infinitive, the imperative, the
+# simple tenses and the past participle as an adjective, and no other verb
+# form. This rule covers the present participle and the gerund.
+#
+# It matches on the part-of-speech tag rather than on a "-ing" suffix, so
+# "thing", "string" and "during" do not trip it, and a gerund used as a plain
+# noun ("the onboarding flow") is tagged NN and left alone.
+#
+# Note that the project vocabulary does NOT apply to sequence checks the way it
+# applies to every other check. A domain word used verbally still reports here,
+# and the only way to exempt one is to edit this rule.
+extends: sequence
+message: "'%s' is a gerund or present participle; prefer a simple tense."
+link: https://www.asd-europe.org/standards-specifications/simplified-technical-english/
+level: suggestion
+tokens:
+  - tag: VBG
+    target: true

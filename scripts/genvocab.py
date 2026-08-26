@@ -1,11 +1,11 @@
 """Generate Vale's project vocabulary from readable word lists.
 
-Vale reads `.vale/styles/config/vocabularies/Marinara/accept.txt`, where every
+Vale reads `.vale/styles/config/vocabularies/Luma/accept.txt`, where every
 line is a regular expression. Writing those by hand means spelling out each
 inflection and casing of every term, so instead keep plain word lists here and
 expand them:
 
-    python3 scripts/genvocab.py > .vale/styles/config/vocabularies/Marinara/accept.txt
+    python3 scripts/genvocab.py > .vale/styles/config/vocabularies/Luma/accept.txt
 
 Run that after editing a list, and commit both files.
 """

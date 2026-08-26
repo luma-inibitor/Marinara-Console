@@ -31,7 +31,7 @@ MC_PROXY_TARGET=http://127.0.0.1:7874 MC_DEV_PORT=5174 npm run dev
 ## Prose
 
 Docs are linted with [Vale](https://vale.sh) against the Microsoft style, plus a
-small local style in `.vale/styles/Marinara/`. It is advisory: `npm run check`
+small local style in `.vale/styles/Luma/`. It is advisory: `npm run check`
 does not run it, and the CI job never blocks a merge.
 
 ```sh
@@ -44,11 +44,19 @@ npm run prose
 repo-wide; where a rule fires on a word that means something specific here, the
 word goes in the project vocabulary instead, which Vale skips in every check.
 
+`.vale/styles/Luma/` holds our own rules, which `vale sync` leaves alone. Two of
+them are mined from ASD-STE100 and catch what neither Google nor Microsoft does:
+gerunds and present participles, and the perfect tenses. Both match on
+part-of-speech tags rather than on spelling, so `during` and `has a value` stay
+quiet. One caveat worth knowing: the vocabulary does **not** apply to these two,
+because Vale skips vocabulary terms for every check except `sequence`. Exempting
+a word from them means editing the rule.
+
 Vocabulary lives in `scripts/genvocab.py`, which expands plain word lists into the
 patterns Vale wants. Add the word there, re-run the script, commit both files:
 
 ```sh
-python3 scripts/genvocab.py > .vale/styles/config/vocabularies/Marinara/accept.txt
+python3 scripts/genvocab.py > .vale/styles/config/vocabularies/Luma/accept.txt
 ```
 
 Prefer a code span or a fence over a vocabulary entry: Vale already skips both,

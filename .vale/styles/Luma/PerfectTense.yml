@@ -1,0 +1,21 @@
+# Mined from ASD-STE100, which permits the simple tenses only and rejects the
+# compound tenses built with an auxiliary. This rule covers the perfect: "has
+# replaced", "have already caught", "had returned".
+#
+# Neither the Google nor the Microsoft package has an equivalent, so this is
+# new signal rather than a stricter dial on a rule we already run.
+#
+# `skip: 1` lets an adverb sit between the auxiliary and the participle, so
+# "have already caught" reports. Matching the participle by tag rather than by
+# suffix keeps "has a value" and "have three items" quiet.
+#
+# See Gerunds.yml on why the project vocabulary cannot exempt a word here.
+extends: sequence
+message: "Perfect tense with '%s'; prefer the simple past."
+link: https://www.asd-europe.org/standards-specifications/simplified-technical-english/
+level: suggestion
+tokens:
+  - pattern: (?i)has|have|had
+  - tag: VBN
+    skip: 1
+    target: true

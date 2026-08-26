@@ -32,4 +32,4 @@ design/research/
 # Vale downloads style packages into StylesPath; only our own files are source.
 .vale/styles/*
 !.vale/styles/config/
-!.vale/styles/Marinara/
+!.vale/styles/Luma/
