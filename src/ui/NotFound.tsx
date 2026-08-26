@@ -9,9 +9,8 @@ import { t, type Key } from "../copy";
  *  default destination: a missing record has one sensible next move, back to
  *  the list it came from, and `backTo` names which list.
  *
- *  `what` is the copy key of the record kind that is missing, and it is the
- *  singular noun the product itself capitalises — `"lorebooks.book"`, not the
- *  plural the list is titled after. */
+ *  `what` is the copy key of the missing record kind, singular:
+ *  `"lorebooks.book"`, not the plural the list is titled after. */
 export function NotFound(props: { what: Key; id?: string; backTo?: string; backLabel?: string }) {
   return (
     <EmptyState

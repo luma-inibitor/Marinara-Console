@@ -15,11 +15,8 @@ import "./Loading.css";
  *  claiming to be loading and becomes a state you can act on. That last phase
  *  is the one exception to "no actions"; `onRetry` is the way out of it.
  *
- *  Give it `what` — the copy key of the subject, `"lorebooks.title"` — and it
- *  writes the sentence, or `label` for a caller that already has a fully formed
- *  one. `what` is a key rather than a noun because the sentence is assembled
- *  here: a subject passed as English would be user-visible copy sitting in a
- *  prop, where neither the copy check nor the linter can reach it. */
+ *  Give it `what`, the copy key of the subject, and it writes the sentence.
+ *  `label` if the caller already has a formed one. */
 export function Loading(props: { what?: Key; label?: string; onRetry?: () => void }) {
   const [phase, setPhase] = useState<"normal" | "slow" | "stalled">("normal");
   useEffect(() => {

@@ -74,12 +74,8 @@ type PluralBase<K extends string> = K extends `${infer B}One`
     : never
   : never;
 
-/**
- * Every key `t()` can resolve. Exported so a component taking a subject noun
- * from its caller — `Loading`, `NotFound`, `ListEmpty` — takes a key instead of
- * a string. A raw noun in a prop is copy no check can see; typed as `Key`, a
- * bad subject is a compile error.
- */
+/** Every key `t()` can resolve. Exported so a component taking a subject noun
+ *  takes a key, not a string: a bad subject is then a compile error. */
 export type Key = ConsoleKey | ProductKey | PluralBase<ProductKey>;
 
 export type Params = Record<string, string | number>;
