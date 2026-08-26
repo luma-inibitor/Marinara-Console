@@ -45,6 +45,29 @@ The console already works this way by habit rather than by rule. No component ca
 
 The rule is about what a store holds, not how it's reached. Stores stay exported, and `layercheck.mjs` flags a write to an entity store from a `.tsx` file—a far more useful check than banning store exports outright, which would only add one-line wrappers around the writes that were never the problem.
 
+### Why `store/` is acyclic, and what breaks if it isn't
+
+`derived()` computes **eagerly at construction**. Several modules under `store/`
+also install subscriptions at module scope. Together those make an import cycle
+inside `store/` fatal rather than untidy. The cycle reads a `const` before the
+line that defines it runs, so the app throws at import time instead of
+misbehaving later.
+
+The edges there are one-way by design:
+
+- `store/decisions.ts` imports nothing from `store/`.
+- `store/review.ts` reads it.
+- `apply`, `preflight`, `pressure` and `tally` read both, and nothing reads them.
+
+A module in that last group reaches entity state through its owner's named
+actions, never by writing the owner's stores.
+
+The same eagerness explains a second trap. A subscription-driven store tracks
+its inputs only while something imports it. Drop the last importer and the
+tracking stops without a type error.
+
+Files in `store/` point back here rather than restating this.
+
 ### The dependency rule
 
 Imports point **downward only**:

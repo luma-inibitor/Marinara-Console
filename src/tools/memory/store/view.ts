@@ -1,7 +1,5 @@
-// Owns the review queue's view state: how the list is arranged and what is
-// open. Nothing else has to happen when one of these changes, so the screen
-// writing it is the screen describing itself — a store rather than `useState`
-// only so the arrangement outlives a trip to another screen.
+// The review queue's view state: how the list is arranged and what is open. A
+// store rather than `useState` only so it outlives a trip to another screen.
 
 import { createStore } from "../../../lib/store";
 

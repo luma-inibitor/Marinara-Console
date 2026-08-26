@@ -5,13 +5,7 @@
 // Drops first (skip removes exactly those), then accept the keeps. Undecided
 // claims are never sent. Failures classify with the fix named.
 //
-// The import edge is one-way on purpose: this module reads `./decisions` and
-// `./review`, and neither may read this one. Those modules install
-// subscriptions at module scope and the stores derived from them compute
-// eagerly at construction — a cycle would evaluate one of those `const`s
-// before its initializer ran and throw at import time. That is also why the
-// entity state this pass touches is reached through their named actions
-// rather than by writing their stores from here.
+// Import edges in `store/` are one-way; see ARCHITECTURE.md, "Why `store/` is acyclic".
 
 import { createStore } from "../../../lib/store";
 import { type Mutation } from "../api/types";
