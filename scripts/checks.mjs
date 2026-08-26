@@ -37,7 +37,6 @@ export const checks = [
   // Copy: every user-visible string comes from the catalog
   "copycheck",
   // Dead code
-  "deadexports",
   "deadcss",
   "knip",
   // Duplication

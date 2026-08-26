@@ -13,7 +13,6 @@
     "copycheck": "node scripts/copycheck.mjs",
     "csslint": "stylelint \"src/**/*.css\"",
     "deadcss": "node scripts/deadcss.mjs",
-    "deadexports": "node scripts/deadexports.mjs",
     "dev": "vite",
     "domsnap": "node scripts/domsnap.mjs",
     "faceprobe": "node scripts/faceprobe.mjs",

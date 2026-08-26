@@ -246,7 +246,7 @@ Re-check the survivors on the current tree before you act on any of them.
 
 What may remain:
 
-- `CollapseButton` at `src/ui/ListGroup.tsx:11`
+- `CollapseButton` at `src/ui/ListGroup.tsx:13`
 - `DisclosureOption` at `src/ui/SearchDisclosure.tsx:9`
 
 Examine each before you delete it. An exported property type is sometimes intentional, because it's
@@ -254,17 +254,20 @@ how another file builds a value for the component. Read the call sites first.
 
 **Two cautions.**
 
-**Caution 1.** `scripts/deadexports.mjs` already reports these. Its header at line 15 is explicit:
-"Any import of the name from another file, type imports included." Each one already sits in
-`design/deadexports-baseline.json`. Each one is a judgement someone already made, not a new discovery, so this item
-is about emptying that baseline rather than finding anything.
+**Caution 1.** No check reports these two now. `knip` took over dead-export reporting from
+`scripts/deadexports.mjs`, and it passes over both, for two different reasons. `CollapseButton`
+carries a `/** @public */` tag at `src/ui/ListGroup.tsx:12`, and knip reads that tag as a statement
+that the export is deliberate. `DisclosureOption` appears in the props of `SearchDisclosure`, which
+other files import, and knip counts a type in the signature of a used export as used. So settle
+these two by reading the call sites. No check will raise them for you.
 
 **Caution 2. Don't un-export `SheetHead`.**
-A bare `knip` run reports the line at `src/ui/index.ts:27` as unused. That report is wrong.
 `.design-sync/previews/SheetHead.tsx:2` imports it as `from "marinara-console"`, a bare specifier
 that resolves through the design-sync harness rather than through this tree. So every barrel line
-looks orphaned from inside `src/`. `scripts/deadexports.mjs:34-38` documents this exact trap and
-exempts `src/ui/index.ts` for it. Removing the line breaks the preview.
+looks orphaned from inside `src/`. `knip.json` maps that specifier to `src/ui/index.ts`, so a
+configured run counts the previews as consumers and says nothing about the line at
+`src/ui/index.ts:29`. A run without that mapping reports the line, and that report is wrong.
+Removing the line breaks the preview.
 
 ## 10. Component counts
 

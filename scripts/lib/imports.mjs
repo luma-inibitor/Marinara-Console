@@ -26,7 +26,7 @@ export const rel = (p) => relative(ROOT, p).split(sep).join("/");
 const SKIP_DIRS = /(^|\/)(node_modules|dist|\.git|vendor)$/;
 
 /** Every non-declaration .ts/.tsx under the given roots, sorted, absolute. */
-export function listSources(roots) {
+function listSources(roots) {
   const out = [];
   const visit = (p) => {
     const st = statSync(p);
