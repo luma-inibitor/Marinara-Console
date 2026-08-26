@@ -33,3 +33,8 @@ design/research/
 .vale/styles/*
 !.vale/styles/config/
 !.vale/styles/Luma/
+
+# Playwright's own output: the HTML report and the traces, screenshots and
+# videos a failing run keeps. Regenerable, and the CI job uploads them.
+playwright-report/
+test-results/

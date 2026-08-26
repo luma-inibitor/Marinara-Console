@@ -5,7 +5,10 @@
 // Only things every browser check needs live here. A helper used by one script
 // belongs in that script — this module exists to remove duplication, not to
 // become a junk drawer of one-offs.
-import { chromium } from "playwright-core";
+//
+// Imports chromium from `@playwright/test`: the bare library packages are no
+// longer devDependencies.
+import { chromium } from "@playwright/test";
 
 // Trailing slash matters: callers append "#/route" and a hash on a bare origin
 // is not a same-document URL Vite will serve.

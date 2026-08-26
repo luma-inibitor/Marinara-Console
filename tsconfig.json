@@ -20,5 +20,10 @@
     "noImplicitOverride": true,
     "types": ["vite/client"]
   },
-  "include": ["src"]
+  // `tests` is here so the browser specs are type-checked with everything
+  // else: Playwright transpiles them without checking types, so nothing else
+  // would ever read them. playwright.config.ts is deliberately NOT here — it
+  // reads `process.env`, and there is no @types/node, so including it would
+  // mean putting node globals on the `types` list that src/ compiles against.
+  "include": ["src", "tests"]
 }

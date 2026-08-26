@@ -8,14 +8,9 @@ concurrency:
   group: check-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-# Nothing in this workflow writes to the repository, so nothing it runs — or
-# anything it installs — is given a token that could.
 permissions:
   contents: read
 
-# The three tracks are separate jobs rather than one chain: they do not depend
-# on each other, so a pull request waits for the slowest one instead of the sum,
-# and a red run names the track that is red instead of stopping at the first.
 jobs:
   static:
     name: Static checks
@@ -83,13 +78,60 @@ jobs:
       - name: Build
         run: npm run check:build
 
-      # The bundle is the artifact a reviewer needs to serve or measure, and it
-      # is gone with the runner otherwise. `if-no-files-found: error` because a
-      # build that emitted nothing must not upload nothing and read as a pass.
+      # `if-no-files-found: error`: an empty upload must not read as a pass.
       - name: Upload dist
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dist
           path: dist/
           if-no-files-found: error
+          retention-days: 7
+
+  # Builds its own bundle rather than `needs: build`, which would serialise it.
+  browser:
+    name: Browser tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Keyed on the lock file: it pins the @playwright/test version, which
+      # pins the browser build.
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      # chromium-headless-shell (196 MB), not chromium (356 MB); every project
+      # here is headless. Gotcha: `--with-deps` must run even on a cache hit —
+      # the cache holds the browser, not the apt packages it links against.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium-headless-shell
+
+      - name: Run browser tests
+        run: npm run test:e2e
+
+      # The whole of what a failed run leaves behind.
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
           retention-days: 7
