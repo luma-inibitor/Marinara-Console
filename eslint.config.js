@@ -5,12 +5,16 @@ import i18next from "eslint-plugin-i18next";
 import importPlugin from "eslint-plugin-import";
 import reactHooks from "eslint-plugin-react-hooks";
 
-// Babel, not typescript-eslint, parses the TypeScript here. The project
-// compiles with typescript@7 — the native compiler — whose npm package exposes
-// no JS Compiler API at all (`ts.createSourceFile` is undefined), so any parser
-// built on it would need a second, older TypeScript installed alongside. Babel
-// strips the types syntactically and needs no compiler, which is enough: the
-// rules below are not type-aware.
+// Babel, not typescript-eslint, parses the TypeScript here. typescript@7 — the
+// native compiler — exports only `version` from the package root, so anything
+// that does `import * as ts from "typescript"` and reaches for
+// `ts.createSourceFile` gets undefined. typescript-eslint does exactly that.
+// Babel strips the types syntactically instead, which is enough: the rules
+// below are not type-aware.
+//
+// The compiler API does exist, under `typescript/unstable/*`: `ast` carries the
+// scanner and the node factory, `sync` carries Program and Checker. A tool of
+// our own can use it. Only the root-export assumption is unavailable.
 //
 // This also pins eslint to 9.x, because @babel/eslint-parser does not accept
 // eslint 10 as a peer.
