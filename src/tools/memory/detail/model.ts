@@ -18,11 +18,14 @@ const NEAR_CAP = 0.8;
 /** Stored section text as display lines: blank lines are separators rather
  *  than content, and a leading bullet marker is punctuation the row re-adds.
  *  Shares `normalizeLine` with the vault reader so the two cannot drift — they
- *  did, and an indented sub-bullet used to render behind two markers. */
+ *  did, and an indented sub-bullet used to render behind two markers.
+ *
+ *  @public */
 export function sectionLines(text: string): string[] {
   return (text ?? "").split(/\n+/).map(normalizeLine).filter(Boolean);
 }
 
+/** @public */
 export interface SectionFlag {
   /** Sentence shown in the row's flag popover. */
   sentence: string;

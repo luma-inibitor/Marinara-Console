@@ -5,6 +5,7 @@
 // co-located stylesheets still here are legacy — rewrite one as utilities when
 // the work already has you editing it.
 export { Button } from "./Button";
+/** @public */
 export type { ButtonProps } from "./Button";
 export { Chip, Tag } from "./Chip";
 export { CopyableText } from "./CopyableText";

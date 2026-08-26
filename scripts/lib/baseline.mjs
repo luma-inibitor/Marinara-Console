@@ -13,7 +13,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 
 /** The recorded set, or an integrity complaint when it cannot be read. */
-export function loadBaseline(path) {
+function loadBaseline(path) {
   if (!existsSync(path)) return { entries: {}, integrity: [] };
   try {
     const parsed = JSON.parse(readFileSync(path, "utf8"));

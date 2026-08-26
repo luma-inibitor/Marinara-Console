@@ -2,7 +2,6 @@
   "name": "marinara-console",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "build": "vite build",
     "check": "npm run check:static && npm run check:test && npm run check:build",
@@ -18,6 +17,7 @@
     "domsnap": "node scripts/domsnap.mjs",
     "faceprobe": "node scripts/faceprobe.mjs",
     "kit": "npx @tailwindcss/cli -i design/mockup-kit.css -o public/mockups/kit.css",
+    "knip": "knip",
     "layercheck": "node scripts/layercheck.mjs",
     "lint": "eslint src",
     "overlaycheck": "node scripts/overlaycheck.mjs",
@@ -54,6 +54,7 @@
     "eslint-plugin-i18next": "^6.1.5",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "knip": "^6.32.2",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",

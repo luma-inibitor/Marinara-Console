@@ -3,9 +3,8 @@
 ## Repo shape
 
 - **No Storybook, no `*.stories.*`** → `shape: "package"`.
-- **This is an app, not a published library.** `package.json` has
-  `main: "index.js"`, the npm-init default, and that file doesn't exist.
-  There is no `exports`/`module`/`types` field. The real component surface is
+- **This is an app, not a published library.** `package.json` has no
+  `main`/`exports`/`module`/`types` field. The real component surface is
   **`src/ui/index.ts`** — a barrel with 23 exports over 22 components. The
   converter needs that pointed at explicitly; discovery won't find it.
 - **`dist/` is a Vite APP build** (index.html + hashed assets), not a component
