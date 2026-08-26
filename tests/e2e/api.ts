@@ -1,31 +1,12 @@
-// The engine, as far as the browser can tell.
+// Answers every request the console makes, from tests/e2e/fixtures/.
 //
-// Every request the console makes is answered here from tests/e2e/fixtures/,
-// so a run needs no engine, no server.mjs and no network: `vite preview` serves
-// the built bundle and Playwright answers everything under /api and /console.
+// Gotcha: there is no /long-term-memory/sources route, however much the Sources
+// screen looks like there should be. store/sources.ts assembles that screen from
+// the three import previews, the notes list and the review response.
 //
-// The table below is the whole contract. It was built by reading the api/
-// directories rather than by watching a run, because a route that is only
-// reached on a screen nobody opened is still a route the next test will need:
-//
-//   src/tools/lorebooks/data.ts          /lorebooks, /lorebooks/:id/entries
-//   src/tools/presets/data.ts            /prompts, /prompts/:id/full
-//   src/tools/memory/api/characters.ts   /characters
-//   src/tools/memory/api/chats.ts        /chats
-//   src/tools/memory/api/status.ts       /long-term-memory/status
-//   src/tools/memory/api/notes.ts        /long-term-memory/notes, /notes/:id
-//   src/tools/memory/api/drafts.ts       /long-term-memory/drafts/review
-//   src/tools/memory/api/import.ts       /long-term-memory/import/preview
-//   src/shell/state.ts                   /console/state/:key
-//
-// There is NO /long-term-memory/sources route, however much the Sources screen
-// looks like there should be: store/sources.ts assembles that screen from the
-// three import previews, the notes list and the review response.
-//
-// An unmatched request is answered 501 and RECORDED rather than left to fail.
-// A request that simply hangs or errors reaches the app as an error state, and
-// the test that follows blames the screen for a gap in this table; the recorded
-// list is asserted empty in tests/e2e/harness.ts, which names the route instead.
+// An unmatched request is answered 501 and recorded, not left to fail; letting
+// it fail reaches the app as an error state and blames the screen for a gap in
+// this table. harness.ts asserts the recorded list is empty.
 
 import type { Page, Request } from "@playwright/test";
 import { BOOKS, ENTRIES } from "./fixtures/lorebooks";

@@ -1,21 +1,10 @@
-// The test object every spec in this directory imports.
+// The test object every spec here imports: `@playwright/test` with the fixture
+// corpus installed.
 //
-// It is `@playwright/test` with the corpus already installed and three failure
-// channels the browser would otherwise swallow turned into test failures:
-//
-//   an unanswered request   — a gap in tests/e2e/api.ts, reported as the route
-//                             that was missing rather than as a blank screen
-//   a `[wire]` console error — a fixture that no longer parses against the
-//                             valibot schemas the app itself uses. This is the
-//                             drift guard running INSIDE the app: corpus.spec.ts
-//                             parses the memory fixtures directly, and this
-//                             catches the same class of fault on any response
-//                             a screen actually consumed
-//   an uncaught exception   — a screen that threw after it rendered, which no
-//                             locator assertion can see
-//
-// The checks run after `use()`, so they report on the whole test rather than on
-// the moment a locator was queried.
+// It also turns three things the browser swallows into failures — an
+// unanswered request, a `[wire]` console error (a fixture that no longer parses
+// against the app's own valibot schemas), and an uncaught exception after
+// render. All three are checked after `use()`, so they report on the whole test.
 
 import { test as base, expect } from "@playwright/test";
 import { installApi, type Route } from "./api";

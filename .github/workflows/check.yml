@@ -94,16 +94,11 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  # Required from the day it merges, not optional and not continue-on-error.
-  # The screens this drives are about to be rewritten by the CSS and copy work
-  # queued behind it, and those are exactly the changes a browser check catches
-  # and a unit test does not. A job that is advisory while that lands is a job
-  # nobody reads.
+  # Required, not advisory: the CSS and copy work queued behind this is exactly
+  # what a browser check catches and a unit test does not.
   #
-  # It builds its own bundle rather than taking `build`'s artifact: Playwright's
-  # webServer already runs `npm run build`, and `needs: build` would put this
-  # job behind the slowest of the three instead of beside them. The cost is one
-  # extra build; the saving is the whole of build's wall clock.
+  # Builds its own bundle instead of `needs: build`, which would serialise it
+  # behind the slowest of the other three jobs.
   browser:
     name: Browser tests
     runs-on: ubuntu-latest

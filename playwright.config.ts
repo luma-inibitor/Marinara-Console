@@ -1,35 +1,16 @@
 import { defineConfig } from "@playwright/test";
 
-// Playwright drives the BUILT bundle, not the dev server.
+// Drives the built bundle over `vite preview`, not the dev server, so what is
+// measured is what ships. Requests under /api and /console are answered from
+// tests/e2e/fixtures/ by tests/e2e/api.ts; no engine is needed.
 //
-// That is the whole point of the harness. `scripts/verify.mjs` drives whatever
-// is on MC_DEV_URL, which in practice is Vite, and Vite is not what ships: the
-// dev server serves unminified modules, injects its own client, rewrites module
-// URLs with `?t=` cache-busters, and reports errors in an overlay the page does
-// not otherwise have. A check that passes there and fails on `dist/` has told
-// nobody anything. `npm run build` runs first and `vite preview` serves the
-// result, so what is measured is what a person would be looking at.
-//
-// No engine and no server.mjs: every request under /api and /console is
-// answered from tests/e2e/fixtures/ by tests/e2e/api.ts.
-//
-// This file is not covered by `tsc --noEmit`, which includes only src/ and
-// tests/ — the same place scripts/*.mjs sits. It reads `process.env`, and the
-// project has no @types/node; adding it would mean putting node globals on the
-// `types` list that src/ compiles against, which is a worse trade than leaving
-// one config file checked by the runner that loads it.
-
+// Gotcha: `tsc --noEmit` does not cover this file. It includes src/ and tests/
+// only, and this reads `process.env` with no @types/node installed.
 const PORT = 4178;
 
-// design/DESIGN.md §7. 390 is the narrow floor (iPhone-class). 486 is Luma's
-// actual device (1080 physical at DPR 2.22) and is the one that has to look
-// right — a layout tuned only at 390 has never been seen at the width it ships
-// to. 768 is the band between the two CSS breakpoints, 1280 is desktop.
-//
-// Duplicated from scripts/lib/browser.mjs on purpose: that module is the old
-// harness and is deleted when verify.mjs is retired. Importing it here would
-// tie this config's lifetime to that deletion, and would pull a browser launch
-// helper into a file the runner loads before it has decided to launch one.
+// design/DESIGN.md §7. 390 is the iPhone-class floor; 486 is Luma's device
+// (1080 physical at DPR 2.22); 768 sits between the two CSS breakpoints; 1280
+// is desktop.
 const VIEWPORTS = [
   { name: "narrow", width: 390, height: 844, touch: true },
   { name: "phone", width: 486, height: 1085, touch: true },
@@ -37,17 +18,14 @@ const VIEWPORTS = [
   { name: "desktop", width: 1280, height: 800, touch: false },
 ];
 
-// The corpus check needs no browser and no viewport, and four identical
-// failures would name one fault four times.
+// Runs once, without a browser: four copies would name one fault four times.
 const CORPUS = /corpus\.spec\.ts$/;
 
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  // No retries anywhere. This is a required job over a fixed corpus with no
-  // engine behind it: a test that passes on the second attempt is telling us
-  // something, and a retry would spend it.
+  // Fixed corpus, no engine: a pass on the second attempt is a real signal.
   retries: 0,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : [["list"], ["html", { open: "never" }]],
   use: {

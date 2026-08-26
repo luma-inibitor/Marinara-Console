@@ -1,14 +1,5 @@
-// The screens, as a list something can iterate.
-//
-// Every check that drives the console visits the same eight surfaces, and the
-// selector that says a surface arrived is the thing most likely to go stale —
-// `scripts/verify.mjs` carried its own copy of this list and its own `waitFor`
-// for each entry. One catalog, so a renamed class is corrected once.
-//
-// `row` is the collapsed list row each screen actually renders, one element per
-// item. Screens genuinely differ — the lorebook audit and the vault use `.row`,
-// the review queue uses `.mem-row`, sources uses `.srow` — so a single union
-// selector would either miss rows or count nested ones twice.
+// The eight surfaces every browser check visits, as a list something can
+// iterate. One catalog, so a renamed class is corrected once.
 
 import { expect, type Page } from "@playwright/test";
 import { BOOK_ID } from "./fixtures/lorebooks";
@@ -23,7 +14,8 @@ export interface Screen {
   /** The element that proves the screen ASSEMBLED, not merely that it mounted.
    *  A screen that rendered its error state still has an `#app` with children. */
   ready: string;
-  /** The repeating list row: one element per item on the screen. */
+  /** The repeating list row. Screens differ — `.row`, `.mem-row`, `.srow` — so
+   *  a single union selector would miss rows or count nested ones twice. */
   row: string;
   /** Exactly how many rows the corpus puts on this screen. An exact count, not
    *  a floor, because most of these numbers are a rule rather than a total: the

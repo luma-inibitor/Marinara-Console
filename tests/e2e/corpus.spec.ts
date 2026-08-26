@@ -1,21 +1,11 @@
 // The fixture corpus, parsed with the app's own schemas.
 //
-// COVERAGE, PLAINLY: this covers the memory fixtures and nothing else. Only
-// three files in src/tools/memory/api/ have valibot schemas — `grep -rln
-// valibot src` — so there is nothing to parse a lorebook entry, a preset or a
-// preset section against. Those fixtures are guarded by their TypeScript types
-// where the wire shape allows it (tests/e2e/fixtures/lorebooks.ts) and not at
-// all where it does not (tests/e2e/fixtures/presets.ts, which is in the
-// engine's raw string-typed wire form by necessity). Do not read a green run
-// here as the corpus being schema-checked.
+// Gotcha: this covers the MEMORY fixtures only. Just three files in
+// src/tools/memory/api/ have valibot schemas, so nothing here parses a lorebook
+// entry, a preset or a preset section. A green run is not the corpus being
+// schema-checked.
 //
-// The value of parsing here rather than only in the browser is the failure
-// message. `harness.ts` fails a screen when the running app logs a `[wire]`
-// mismatch, but only for a response that screen consumed and only after a page
-// load; this names the field, in milliseconds, before a browser starts.
-//
-// It runs in its own project, without a viewport, because the corpus does not
-// change between viewports and four identical failures name one fault.
+// Runs without a viewport: the corpus does not change between them.
 
 import * as v from "valibot";
 import { expect, test } from "@playwright/test";
