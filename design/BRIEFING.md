@@ -78,7 +78,7 @@ Full detail in `DESIGN.md`. The parts that constrain new work:
   (above it a list and its detail sit side by side).
 - **Reading measure `--measure: 68ch`** on prose. Not on identifiers or
   key/value rows — wrapping `source_character_2cdcc172e8fe3cd6` serves nobody.
-- **Contrast and tap-target floors are enforced by `verify.mjs`**, not by
+- **The browser suite enforces the contrast and tap-target floors**, not
   judgment. Body and data text ≥4.5:1; primary targets ≥44px.
 
 ## 5. Requirements that are settled
@@ -205,10 +205,9 @@ Not optional, and not judgment calls:
 
 | Command | Checks |
 |---|---|
-| `node scripts/verify.mjs` | Contrast, tap targets, console errors, keyboard walk, density |
+| `npx playwright test` | Every screen at four viewports: contrast, tap targets, console errors, overlay dismissal, keyboard |
 | `node scripts/copycheck.mjs <file>` | Every user-visible string traces to the catalog or `OURS` |
 | `node scripts/deadcss.mjs` | CSS classes nothing uses — fails when the list grows past `design/deadcss-baseline.json` |
 | `node scripts/deadexports.mjs` | Symbols exported but used only where declared, dead re-exports included — same baseline ratchet |
 | `node scripts/domsnap.mjs before` / `after --diff` | A refactor renders identically, and what it didn't reach |
-| `node scripts/overlaycheck.mjs` | Every layered surface closes on scrim, Escape and back |
-| `node scripts/shots.mjs <url>` | Screenshots at 390 / 486 / 768 / 1280 |
+| `MC_SHOTS=1 MC_SHOT_URL=<path> npx playwright test shots` | Screen captures at 390 / 486 / 768 / 1280 |

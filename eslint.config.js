@@ -117,15 +117,12 @@ export default [
     },
   },
   {
-    // These five drive a real Chromium. The callback inside page.evaluate runs
+    // These two drive a real Chromium. The callback inside page.evaluate runs
     // in the page, so document and friends are defined there and nowhere else
     // in scripts/ -- listing the files keeps a stray `document` in a Node-only
     // script reportable.
     files: [
       "scripts/domsnap.mjs",
-      "scripts/faceprobe.mjs",
-      "scripts/shots.mjs",
-      "scripts/verify.mjs",
       "scripts/lib/browser.mjs",
     ],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
