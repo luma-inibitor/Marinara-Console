@@ -1,0 +1,21 @@
+{
+  "lorebook-audit": [
+    ".nm — 2.43:1 (needs 4.5:1) 11.3pt (15px)",
+    ".ord.t-data — 3.88:1 (needs 4.5:1) 9.0pt (12px)",
+    ".tg — 2.24:1 (needs 4.5:1) 6.8pt (9px)",
+    ".tok.t-num — 2.43:1 (needs 4.5:1) 10.5pt (14px)",
+    ".unit.t-data — 2.43:1 (needs 4.5:1) 6.4pt (8.5px)",
+    "span — 2.43:1 (needs 4.5:1) 8.3pt (11px)"
+  ],
+  "preset-editor": [
+    ".is-off.tg — 1.69:1 (needs 4.5:1) 6.8pt (9px)",
+    ".nm — 2.43:1 (needs 4.5:1) 11.3pt (15px)",
+    ".ord.t-num — 3.88:1 (needs 4.5:1) 9.0pt (12px)",
+    ".tg — 2.24:1 (needs 4.5:1) 6.8pt (9px)",
+    ".tok — 2.43:1 (needs 4.5:1) 10.5pt (14px)",
+    ".unit.t-data — 2.43:1 (needs 4.5:1) 6.4pt (8.5px)"
+  ],
+  "presets": [
+    ".is-empty — 3.62:1 (needs 4.5:1) 10.5pt (14px)"
+  ]
+}

@@ -9,6 +9,7 @@
     "skipLibCheck": true,
     "allowJs": true,
     "isolatedModules": true,
+    "resolveJsonModule": true,
     // scripts/layercheck.mjs tells an upward dependency from a type-only one by
     // reading `import type`; this makes the compiler enforce that marking
     // instead of trusting each import's author to remember it.
