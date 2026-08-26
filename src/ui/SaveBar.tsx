@@ -2,18 +2,14 @@ import { joinList, t } from "../copy";
 import type { Draft } from "../shell/draft";
 
 /** The sticky commit bar over an explicit-save draft: staged-change count on
- *  the left, Cancel and Save on the right, and the conflict resolution in place
- *  of both when the record was written elsewhere mid-edit.
+ *  the left, Cancel and Save on the right, conflict resolution in place of both
+ *  when the record moved mid-edit.
  *
- *  The lorebook entry drawer and the preset section editor are the same bar,
- *  down to the class names. The one thing that differs is the noun in the
- *  conflict sentence — "This entry was updated elsewhere" vs "This section…" —
- *  and that noun is the whole point of the sentence, so the caller passes the
- *  key of the sentence rather than a word this file drops into a hole.
+ *  The conflict sentence names the record kind, so the caller passes its copy
+ *  key rather than a bare noun this file drops into a hole.
  *
- *  No stylesheet of its own: `.savebar` is already in src/styles/presets.css,
- *  which main.tsx loads on every screen, so the rules are live for both callers
- *  today. Moving them next to this file belongs to the stylesheet migration. */
+ *  No stylesheet of its own: `.savebar` lives in src/styles/presets.css, which
+ *  main.tsx loads on every screen. Moving it belongs to the sheet migration. */
 export function SaveBar<T extends { id: string }>(props: {
   draft: Draft<T>;
   onSave: () => Promise<boolean>;
