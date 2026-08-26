@@ -307,7 +307,3 @@ function collectDynamicImports(root, mod, absPath) {
   walk(root, null, null);
 }
 
-/** The specifiers of one import edge that survive to runtime, as names. */
-export function valueSpecifiers(edge) {
-  return edge.specifiers.filter((s) => !s.typeOnly);
-}
