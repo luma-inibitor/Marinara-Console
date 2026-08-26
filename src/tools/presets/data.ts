@@ -1,4 +1,3 @@
-/* @copy-strict */
 // Prompt presets: types, wire normalization, and derived cost.
 //
 // WIRE FORMAT WARNING — the engine stores booleans and nested objects as TEXT
