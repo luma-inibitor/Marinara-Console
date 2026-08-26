@@ -698,14 +698,20 @@ This pull request must **not** delete `scripts/lib/baseline.mjs`.
 This plan has no replacement for `deadcss`. Thus `baseline.mjs` continues after the migration.
 The same is true for `scripts/lib/imports.mjs`. `components.mjs:71` imports it.
 
-The deletion leaves a reference to `scripts/deadexports.mjs` in three files this pull request doesn't own.
-`design/ARCHITECTURE.md:210` describes the script and its baseline ratchet.
-`docs/architecture-prose` rewrites that document, and its commit `7b17d81` drops the paragraph.
+The deletion leaves a reference to `scripts/deadexports.mjs` in four files this pull request doesn't own.
+`design/ARCHITECTURE.md` describes the script and its baseline ratchet.
+`docs/architecture-prose` rewrites that document and keeps the paragraph on purpose.
+The reason is that `deadexports` is still a live blocking check on that branch.
+A document has to be true of the tree it ships with.
+So whichever of the two pull requests lands second must delete the paragraph in the same change.
 `design/BRIEFING.md:211` lists `node scripts/deadexports.mjs` as a command a person runs.
 `chore/retire-verify` owns that file in wave 3, and the head of that branch still holds the row.
 Delete the row there.
+`tests/e2e/contrast.spec.ts:26` names the `deadcss/deadexports` shape in a comment about its own baseline.
+`test/e2e-axe-contrast` owns that file and the reference is still at its head, so the correction belongs there.
 `scripts/lib/baseline.mjs:50` gives `deadexports src/ui` as an example inside a comment.
-`fix/baseline-ghosts` and `chore/deadcss-drift` both write to that file, so the correction belongs to whichever lands first.
+`fix/baseline-ghosts` and `chore/css-cross-sheet` both write to that file, so the correction belongs to whichever lands first.
+`chore/deadcss-drift` doesn't: it has no commits ahead of main, and its own plan section scopes it to `scripts/deadcss.mjs`.
 `linkcheck` reports neither Markdown reference, because each one is inline code rather than a Markdown link.
 It never opens `scripts/lib/baseline.mjs`, because `package.json:23` hands it `README.md`, `CLAUDE.md`, `BACKLOG.md` and `design/*.md` only.
 
