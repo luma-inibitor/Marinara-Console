@@ -7,7 +7,8 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts", "scripts/**/*.test.mjs"],
+    // test/ is the HTTP conformance suite for server.mjs.
+    include: ["src/**/*.test.ts", "scripts/**/*.test.mjs", "test/**/*.test.mjs"],
     setupFiles: ["src/tools/memory/test/setup.ts"],
   },
 });
