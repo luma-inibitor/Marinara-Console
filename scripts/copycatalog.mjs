@@ -34,8 +34,8 @@ const norm = (s) =>
 // ── tables ────────────────────────────────────────────────────────────────
 
 const product = JSON.parse(readFileSync(join(COPY_DIR, "vendor", "ltm-en.json"), "utf8"));
-// Four of the vendored keys carry no prefix, so neither lookup nor display may
-// assume one: `errors.interfaceStopped` is the whole key.
+// Three of the vendored strings carry no prefix, so neither lookup nor display
+// may assume one: `errors.interfaceStopped` is the whole key.
 const lookup = (key) => product[PREFIX + key] ?? product[key];
 const strip = (key) => (key.startsWith(PREFIX) ? key.slice(PREFIX.length) : key);
 
@@ -43,7 +43,7 @@ const byText = new Map();
 for (const [key, value] of Object.entries(product)) {
   if (typeof value !== "string") continue;
   const n = norm(value);
-  if (n && !byText.has(n)) byText.set(n, strip(key));
+  if (n && !byText.has(n)) byText.set(n, key);
 }
 
 // ── checks ────────────────────────────────────────────────────────────────
@@ -94,7 +94,14 @@ for (const file of readdirSync(COPY_DIR).filter((f) => f.endsWith(".json")).sort
       else seen.set(n, key);
       const upstream = byText.get(n);
       if (upstream && !entry.despite) {
-        fail(`coins ${JSON.stringify(text)}, but the vendored catalog already has it as "${upstream}"; mirror it with {"use": "${upstream}"}, or if it genuinely cannot be used, declare {"despite": "${upstream}"} and say why in the note`);
+        const name = strip(upstream);
+        // t() resolves a product key as PREFIX + key and nothing else, so an
+        // unprefixed vendored key is not a `use` value any console entry can hold.
+        const advice =
+          name === upstream
+            ? `t() resolves a product key only under "${PREFIX}", so this one cannot be mirrored; declare {"despite": "${name}"} and say why in the note`
+            : `mirror it with {"use": "${name}"}, or if it genuinely cannot be used, declare {"despite": "${name}"} and say why in the note`;
+        fail(`coins ${JSON.stringify(text)}, but the vendored catalog already has it as "${name}"; ${advice}`);
       }
     }
 
