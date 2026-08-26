@@ -6,7 +6,7 @@
 [data-s="disabled"] { --sc: var(--off); }
 
 /* ══ layout: mobile single column; ≥900px master-detail ══ */
-.audit { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); }
+.audit { height: 100%; position: relative; display: grid; grid-template-columns: minmax(0, 1fr); }
 .audit-list { min-width: 0; overflow-y: auto; display: flex; flex-direction: column; }
 .audit.is-desktop { grid-template-columns: minmax(400px, 560px) minmax(0, 1fr); }
 .audit-detail {
@@ -213,7 +213,6 @@
 .tagpanel { position: fixed; inset: 0; z-index: 40; background: var(--canvas);
   overflow-y: auto; padding: var(--s2) var(--s3) var(--s6); }
 .audit.is-desktop .tagpanel { position: absolute; }
-.audit { position: relative; }
 .tagpanel .hrow { position: sticky; top: 0; background: var(--canvas); z-index: 5;
   padding: var(--s2) 0; border-bottom: var(--hairline); margin-bottom: var(--s2); }
 .trow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s2) var(--s3);

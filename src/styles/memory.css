@@ -179,9 +179,12 @@
   align-items: start;
   position: sticky; top: calc(var(--console-h, 0px) - 1px); z-index: 5;
   background: var(--surface-2); border-top: var(--hairline); border-bottom: var(--hairline);
-  box-shadow: 0 -3px 0 0 var(--canvas); /* seam guard */ }
+  box-shadow: 0 -3px 0 0 var(--canvas); /* seam guard */
+  /* The sticky header is a stacking context, so the open header must be lifted
+     to the popover's layer. Scrim and popover share this number. */
+  --z-gmenu: 45; }
 .mem-ghead.is-new { box-shadow: inset 3px 0 0 var(--ok), 0 -3px 0 0 var(--canvas); }
-.mem-ghead > .ti { grid-column: 2; justify-self: center; align-self: start;
+.mem-ghead > .ti { grid-column: 2; place-self: start center;
   margin-top: 12.5px; /* centers the 15px icon in the 40px first line */ }
 .mem-ghead .gexp { grid-column: 1; min-height: 40px; align-self: start; }
 /* nowrap keeps the header one row tall at every width. */
@@ -214,9 +217,6 @@
 .gib:hover { color: var(--text); background: var(--surface-2); }
 .gib.gk { color: var(--ok); }
 .gib.gd { color: var(--danger); }
-/* The sticky header is a stacking context, so the open header must be lifted
-   to the popover's layer. Scrim and popover share this number. */
-.mem-ghead { --z-gmenu: 45; }
 .mem-ghead:has(.gmenu-pop) { z-index: var(--z-gmenu); }
 .gmenu-wrap { position: relative; display: inline-flex; }
 .gmenu-scrim { position: fixed; inset: 0; z-index: calc(var(--z-gmenu) - 1); }
@@ -235,7 +235,7 @@
 .group-actions { display: flex; flex-wrap: wrap; gap: var(--s2); padding: var(--s2) var(--s3); align-items: center; }
 
 /* ══ apply dock ══ */
-.apply-dock { position: fixed; z-index: 40; inset: auto 0 calc(53px + env(safe-area-inset-bottom)) 0;
+.apply-dock { position: fixed; z-index: 40; inset: auto 0 calc(53px + env(safe-area-inset-bottom));
   display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap;
   padding: var(--s2) var(--s3);
   background: color-mix(in srgb, var(--surface-1) 96%, transparent);
@@ -382,7 +382,8 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .dbtn2 { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   min-height: var(--tap); padding: 0 var(--s4); border: var(--hairline); border-radius: var(--r-m);
   background: none; color: var(--text); font-family: var(--font-label);
-  font-weight: 700; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+  font-weight: 700; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  white-space: nowrap; }
 .dbtn2[data-on="true"][data-dk="keep"] { color: var(--ok); border-color: var(--ok); background: var(--ok-wash); }
 .dbtn2[data-on="true"][data-dk="drop"] { color: var(--danger); border-color: var(--danger); background: var(--danger-wash); }
 .dbtn2.save-on { color: var(--accent); border-color: var(--accent); background: var(--accent-wash); }
@@ -390,7 +391,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .stack-screen .decbar { background: var(--surface-2); border-top: 1px solid var(--edge-strong);
   padding: var(--s2) var(--panel-pad); margin: 0 calc(-1 * var(--panel-pad)); }
 .stack-screen .dbtn2 { flex: 1 1 0; min-height: 44px; }
-.dbtn2 { white-space: nowrap; }
 
 
 .kvs > div { display: flex; gap: var(--s2); align-items: baseline; padding: 5px 0;
@@ -456,6 +456,8 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .gsp { flex: 1 1 auto; }
 .scopelab { color: var(--text-dim); }
 .sbar { display: flex; gap: var(--s2); margin-bottom: var(--s2); }
+/* stylelint-disable-next-line no-duplicate-selectors -- Review and Sources
+   both render .qrail, and the two blocks set different values. */
 .qrail { display: flex; gap: 6px; flex-wrap: wrap; padding-bottom: var(--s2); }
 .qchip { display: inline-flex; align-items: center; gap: 5px; background: none; border: var(--hairline);
   border-radius: var(--r-s); color: var(--text-dim); font-family: var(--font-data);
@@ -583,7 +585,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .scoperow { position: relative; display: flex; align-items: center; gap: var(--s2);
   flex-wrap: wrap; padding: var(--s2) var(--s3); border-bottom: var(--hairline); }
 .scopesep { color: var(--text-faint); font-size: var(--fs-prose); user-select: none; }
-.mem-tab { display: inline-flex; align-items: center; gap: 6px; }
 .mem-tab svg { display: block; flex: 0 0 auto; }
 @media (max-width: 720px) {
   .scoperow { padding: var(--s2); }
