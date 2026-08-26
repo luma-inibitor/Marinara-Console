@@ -1,7 +1,9 @@
 // Every screen's ink clears the design/DESIGN.md §1 floors, at four viewports.
 //
 // axe's color-contrast rule measures element text. It does not look at
-// `::before`, `::after` or `::placeholder`, so that ink is measured here.
+// `::before`, `::after` or `::placeholder`, so that ink is measured here. It
+// also files a node as *incomplete* rather than as a violation when it cannot
+// resolve the background or judge the text; those nodes are measured here too.
 
 import { AxeBuilder } from "@axe-core/playwright";
 import { SCREENS, openScreen } from "./screens";
@@ -21,9 +23,9 @@ const CONTRAST_EXEMPTIONS: [selector: string, reason: string][] = [
   ["[data-brand]", "logotype; WCAG 1.4.3 exempts brand wordmarks from contrast"],
 ];
 
-// Enforced per finding, in the deadcss/deadexports shape: a finding outside the
-// record fails, a recorded one stands.
-const BASELINE: Record<string, string[]> = baseline;
+// Enforced per finding, in the deadcss/deadexports shape, keyed by screen and
+// then viewport: a finding outside the record fails, a recorded one stands.
+const BASELINE: Record<string, Record<string, string[]>> = baseline;
 
 interface Exemptions {
   /** Selectors that exempt the element's own text. */
@@ -48,28 +50,35 @@ for (const screen of SCREENS) {
     const axe = new AxeBuilder({ page }).withRules(["color-contrast"]).exclude("[data-verify-exempt]");
     // Markup that hides text from assistive readers is calling it decoration.
     axe.exclude('[aria-hidden="true"]');
-    for (const selector of EXEMPTIONS.element) axe.exclude(selector);
-    const { violations } = await axe.analyze();
+    const { violations, incomplete } = await axe.analyze();
 
     const nodes = violations.flatMap((violation) => violation.nodes);
-    const visible = await page.evaluate(keepOnScreen, nodes.map((node) => String(node.target[0])));
+    const keep = await page.evaluate(measurable, {
+      targets: nodes.map((node) => String(node.target[0])),
+      exempt: EXEMPTIONS.element,
+    });
     const text = nodes
-      .filter((_node, i) => visible[i])
+      .filter((_node, i) => keep[i])
       .map((node) => {
         const data = node.any[0]?.data as ContrastData | undefined;
         return `${leaf(String(node.target[0]))} — ${data?.contrastRatio}:1 (needs ${data?.expectedContrastRatio}) ${data?.fontSize}`;
       });
 
-    const generated = await page.evaluate(measureGeneratedInk, EXEMPTIONS);
-    const found = [...new Set([...text, ...generated.findings])];
-    if (generated.unlisted.length) {
+    const measured = await page.evaluate(measureInk, {
+      exemptions: EXEMPTIONS,
+      unresolved: incomplete
+        .flatMap((result) => result.nodes)
+        .map((node) => ({ target: String(node.target[0]), label: leaf(String(node.target[0])) })),
+    });
+    const found = [...new Set([...text, ...measured.findings])];
+    if (measured.unlisted.length) {
       testInfo.annotations.push({
         type: "contrast-exempt-unlisted",
-        description: `${generated.unlisted.join(", ")} carry data-contrast-exempt with no entry in CONTRAST_EXEMPTIONS; measured as normal`,
+        description: `${measured.unlisted.join(", ")} carry data-contrast-exempt with no entry in CONTRAST_EXEMPTIONS; measured as normal`,
       });
     }
 
-    const accepted = new Set(BASELINE[screen.name] ?? []);
+    const accepted = new Set(BASELINE[screen.name]?.[testInfo.project.name] ?? []);
     expect(found.filter((f) => !accepted.has(f)), `${screen.name} ink below the §1 floor`)
       .toEqual([]);
   });
@@ -86,17 +95,28 @@ interface ContrastData {
  *  siblings: reordering a row must not read as a new finding. */
 const leaf = (target: string) => target.split(">").pop()!.trim().replace(/:nth-child\(\d+\)/g, "");
 
-/** Runs in the page: which of these selectors still have area on screen. */
-function keepOnScreen(targets: string[]): boolean[] {
+/** Runs in the page: which of these selectors are painted and carry no
+ *  exemption of their own.
+ *
+ *  Gotcha: the exemption is applied here rather than with `axe.exclude`, which
+ *  drops the element's descendants along with it.
+ *
+ *  Gotcha: `vis`, not `onScreen` — ink scrolled past a pane's fold is painted
+ *  as soon as the pane scrolls. */
+function measurable({ targets, exempt }: { targets: string[]; exempt: string[] }): boolean[] {
   return targets.map((target) => {
     const el = document.querySelector(target);
-    return !!el && window.pageHelpers.onScreen(el);
+    return !!el && window.pageHelpers.vis(el) && !exempt.some((sel) => el.matches(sel));
   });
 }
 
-/** Runs in the page: contrast for pseudo-element and placeholder ink. */
-function measureGeneratedInk(exemptions: Exemptions): { findings: string[]; unlisted: string[] } {
-  const { onScreen } = window.pageHelpers;
+/** Runs in the page: contrast for pseudo-element and placeholder ink, and for
+ *  the nodes axe left unresolved. */
+function measureInk({ exemptions, unresolved }: {
+  exemptions: Exemptions;
+  unresolved: { target: string; label: string }[];
+}): { findings: string[]; unlisted: string[] } {
+  const { vis } = window.pageHelpers;
   const findings: string[] = [];
   const unlisted: string[] = [];
 
@@ -146,7 +166,7 @@ function measureGeneratedInk(exemptions: Exemptions): { findings: string[]; unli
     el.tagName.toLowerCase() + (el.className ? `.${String(el.className).trim().split(/\s+/).join(".")}` : "");
 
   const seen = new Set<string>();
-  const measure = (el: Element, pseudo: string, text: string) => {
+  const measure = (el: Element, pseudo: string, text: string, label: string) => {
     const s = getComputedStyle(el, pseudo);
     const raw = parse(s.color); if (!raw) return;
     const bg = bgOf(el);
@@ -164,12 +184,14 @@ function measureGeneratedInk(exemptions: Exemptions): { findings: string[]; unli
     const key = s.color + "|" + Math.round(ratio * 10) + "|" + text.slice(0, 20);
     if (seen.has(key)) return;
     seen.add(key);
-    findings.push(`${describe(el)}${pseudo} — ${Math.round(ratio * 100) / 100}:1 (needs ${floor}:1) ${px}px`);
+    // px * 0.75 is the pt axe reports beside it, so one finding reads the same
+    // whichever pass measured it.
+    findings.push(`${label} — ${Math.round(ratio * 100) / 100}:1 (needs ${floor}:1) ${(px * 0.75).toFixed(1)}pt (${px}px)`);
   };
 
   const exempt = (el: Element, pseudo: string) => exemptions.pseudo.some((e) => e.name === pseudo && el.matches(e.sel));
   for (const el of document.querySelectorAll("body *")) {
-    if (!onScreen(el) || el.closest("[data-verify-exempt]")) continue;
+    if (!vis(el) || el.closest("[data-verify-exempt]")) continue;
     if (el.closest("[aria-hidden=true]")) continue;
     if (el.hasAttribute("data-contrast-exempt") && !exemptions.element.some((sel) => el.matches(sel))) {
       unlisted.push(describe(el));
@@ -179,10 +201,17 @@ function measureGeneratedInk(exemptions: Exemptions): { findings: string[]; unli
       if (!raw || raw === "none" || raw === "normal" || raw.includes("url(")) continue;
       const glyph = raw.replace(/^"|"$/g, "").trim();
       if (!glyph || exempt(el, pseudo)) continue;
-      measure(el, pseudo, glyph);
+      measure(el, pseudo, glyph, `${describe(el)}${pseudo}`);
     }
     const placeholder = (el as HTMLInputElement).placeholder;
-    if (placeholder && !exempt(el, "::placeholder")) measure(el, "::placeholder", placeholder);
+    if (placeholder && !exempt(el, "::placeholder")) measure(el, "::placeholder", placeholder, `${describe(el)}::placeholder`);
+  }
+
+  for (const { target, label } of unresolved) {
+    const el = document.querySelector(target);
+    if (!el || !vis(el) || exemptions.element.some((sel) => el.matches(sel))) continue;
+    const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent!.trim()).join("");
+    if (text) measure(el, "", text, label);
   }
 
   return { findings, unlisted: [...new Set(unlisted)] };
