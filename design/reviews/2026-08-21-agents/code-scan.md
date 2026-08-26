@@ -1,15 +1,15 @@
 # Memory tool review — wired-but-dead, unwired, inconsistent affordances
 
 > **Status: audited 2026-08-22.** This is the report as it was written on
-> 2026-08-21, and its findings have not been edited. The codebase has moved
+> 2026-08-21, and its findings haven't been edited. The codebase has moved
 > substantially since — the P0 batch shipped and a shared `src/ui/` component
 > layer was extracted — so the line numbers cited below no longer resolve and
 > some findings describe surfaces that have since been rebuilt. Every finding
 > at **[critical]** or **[high]** severity now carries an inline status marker
 > (`SHIPPED`, `OPEN`, `SUPERSEDED` or `UNVERIFIED`) naming the evidence.
-> Findings without a marker were not audited: check them against the current
+> Findings without a marker weren't audited: check them against the current
 > code before acting on them. The reason this header exists is that the next
-> reader, human or agent, will otherwise re-fix a bug that is already fixed, or
+> reader, human or agent, will otherwise re-fix a bug that's already fixed, or
 > "restore" a bug while reverting what looks like drift.
 
 `/Users/eli/code/mc-port` @ `feat/memory-tool`, scope `src/tools/memory/*` + `server.mjs`.
@@ -18,7 +18,7 @@
 
 - **[high] [bug]** — Apply can use a **stale preflight**, sending a mutation to `accept` that the same run just `skip`ped. `applyDecided` snapshots `const pf = preflight.value` (`src/tools/memory/store.ts:339`) but preflight is debounced 500 ms (`store.ts:281`) and is *not* awaited. Flip a row keep→drop and hit Apply inside 500 ms: the row is in `dropsByDraft` (`store.ts:341-346`) **and** still in the stale `pf.readyMutationIds` used at `store.ts:385`. Drops run first (`store.ts:367`), then `acceptDraft` is called with a deleted mutation id — the whole draft's accept fails, losing every keep in it. *Fix: in `applyDecided`, await a fresh `runPreflight()` (or drop `pf` and intersect `readyMutationIds` with current keep keys) before building `ids`.* **[SHIPPED — `applyDecided` now `await preflightNow()`s, which clears the debounce timer before running; the ids it sends are additionally filtered against `dropIds`, so a just-skipped mutation can no longer reach `acceptDraft` (`src/tools/memory/store.ts`).]**
 
-- **[high] [bug]** — `AcceptResponse.skippedMutationIds` is declared (`src/tools/memory/data.ts:93`) and never read; `store.ts:392` does `for (const id of res.appliedMutationIds ?? ids)` and marks **all** submitted ids `appliedThisSession` + deletes their decisions. If the engine omits `appliedMutationIds` on a partial success, server-rejected mutations are permanently hidden from the queue for the rest of the session (`appliedThisSession` filter at `store.ts:223`, and it is never cleared). *Fix: subtract `res.skippedMutationIds` before marking, and only mark ids present in `appliedMutationIds` when the field exists.* **[SHIPPED — `applyDecided` builds `const serverSkipped = new Set(res.skippedMutationIds ?? [])` and falls back to `ids.filter((id) => !serverSkipped.has(id))` when the engine omits `appliedMutationIds`, so a server-rejected mutation stays in the queue (`src/tools/memory/store.ts`).]**
+- **[high] [bug]** — `AcceptResponse.skippedMutationIds` is declared (`src/tools/memory/data.ts:93`) and never read; `store.ts:392` does `for (const id of res.appliedMutationIds ?? ids)` and marks **all** submitted ids `appliedThisSession` + deletes their decisions. If the engine omits `appliedMutationIds` on a partial success, server-rejected mutations are permanently hidden from the queue for the rest of the session (`appliedThisSession` filter at `store.ts:223`, and it's never cleared). *Fix: subtract `res.skippedMutationIds` before marking, and only mark ids present in `appliedMutationIds` when the field exists.* **[SHIPPED — `applyDecided` builds `const serverSkipped = new Set(res.skippedMutationIds ?? [])` and falls back to `ids.filter((id) => !serverSkipped.has(id))` when the engine omits `appliedMutationIds`, so a server-rejected mutation stays in the queue (`src/tools/memory/store.ts`).]**
 
 - **[medium] [bug]** — **Decision-ledger clobber on remount.** `Review` calls `refresh(true)` on every mount (`src/tools/memory/Review.tsx:40`) → `loadPersisted()` unconditionally overwrites `decisions`/`edited` from the server (`store.ts:130-136`), while `persist()` debounces the PUT by 700 ms (`store.ts:112`). Navigating Review → Vault → Review within 700 ms of a keypress silently reverts those decisions. *Fix: flush the pending persist (or skip `loadPersisted` when `saveState.value === "saving"` / a debounce timer is armed).*
 
@@ -28,7 +28,7 @@
 
 - **[low] [bug]** — **Undo stays armed and misfires after Apply.** `applyDecided` (`store.ts:407-418`) resets `decisions`, `edited`, `preflight`, but never clears `undoStack` (`store.ts:50`) or `canUndo` (`store.ts:145`). The dock's Undo button (`Review.tsx:451`) stays enabled and, when pressed, writes decisions for already-applied keys into the ledger + persists them; they're only cleaned up by the next `refresh` prune (`store.ts:229-235`). *Fix: `undoStack.length = 0; canUndo.value = false;` at the end of `applyDecided`.*
 
-- **[low] [bug]** — **Stale focus key survives a failed load.** `refresh` reads/removes `mc-ltm-focus-source` at `store.ts:238-245`, but that block sits *inside* the `try` after the `await Promise.all` (`store.ts:214`). If `fetchReview` rejects, control jumps to `catch` (`store.ts:247`) and the key is never consumed — a later `refresh()` (e.g. the one at the end of `applyDecided`, `store.ts:418`) then silently applies a source pre-filter the user never asked for. *Fix: read/remove the key in a `finally`, or before the fetch.*
+- **[low] [bug]** — **Stale focus key survives a failed load.** `refresh` reads/removes `mc-ltm-focus-source` at `store.ts:238-245`, but that block sits *inside* the `try` after the `await Promise.all` (`store.ts:214`). If `fetchReview` rejects, control jumps to `catch` (`store.ts:247`) and the key is never consumed — a later `refresh()` (for example, the one at the end of `applyDecided`, `store.ts:418`) then silently applies a source pre-filter the user never asked for. *Fix: read/remove the key in a `finally`, or before the fetch.*
 
 - **[low] [bug/fragility]** — The **sources→review pre-filter works only by accident of effect ordering.** `Sources` calls `focusSource(id)` then `navigate("memory/review")` (`Sources.tsx:176`); `MemoryTool`'s effect writes `sessionStorage["mc-ltm-focus-source"]` (`MemoryTool.tsx:51-58`); `Review`'s effect starts `refresh(true)` (`Review.tsx:40`). Preact flushes child callbacks before parent, so `refresh` starts *first* — it only works because `refresh` awaits `loadPersisted()` (`store.ts:211`) before reading the key at `store.ts:238`. Remove that await (or make `loadPersisted` sync-cached) and the handoff silently stops working. *Fix: have `Sources` write `sessionStorage` directly and delete the `focusSource`/`consumeFocusSource` module-global hop entirely.* (`mc-ltm-chat` is clean: written `Sources.tsx:95`, read `Sources.tsx:36`, no other consumers.)
 
@@ -52,9 +52,9 @@
 
 ## Inconsistencies / copy
 
-- **[medium] [inconsistency]** — **The decision meter can never reach 100 %.** Denominator is `review.value?.counts.mutations` (`Review.tsx:109`), which includes mutations belonging to *blocked* drafts — and `flattenReview` deliberately excludes those rows (`data.ts:227`: `if (blockedDraftIds.has(row.draftId)) continue;`), so they are undecidable. `tally.undecided` (`store.ts:65`) uses `rows.value.length` instead, so the header and the dock disagree about the same word. *Fix: use `rows.value.length` for the meter total.*
+- **[medium] [inconsistency]** — **The decision meter can never reach 100 %.** Denominator is `review.value?.counts.mutations` (`Review.tsx:109`), which includes mutations belonging to *blocked* drafts — and `flattenReview` deliberately excludes those rows (`data.ts:227`: `if (blockedDraftIds.has(row.draftId)) continue;`), so they're undecidable. `tally.undecided` (`store.ts:65`) uses `rows.value.length` instead, so the header and the dock disagree about the same word. *Fix: use `rows.value.length` for the meter total.*
 
-- **[medium] [inconsistency]** — **Vault promises a capability that does not exist.** Empty state renders `t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")` (`Vault.tsx:120`) = *"…or create a memory manually."* (`ltm-en.json:470`). There is no create affordance anywhere in `Vault.tsx` and no `POST /notes` binding in `data.ts`. *Fix: swap for a key without the create clause, or add the button.*
+- **[medium] [inconsistency]** — **Vault promises a capability that doesn't exist.** Empty state renders `t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")` (`Vault.tsx:120`) = *"…or create a memory manually."* (`ltm-en.json:470`). There is no create affordance anywhere in `Vault.tsx` and no `POST /notes` binding in `data.ts`. *Fix: swap for a key without the create clause, or add the button.*
 
 - **[medium] [inconsistency]** — **Wrong-screen copy in the Review empty state.** `Review.tsx:178` shows `t("sourcesworkspace.noNewOrRetryableSourcesAreReadyToImport")` = *"No new or retryable sources are ready to import."* (`ltm-en.json:618`) when the **review queue** is empty. It names the Sources screen's condition, not the queue's. *Fix: use a `reviewqueue.*` key.*
 

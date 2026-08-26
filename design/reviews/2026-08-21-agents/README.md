@@ -1,15 +1,15 @@
 # 2026-08-21 UX review — raw agent reports
 
 > **Status: audited 2026-08-22.** These are the reports as they were written on
-> 2026-08-21, and their findings have not been edited. The codebase has moved
+> 2026-08-21, and their findings haven't been edited. The codebase has moved
 > substantially since — the P0 batch shipped and a shared `src/ui/` component
 > layer was extracted — so the line numbers they cite no longer resolve and some
 > findings describe surfaces that have since been rebuilt. Every finding at
 > **[critical]** or **[high]** severity carries an inline status marker
 > (`SHIPPED`, `OPEN`, `SUPERSEDED` or `UNVERIFIED`) naming the evidence, and the
-> table below counts them. Findings without a marker were not audited: check
+> table below counts them. Findings without a marker weren't audited: check
 > them against the current code before acting on them, or you will re-fix
-> something that is already fixed.
+> something that's already fixed.
 
 Five parallel reviewers over the feat/memory-tool build (local mock corpus,
 engine 2.4.4 + long-term-memory 1.2.9). The deduplicated, prioritized
@@ -42,7 +42,7 @@ these reports is unaudited and says nothing about the current code either way.
 The three open raw findings are the dock's unreconciled apply arithmetic
 (interaction.md), the missing roving tabindex in the review list
 (mobile-a11y.md), and the absent vault-note → related-claims path
-(linkage.md). They are carried into BACKLOG.md under "Still open from the
+(linkage.md). They're carried into BACKLOG.md under "Still open from the
 2026-08-21 UX review". The consolidated review's three
 open items are the same three findings under its own numbering (2, 31, 50).
 
