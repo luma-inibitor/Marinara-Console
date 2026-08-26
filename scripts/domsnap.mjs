@@ -51,7 +51,7 @@ const SURFACES = [
     open: (p) => p.locator(".mem-mid").first().click() },
   { name: "review-facets", hash: "#/memory/review", vps: [P], sel: ".sheet",
     open: (p) => p.getByRole("button", { name: /^Filter/ }).click() },
-  { name: "review-group", hash: "#/memory/review", vps: [P], sel: ".sheet.option-sheet",
+  { name: "review-group", hash: "#/memory/review", vps: [P], sel: ".sheet.view-sheet",
     open: (p) => p.getByRole("button", { name: /^Group/ }).click() },
   { name: "vault", hash: "#/memory/vault", vps: BOTH },
   { name: "detail", hash: `#/memory/vault/${NOTE}`, vps: BOTH },
