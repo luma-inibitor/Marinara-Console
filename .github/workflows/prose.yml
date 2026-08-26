@@ -1,3 +1,4 @@
+# Advisory prose linting on pull requests. See README.md.
 name: Prose
 
 on:
@@ -15,11 +16,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-      # For the github-pr-check reporter, which creates a check run to hang the
-      # annotations on. See the reporter note below for why it is worth the
-      # extra scope. reviewdog can create check runs with this and nothing
-      # else: it cannot push, merge, or approve.
-      checks: write
+      checks: write  # reviewdog creates the check run the annotations hang on.
 
     steps:
       - name: Checkout
@@ -30,24 +27,15 @@ jobs:
       - name: Lint prose
         uses: vale-cli/vale-action@518a9136acc6e6668ce7c00d367051e0941e87ff # v3.0.0
         with:
-          # Pinned rather than "latest", so a Vale release cannot change what
-          # this reports without a commit here.
           version: "3.18.0"
 
-          # github-pr-annotations needs no write permission, but GitHub caps a
-          # step at 10 annotations and silently drops the rest. That is not a
-          # theoretical limit: the commit that added this workflow put 16
-          # alerts on its own diff. github-pr-check has no cap, at the cost of
-          # `checks: write` above.
+          # Not github-pr-annotations: GitHub caps a step at 10 annotations
+          # and drops the rest silently.
           reporter: github-pr-check
 
-          # `added` is the default and the reason for using the action at all:
-          # it reports only on lines the pull request touches. The docs carry
-          # about 1,600 standing alerts, so a repo-wide report would be noise
-          # nobody reads. Run `npm run prose` locally for the full picture.
+          # Only lines the pull request touches; the corpus has a backlog.
           filter_mode: added
 
-          # Advisory. Vale returns non-zero purely because some rules are error
-          # severity, which says nothing about whether the prose needs work.
+          # Advisory: never blocks a merge.
           fail_on_error: false
           fail_level: none

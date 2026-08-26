@@ -1,29 +1,14 @@
-"""Generate Vale's project vocabulary from readable word lists.
-
-Vale reads `.vale/styles/config/vocabularies/Luma/accept.txt`, where every
-line is a regular expression. Writing those by hand means spelling out each
-inflection and casing of every term, so instead keep plain word lists here and
-expand them:
+"""Expand these word lists into the regexes Vale's accept.txt wants.
 
     python3 scripts/genvocab.py > .vale/styles/config/vocabularies/Luma/accept.txt
-
-Run that after editing a list, and commit both files.
 """
 
-# Proper nouns: exact casing on purpose, so Vale.Terms flags "vite" -> "Vite".
+# Exact casing on purpose, so Vale.Terms flags "vite" -> "Vite".
 proper = """
 Archivo JSDoc Luma Mira Preact Radix Tabler Valibot Vite Vitest
 """
 
-# Domain vocabulary: words Microsoft's word lists want swapped, which mean
-# something specific here. Vale skips vocabulary terms in every check, so
-# listing a word here exempts it without switching the whole rule off.
-#   extract/extraction  claim extraction, not "remove"  (Microsoft.Wordiness)
-#   glyph               an icon or type glyph, not "symbol"  (Microsoft.Jargon)
-#   backend             the engine; the console really has one  (Microsoft.Avoid)
-#   click               a precise input verb, not "select"  (Microsoft.UIVerbs)
-#   accessible          as in accessible name  (Microsoft.Vocab)
-#   disabled            a disabled control, not a person  (Microsoft.Accessibility)
+# Words a Microsoft rule wants swapped, which mean something specific here.
 domain = """
 accessible backend click disabled extraction glyph
 """
@@ -50,9 +35,7 @@ caps = """
 css diff extract json textarea ui url
 """
 
-# Identifiers and data keys that appear bare in prose. Keep this list minimal:
-# an identifier inside a code span or fence is already skipped, so anything here
-# is a word we chose to write as running text.
+# Identifiers written as running text. Keep minimal: code spans are skipped.
 idents = """
 add_link create_note node_modules npm savedAt sendBeacon sessionStorage
 targetId timeline_event useState
