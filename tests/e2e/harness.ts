@@ -16,10 +16,6 @@ interface Options {
   routes: Route[];
 }
 
-/** Console text allowed to pass. Each entry names one message and says why it
- *  may not be fixed here. */
-const EXPECTED_CONSOLE: { why: string; match: RegExp }[] = [];
-
 export const test = base.extend<Options>({
   routes: [[], { option: true }],
 
@@ -33,7 +29,7 @@ export const test = base.extend<Options>({
       if (type !== "error" && type !== "warning") return;
       const text = message.text();
       if (text.startsWith("[wire]")) mismatches.push(text);
-      else if (!EXPECTED_CONSOLE.some((rule) => rule.match.test(text))) noise.push(`${type}: ${text}`);
+      else noise.push(`${type}: ${text}`);
     });
     page.on("pageerror", (error) => crashes.push(error.message));
 

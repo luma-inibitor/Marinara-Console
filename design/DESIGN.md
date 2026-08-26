@@ -393,17 +393,18 @@ viewports.
    visited. The shared fixture in `tests/e2e/harness.ts` fails any test that
    leaves a request unanswered, writes anything to the console at error or
    warning level, or throws an exception after render, so this holds for the
-   whole suite rather than for one spec. A message that has to be tolerated is
-   listed by name in that file's `EXPECTED_CONSOLE`, with the reason it may not
-   be fixed. That list is empty, because the suite currently runs silent.
+   whole suite rather than for one spec. There is no allow list, so the check is
+   absolute. The suite runs silent today, and an escape hatch no test exercises
+   is a worse answer than editing this check on the day a message genuinely
+   cannot be fixed.
 4. Tap-target sweep — `tests/e2e/tap-targets.spec.ts`: interactive elements
    ≥44px primary / ≥24px+spacing secondary. A control under 44px fails unless it
    clears 24px *and* sits ≥8px from the nearest other target — that spacing is
    what §2 grants a secondary control, so without it there is no band left for
    the element to be legitimate in. Segments of one `[role="group"]` are a
    single control, not competing targets. Held to the `RECORDED` list in that
-   spec, which carries ten measured failures, so a new undersized target fails
-   while those ten pass.
+   spec, which records sixteen signatures covering forty-seven undersized
+   elements, so a new undersized target fails while those recorded ones pass.
 5. Contrast sweep — `tests/e2e/contrast.spec.ts`: axe over element text, plus a
    pass of our own over `::before`, `::after` and `::placeholder` ink, against
    the floors in §1. Held to `design/contrast-baseline.json`, so only growth
@@ -413,11 +414,15 @@ viewports.
    Escape and on back, and the command palette, the `g` jump sequences and j/k
    down a list all work without a mouse.
 7. No sideways scroll — `tests/e2e/overflow.spec.ts`: on every screen at every
-   viewport, neither the document nor the scrolling stage may scroll
-   horizontally. The stage is measured as well as the document because `.stage`
-   sets `overflow-y: auto`, and that computes `overflow-x` to auto too, so an
-   over-wide row scrolls the stage and leaves the document at exactly the
-   viewport width. A document-only measure reports every screen clean.
+   viewport, neither the document nor any box that scrolls may scroll
+   horizontally. Every scroll container on the screen is measured, not just the
+   document, because a box that sets `overflow-y: auto` computes `overflow-x` to
+   auto too, so an over-wide row scrolls that box and leaves the document at
+   exactly the viewport width. A document-only measure reports every screen
+   clean. The boxes are found by their computed overflow rather than named,
+   because `.stage` carries the rows on two screens and `.audit-list` carries
+   them on six. The chip rail is allowed to scroll sideways by name, since it
+   asks for `overflow-x: auto` itself and fades its right edge to say so.
 8. Screen captures for a visual read — `tests/e2e/shots.spec.ts`, which is
    skipped unless `MC_SHOTS=1`:
 
