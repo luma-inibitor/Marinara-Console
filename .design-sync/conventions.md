@@ -19,7 +19,7 @@ import "./styles.css";           // tokens + fonts + component CSS, one closure
 Two optional attributes on `<html>` change global rendering:
 
 - `data-theme="dark"` — the only theme that exists today. Light is a token swap
-  that has not been done; do not design for it.
+  that hasn't been done; don't design for it.
 - `data-density="compact"` — tightens row padding and drops `--fs-title` by 1px.
   Default is comfortable.
 
@@ -44,7 +44,7 @@ shipped stylesheet:
 | elevation | `--shadow-pop` `--shadow-panel` `--shadow-modal` |
 | prose width | `--measure` (68ch) |
 
-**Three colour axes, and they do not mix.** `--accent` means *interactive* —
+**Three colour axes, and they don't mix.** `--accent` means *interactive* —
 focus, selection, primary. The status four mean *state*. The `--type-*` hues mean
 *identity* (which kind of object this is) and are always paired with the type name
 in text. Never use a status hue for chrome, or `--accent` for anything
@@ -83,7 +83,7 @@ variant strings. `EmptyState` is the base that `ErrorState`, `NotFound` and
 `ListEmpty` compose — prefer the named one when it fits, because each fixes the
 icon and tone you would otherwise have to get right yourself.
 
-`IconButton` requires a `label` — it is the accessible name, not decoration.
+`IconButton` requires a `label` — it's the accessible name, not decoration.
 
 ```jsx
 <div style={{ display: "grid", gap: "var(--s3)", padding: "var(--s4)",
@@ -114,5 +114,5 @@ icon and tone you would otherwise have to get right yourself.
 never be the one that gets cut. Let it wrap.
 
 **One primary tap target per row**, at least `--tap` (44px). Secondary controls
-may be smaller but need ≥8px spacing and a padded hit area — that is what `.hit`
+may be smaller but need ≥8px spacing and a padded hit area — that's what `.hit`
 is for.
