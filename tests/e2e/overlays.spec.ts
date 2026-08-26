@@ -2,15 +2,13 @@
 // the screen they were reading.
 //
 // Gotcha: the import confirm is absent. It appears only above
-// CONFIRM_THRESHOLD sources and the corpus has fewer, so reaching it means
-// setting that constant to 0 in Sources.tsx by hand.
+// CONFIRM_THRESHOLD sources and the corpus has fewer.
 
 import type { Page } from "@playwright/test";
 import { expect, test } from "./harness";
 import { openScreen, screen, type Screen } from "./screens";
 
-/** Back is the Android gesture and the browser button alike: one event.
- *  Everything built on <Sheet>/<Modal> offers all three. */
+/** Back is the Android gesture and the browser button alike: one event. */
 const ROUTES = ["scrim", "escape", "back"] as const;
 type Route = (typeof ROUTES)[number];
 
@@ -31,8 +29,7 @@ const SURFACES: Surface[] = [
     open: (page) => page.getByRole("button", { name: "Filter", exact: true }).click(),
     sel: ".sheet.filter-sheet", dismiss: ROUTES,
   },
-  // Group and sort open the SAME sheet. Both openers are checked: they are two
-  // controls onto one surface, and either could lose its wiring.
+  // Group and sort open the same sheet; either opener could lose its wiring.
   {
     name: "view sheet from group", project: "phone", screen: screen("memory-review"),
     open: (page) => page.getByRole("button", { name: "Group by", exact: true }).click(),
@@ -59,9 +56,8 @@ const SURFACES: Surface[] = [
     },
     sel: ".sheet.peek-sheet", dismiss: ROUTES,
   },
-  // A full-screen surface with no scrim to tap, so it declares two routes
-  // rather than pretending to pass a third that never ran.
   {
+    // Full-screen, with no scrim to tap.
     name: "tag panel", project: "phone", screen: screen("lorebook-audit"),
     open: (page) => page.getByRole("button", { name: "Tags", exact: true }).click(),
     sel: ".tagpanel", dismiss: ["escape", "back"],
@@ -82,9 +78,8 @@ for (const surface of SURFACES) {
       await surface.open(page);
       await expect(page.locator(surface.sel)).toBeVisible();
 
-      // Where opening the surface left the reader, not the route the case
-      // started at: reaching a record is itself a navigation, and the peek
-      // opens over that record rather than over the list.
+      // Read after opening, not before: reaching a record is itself a
+      // navigation, and the peek opens over the record rather than the list.
       const base = new URL(page.url()).hash;
       await dismiss(page, route);
 
