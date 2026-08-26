@@ -1,0 +1,31 @@
+Fixture for the rhetoric rules in .vale/styles/Luma. Each rule gets a hit
+followed by the controls that must stay quiet.
+
+    vale --no-global --ext=.md < .vale/fixtures/rhetoric.txt
+
+The redirect is required: --ext applies to stdin only, and Vale skips a .txt
+path handed to it directly. The extension is .txt so the [*.md] section leaves
+this file out of the ordinary pass.
+
+Sentences start at the margin because LeftBranching anchors at the start of a
+sentence, and a label in front of one would stop it from ever matching.
+
+Polysyndeton.
+
+We parsed the input and validated the schema and wrote the row and logged it.
+
+We parsed the input and validated the schema.
+
+EmDashClause.
+
+The cache is warm — it holds every key from the last run.
+
+The cache — a plain map — holds every key from the last run.
+
+The engine returns a value — a plain integer.
+
+LeftBranching.
+
+Although the cache is warm, the first request still misses.
+
+The first request still misses, although the cache is warm.

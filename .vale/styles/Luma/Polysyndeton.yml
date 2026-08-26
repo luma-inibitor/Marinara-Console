@@ -1,0 +1,10 @@
+# A coordinating conjunction between every item in a series.
+#
+# Three in one sentence is the threshold; two is ordinary coordination.
+extends: occurrence
+message: "Polysyndeton: %d coordinating conjunctions in one sentence."
+link: https://docs.vale.sh/checks/occurrence
+level: suggestion
+scope: sentence
+max: 2
+token: '\b(?:and|or|nor|but)\b'
