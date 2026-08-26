@@ -88,10 +88,6 @@ export function ratchet(path, findings, { adopt = false, prune = false, scope = 
  * The shared tail of both checks: print what is new, warn about what vanished,
  * and pick the exit code. 2 means the check itself is compromised and must
  * never read as a pass.
- *
- * `vanishedFails` makes a recorded finding that stopped appearing a failure
- * rather than a warning. A check that has gone blind prints exactly what a
- * check with every finding fixed prints, so a warning there is a silent pass.
  */
 export function reportRatchet({ fresh, vanished, integrity, label, noun, adopt, prune, vanishedFails = false, adoptFlag = "--adopt", pruneFlag = "--prune" }) {
   if (integrity.length) {

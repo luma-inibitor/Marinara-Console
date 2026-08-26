@@ -3,7 +3,8 @@
 // namespace and still prints clean.
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -64,9 +65,56 @@ describe("cross-sheet declaration conflicts", () => {
     expect(out).toContain(".panel-host { color } — 2 values across 2 sheets");
   });
 
+  it("parses a sheet with a comment opener inside a quoted value", () => {
+    const { out } = fixture("cross-sheet");
+    expect(out).not.toContain("STYLESHEET DOES NOT PARSE");
+  });
+
   it("says nothing about two animations that share a step name", () => {
     const { out } = fixture("cross-sheet");
     expect(out).not.toContain("from { opacity }");
+  });
+});
+
+describe("the collisions ratchet", () => {
+  // Gotcha: the baseline carries one entry under this fixture that nothing there
+  // declares, so this run has a vanished conflict to fail on.
+  it("fails on a recorded conflict that no longer appears in the tree", () => {
+    const { code, out } = fixture("cross-sheet");
+    expect(out).toContain("GONE FROM THE TREE");
+    expect(out).toContain(".never-declared { color }");
+    expect(code).toBe(1);
+  });
+});
+
+describe("a scan of a tree outside the repository", () => {
+  const baselines = () => ["css-collisions-baseline.json", "deadcss-baseline.json"]
+    .map((f) => readFileSync(join(ROOT, "design", f), "utf8"));
+
+  function outside(flag) {
+    const dir = mkdtempSync(join(tmpdir(), "deadcss-"));
+    writeFileSync(join(dir, "a.css"), ".a { color: red; }\n");
+    try {
+      return run(dir, flag);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  it("refuses --adopt-conflicts and leaves both baselines byte-identical", () => {
+    const before = baselines();
+    const { code, out } = outside("--adopt-conflicts");
+    expect(out).toContain("NOTHING TO RECORD");
+    expect(code).toBe(2);
+    expect(baselines()).toEqual(before);
+  });
+
+  it("refuses --prune-conflicts and leaves both baselines byte-identical", () => {
+    const before = baselines();
+    const { code, out } = outside("--prune-conflicts");
+    expect(out).toContain("NOTHING TO RECORD");
+    expect(code).toBe(2);
+    expect(baselines()).toEqual(before);
   });
 });
 

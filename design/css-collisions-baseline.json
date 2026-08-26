@@ -1,4 +1,7 @@
 {
+  "scripts/fixtures/deadcss/cross-sheet/src/ui/Panel.css": [
+    ".never-declared { color }"
+  ],
   "src/styles/lorebooks.css": [
     ".fs-foot { gap }",
     ".fs-foot { padding }",

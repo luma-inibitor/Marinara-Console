@@ -32,7 +32,8 @@
 //
 // Exit codes: 0 clean · 1 a candidate outside the baseline · 2 the check is
 // compromised (a class position composes a prefix DOMAINS does not name, a
-// stylesheet does not parse, or a baseline is unreadable).
+// stylesheet does not parse, a baseline is unreadable, or a scan outside this
+// tree is asked to write one).
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -148,6 +149,8 @@ const SHEETS = [];
 // Gotcha: an at-rule prelude is dropped and the rules nested inside it are
 // kept, so a `bottom` inside `@media` and one outside collide on one key.
 // A @keyframes step is keyed by its animation name so two animations cannot.
+// A declaration sitting directly in any other at-rule, as in @font-face, has no
+// selector to key and is not compared at all.
 function scopes(node) {
   if (!node || node.type === "root") return [];
   if (node.type === "atrule") {
@@ -183,7 +186,10 @@ const findings = [];
 let total = 0;
 for (const abs of SHEETS) {
   const f = path.relative(ROOT, abs).split(path.sep).join("/");
-  const css = fs.readFileSync(abs, "utf8")
+  const raw = fs.readFileSync(abs, "utf8");
+  // Gotcha: the stripped copy is for the class harvest only. A `/*` inside a
+  // quoted value is not a comment, so stripping before postcss truncates the sheet.
+  const css = raw
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/^\s*@(?:import|charset|use)[^;]*;/gm, "");   // URLs are not selectors
   const names = new Set();
@@ -194,7 +200,7 @@ for (const abs of SHEETS) {
   if (names.size) console.log(`${f}: ${names.size} classes, ${dead.length} unused`);
   if (dead.length) console.log("   " + dead.join(" "));
 
-  for (const { sel, prop, value } of declarations(css, abs)) {
+  for (const { sel, prop, value } of declarations(raw, abs)) {
     const key = `${sel} { ${prop} }`;
     (declared.get(key) ?? declared.set(key, []).get(key)).push({ file: f, value });
   }
@@ -217,6 +223,12 @@ const adopt = flags.has("--adopt");
 const prune = flags.has("--prune");
 const adoptConflicts = flags.has("--adopt-conflicts");
 const pruneConflicts = flags.has("--prune-conflicts");
+// A scan outside this tree would record `../../..` keys no later run can see.
+if (scanned.startsWith("..") && (adopt || prune || adoptConflicts || pruneConflicts)) {
+  console.log("\nNOTHING TO RECORD — the check itself is compromised:");
+  console.log(`  "${arg}" is outside ${ROOT}, so its findings cannot be written to a baseline`);
+  process.exit(2);
+}
 const scope = (f) => f.startsWith(scanned + "/");
 const dead = reportRatchet({
   ...ratchet(BASELINE_PATH, findings, { adopt, prune, scope }),
