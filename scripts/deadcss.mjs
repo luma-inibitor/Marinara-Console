@@ -3,8 +3,10 @@
 //
 //   node scripts/deadcss.mjs
 //   node scripts/deadcss.mjs scripts/fixtures/deadcss/registered   # one tree
-//   node scripts/deadcss.mjs --adopt   # record today's set as the baseline
-//   node scripts/deadcss.mjs --prune   # drop baseline entries that no longer appear
+//   node scripts/deadcss.mjs --adopt   # record today's dead classes as the baseline
+//   node scripts/deadcss.mjs --prune   # drop dead-class baseline entries that no longer appear
+//   node scripts/deadcss.mjs --adopt-conflicts   # and the same two for the conflicts baseline
+//   node scripts/deadcss.mjs --prune-conflicts
 //
 // This is a CANDIDATE list, not a delete list. Read every hit before removing
 // anything. Class names reach the DOM three ways here and all three have to be
@@ -26,16 +28,15 @@
 // scripts/lib/baseline.mjs.
 //
 // ── Cross-sheet conflicts (design/css-collisions-baseline.json) ──────────
-// One selector, one property, two sheets, two values: `.toaster { bottom }`
-// has four values across lorebooks.css and presets.css and stylesheet load
-// order picks the winner. stylelint reads one file at a time and cannot see it.
+// One selector, one property, two sheets, two values.
 //
 // Exit codes: 0 clean · 1 a candidate outside the baseline · 2 the check is
-// compromised (a class position composes a prefix DOMAINS does not name, or
-// the baseline is unreadable).
+// compromised (a class position composes a prefix DOMAINS does not name, a
+// stylesheet does not parse, or a baseline is unreadable).
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import postcss from "postcss";
 import { ratchet, reportRatchet } from "./lib/baseline.mjs";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -144,23 +145,36 @@ const SHEETS = [];
   }
 })(SCAN);
 
-// Rule preludes and their declarations, at any nesting depth.
-//
-// Gotcha: an at-rule prelude is skipped but the rules nested inside it are
-// kept, and the condition is dropped. A `bottom` inside `@media` and one
-// outside collide on the same key.
-function rules(css) {
-  const out = [];
-  const stack = [];
-  let buf = "";
-  for (const ch of css) {
-    if (ch === "{") { stack.push(buf.trim()); buf = ""; }
-    else if (ch === "}") {
-      const prelude = stack.pop();
-      if (prelude && !prelude.startsWith("@") && buf.trim()) out.push({ prelude, body: buf });
-      buf = "";
-    } else buf += ch;
+// Gotcha: an at-rule prelude is dropped and the rules nested inside it are
+// kept, so a `bottom` inside `@media` and one outside collide on one key.
+// A @keyframes step is keyed by its animation name so two animations cannot.
+function scopes(node) {
+  if (!node || node.type === "root") return [];
+  if (node.type === "atrule") {
+    if (node.name.toLowerCase().endsWith("keyframes")) return [`@keyframes ${node.params.trim()}`];
+    return scopes(node.parent);
   }
+  const own = node.selectors.map((s) => s.trim().replace(/\s+/g, " ")).filter(Boolean);
+  const outer = scopes(node.parent);
+  if (!outer.length) return own;
+  return outer.flatMap((o) => own.map((s) => (s.includes("&") ? s.replace(/&/g, o) : `${o} ${s}`)));
+}
+
+function declarations(css, file) {
+  const out = [];
+  let root;
+  try {
+    root = postcss.parse(css, { from: file });
+  } catch (e) {
+    console.log("\nSTYLESHEET DOES NOT PARSE — the check itself is compromised:");
+    console.log(`  ${e.message}`);
+    process.exit(2);
+  }
+  root.walkDecls((decl) => {
+    if (!/^[-a-zA-Z][\w-]*$/.test(decl.prop)) return;
+    const value = decl.value.trim().replace(/\s+/g, " ") + (decl.important ? " !important" : "");
+    for (const sel of scopes(decl.parent)) out.push({ sel, prop: decl.prop, value });
+  });
   return out;
 }
 
@@ -180,18 +194,9 @@ for (const abs of SHEETS) {
   if (names.size) console.log(`${f}: ${names.size} classes, ${dead.length} unused`);
   if (dead.length) console.log("   " + dead.join(" "));
 
-  for (const { prelude, body } of rules(css)) {
-    for (const sel of prelude.split(",").map((x) => x.trim().replace(/\s+/g, " ")).filter(Boolean)) {
-      for (const decl of body.split(";")) {
-        const colon = decl.indexOf(":");
-        if (colon < 0) continue;
-        const prop = decl.slice(0, colon).trim();
-        const value = decl.slice(colon + 1).trim().replace(/\s+/g, " ");
-        if (!/^[-a-zA-Z][\w-]*$/.test(prop)) continue;
-        const key = `${sel} { ${prop} }`;
-        (declared.get(key) ?? declared.set(key, []).get(key)).push({ file: f, value });
-      }
-    }
+  for (const { sel, prop, value } of declarations(css, abs)) {
+    const key = `${sel} { ${prop} }`;
+    (declared.get(key) ?? declared.set(key, []).get(key)).push({ file: f, value });
   }
 }
 console.log(total === 0 ? "\nno candidates" : `\n${total} candidates — verify each before deleting`);
@@ -210,19 +215,24 @@ console.log(collisions.length === 0 ? "\nno cross-sheet conflicts" : `\n${collis
 
 const adopt = flags.has("--adopt");
 const prune = flags.has("--prune");
+const adoptConflicts = flags.has("--adopt-conflicts");
+const pruneConflicts = flags.has("--prune-conflicts");
 const scope = (f) => f.startsWith(scanned + "/");
 const dead = reportRatchet({
-  ...ratchet(BASELINE_PATH, findings, { adopt, prune, scope, root: ROOT }),
+  ...ratchet(BASELINE_PATH, findings, { adopt, prune, scope }),
   label: "design/deadcss-baseline.json",
   noun: "dead class",
   adopt,
   prune,
 });
 const crossed = reportRatchet({
-  ...ratchet(COLLISIONS_PATH, collisions, { adopt, prune, scope, root: ROOT }),
+  ...ratchet(COLLISIONS_PATH, collisions, { adopt: adoptConflicts, prune: pruneConflicts, scope }),
   label: "design/css-collisions-baseline.json",
   noun: "cross-sheet conflict",
-  adopt,
-  prune,
+  adopt: adoptConflicts,
+  prune: pruneConflicts,
+  vanishedFails: true,
+  adoptFlag: "--adopt-conflicts",
+  pruneFlag: "--prune-conflicts",
 });
 process.exit(Math.max(dead, crossed));

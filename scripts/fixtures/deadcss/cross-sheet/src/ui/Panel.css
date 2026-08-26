@@ -1,3 +1,5 @@
 .panel { bottom: 10px; }
 .panel-note { color: red; }
 .safe-box { margin: 0; }
+.panel-host { color: red; .panel-kid { color: blue; } }
+@keyframes panel-in { from { opacity: 0; } to { opacity: 1; } }

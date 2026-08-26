@@ -1,5 +1,6 @@
 // The drift test on DOMAINS and the cross-sheet conflict report: fixture trees
-// that must break each, and trees that must not.
+// that must break each, and trees that must not. A stale table stops scanning a
+// namespace and still prints clean.
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -56,6 +57,16 @@ describe("cross-sheet declaration conflicts", () => {
   it("says nothing about a selector two sheets give the SAME value", () => {
     const { out } = fixture("cross-sheet");
     expect(out).not.toContain(".safe-box");
+  });
+
+  it("keeps a rule's own declarations when another rule nests inside it", () => {
+    const { out } = fixture("cross-sheet");
+    expect(out).toContain(".panel-host { color } — 2 values across 2 sheets");
+  });
+
+  it("says nothing about two animations that share a step name", () => {
+    const { out } = fixture("cross-sheet");
+    expect(out).not.toContain("from { opacity }");
   });
 });
 

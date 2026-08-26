@@ -1,2 +1,4 @@
 @media (min-width: 900px) { .panel { bottom: 40px; } }
 .safe-box { margin: 0; }
+.panel-host { color: teal; }
+@keyframes overlay-in { from { opacity: 0.5; } to { opacity: 0.9; } }
