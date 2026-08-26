@@ -1,7 +1,8 @@
-// The drift test on DOMAINS: fixture trees that must break it, and two that
-// must not. A stale table stops scanning a namespace and still prints clean.
+// The drift test on DOMAINS and the cross-sheet conflict report: fixture trees
+// that must break each, and trees that must not.
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -44,11 +45,32 @@ describe("the DOMAINS drift test", () => {
   });
 });
 
+describe("cross-sheet declaration conflicts", () => {
+  it("reports one selector given one property two values in two sheets", () => {
+    const { code, out } = fixture("cross-sheet");
+    expect(out).toContain(".panel { bottom } — 2 values across 2 sheets");
+    expect(out).toContain("also declared in scripts/fixtures/deadcss/cross-sheet/src/ui/Panel.css");
+    expect(code).toBe(1);
+  });
+
+  it("says nothing about a selector two sheets give the SAME value", () => {
+    const { out } = fixture("cross-sheet");
+    expect(out).not.toContain(".safe-box");
+  });
+});
+
 describe("the real tree", () => {
   it("has a DOMAINS entry for every prefix its class positions compose", () => {
     const { code, out } = run();
     expect(out).not.toContain("UNREGISTERED CLASS PREFIX");
     expect(out).toContain("no dead class outside the baseline");
+    expect(out).toContain("no cross-sheet conflict outside the baseline");
     expect(code).toBe(0);
+  });
+
+  it("records the four-valued .toaster bottom in the collisions baseline", () => {
+    const recorded = JSON.parse(readFileSync(join(ROOT, "design", "css-collisions-baseline.json"), "utf8"));
+    expect(recorded["src/styles/lorebooks.css"]).toContain(".toaster { bottom }");
+    expect(recorded["src/styles/presets.css"]).toContain(".toaster { bottom }");
   });
 });

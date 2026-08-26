@@ -25,6 +25,11 @@
 // is the question a reviewer has: did this change strand a rule? See
 // scripts/lib/baseline.mjs.
 //
+// ── Cross-sheet conflicts (design/css-collisions-baseline.json) ──────────
+// One selector, one property, two sheets, two values: `.toaster { bottom }`
+// has four values across lorebooks.css and presets.css and stylesheet load
+// order picks the winner. stylelint reads one file at a time and cannot see it.
+//
 // Exit codes: 0 clean · 1 a candidate outside the baseline · 2 the check is
 // compromised (a class position composes a prefix DOMAINS does not name, or
 // the baseline is unreadable).
@@ -35,6 +40,7 @@ import { ratchet, reportRatchet } from "./lib/baseline.mjs";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE_PATH = path.join(ROOT, "design", "deadcss-baseline.json");
+const COLLISIONS_PATH = path.join(ROOT, "design", "css-collisions-baseline.json");
 const flags = new Set(process.argv.slice(2).filter((a) => a.startsWith("--")));
 
 // A path argument scans that tree instead of src/, ratchet scoped to match.
@@ -138,6 +144,27 @@ const SHEETS = [];
   }
 })(SCAN);
 
+// Rule preludes and their declarations, at any nesting depth.
+//
+// Gotcha: an at-rule prelude is skipped but the rules nested inside it are
+// kept, and the condition is dropped. A `bottom` inside `@media` and one
+// outside collide on the same key.
+function rules(css) {
+  const out = [];
+  const stack = [];
+  let buf = "";
+  for (const ch of css) {
+    if (ch === "{") { stack.push(buf.trim()); buf = ""; }
+    else if (ch === "}") {
+      const prelude = stack.pop();
+      if (prelude && !prelude.startsWith("@") && buf.trim()) out.push({ prelude, body: buf });
+      buf = "";
+    } else buf += ch;
+  }
+  return out;
+}
+
+const declared = new Map();
 const findings = [];
 let total = 0;
 for (const abs of SHEETS) {
@@ -152,17 +179,50 @@ for (const abs of SHEETS) {
   for (const n of dead) findings.push({ file: f, item: n });
   if (names.size) console.log(`${f}: ${names.size} classes, ${dead.length} unused`);
   if (dead.length) console.log("   " + dead.join(" "));
+
+  for (const { prelude, body } of rules(css)) {
+    for (const sel of prelude.split(",").map((x) => x.trim().replace(/\s+/g, " ")).filter(Boolean)) {
+      for (const decl of body.split(";")) {
+        const colon = decl.indexOf(":");
+        if (colon < 0) continue;
+        const prop = decl.slice(0, colon).trim();
+        const value = decl.slice(colon + 1).trim().replace(/\s+/g, " ");
+        if (!/^[-a-zA-Z][\w-]*$/.test(prop)) continue;
+        const key = `${sel} { ${prop} }`;
+        (declared.get(key) ?? declared.set(key, []).get(key)).push({ file: f, value });
+      }
+    }
+  }
 }
 console.log(total === 0 ? "\nno candidates" : `\n${total} candidates — verify each before deleting`);
 
+const collisions = [];
+for (const [item, sites] of [...declared].sort()) {
+  const files = [...new Set(sites.map((s) => s.file))].sort();
+  const values = new Set(sites.map((s) => s.value));
+  if (files.length < 2 || values.size < 2) continue;
+  console.log(`\n${item} — ${values.size} values across ${files.length} sheets:`);
+  for (const s of sites) console.log(`   ${s.file}: ${s.value}`);
+  for (const file of files)
+    collisions.push({ file, item, detail: `${item} also declared in ${files.filter((o) => o !== file).join(", ")}` });
+}
+console.log(collisions.length === 0 ? "\nno cross-sheet conflicts" : `\n${collisions.length} cross-sheet conflict findings`);
+
 const adopt = flags.has("--adopt");
 const prune = flags.has("--prune");
-process.exit(
-  reportRatchet({
-    ...ratchet(BASELINE_PATH, findings, { adopt, prune, root: ROOT, scope: (f) => f.startsWith(scanned + "/") }),
-    label: "design/deadcss-baseline.json",
-    noun: "dead class",
-    adopt,
-    prune,
-  }),
-);
+const scope = (f) => f.startsWith(scanned + "/");
+const dead = reportRatchet({
+  ...ratchet(BASELINE_PATH, findings, { adopt, prune, scope, root: ROOT }),
+  label: "design/deadcss-baseline.json",
+  noun: "dead class",
+  adopt,
+  prune,
+});
+const crossed = reportRatchet({
+  ...ratchet(COLLISIONS_PATH, collisions, { adopt, prune, scope, root: ROOT }),
+  label: "design/css-collisions-baseline.json",
+  noun: "cross-sheet conflict",
+  adopt,
+  prune,
+});
+process.exit(Math.max(dead, crossed));
