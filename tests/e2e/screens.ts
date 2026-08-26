@@ -55,3 +55,11 @@ export async function openScreen(page: Page, screen: Screen): Promise<void> {
   await expect(page.locator("#app .loadingstate")).toHaveCount(0);
   await page.evaluate(() => document.fonts.ready.then(() => true));
 }
+
+/** The catalog entry by name. Throws rather than returning undefined, so a
+ *  renamed screen fails at the lookup instead of inside a locator. */
+export function screen(name: string): Screen {
+  const found = SCREENS.find((s) => s.name === name);
+  if (!found) throw new Error(`no screen named "${name}" in SCREENS`);
+  return found;
+}
