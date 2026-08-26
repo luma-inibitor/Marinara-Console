@@ -8,20 +8,13 @@ concurrency:
   group: prose-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-env:
-  VALE_VERSION: 3.18.0
-  VALE_SHA256: a6f71a75a12fe689345b754f2412b90367fe33648abb7d200fa19eaadc2dbf6d
-
 jobs:
   vale:
     runs-on: ubuntu-latest
 
-    # Advisory only. Vale reports house-style suggestions on the docs; it never
-    # blocks a merge. Read the job summary, act on what's worth acting on.
-    continue-on-error: true
-
     permissions:
       contents: read
+      pull-requests: read
 
     steps:
       - name: Checkout
@@ -29,57 +22,24 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install Vale
-        run: |
-          set -euo pipefail
-          archive="vale_${VALE_VERSION}_Linux_64-bit.tar.gz"
-          curl -fsSL -o "$archive" \
-            "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/${archive}"
-          echo "${VALE_SHA256}  ${archive}" | sha256sum --check --strict
-          tar -xzf "$archive" vale
-          sudo install -m 0755 vale /usr/local/bin/vale
-          vale --version
-
-      - name: Sync styles
-        run: vale --no-global sync
-
       - name: Lint prose
-        run: |
-          # No pipeline and no bare failing command here: the default shell is
-          # `bash -e`, so either would abort the step before the summary gets
-          # written. Capture the status instead and report it at the end.
-          status=0
-          vale --no-global --output=line . > vale.out 2>&1 || status=$?
-          cat vale.out
-          total=$(wc -l < vale.out | tr -d ' ')
-          {
-            echo '## Vale'
-            echo
-            echo "${total} alert(s). Advisory only: this job never blocks a merge."
-            if [ "$total" -gt 0 ]; then
-              echo
-              echo '| rule | count |'
-              echo '| --- | --- |'
-              awk -F: '{print $4}' vale.out | sort | uniq -c | sort -rn \
-                | head -n 15 | awk '{printf "| %s | %s |\n", $2, $1}'
-              echo
-              echo '<details><summary>All alerts</summary>'
-              echo
-              echo '```'
-              cat vale.out
-              echo '```'
-              echo
-              echo '</details>'
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
-          # Exit clean whatever Vale returned. Vale exits non-zero purely
-          # because some rules carry `error` severity, which says nothing about
-          # whether the prose needs changing -- warnings and suggestions exit 0
-          # however many there are. Propagating it would paint the check red on
-          # every run forever, and a check that is always red is a check nobody
-          # reads. The summary above is the output; the exit code is not.
-          #
-          # The steps above this one are not wrapped like this: if the download
-          # or the checksum fails, that is real breakage and the job should go
-          # red for it.
-          echo "vale exited ${status}"
+        uses: vale-cli/vale-action@518a9136acc6e6668ce7c00d367051e0941e87ff # v3.0.0
+        with:
+          # Pinned rather than "latest", so a Vale release cannot change what
+          # this reports without a commit here.
+          version: "3.18.0"
+
+          # Annotates the diff through the Actions log rather than the Checks
+          # API, so the job needs no write permission.
+          reporter: github-pr-annotations
+
+          # `added` is the default and the reason for using the action at all:
+          # it reports only on lines the pull request touches. The docs carry
+          # about 1,600 standing alerts, so a repo-wide report would be noise
+          # nobody reads. Run `npm run prose` locally for the full picture.
+          filter_mode: added
+
+          # Advisory. Vale returns non-zero purely because some rules are error
+          # severity, which says nothing about whether the prose needs work.
+          fail_on_error: false
+          fail_level: none

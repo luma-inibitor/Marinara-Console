@@ -34,6 +34,10 @@ Docs are linted with [Vale](https://vale.sh) against the Microsoft style, plus a
 small local style in `.vale/styles/Luma/`. It is advisory: `npm run check`
 does not run it, and the CI job never blocks a merge.
 
+CI annotates only the lines a pull request touches, so it stays useful while the
+existing docs still carry a large backlog of alerts. `npm run prose` reports the
+whole repo.
+
 ```sh
 brew install vale
 vale sync          # fetch the Microsoft package into .vale/styles (gitignored)
