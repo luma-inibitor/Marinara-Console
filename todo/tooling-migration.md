@@ -27,7 +27,7 @@ The total work in this chain is 24 hours.
 The two decisions in section 2 are complete.
 This plan hardens `layercheck.mjs` in the repository. This plan doesn't use dependency-cruiser.
 This plan adds `.decisions/README.md` to the repository. The directory `design/research/` stays local.
-No work in this plan is blocked.
+Nothing in this plan waits on a decision.
 
 ---
 
@@ -151,13 +151,13 @@ and would put the whole suite back into the build system's `static` job.
 That's the split this wave exists to make.
 The array groups the names by track. Each track has a continuous area in the array.
 
-After this change, an addition is one new line. A removal is one deleted line.
+An addition then becomes one new line, and a removal one deleted line.
 Git merges these changes because the areas don't touch.
 
 The `scripts` object in `package.json` is in the order of addition, not alphabetical order.
 The present order is `test, dev, build, copycheck, preview, kit, test:watch, typecheck, layercheck`.
 This pull request sorts the object one time.
-After the sort, two pull requests that add different scripts write to different areas.
+Two pull requests that add different scripts then write to different areas.
 
 No `postinstall` script is necessary.
 That script was only for the dependency-cruiser installation.
@@ -222,11 +222,11 @@ The full set is about ten routes.
 The command `grep -rln Valibot src` gives six files:
 `src/copy/shell.json`, `src/shell/wire.ts`, `src/shell/wire.test.ts`, and three files in `src/tools/memory/api/`.
 No schema exists for lorebook entries or presets.
-Thus a test of each fixture against the Valibot schemas covers about one half of the set.
+So parsing each fixture with the Valibot schemas covers only about half the set.
 Write in the pull request text that the tests cover the memory fixtures only.
-The other option, schemas for `Entry`, `PromptPreset`, and `PromptSection`, is worse here:
-it needs edits to `src/tools/lorebooks/data.ts` and `src/tools/presets/data.ts`,
-and other branches in the same wave own those files.
+The other option is worse here. Writing schemas for `Entry`, `PromptPreset` or `PromptSection`
+means editing `src/tools/lorebooks/data.ts` plus `src/tools/presets/data.ts`, two files that
+other branches in this wave own.
 
 **Part 3: this pull request owns the browser job.**
 The job is necessary from the day of the merge.
@@ -262,7 +262,7 @@ This pull request records the behaviour of the present server over real HTTP.
 It must come before the new server.
 
 The reason is clear. Unit tests of `stripVectors` and `isLtmWrite` go away with their file.
-An HTTP test operates against both the old server and the new server.
+An HTTP test holds for the old server and the new one alike.
 
 This pull request adds `test/` and `test/fixtures/`.
 It makes `vitest.config.ts:10` include `test/**/*.test.mjs`.
@@ -276,7 +276,7 @@ This pull request must come before the jscpd limit and before the i18next config
 
 A limit at the present value of 0.46% permits the duplicate code.
 Also, the deletion of `SectionSaveBar` at `src/tools/presets/PresetsTool.tsx:719-757` removes four i18next findings.
-A test of the new configuration against the repository shows this.
+Running the new configuration over the repository shows this.
 The four findings are at `PresetsTool.tsx:745`, `:748`, and `:753` two times.
 
 #### `fix/what-prop-copy`
@@ -347,7 +347,7 @@ There is no cycle.
 Thirteen modules already import `toast` statically.
 
 This pull request must come before `chore/fatal-build-warnings`.
-If it doesn't, that pull request has a configuration change and a code correction together. It then fails.
+That pull request otherwise carries a configuration change plus a code correction, and fails on the tree it lands on.
 
 ---
 
@@ -407,14 +407,14 @@ With few rows in the fixtures, `!(Infinity < 8)` is true.
 Then each small target gets a warning grade, not a failure grade.
 
 Each of the three recorded cases comes from adjacent elements.
-`BACKLOG.md:403-411` gives the measurements against a live engine:
+`BACKLOG.md:403-411` gives the measurements from a live engine:
 `.mem-mid` is 35px with 6.1px clearance, `.row-summary` is 39px with 1px, and `.mseg` is 42px with 2px.
 
 Thus the test for this pull request can't be "the array must hold the nine entries that `verify.mjs` reports today."
 That test is only correct if the fixtures have the same row density as the live engine.
 Add this condition to `chore/playwright-harness`:
 each list screen needs sufficient adjacent rows to give clearance below 8px.
-If this isn't possible, record the values that the fixtures give. Write the reason in the pull request text.
+Record the values the fixtures actually give if that proves impossible, and write the reason in the pull request text.
 
 #### `chore/copy-eslint-mode-all`
 
@@ -423,7 +423,7 @@ If this isn't possible, record the values that the fixtures give. Write the reas
 The `words.exclude` list makes `mode:"all"` usable.
 It decreases the count from 3,038 findings to 27 findings.
 But two of its seven patterns permit each lowercase word.
-This is a loss against the rules that operate on `main` today.
+This loses coverage that the rules on `main` have today.
 
 A test used the eslint 9.39.5 of this repository with both configurations.
 
@@ -459,11 +459,13 @@ Each of the three is incorrect. Each is the string `"__text"` at `src/tools/memo
 It finds nothing correct.
 
 A test of both stricter patterns gives 254 findings, not 27.
-Almost each finding is an enumeration value or a union value:
-`"mid"`, `"end"`, and `"solo"` at `src/tools/presets/data.ts:210`;
-`"tree"` at `src/ui/JsonView.tsx:20`;
-`"normal"`, `"slow"`, and `"stalled"` at `src/ui/Loading.tsx:21-24`;
-`"nearest"` at `src/ui/useRovingFocus.ts:89`.
+Almost every finding is an enumeration or union value:
+
+- `"mid"`, `"end"`, `"solo"` at `src/tools/presets/data.ts:210`
+- `"tree"` at `src/ui/JsonView.tsx:20`
+- `"normal"`, `"slow"`, `"stalled"` at `src/ui/Loading.tsx:21-24`
+- `"nearest"` at `src/ui/useRovingFocus.ts:89`
+
 This count is too large to use.
 
 The correct method is a second rule in the same configuration block.
@@ -478,7 +480,7 @@ The rule matches the JSX text position only. The word rules don't apply there.
 
 The `:not()` part keeps the `k`, `s`, and `t` unit exemption from `eslint.config.js:48`.
 
-A test of the full configuration against the real `src/` gives these results:
+Running the full configuration over the real `src/` gives these results:
 
 - The count stays at exactly 27. There are no new findings.
 - The test recovers each of `keep`, `drop`, and `ok`.
@@ -535,7 +537,7 @@ Put each such failure into the integrity array. The run then gives exit code 2.
 
 **Change 2: this pull request must add the `csslint` script now.**
 The first plan gave this option: leave the script out, because `npm run typescale` uses the full configuration.
-The measurement above shows that this isn't correct.
+The measurement earlier in this section shows otherwise.
 The adapter removes each warning with a rule name that's not `marinara/font-size-token`.
 Add `"csslint": "stylelint \"src/**/*.css\""`. Add one line to `scripts/checks.mjs`.
 The wave 3 rules then have a place to operate.
@@ -589,7 +591,7 @@ A hint doesn't fail the build. But each pull request must add its own line.
 | `chore/layercheck-harden` | Write `layercheck.mjs` again with `typescript/unstable/*` | 3h | eslint block |
 | `chore/copycheck-to-copycatalog` | Delete `copycheck.mjs`. Keep the catalog test in 84 lines | 2.5h | mode:"all" |
 | `chore/stylelint-hygiene` | Fifteen rules and the four real duplicate selectors | 1h | typescale |
-| `chore/jscpd` | Set the duplication limit at 0.3% | 1h | savebar |
+| `chore/jscpd` | Limit duplication to 0.3% | 1h | savebar |
 | `chore/drop-deadexports` | Delete `scripts/deadexports.mjs`. Use knip | 0.5h | knip |
 
 #### `chore/retire-verify`
@@ -604,7 +606,7 @@ It removes the `verify`, `overlaycheck`, `faceprobe`, and `check:browser` npm sc
 
 It must also delete two exports from `scripts/lib/browser.mjs`.
 The first plan said that this file has no changes. That was an error.
-After the deletion of the four users, only `domsnap.mjs:17` remains. Then knip reports a failure.
+Only `domsnap.mjs:17` still imports it once those four users go, and knip then reports a failure.
 A test gives this result:
 
 ```
@@ -615,7 +617,7 @@ openPage        function  scripts/lib/browser.mjs:49:23
 ...
 ```
 
-`ALL_VIEWPORTS` and `openPage` are new against the wave 2 count of seven.
+`ALL_VIEWPORTS` and `openPage` are new relative to the wave 2 count of seven.
 Delete both in the same commit. Or mark them `/** @public */` if they must stay.
 Add `scripts/lib/browser.mjs` to the file list for this pull request.
 
@@ -628,7 +630,7 @@ Correct both documents.
 `design/ARCHITECTURE.md:46` says that `layercheck.mjs` finds a write to a store from a `.tsx` file.
 A read of each of the 323 lines shows no such test.
 `chore/layercheck-harden` corrects that sentence. That pull request owns `ARCHITECTURE.md` in this wave.
-That file isn't in the list above. Thus the two pull requests can operate together.
+That file sits outside the set listed earlier, so the two pull requests can run together.
 
 #### `chore/layercheck-harden`
 
@@ -687,7 +689,7 @@ Each of the five named types is already in `design/deadexports-baseline.json:6-1
 
 **Conditions to complete this wave.**
 
-- `npx vitest run test/server.test.mjs` reports 8 tests that pass against the new server. Only the `.ico` and `.txt` tests change.
+- `npx vitest run test/server.test.mjs` passes for the new server. Only the `.ico` and `.txt` assertions change.
 - `curl -sD- localhost:7872/assets/index-<hash>.js` shows `cache-control: public,max-age=31536000,immutable`.
 - `curl -sD- localhost:7872/index.html` shows `no-store`.
 - A second request with `If-None-Match` gives status 304.
@@ -735,7 +737,7 @@ That form gives 23 findings at four real places.
 The simple form compares a class name in two files. That form gives 65 findings and isn't useful.
 
 Use a record file. Don't correct each of the 23 findings in this pull request.
-The condition above is then possible to meet.
+That gate condition then becomes possible to meet.
 
 #### `chore/package-hygiene`
 
@@ -746,7 +748,7 @@ Wave 4 meets both conditions.
 
 Note that `npm pkg fix` alone changes nothing in this file.
 The real work is `npm pkg delete main description keywords author`.
-Then set the licence with `npm pkg set license=UNLICENSED`.
+Then declare the licence with `npm pkg set license=UNLICENSED`.
 The deletion of `main` also removes the last knip configuration hint.
 
 `.gitignore` repeats `shots/` (lines 5 and 24).
@@ -759,7 +761,7 @@ It repeats `.decisions` (lines 9 and 10).
 **Conditions to complete this wave.**
 
 - `npm run linkcheck` reports 0 dead links.
-- After `npm run build`, the command `curl -sD- -H 'accept-encoding: br' localhost:7872/assets/index-<hash>.js` gives `content-encoding: br` and `vary: accept-encoding`.
+- On a built tree, `curl -sD- -H 'accept-encoding: br' localhost:7872/assets/index-<hash>.js` returns `content-encoding: br` and `vary: accept-encoding`.
 - A request with an empty `accept-encoding` gives the file without compression.
 
 | Branch | Title | Work | Depends on |
@@ -843,7 +845,7 @@ That code removes findings. It doesn't create findings.
 `scripts/copycheck.mjs:598-620` operates only with an `.html` path.
 No script in `package.json` and no build job gives such a path.
 `design/copy-baseline.json` holds only `_areas`. It has no file entries.
-Both parts are unused.
+Nothing uses either part.
 
 **The `@copy-strict` marker.**
 Its two files are `src/tools/lorebooks/data.ts` and `src/tools/presets/data.ts`.
@@ -867,12 +869,12 @@ and `loadBaseline` at `scripts/lib/baseline.mjs:16`.
 knip follows them. This is different, not worse.
 
 **The `font` shorthand property.**
-`src/ui/JsonView.css:67` has `font: inherit`. The scale can't name that size.
+`src/ui/JsonView.css:67` declares `font: inherit`, a size the scale can't name.
 The old scanner doesn't find it. The stylelint rule doesn't find it.
 Thus the coverage doesn't change.
 
 **Compression at run time, and `If-Modified-Since`.**
-After `perf/precompress-dist`, the server sends only the compressed files that exist.
+The server sends only the compressed files that already exist, once `perf/precompress-dist` merges.
 A new file in `public/mockups/` goes without compression until the script operates again.
 sirv supports `If-None-Match`. It doesn't support `If-Modified-Since`.
 The present server supports neither. Thus this is still an improvement.
@@ -887,10 +889,10 @@ But the measurement has the fixture density condition in wave 2.
 **The `data-contrast-exempt` warning.**
 `scripts/verify.mjs:264` gives a warning for an element with the attribute and no list entry.
 With axe, an element with no list entry gets a normal measurement.
-The result is the same. But no person learns that the attribute is unused.
+The result is the same, but nobody learns that the attribute does nothing.
 About six lines of code recover this warning.
 
-### Nothing is lost on the layer rule
+### The layer rule loses nothing
 
 This was the largest item in the first plan. Section 2.1 removes it.
 
@@ -929,7 +931,7 @@ Thus it doesn't report `RetrievalCard.css:51` and `SectionRow.css:72`.
 **The chunk size warning has a limit, not a failure.**
 Vite gives this warning through the reporter plugin logger.
 `onwarn` doesn't receive it.
-Thus a bundle above 700 KB gives only a message.
+So a bundle larger than 700 KB still only prints a message.
 `src/` has no `React.lazy` call today.
 A division by route is a new feature, not a build system change.
 

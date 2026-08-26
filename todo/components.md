@@ -8,7 +8,7 @@ This document holds component work only.
 `BACKLOG.md` holds the product faults.
 The design rules for this work are in `design/DESIGN.md` section 8 and `design/ARCHITECTURE.md` section 2.
 
-A check of each item against `origin/main` (commit 5586c9c) occurred.
+The evidence below comes from `origin/main`, at commit 5586c9c.
 Each item gives its evidence. A person can't act on an item without evidence.
 Each measurement in this document comes from a test, not from an estimate.
 
@@ -60,7 +60,7 @@ The list of standard components in `design/todo.md` has **list item** with no im
 Most of that list is complete.
 `src/ui/` holds `Chip`, `Term`, `Edu`, `Picker`, `FacetDrawer`, `SearchBar`,
 `SearchDisclosure`, `ModePill`, `ListGroup`, `RawJson`, and `CopyableText`.
-(`FacetDrawer` and `Picker` have since moved into `src/tools/memory/review/`.)
+(`FacetDrawer` and `Picker` moved into `src/tools/memory/review/` since then.)
 `SectionRow` gives the "memory detail section" item.
 `ListGroup` gives the group heading. But each row below the heading stays in its tool.
 
@@ -238,11 +238,11 @@ The value then has one definition.
 
 ## 9. Component exports with no external use
 
-**Main has moved since this item was written, so most of it no longer applies.**
-`src/ui/FacetDrawer.tsx` and `src/ui/Picker.tsx` were deleted. Their contents moved into
+**Main moved on since this item, so most of it no longer applies.**
+Upstream deleted `src/ui/FacetDrawer.tsx` and `src/ui/Picker.tsx`, moving their contents into
 `src/tools/memory/review/` as `FilterSheet.tsx` and `ViewSheet.tsx`.
 So `FacetValue`, `FacetLine`, `FacetGroup` and `PickerOption` no longer exist to un-export.
-Re-check the survivors against the current tree before you act on any of them.
+Re-check the survivors on the current tree before you act on any of them.
 
 What may remain:
 
@@ -256,7 +256,7 @@ how another file builds a value for the component. Read the call sites first.
 
 **Caution 1.** `scripts/deadexports.mjs` already reports these. Its header at line 15 is explicit:
 "Any import of the name from another file, type imports included." Each one already sits in
-`design/deadexports-baseline.json`. These are recorded decisions, not new discoveries, so this item
+`design/deadexports-baseline.json`. Each one is a judgement someone already made, not a new discovery, so this item
 is about emptying that baseline rather than finding anything.
 
 **Caution 2. Don't un-export `SheetHead`.**
