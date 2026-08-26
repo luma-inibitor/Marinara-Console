@@ -25,6 +25,7 @@
     "overlaycheck": "node scripts/overlaycheck.mjs",
     "preview": "vite preview",
     "prose": "vale --no-global .",
+    "prosecheck": "node scripts/prosecheck.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:watch": "vitest",

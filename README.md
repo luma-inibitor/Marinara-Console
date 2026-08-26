@@ -38,8 +38,10 @@ plus a small local style in `.vale/styles/Luma/`. Treat it as advisory: `npm run
 check` doesn't run it, and the CI job never blocks a merge.
 
 CI annotates only the lines a pull request touches, which keeps it useful while
-the rest of the docs still carry a large backlog. `npm run prose` reports on the
-whole repo.
+the rest of the docs still carry a large backlog. `npm run prosecheck` does the
+same locally: it lints the Markdown your branch changed and reports the alerts on
+lines you added, so a clean run means clean annotations on the pull request. `npm
+run prose` reports on the whole repo.
 
 ```sh
 brew install vale

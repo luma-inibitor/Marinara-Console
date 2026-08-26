@@ -25,6 +25,10 @@
 - Validate: `npx tsc --noEmit && npm test && npm run layercheck && npm run build`,
   then the checks in DESIGN.md §7 (screenshot at 390/768/1280, zero console errors, contrast +
   tap-target floors).
+- Run `npm run prosecheck` after you edit a `.md` file. It runs Vale over the
+  Markdown you changed. It reports only what lands on lines you added, so the
+  backlog in the rest of the docs stays out of your way. It exits non-zero on an
+  error. `npm run prose` lints the whole repo, which isn't what you want here.
 - Model code gets Vitest tests beside it. Pin every copy of a duplicated
   computation *before* merging them, and assert catalog keys rather than English
   so a copy rewording can't break a test.
