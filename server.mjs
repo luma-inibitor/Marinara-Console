@@ -201,7 +201,6 @@ const MIME = {
 const HASHED_ASSET = /^\/assets\/.+-[\w-]{8,}\.\w+$/;
 
 function staticHeaders(res, pathname) {
-  // sirv resolves an extensionless path only to `.html`, `.htm` or an index.
   const ext = extname(pathname) || ".html";
   res.setHeader("content-type", MIME[ext] ?? lookup(ext) ?? "application/octet-stream");
   res.setHeader("cache-control", HASHED_ASSET.test(pathname) ? "public,max-age=31536000,immutable" : "no-store");
@@ -214,7 +213,9 @@ function notFound(req, res) {
 
 // `dev` re-reads the directory per request. The default reads it once at
 // startup, so a build during a run 404s every file it emits.
-const sirvOptions = { dev: true, etag: true, setHeaders: staticHeaders, onNoMatch: notFound };
+// Gotcha: sirv's default `extensions` resolves /index to index.html as well as
+// finding a directory index, so the index is named below instead.
+const sirvOptions = { dev: true, etag: true, extensions: [], setHeaders: staticHeaders, onNoMatch: notFound };
 const distFiles = sirv(DIST, sirvOptions);
 const publicFiles = sirv(PUBLIC, sirvOptions);
 
@@ -234,9 +235,12 @@ async function serveStatic(req, res, url) {
     res.writeHead(302, { location: `${url.pathname}/` }).end();
     return;
   }
+  // Gotcha: sirv strips a trailing slash before it looks, so /index.html/ would
+  // otherwise serve the file.
+  const pathname = url.pathname.endsWith("/") ? `${url.pathname}index.html` : url.pathname;
   // sirv percent-decodes what it reads from `req.url`; escaping the percent
   // signs makes that decode a no-op, so the path stays byte-exact.
-  req.url = url.pathname.replaceAll("%", "%25") + url.search;
+  req.url = pathname.replaceAll("%", "%25") + url.search;
   (mockups ? publicFiles : distFiles)(req, res);
 }
 

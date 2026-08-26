@@ -206,6 +206,34 @@ describe("static · public at /mockups/", () => {
   });
 });
 
+// ── one URL per file ──────────────────────────────────────────────
+// sirv answers all of these 200 on its defaults, which the server turns off.
+describe("static · one URL per file", () => {
+  it.each([["/index"], ["/mockups/index"], ["/mockups/detail/index"]])(
+    "404s the extensionless %s instead of resolving it to .html",
+    async (path) => {
+      const res = await mc.request(path);
+      expect(res.status).toBe(404);
+      expect(res.body).toBe("Not found");
+    },
+  );
+
+  it.each([["/index.html/"], ["/assets/app.js/"], ["/mockups/index.html/"]])(
+    "404s %s, because a trailing slash on a file is not the file",
+    async (path) => {
+      const res = await mc.request(path);
+      expect(res.status).toBe(404);
+      expect(res.body).toBe("Not found");
+    },
+  );
+
+  it("still serves a directory index from the slashed form", async () => {
+    expect((await mc.request("/")).body).toContain("dist index");
+    expect((await mc.request("/mockups/")).body).toContain("mockups index");
+    expect((await mc.request("/mockups/detail/")).body).toContain("mockups detail index");
+  });
+});
+
 // ── path traversal ────────────────────────────────────────────────
 // outside-root.txt sits one level above both static roots: any response
 // carrying OUTSIDE-ROOT-MARKER is an escape.
