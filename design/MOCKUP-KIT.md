@@ -44,17 +44,17 @@ Tailwind utilities are available too (`bg-surface-2`, `text-dim`, `font-data`,
 ## Rules
 
 - **A phone frame is `wf-phone`, which is 486px** — the width Luma's device
-  reports. A 300px box on a desktop page is not a phone and proves nothing.
+  reports. A 300px box on a desktop page isn't a phone and proves nothing.
 - **Screenshot with `node scripts/shots.mjs <url> <name>`**, which renders at
   390 / 486 / 768 / 1280 and reports horizontal overflow per viewport.
 - **Wireframes stay greyscale.** Color is a decision; a wireframe is about
-  where things sit. If a wireframe needs color to make its point, it is a
+  where things sit. If a wireframe needs color to make its point, it's a
   specimen, not a wireframe.
 - **The label goes outside the box.** `mk-label` sits on the page background,
   above `wf-frame` / `mk-body`, never inside it. A label inside the specimen
   reads as part of the thing being shown, and it changes the specimen's
   spacing — which makes the specimen a lie about the layout it claims to
   depict. One label per specimen, too: a name above the frame and a title
-  inside it is the same fact twice.
+  inside it's the same fact twice.
 - **Real values only.** Books use the seeded test corpus or synthesized data in
   its flavour, never live-instance content (see the publish-scrub rule).

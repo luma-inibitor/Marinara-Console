@@ -2,7 +2,7 @@
 
 Run this before showing Luma anything — a mockup, a specimen book, or shipped
 UI. Every line here exists because that exact defect shipped in this repo and
-Luma caught it. The parenthetical is the real incident, kept so the rule is not
+Luma caught it. The parenthetical is the real incident, kept so the rule isn't
 abstract.
 
 Order matters: the phases run top to bottom, and the cheap checks come last on
@@ -10,7 +10,7 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
 
 ---
 
-## 1. Before designing — what is this surface for?
+## 1. Before designing — what's this surface for?
 
 - [ ] **Name the decision this surface serves, in one sentence.** If the answer
       is "it shows the data", stop and start over.
@@ -18,7 +18,7 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
       actually needed: did it work, is there anything to fix, should I go review
       now. The ledger was audit material wearing a headline.)*
 - [ ] **List every state before drawing one.** Empty, loading, running, partial
-      failure, error, one item, many items, more than fits. A state you do not
+      failure, error, one item, many items, more than fits. A state you don't
       draw is a state someone else will improvise.
       *(Six specimens jumped from a confirm button to a finished result with no
       running state in between — for an action that spends minutes of model
@@ -78,9 +78,9 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
 - [ ] **The most important value must never be the one that truncates.**
       *(The single failed source's name cut to "Nam…" — the one name in the card
       that had to survive.)*
-- [ ] **Sibling controls share a height and do not wrap.**
+- [ ] **Sibling controls share a height and don't wrap.**
       *("SAVE" beside a two-line "DISCARD CHANGES".)*
-- [ ] **Measure alignment, do not eyeball it.** Read the geometry back with
+- [ ] **Measure alignment, don't eyeball it.** Read the geometry back with
       Playwright and assert on the numbers.
       *(Column alignment took three rounds by eye; one measurement settled it.)*
 - [ ] **Element order is the task's real order,** and a price sits with the
@@ -91,7 +91,7 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
 ## 5. Before showing Luma
 
 - [ ] **Render it and look at it.** Screenshot every surface at 390 / 768 /
-      1280. Reading your own source does not count — every occlusion, wrap and
+      1280. Reading your own source doesn't count — every occlusion, wrap and
       clipping defect in this repo was invisible in the markup and obvious in a
       screenshot.
 - [ ] **Are the two layers separable at a glance?** The specimen is the object;
@@ -99,7 +99,7 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
       outside the specimen's box and never changes its spacing.
       *(Frame titles were rendered inside the wireframe boxes, so they read as
       part of the interface being wireframed — and duplicated the label above.)*
-- [ ] **Re-read your captions against the render.** Do they describe what is
+- [ ] **Re-read your captions against the render.** Do they describe what's
       actually drawn, or what you meant to draw?
       *(A caption promised the rail hid imported sources while the mockup showed
       them.)*
@@ -111,6 +111,6 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
       header, a section divider, the derivation of a magic number, and a real
       gotcha. `git diff | grep -E '^\+.*(//|/\*)'` lists them.
       *(Six PRs in one session were sent back for this.)*
-- [ ] **Ask what Luma will catch in five seconds.** It is almost always one of:
+- [ ] **Ask what Luma will catch in five seconds.** It's almost always one of:
       a repeated number, a truncated name, a wrapped button, a coined word, or
-      two things that should share an edge and do not.
+      two things that should share an edge and don't.
