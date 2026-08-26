@@ -129,9 +129,6 @@ export default [
     plugins: { import: importPlugin },
     rules: {
       ...js.configs.recommended.rules,
-      // copycheck masks catalog placeholders with a NUL sentinel and matches
-      // it back out, so a control character in a regex is the design.
-      "no-control-regex": "off",
       "import/no-cycle": ["error", { ignoreExternal: true }],
     },
   },
