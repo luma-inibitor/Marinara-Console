@@ -1,7 +1,5 @@
-// The drift test on the DOMAINS table, against fixture trees that break it and
-// two that must not. The table is maintained by hand, and a stale one does not
-// report a wrong class — it stops scanning a whole namespace and still prints a
-// clean run, so the test that keeps it honest needs a fixture of its own.
+// The drift test on DOMAINS: fixture trees that must break it, and two that
+// must not. A stale table stops scanning a namespace and still prints clean.
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";

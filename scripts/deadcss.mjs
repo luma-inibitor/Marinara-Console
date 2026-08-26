@@ -37,8 +37,7 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE_PATH = path.join(ROOT, "design", "deadcss-baseline.json");
 const flags = new Set(process.argv.slice(2).filter((a) => a.startsWith("--")));
 
-// A path argument scans that tree instead of src/. The ratchet is scoped to the
-// same path, so a fixture run leaves the real baseline alone.
+// A path argument scans that tree instead of src/, ratchet scoped to match.
 const [arg] = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const SCAN = path.resolve(ROOT, arg ?? "src");
 const scanned = path.relative(ROOT, SCAN).split(path.sep).join("/");
@@ -52,8 +51,7 @@ if (!fs.existsSync(SCAN)) {
 // component is added and silently stops scanning where the dead rules are.
 
 // Composed prefixes and their value domains, read off the types in source.
-// Add an entry whenever a new `prefix-${...}` appears in a class position; the
-// drift test below fails the run rather than relying on memory.
+// Add an entry when a new `prefix-${...}` appears in a class position.
 const DOMAINS = {
   "type-": ["character", "relationship", "timeline_event", "thread", "world", "tone", "scene", "source"],
   "dec-": ["keep", "drop", "undecided"],
@@ -95,15 +93,13 @@ for (const m of code.matchAll(/`([^`]*)`/g)) add(m[1]);
 for (const m of code.matchAll(/`([^`$]+)\$\{/g)) add(m[1]);
 
 // ── composed prefixes, and the drift test on DOMAINS ──────────────────────
-// A prefix counts only where it is composed into a class: `className=`, `cls=`
-// and `surface=`. `${}` builds ids and keys too — src/tools/memory/test/
-// factories.ts composes `draft-${n}`, `mut-${n}` and `note-${n}` — and a scan
-// of every template in the tree cannot tell one of those from a class name.
+// A prefix counts only in a class position: `className=`, `cls=`, `surface=`.
+// `${}` also builds ids, so a scan of every template would demand table entries
+// for `draft-${n}` and friends in test/factories.ts.
 //
-// The expression is read by counting braces rather than by matching one pair
-// of backticks. EmptyState nests a template inside its class template,
-// `es-icon ${tone ? `es-${tone}` : ""}`, and a pattern that stops at the first
-// inner backtick loses `es-` and strands both .es-* rules.
+// Gotcha: braces are counted rather than backticks matched. EmptyState nests
+// `es-icon ${tone ? `es-${tone}` : ""}`, and stopping at the first inner
+// backtick loses `es-` and strands both rules.
 const classExpressions = [];
 for (const m of code.matchAll(/\b(?:className|cls|surface)=\{/g)) {
   const start = m.index + m[0].length;
@@ -120,11 +116,8 @@ const prefixes = new Set();
 for (const expr of classExpressions)
   for (const m of expr.matchAll(/([a-z][\w-]*-)\$\{/g)) prefixes.add(m[1]);
 
-// DOMAINS is maintained by hand, so it goes stale in silence: a prefix nobody
-// added means every rule in that namespace reads as dead, and the report says
-// only that the rules are unused. That is not a candidate for a reader to
-// weigh — it is a namespace the check never scanned — so it exits 2 with the
-// compromised-check code.
+// An unregistered prefix means the check never scanned that namespace, so it
+// exits 2 rather than reporting the rules as unused candidates.
 const unregistered = [...prefixes].filter((p) => !(p in DOMAINS)).sort();
 if (unregistered.length) {
   console.log("\nUNREGISTERED CLASS PREFIX — the check itself is compromised:");
@@ -132,11 +125,8 @@ if (unregistered.length) {
   console.log("\nAdd each prefix and its value domain to DOMAINS in scripts/deadcss.mjs.");
   process.exit(2);
 }
-// The test runs one way only. An entry no class position composes contributes
-// nothing, and is still not a finding: the reader above cannot see through
-// every construction, so deleting an entry on that evidence is how a namespace
-// gets stranded. Unused entries are retired by hand — `kw-` was one, and its
-// .kw-add/.kw-del/.kw-edit are literal in src/tools/memory/ClaimDetail.tsx.
+// One way only: an entry nothing composes is not a finding, because the reader
+// cannot see through every construction. Retire unused entries by hand.
 for (const p of prefixes) for (const v of DOMAINS[p]) live.add(p + v);
 
 const SHEETS = [];
