@@ -8,12 +8,18 @@ concurrency:
   group: check-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-jobs:
-  check:
-    runs-on: ubuntu-latest
+# Nothing in this workflow writes to the repository, so nothing it runs — or
+# anything it installs — is given a token that could.
+permissions:
+  contents: read
 
-    permissions:
-      contents: read
+# The three tracks are separate jobs rather than one chain: they do not depend
+# on each other, so a pull request waits for the slowest one instead of the sum,
+# and a red run names the track that is red instead of stopping at the first.
+jobs:
+  static:
+    name: Static checks
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -30,5 +36,60 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run checks
-        run: npm run check
+      - name: Run static checks
+        run: npm run check:static
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run check:test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run check:build
+
+      # The bundle is the artifact a reviewer needs to serve or measure, and it
+      # is gone with the runner otherwise. `if-no-files-found: error` because a
+      # build that emitted nothing must not upload nothing and read as a pass.
+      - name: Upload dist
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
