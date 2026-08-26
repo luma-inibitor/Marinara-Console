@@ -72,8 +72,11 @@
   "private": true,
   "dependencies": {
     "@tabler/icons-react": "^3.46.0",
+    "http-proxy-middleware": "^4.2.0",
+    "mrmime": "^2.0.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "sirv": "^3.0.2",
     "valibot": "^1.4.2"
   }
 }

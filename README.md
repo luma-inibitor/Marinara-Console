@@ -77,7 +77,7 @@ and a fenced example fixes the cause rather than the symptom.
 
 | path | what |
 | --- | --- |
-| `server.mjs` | zero-dep proxy. Strips `embedding` vectors from entry payloads (~85% of bytes), serves `dist/` at `/` and the design mockups at `/mockups/`. For the memory tool it rotates a long-term-memory restore point before each run's first write (`.backups/`), stores review decisions (`.state/`), and forwards `MARINARA_ADMIN_SECRET` for engines off loopback |
+| `server.mjs` | Static server and proxy, built on `sirv` and `http-proxy-middleware`. Strips `embedding` vectors from entry payloads (~85% of bytes), serves `dist/` at `/` and the design mockups at `/mockups/`. For the memory tool it rotates a long-term-memory restore point before each run's first write (`.backups/`), stores review decisions (`.state/`), and forwards `MARINARA_ADMIN_SECRET` for engines off loopback |
 | `src/` | the console: Vite + Preact + TS, hash routing, tokens-based CSS |
 | `design/` | DESIGN.md, tokens rationale, vendored UI research |
 | `.vale.ini` | prose lint config: Microsoft style, exemptions in the vocabulary rather than rule switches |

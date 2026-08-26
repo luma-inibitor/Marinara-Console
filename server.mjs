@@ -1,33 +1,23 @@
 #!/usr/bin/env node
-// Marinara Console server: serves the built client (dist/) and proxies /api/*
-// to a running Marinara Engine, stripping the `embedding` field from entry
-// payloads on the way back. Those vectors are ~85% of an entries response and
-// the console never renders them.
-//
-// The server itself is dependency-free — `node server.mjs` after `npm run build`.
+// Marinara Console server: serves the built client and the design mockups, and
+// proxies /api/* to a Marinara Engine with entry vectors stripped out.
 
 import { createServer } from "node:http";
 import { mkdir, readFile, readdir, rename, stat, unlink, writeFile } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createProxyMiddleware } from "http-proxy-middleware";
+import { lookup } from "mrmime";
+import sirv from "sirv";
 
 const HERE = resolve(fileURLToPath(import.meta.url), "..");
 // MC_DIST/MC_PUBLIC let the conformance suite aim the static roots at fixtures.
-const DIST = resolve(process.env.MC_DIST ?? join(HERE, "dist"));       // built console (vite)
-const PUBLIC = resolve(process.env.MC_PUBLIC ?? join(HERE, "public")); // design mockups, served at /mockups/
+const DIST = resolve(process.env.MC_DIST ?? join(HERE, "dist"));
+const PUBLIC = resolve(process.env.MC_PUBLIC ?? join(HERE, "public"));
 
 const PORT = Number(process.env.PORT ?? 7872);
 const HOST = process.env.HOST ?? "0.0.0.0";
 const TARGET = (process.env.MARINARA_URL ?? "http://127.0.0.1:7860").replace(/\/+$/, "");
-
-const MIME = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".svg": "image/svg+xml",
-  ".woff2": "font/woff2",
-};
 
 // ── payload slimming ──────────────────────────────────────────────
 // Recursively drop `embedding` from anything that looks like an entry.
@@ -134,124 +124,129 @@ async function handleState(req, res, name) {
 }
 
 // ── API proxy ─────────────────────────────────────────────────────
-async function proxy(req, res, url) {
-  if (isLtmWrite(req.method, url.pathname)) {
-    try {
-      await ensureLtmRestorePoint();
-    } catch (err) {
-      // Fail open, loudly: blocking every write on a hiccuping export route
-      // would be worse, but the miss must be visible.
-      console.error(`LTM RESTORE POINT FAILED before ${req.method} ${url.pathname}: ${err.message}`);
-      res.setHeader("x-ltm-restore-point", "failed");
-    }
-  }
-  const target = TARGET + url.pathname + url.search;
-  // The engine's CSRF check requires a trusted Origin; privileged routes off
-  // loopback need the admin secret. The browser never needs to know either.
-  const headers = { accept: "application/json", origin: TARGET };
-  if (req.headers["content-type"]) headers["content-type"] = req.headers["content-type"];
-  if (process.env.MARINARA_ADMIN_SECRET) headers["x-admin-secret"] = process.env.MARINARA_ADMIN_SECRET;
-
-  let body;
-  if (req.method !== "GET" && req.method !== "HEAD") {
-    const chunks = [];
-    for await (const c of req) chunks.push(c);
-    body = Buffer.concat(chunks);
-  }
-
-  let upstream;
-  try {
-    upstream = await fetch(target, { method: req.method, headers, body });
-  } catch (err) {
-    res.writeHead(502, { "content-type": "application/json" });
-    res.end(JSON.stringify({ error: `Cannot reach engine at ${TARGET}`, detail: String(err?.cause?.code ?? err?.message ?? err) }));
-    return;
-  }
-
-  const type = upstream.headers.get("content-type") ?? "application/octet-stream";
-
-  // Only JSON gets rewritten; exports and images stream through untouched.
-  if (!type.includes("application/json")) {
-    const buf = Buffer.from(await upstream.arrayBuffer());
-    res.writeHead(upstream.status, { "content-type": type, "content-length": buf.length });
-    res.end(buf);
-    return;
-  }
-
-  const text = await upstream.text();
-  if (!text) {
-    res.writeHead(upstream.status, { "content-type": type });
-    res.end("");
-    return;
-  }
-
-  let payload;
-  try {
-    payload = JSON.parse(text);
-  } catch {
-    res.writeHead(upstream.status, { "content-type": type });
-    res.end(text);
-    return;
-  }
-
-  const slimmed = JSON.stringify(stripVectors(payload));
-  res.writeHead(upstream.status, {
-    "content-type": "application/json; charset=utf-8",
-    "content-length": Buffer.byteLength(slimmed),
-    "x-lbm-original-bytes": Buffer.byteLength(text),
-    "cache-control": "no-store",
-  });
-  res.end(slimmed);
-}
+const apiProxy = createProxyMiddleware({
+  target: TARGET,
+  changeOrigin: true,
+  selfHandleResponse: true,
+  on: {
+    proxyReq(proxyReq) {
+      // The engine's CSRF check requires a trusted Origin; privileged routes
+      // off loopback need the admin secret. The browser never needs either.
+      proxyReq.setHeader("accept", "application/json");
+      proxyReq.setHeader("origin", TARGET);
+      if (process.env.MARINARA_ADMIN_SECRET) proxyReq.setHeader("x-admin-secret", process.env.MARINARA_ADMIN_SECRET);
+      // A compressed upstream body cannot be rewritten below.
+      proxyReq.removeHeader("accept-encoding");
+    },
+    proxyRes(proxyRes, req, res) {
+      const status = proxyRes.statusCode;
+      const type = proxyRes.headers["content-type"] ?? "application/octet-stream";
+      if (!type.includes("application/json")) {
+        const len = proxyRes.headers["content-length"];
+        res.writeHead(status, { "content-type": type, ...(len ? { "content-length": len } : {}) });
+        proxyRes.pipe(res);
+        return;
+      }
+      const chunks = [];
+      proxyRes.on("data", (c) => chunks.push(c));
+      proxyRes.on("end", () => {
+        const text = Buffer.concat(chunks).toString("utf8");
+        let payload;
+        if (text) {
+          try {
+            payload = JSON.parse(text);
+          } catch {
+            res.writeHead(status, { "content-type": type });
+            res.end(text);
+            return;
+          }
+        } else {
+          res.writeHead(status, { "content-type": type });
+          res.end("");
+          return;
+        }
+        const slimmed = JSON.stringify(stripVectors(payload));
+        res.writeHead(status, {
+          "content-type": "application/json; charset=utf-8",
+          "content-length": Buffer.byteLength(slimmed),
+          "x-lbm-original-bytes": Buffer.byteLength(text),
+          "cache-control": "no-store",
+        });
+        res.end(slimmed);
+      });
+    },
+    error(err, req, res) {
+      if (res.headersSent) {
+        res.end();
+        return;
+      }
+      res.writeHead(502, { "content-type": "application/json" });
+      res.end(JSON.stringify({ error: `Cannot reach engine at ${TARGET}`, detail: String(err?.code ?? err?.message ?? err) }));
+    },
+  },
+});
 
 // ── static ────────────────────────────────────────────────────────
-async function serveStatic(res, pathname) {
+// mrmime carries no `.ico`, and gives the text types no charset.
+const MIME = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".ico": "image/x-icon",
+};
+
+// Vite writes a content hash of at least eight characters into every name it
+// emits under assets/, so a changed file always arrives under a new name.
+const HASHED_ASSET = /^\/assets\/.+-[\w-]{8,}\.\w+$/;
+
+function staticHeaders(res, pathname) {
+  const ext = extname(pathname) || ".html";
+  res.setHeader("content-type", MIME[ext] ?? lookup(ext) ?? "application/octet-stream");
+  res.setHeader("cache-control", HASHED_ASSET.test(pathname) ? "public,max-age=31536000,immutable" : "no-store");
+}
+
+function notFound(req, res) {
+  res.writeHead(404, { "content-type": "text/plain" });
+  res.end("Not found");
+}
+
+// `dev` re-reads the directory per request. The default reads it once at
+// startup, so a build during a run 404s every file it emits.
+// Gotcha: sirv's default `extensions` resolves /index to index.html as well as
+// finding a directory index, so the index is named below instead.
+const sirvOptions = { dev: true, etag: true, extensions: [], setHeaders: staticHeaders, onNoMatch: notFound };
+const distFiles = sirv(DIST, sirvOptions);
+const publicFiles = sirv(PUBLIC, sirvOptions);
+
+async function isDirectory(root, pathname) {
+  const abs = normalize(join(root, pathname));
+  if (!abs.startsWith(root)) return false;
+  return stat(abs).then((info) => info.isDirectory(), () => false);
+}
+
+async function serveStatic(req, res, url) {
   // The built console at /, the design mockups at /mockups/. The mockup
   // directory mirrors its URL underneath public/, so nothing is stripped from
   // the path — only the root changes.
-  const root = pathname === "/mockups" || pathname.startsWith("/mockups/") ? PUBLIC : DIST;
-  if (pathname === "/mockups") {
-    // Same reason as any other directory below: relative links on the page
-    // only resolve correctly from the slashed form.
-    res.writeHead(302, { location: "/mockups/" }).end();
+  const mockups = url.pathname === "/mockups" || url.pathname.startsWith("/mockups/");
+  if (!url.pathname.endsWith("/") && (await isDirectory(mockups ? PUBLIC : DIST, url.pathname))) {
+    // Relative links on the page only resolve correctly from the slashed form.
+    res.writeHead(302, { location: `${url.pathname}/` }).end();
     return;
   }
-  // Any directory serves its index.html, not just the root. Only "/" was
-  // special-cased before, so /mockups/ 404'd while /mockups/index.html served
-  // fine — a front door nobody could open.
-  const rel = normalize(pathname.endsWith("/") ? `${pathname}index.html` : pathname)
-    .replace(/^(\.\.[/\\])+/, "");
-  const file = join(root, rel);
-  if (!file.startsWith(root)) {
-    res.writeHead(403).end("Forbidden");
-    return;
-  }
-  try {
-    const info = await stat(file);
-    // A directory reached without a trailing slash redirects to one, so
-    // /mockups/detail-v5 gets you where /mockups/detail-v5/ does. Relative links on
-    // the page only resolve correctly from the slashed form, which is why the
-    // redirect is the fix rather than serving the index from both.
-    if (info.isDirectory()) {
-      res.writeHead(302, { location: `${pathname}/` }).end();
-      return;
-    }
-    if (!info.isFile()) throw new Error("not a file");
-    const buf = await readFile(file);
-    res.writeHead(200, {
-      "content-type": MIME[extname(file)] ?? "application/octet-stream",
-      "content-length": buf.length,
-      "cache-control": "no-store",
-    });
-    res.end(buf);
-  } catch {
-    res.writeHead(404, { "content-type": "text/plain" }).end("Not found");
-  }
+  // Gotcha: sirv strips a trailing slash before it looks, so /index.html/ would
+  // otherwise serve the file.
+  const pathname = url.pathname.endsWith("/") ? `${url.pathname}index.html` : url.pathname;
+  // sirv percent-decodes what it reads from `req.url`; escaping the percent
+  // signs makes that decode a no-op, so the path stays byte-exact.
+  req.url = pathname.replaceAll("%", "%25") + url.search;
+  (mockups ? publicFiles : distFiles)(req, res);
 }
 
 createServer(async (req, res) => {
-  const url = new URL(req.url, "http://localhost");
   try {
+    const url = new URL(req.url, "http://localhost");
     if (url.pathname === "/__config") {
       const cfg = JSON.stringify({ target: TARGET });
       res.writeHead(200, { "content-type": "application/json", "content-length": cfg.length });
@@ -260,8 +255,20 @@ createServer(async (req, res) => {
     }
     const stateMatch = /^\/console\/state\/([a-z0-9-]+)$/.exec(url.pathname);
     if (stateMatch) return await handleState(req, res, stateMatch[1]);
-    if (url.pathname.startsWith("/api/")) return await proxy(req, res, url);
-    await serveStatic(res, url.pathname);
+    if (url.pathname.startsWith("/api/")) {
+      if (isLtmWrite(req.method, url.pathname)) {
+        try {
+          // Gotcha: `on.proxyReq` cannot await — the request is on the wire by then.
+          await ensureLtmRestorePoint();
+        } catch (err) {
+          // Fail open: a hiccuping export route must not block every write.
+          console.error(`LTM RESTORE POINT FAILED before ${req.method} ${url.pathname}: ${err.message}`);
+          res.setHeader("x-ltm-restore-point", "failed");
+        }
+      }
+      return await apiProxy(req, res);
+    }
+    await serveStatic(req, res, url);
   } catch (err) {
     if (!res.headersSent) res.writeHead(500, { "content-type": "application/json" });
     res.end(JSON.stringify({ error: String(err?.message ?? err) }));
