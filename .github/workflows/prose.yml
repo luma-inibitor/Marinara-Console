@@ -45,19 +45,31 @@ jobs:
 
       - name: Lint prose
         run: |
-          set -uo pipefail
-          vale --no-global --output=line . | tee vale.out
-          status=${PIPESTATUS[0]}
+          # No pipeline and no bare failing command here: the default shell is
+          # `bash -e`, so either would abort the step before the summary gets
+          # written. Capture the status instead and report it at the end.
+          status=0
+          vale --no-global --output=line . > vale.out 2>&1 || status=$?
+          cat vale.out
+          total=$(wc -l < vale.out | tr -d ' ')
           {
             echo '## Vale'
-            if [ -s vale.out ]; then
+            echo
+            echo "${total} alert(s). Advisory only: this job never blocks a merge."
+            if [ "$total" -gt 0 ]; then
+              echo
+              echo '| rule | count |'
+              echo '| --- | --- |'
+              awk -F: '{print $4}' vale.out | sort | uniq -c | sort -rn \
+                | head -n 15 | awk '{printf "| %s | %s |\n", $2, $1}'
+              echo
+              echo '<details><summary>All alerts</summary>'
               echo
               echo '```'
               cat vale.out
               echo '```'
-            else
               echo
-              echo 'No alerts.'
+              echo '</details>'
             fi
           } >> "$GITHUB_STEP_SUMMARY"
           exit "$status"
