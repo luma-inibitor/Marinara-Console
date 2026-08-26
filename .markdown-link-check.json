@@ -1,0 +1,7 @@
+{
+  "_comment": "design/research/ is gitignored (see .gitignore), so DESIGN.md's citation of it is dead in every fresh clone and in CI.",
+  "ignorePatterns": [
+    { "pattern": "^https?://" },
+    { "pattern": "^research/dense-ui-survey\\.md$" }
+  ]
+}

@@ -45,4 +45,6 @@ export const checks = [
   // Design system
   "csslint",
   "typescale",
+  // Docs: Markdown links resolve
+  "linkcheck",
 ];

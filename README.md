@@ -8,7 +8,8 @@ dense-first for desktop and mobile.
 
 **Before you touch any UI, read [`design/DESIGN.md`](design/DESIGN.md).** It holds
 the design framework, owner preferences, and the definition of done. The research
-behind it lives at `design/research/`.
+behind it lives at `design/research/`, which sits outside version control, so a
+clone won't have it.
 
 ## Run
 
