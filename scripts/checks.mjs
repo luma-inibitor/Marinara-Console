@@ -41,5 +41,6 @@ export const checks = [
   "deadcss",
   "knip",
   // Design system
+  "csslint",
   "typescale",
 ];

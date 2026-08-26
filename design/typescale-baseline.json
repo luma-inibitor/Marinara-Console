@@ -71,7 +71,7 @@
     ".rail-glyph → 16px"
   ],
   "src/tools/memory/components/NoteRef.css": [
-    "this file owns the default. */ .notelink → 12px"
+    ".notelink → 12px"
   ],
   "src/tools/memory/detail/MemoryDetail.css": [
     ".mdc-record → 10.5px",

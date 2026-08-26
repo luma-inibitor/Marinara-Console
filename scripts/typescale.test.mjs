@@ -6,6 +6,7 @@
 // not one.
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
+import stylelint from "stylelint";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -58,5 +59,21 @@ describe("the baseline ratchet", () => {
     const { code, out } = run();
     expect(out).toContain("no literal font-size outside the baseline");
     expect(code).toBe(0);
+  });
+});
+
+describe("a stylesheet the parser cannot read", () => {
+  const fixture = join("scripts", "fixtures", "typescale", "unparsable");
+
+  it("exits 2 rather than reading as a clean run", () => {
+    const { code, out } = run(fixture);
+    expect(out).toContain("INTEGRITY FAILURE");
+    expect(code).toBe(2);
+  });
+
+  it("arrives as a CssSyntaxError warning while parseErrors stays empty", async () => {
+    const { results } = await stylelint.lint({ cwd: ROOT, files: [`${fixture}/**/*.css`] });
+    expect(results[0].parseErrors).toEqual([]);
+    expect(results[0].warnings.some((w) => w.rule === "CssSyntaxError")).toBe(true);
   });
 });
