@@ -676,7 +676,7 @@ This pull request must **not** delete `scripts/lib/baseline.mjs`.
 This plan has no replacement for `deadcss`. Thus `baseline.mjs` continues after the migration.
 The same is true for `scripts/lib/imports.mjs`. `components.mjs:71` imports it.
 
-This pull request also corrects `todo/components.md:184-185`.
+This pull request also corrects `docs/todo/components.md:184-185`.
 Both statements there are wrong.
 `deadexports.mjs` does examine exported types. Its header at `scripts/deadexports.mjs:15-19` says so.
 Each of the five named types is already in `design/deadexports-baseline.json:6-18`.
@@ -1048,7 +1048,7 @@ The same rule applies to `scripts/lib/imports.mjs`. `components.mjs:71` still im
 
 **Search libraries.** uFuzzy and MiniSearch are in the backlog. This plan doesn't change the search.
 
-**Component work.** `todo/components.md` holds this work.
+**Component work.** `docs/todo/components.md` holds this work.
 The one exception is the `SaveBar` extraction. It's in this plan because the jscpd limit needs it.
 
 **`scripts/domsnap.mjs` (200 lines) and `scripts/components.mjs` (505 lines).**

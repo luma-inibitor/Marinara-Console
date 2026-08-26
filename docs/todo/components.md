@@ -4,7 +4,7 @@
 > file paths and tool output are literal and aren't linted.
 
 This document holds component work only.
-`todo/tooling-migration.md` holds the tool work.
+`docs/todo/tooling-migration.md` holds the tool work.
 `BACKLOG.md` holds the product faults.
 The design rules for this work are in `design/DESIGN.md` section 8 and `design/ARCHITECTURE.md` section 2.
 
@@ -295,7 +295,7 @@ The one `violating` function is `Palette` at `src/shell/palette.tsx:85`.
 Only text in `design/` names it.
 The tool is useful. This section is its output.
 Thus add it to `package.json`. Don't delete it.
-`todo/tooling-migration.md` holds that work.
+`docs/todo/tooling-migration.md` holds that work.
 
 ---
 
