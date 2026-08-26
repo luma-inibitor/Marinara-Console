@@ -93,3 +93,69 @@ jobs:
           path: dist/
           if-no-files-found: error
           retention-days: 7
+
+  # Required from the day it merges, not optional and not continue-on-error.
+  # The screens this drives are about to be rewritten by the CSS and copy work
+  # queued behind it, and those are exactly the changes a browser check catches
+  # and a unit test does not. A job that is advisory while that lands is a job
+  # nobody reads.
+  #
+  # It builds its own bundle rather than taking `build`'s artifact: Playwright's
+  # webServer already runs `npm run build`, and `needs: build` would put this
+  # job behind the slowest of the three instead of beside them. The cost is one
+  # extra build; the saving is the whole of build's wall clock.
+  browser:
+    name: Browser tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Keyed on the lock file, because the browser build a given
+      # @playwright/test wants is pinned by the version in it. A key on the
+      # workflow file or on a hand-written version would either miss an upgrade
+      # or invalidate the cache for changes that cannot affect it.
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      # chromium-headless-shell (196 MB), not chromium (356 MB). Every project
+      # in playwright.config.ts is headless chromium, which is what the shell
+      # is; the extra 160 MB buys a headed browser nothing here opens.
+      #
+      # `--with-deps` still runs on a cache hit, and has to: the cache holds the
+      # browser, not the apt packages it links against.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium-headless-shell
+
+      - name: Run browser tests
+        run: npm run test:e2e
+
+      # Only on failure, and this is the whole of what a failure leaves behind:
+      # the HTML report, plus the trace, screenshot and error context Playwright
+      # keeps per failed test. Without it a red run on a hosted runner is a
+      # locator name and nothing to look at.
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
