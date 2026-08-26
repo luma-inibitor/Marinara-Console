@@ -389,16 +389,21 @@ viewports.
    and **900px** (above it master-detail sits side by side).
 2. Every screen assembles from the corpus and lists what the corpus put in it —
    `tests/e2e/smoke.spec.ts`.
-3. Zero console and page errors on every screen visited. The shared fixture in
-   `tests/e2e/harness.ts` fails any test that leaves a request unanswered, logs
-   a `[wire]` schema error, or throws an exception after render, so this holds
-   for the whole suite rather than for one spec.
+3. Zero console errors, console warnings and page errors on every screen
+   visited. The shared fixture in `tests/e2e/harness.ts` fails any test that
+   leaves a request unanswered, writes anything to the console at error or
+   warning level, or throws an exception after render, so this holds for the
+   whole suite rather than for one spec. A message that has to be tolerated is
+   listed by name in that file's `EXPECTED_CONSOLE`, with the reason it may not
+   be fixed. That list is empty, because the suite currently runs silent.
 4. Tap-target sweep — `tests/e2e/tap-targets.spec.ts`: interactive elements
    ≥44px primary / ≥24px+spacing secondary. A control under 44px fails unless it
    clears 24px *and* sits ≥8px from the nearest other target — that spacing is
    what §2 grants a secondary control, so without it there is no band left for
    the element to be legitimate in. Segments of one `[role="group"]` are a
-   single control, not competing targets.
+   single control, not competing targets. Held to the `RECORDED` list in that
+   spec, which carries ten measured failures, so a new undersized target fails
+   while those ten pass.
 5. Contrast sweep — `tests/e2e/contrast.spec.ts`: axe over element text, plus a
    pass of our own over `::before`, `::after` and `::placeholder` ink, against
    the floors in §1. Held to `design/contrast-baseline.json`, so only growth
@@ -407,8 +412,14 @@ viewports.
    `tests/e2e/keyboard.spec.ts`: every layered surface closes on scrim tap, on
    Escape and on back, and the command palette, the `g` jump sequences and j/k
    down a list all work without a mouse.
-7. Screen captures for a visual read — `tests/e2e/shots.spec.ts`, which is
-   skipped unless `MC_SHOTS` is set:
+7. No sideways scroll — `tests/e2e/overflow.spec.ts`: on every screen at every
+   viewport, neither the document nor the scrolling stage may scroll
+   horizontally. The stage is measured as well as the document because `.stage`
+   sets `overflow-y: auto`, and that computes `overflow-x` to auto too, so an
+   over-wide row scrolls the stage and leaves the document at exactly the
+   viewport width. A document-only measure reports every screen clean.
+8. Screen captures for a visual read — `tests/e2e/shots.spec.ts`, which is
+   skipped unless `MC_SHOTS=1`:
 
    ```
    MC_SHOTS=1 MC_SHOT_URL=/#/memory/vault npx playwright test shots
@@ -419,9 +430,8 @@ viewports.
    `/tmp/shots/shot-<viewport>.png` at all four viewports and reports horizontal
    document overflow per viewport. `MC_SHOT_NAME` changes the file stem,
    `MC_SHOT_SEL` captures one element, `MC_SHOT_FULL` captures the whole page.
-   Horizontal overflow at any viewport is a defect. Density on list screens is
-   read off the narrow capture: the mobile target is about ten collapsed rows a
-   screen.
+   Density on list screens is read off the narrow capture: the mobile target is
+   about ten collapsed rows a screen.
 
 Screenshot before claiming; measure before asserting density. This habit has caught
 real bugs every time it was applied — treat it as part of the build, not QA.

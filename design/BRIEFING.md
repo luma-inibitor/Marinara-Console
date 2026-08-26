@@ -80,6 +80,8 @@ Full detail in `DESIGN.md`. The parts that constrain new work:
   key/value rows — wrapping `source_character_2cdcc172e8fe3cd6` serves nobody.
 - **The browser suite enforces the contrast and tap-target floors**, not
   judgment. Body and data text ≥4.5:1; primary targets ≥44px.
+  A recorded baseline backs each of those two checks, so the suite fails on a
+  new offender rather than on every offender.
 
 ## 5. Requirements that are settled
 
@@ -205,7 +207,7 @@ Not optional, and not judgment calls:
 
 | Command | Checks |
 |---|---|
-| `npx playwright test` | Every screen at four viewports: contrast, tap targets, console errors, overlay dismissal, keyboard |
+| `npx playwright test` | Every screen at four viewports: contrast, tap targets, console errors, sideways scroll, overlay dismissal, keyboard |
 | `node scripts/copycheck.mjs <file>` | Every user-visible string traces to the catalog or `OURS` |
 | `node scripts/deadcss.mjs` | CSS classes nothing uses — fails when the list grows past `design/deadcss-baseline.json` |
 | `node scripts/deadexports.mjs` | Symbols exported but used only where declared, dead re-exports included — same baseline ratchet |

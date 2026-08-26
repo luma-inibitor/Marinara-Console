@@ -104,7 +104,8 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
       *(A caption promised the rail hid imported sources while the mockup showed
       them.)*
 - [ ] **Run the mechanical checks**: `copycheck.mjs`, and `npx playwright test`
-      for app code (contrast, tap targets, overlay dismissal, keyboard).
+      for app code (contrast, tap targets, sideways scroll, overlay dismissal,
+      keyboard).
 - [ ] **Read every comment the diff adds**, and delete the ones that fail
       DESIGN.md §8: rationale, narrative about the bug being fixed, restating
       the declaration below, or an alternative that was rejected. Keep a file

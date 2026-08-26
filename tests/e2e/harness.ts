@@ -1,10 +1,11 @@
 // The test object every spec here imports: `@playwright/test` with the fixture
 // corpus installed.
 //
-// It also turns three things the browser swallows into failures — an
-// unanswered request, a `[wire]` console error (a fixture that no longer parses
-// against the app's own valibot schemas), and an uncaught exception after
-// render. All three are checked after `use()`, so they report on the whole test.
+// It also turns four things the browser swallows into failures — an unanswered
+// request, a `[wire]` console error (a fixture that no longer parses against the
+// app's own valibot schemas), any other console error or warning, and an
+// uncaught exception after render. All four are checked after `use()`, so they
+// report on the whole test.
 
 import { test as base, expect } from "@playwright/test";
 import { installApi, type Route } from "./api";
@@ -15,15 +16,24 @@ interface Options {
   routes: Route[];
 }
 
+/** Console text allowed to pass. Each entry names one message and says why it
+ *  may not be fixed here. */
+const EXPECTED_CONSOLE: { why: string; match: RegExp }[] = [];
+
 export const test = base.extend<Options>({
   routes: [[], { option: true }],
 
   page: async ({ page, routes }, use) => {
     const api = await installApi(page, routes);
     const mismatches: string[] = [];
+    const noise: string[] = [];
     const crashes: string[] = [];
     page.on("console", (message) => {
-      if (message.type() === "error" && message.text().startsWith("[wire]")) mismatches.push(message.text());
+      const type = message.type();
+      if (type !== "error" && type !== "warning") return;
+      const text = message.text();
+      if (text.startsWith("[wire]")) mismatches.push(text);
+      else if (!EXPECTED_CONSOLE.some((rule) => rule.match.test(text))) noise.push(`${type}: ${text}`);
     });
     page.on("pageerror", (error) => crashes.push(error.message));
 
@@ -31,6 +41,7 @@ export const test = base.extend<Options>({
 
     expect(api.unhandled, "requests the fixture corpus could not answer").toEqual([]);
     expect(mismatches, "responses that failed the app's own valibot schemas").toEqual([]);
+    expect(noise, "console errors and warnings the page emitted").toEqual([]);
     expect(crashes, "uncaught exceptions on the page").toEqual([]);
   },
 });

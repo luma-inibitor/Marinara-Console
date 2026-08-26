@@ -1,10 +1,5 @@
 // Screen captures of one address at the four standard viewports, for mockup and
 // wireframe review.
-//
-//   MC_SHOTS=1 MC_SHOT_URL=/mockups/detail-v5.html npx playwright test shots
-//
-// The address is resolved against the preview server, so a bare path reaches a
-// mockup page or an app route; an absolute URL is taken as it stands.
 
 import { test } from "./harness";
 
@@ -14,7 +9,7 @@ declare const process: { env: Record<string, string | undefined> };
 
 const OUT = "/tmp/shots";
 
-test.skip(!process.env.MC_SHOTS, "set MC_SHOTS to capture screen images");
+test.skip(process.env.MC_SHOTS !== "1", "set MC_SHOTS=1 to capture screen images");
 
 test("capture", async ({ page }, info) => {
   const url = process.env.MC_SHOT_URL;
@@ -22,6 +17,9 @@ test("capture", async ({ page }, info) => {
   const name = process.env.MC_SHOT_NAME ?? "shot";
   const sel = process.env.MC_SHOT_SEL;
 
+  // Gotcha: the fixture router matches on pathname alone, so an absolute URL
+  // pointed at a live server still has its /api/ and /console/ requests answered
+  // from the corpus.
   await page.goto(url, { waitUntil: "networkidle", timeout: 90_000 });
   await page.waitForTimeout(700);
 
