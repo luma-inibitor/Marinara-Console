@@ -576,6 +576,8 @@ describe("static · precompressed siblings", () => {
     body = `globalThis.marker = "${"dist,hashed,asset;".repeat(200)}";\n`;
     await mkdir(join(tree, "assets"), { recursive: true });
     await writeFile(join(tree, HASHED.slice(1)), body);
+    await mkdir(join(tree, "downloads"), { recursive: true });
+    await writeFile(join(tree, "downloads", "data.tar.gz"), "a genuine download");
     precompress(tree);
     server = await startConsole({ dist: tree });
   });
@@ -636,5 +638,11 @@ describe("static · precompressed siblings", () => {
 
   it("404s a sibling asked for by name, so there is one URL per file", async () => {
     expect((await get(`${HASHED}.br`, "")).status).toBe(404);
+  });
+
+  // Served, sirv would send this with `content-encoding: gzip` that the client
+  // never asked for, and the browser would unpack it under its packed name.
+  it("404s a name that merely ends in .gz rather than serving it wrong", async () => {
+    expect((await get("/downloads/data.tar.gz", "")).status).toBe(404);
   });
 });

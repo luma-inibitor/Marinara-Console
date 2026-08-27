@@ -241,10 +241,11 @@ async function serveStatic(req, res, url) {
     res.writeHead(302, { location: `${url.pathname}/` }).end();
     return;
   }
-  // A precompressed sibling is a representation of the file next to it, not a
-  // file of its own. Asked for by name it would answer 200 with the
-  // `content-encoding` sirv reads off the extension, which no client asking for
-  // `/app.js.br` offered to decode.
+  // Gotcha: sirv reads `content-encoding` off the last three characters of the
+  // name and sets it even when the client offered no encoding, and even when
+  // its own brotli and gzip options are off. So a `.tar.gz` download reaches
+  // the browser unpacked under its packed name. Nothing under dist/ or public/
+  // is reachable only under a `.br` or `.gz` name.
   if (/\.(br|gz)$/.test(url.pathname)) return notFound(req, res);
   // Gotcha: sirv strips a trailing slash before it looks, so /index.html/ would
   // otherwise serve the file.

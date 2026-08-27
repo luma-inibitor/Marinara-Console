@@ -81,6 +81,14 @@ it("rewrites a stale sibling from the file beside it", () => {
   expect(brotliDecompressSync(readFileSync(`${abs}.br`))).toEqual(compressible(500));
 });
 
+// The sweep reads any `.br`/`.gz` as a sibling unless it checks what the name
+// strips to, and `data.tar` is nobody's source file.
+it("leaves a download whose name merely ends in .gz alone", () => {
+  const abs = write("downloads/data.tar.gz", Buffer.from("a genuine download"));
+  precompress(dist);
+  expect(existsSync(abs)).toBe(true);
+});
+
 it("is unchanged by a second run", () => {
   write("assets/app.js", compressible(500));
   write("assets/font.woff2", compressible(500));

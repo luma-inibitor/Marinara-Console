@@ -8,9 +8,8 @@
 // `npm run build` runs this, and `vite build` empties dist/ first, so a
 // compressed sibling cannot outlive the file it was made from.
 //
-// public/ is deliberately left alone. vite.config.ts sets `publicDir: false`,
-// so public/ is a source tree under version control rather than part of the
-// build, and generated binaries do not belong in it.
+// Reads dist/ only. vite.config.ts sets `publicDir: false`, so public/ is not
+// build output.
 //
 // Exit codes: 0 wrote the siblings · 2 the script could not read dist/, which
 // must never read as a pass.
@@ -22,16 +21,13 @@ import { brotliCompressSync, constants, gzipSync } from "node:zlib";
 const DEFAULT_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = process.argv[2] ? resolve(process.cwd(), process.argv[2]) : join(DEFAULT_ROOT, "dist");
 
-// Measured on this tree: .woff2 is already brotli inside, and recompressing the
-// seventeen font files moves each between -0.1% and +0.2%. An allowlist keeps
-// the near-ties out rather than relying on the smaller-than-the-original test
-// below to catch every one of them.
+// Measured on this tree: .woff2 carries brotli inside already, and
+// recompressing each of the seventeen fonts moves it between -0.1% and +0.2%.
 const COMPRESSIBLE = new Set([
   ".css", ".html", ".js", ".json", ".map", ".mjs", ".svg", ".txt", ".webmanifest", ".xml",
 ]);
 
-// Below about one MTU the transfer is a single packet either way, so a smaller
-// body buys nothing and each sibling costs sirv a stat on every request.
+// One MTU: a body under it fits in a single packet compressed or not.
 const FLOOR = 1024;
 
 function walk(dir) {
@@ -53,12 +49,16 @@ export function precompress(dist) {
   const all = walk(dist);
   const sources = all.filter((f) => !f.endsWith(".br") && !f.endsWith(".gz"));
 
-  // A sibling whose source has gone answers a request for a file that is no
-  // longer there, so it goes first and unconditionally.
+  // Gotcha: only a name this script could have written is an orphan.
+  // `data.tar.gz` strips to `data.tar`, which is not a compressible type, so it
+  // is somebody's download and it stays.
   const live = new Set(sources);
-  for (const f of all) {
-    if ((f.endsWith(".br") || f.endsWith(".gz")) && !live.has(f.slice(0, -3))) unlinkSync(f);
-  }
+  const isOrphan = (f) => {
+    if (!f.endsWith(".br") && !f.endsWith(".gz")) return false;
+    const source = f.slice(0, -3);
+    return COMPRESSIBLE.has(extname(source)) && !live.has(source);
+  };
+  for (const f of all) if (isOrphan(f)) unlinkSync(f);
 
   const rows = [];
   for (const file of sources) {
@@ -73,6 +73,8 @@ export function precompress(dist) {
     if (!COMPRESSIBLE.has(extname(file))) { drop("not a compressible type"); continue; }
     if (bytes.length < FLOOR) { drop(`under ${FLOOR} bytes`); continue; }
 
+    // Quality 11 takes 843 ms on the 688 kB bundle where 10 takes 346 ms and 9
+    // takes 29 ms, for 2.0% over 10 and 8.3% over 9.
     const encoded = {
       ".br": brotliCompressSync(bytes, {
         params: {
@@ -83,8 +85,8 @@ export function precompress(dist) {
       ".gz": gzipSync(bytes, { level: 9 }),
     };
 
-    // Serving a sibling that is bigger than the file spends bandwidth to save
-    // none, and sirv prefers the sibling whenever it exists.
+    // Gotcha: sirv sends the sibling whenever it exists, without comparing
+    // sizes.
     const wrote = [];
     for (const [ext, out] of Object.entries(encoded)) {
       if (out.length < bytes.length) {

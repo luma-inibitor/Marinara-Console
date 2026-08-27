@@ -873,7 +873,12 @@ Seventeen are `.woff2`, which already carries brotli inside: recompressing each
 font moves it between &minus;0.1% and +0.2%. `index.html` is 722 bytes, so it
 fits in one packet either way and gains nothing from a smaller body.
 
-The work turned up two things the plan didn't anticipate.
+Compressing costs 1.05 s beside a 1.28 s `vite build`, so `check:build` takes about
+twice as long as it did. A CI job that also installs dependencies and
+drives a browser won't notice. Quality 11 is the setting worth paying for.
+It takes 843 ms on the bundle where quality 10 takes 346 ms, and it buys 2.0%.
+
+The work turned up three things the plan didn't anticipate.
 
 `vite build` empties `dist/` before it writes, so a sibling can't outlive the
 file behind it. That removes the stale-sibling hazard for `index.html`, the one
@@ -882,9 +887,23 @@ somebody edited by hand.
 
 Writing the siblings also gave every compressed file a second URL. Asked for by
 name, `/assets/app.js.br` answered 200 with `content-encoding: br`, and no client
-requesting that path ever offered to decode it. `server.mjs` now 404s any
-`url.pathname` ending in `.br` or `.gz`, which matches how it already treats
-`/index` and `/index.html/`.
+requesting that path ever offered to decode it.
+
+That turned out to be one case of something older. sirv reads `content-encoding`
+off the last three characters of a name. It sets that header even when the client
+offered no encoding at all. It sets it even when its own compression options are
+off. A genuine `data.tar.gz` in `public/` therefore reached the browser unpacked
+under its packed name, before this branch existed.
+
+So this server can serve no name ending `.br` or `.gz` correctly. `server.mjs`
+now 404s every one of them, the way it already treats `/index` and
+`/index.html/`. Call that a limitation rather than a fix. Nothing in `dist/` or
+`public/` is reachable only under such a name.
+
+The same confusion sat in the script. Its orphan sweep read any `.br` or `.gz`
+as a sibling, so it deleted a genuine `data.tar.gz` outright. The name strips to
+`data.tar`, no such file exists, and the sweep called it an orphan. It now sweeps
+only a name that strips to a type on its own compressible list.
 
 ---
 
