@@ -52,16 +52,21 @@ function response(...sources: Source[]): ReviewResponse {
     generatedAt: "2026-01-01T00:00:00Z",
     sources,
     // Nothing in flattenReview reads counts; the engine sends them regardless.
-    counts: { sources: sources.length, drafts: 0, mutations: 0, blockedDrafts: 0, candidateRejections: 0, deduplications: 0 },
+    counts: {
+      sources: sources.length,
+      drafts: 0,
+      mutations: 0,
+      blockedDrafts: 0,
+      candidateRejections: 0,
+      deduplications: 0,
+    },
   };
 }
 
 /** One source, one draft, one target, one row — the shape most of these tests
  *  want, so an assertion names only the thing it is about. */
 function oneRow(m: Mutation, over: { target?: Partial<Target>; row?: Partial<WireRow> } = {}) {
-  const data = response(
-    source("s1", [draft("d1", [m])], [target("n1", [wireRow("d1", m, over.row)], over.target)]),
-  );
+  const data = response(source("s1", [draft("d1", [m])], [target("n1", [wireRow("d1", m, over.row)], over.target)]));
   return flattenReview(data, new Map()).rows[0]!;
 }
 
@@ -232,7 +237,14 @@ describe("flattenReview — conflicts", () => {
 
   it("does not drop conflicts on a mutation kind that is not create_note", () => {
     const conflicts = [{ field: "status", existing: "active", proposed: "resolved" }];
-    for (const kind of ["append_section", "update_section", "add_link", "set_keywords", "set_status", "set_subjects"] as const) {
+    for (const kind of [
+      "append_section",
+      "update_section",
+      "add_link",
+      "set_keywords",
+      "set_status",
+      "set_subjects",
+    ] as const) {
       const m = makeMutation({ kind, note: makeNote({ conflicts }) });
       expect(oneRow(m).conflicts).toEqual(conflicts);
     }
@@ -257,19 +269,11 @@ describe("flattenReview — rows produced, and in what order", () => {
       source(
         "s1",
         [draft("d1", [a, c]), draft("d2", [b])],
-        [
-          target("n1", [wireRow("d1", a), wireRow("d2", b)]),
-          target("n2", [wireRow("d1", c)]),
-        ],
+        [target("n1", [wireRow("d1", a), wireRow("d2", b)]), target("n2", [wireRow("d1", c)])],
       ),
       source("s2", [draft("d3", [d])], [target("n3", [wireRow("d3", d)])]),
     );
-    expect(flattenReview(data, new Map()).rows.map((r) => r.key)).toEqual([
-      "d1:m-a",
-      "d2:m-b",
-      "d1:m-c",
-      "d3:m-d",
-    ]);
+    expect(flattenReview(data, new Map()).rows.map((r) => r.key)).toEqual(["d1:m-a", "d2:m-b", "d1:m-c", "d3:m-d"]);
   });
 
   it("emits a row per target when one mutation is aimed at several", () => {
@@ -293,10 +297,7 @@ describe("flattenReview — rows produced, and in what order", () => {
 
   it("does not throw on a source with drafts but no targets, or targets with no rows", () => {
     const m = makeMutation();
-    const data = response(
-      source("s1", [draft("d1", [m])], []),
-      source("s2", [], [target("n1", [])]),
-    );
+    const data = response(source("s1", [draft("d1", [m])], []), source("s2", [], [target("n1", [])]));
     expect(flattenReview(data, new Map())).toEqual({ rows: [], blocked: [], rejections: [] });
   });
 });
@@ -306,10 +307,11 @@ describe("flattenReview — blocked drafts", () => {
 
   it("records a blocked draft with its source, title and mutation count", () => {
     const m = makeMutation();
-    const data = response(
-      source("s1", [draft("d1", [m, makeMutation()], { blockReasons: reasons })], []),
+    const data = response(source("s1", [draft("d1", [m, makeMutation()], { blockReasons: reasons })], []));
+    const { blocked } = flattenReview(
+      data,
+      new Map([["s1", makeNote({ id: "s1", type: "source", title: "Chat One" })]]),
     );
-    const { blocked } = flattenReview(data, new Map([["s1", makeNote({ id: "s1", type: "source", title: "Chat One" })]]));
     expect(blocked).toEqual([
       { draftId: "d1", sourceNoteId: "s1", sourceTitle: "Chat One", reasons, mutationCount: 2 },
     ]);
@@ -320,8 +322,11 @@ describe("flattenReview — blocked drafts", () => {
     // draft's own list or the blocked banner would always read zero.
     const m = makeMutation();
     const data = response(
-      source("s1", [draft("d1", [m, makeMutation(), makeMutation()], { blockReasons: reasons })],
-        [target("n1", [wireRow("d1", m)])]),
+      source(
+        "s1",
+        [draft("d1", [m, makeMutation(), makeMutation()], { blockReasons: reasons })],
+        [target("n1", [wireRow("d1", m)])],
+      ),
     );
     const { rows, blocked } = flattenReview(data, new Map());
     expect(rows).toEqual([]);
@@ -346,8 +351,11 @@ describe("flattenReview — blocked drafts", () => {
   it("blocks a draft on any non-empty reasons list, whatever the codes say", () => {
     const m = makeMutation();
     const data = response(
-      source("s1", [draft("d1", [m], { blockReasons: [{ code: "", message: "" }] })],
-        [target("n1", [wireRow("d1", m)])]),
+      source(
+        "s1",
+        [draft("d1", [m], { blockReasons: [{ code: "", message: "" }] })],
+        [target("n1", [wireRow("d1", m)])],
+      ),
     );
     expect(flattenReview(data, new Map()).rows).toEqual([]);
   });
@@ -379,14 +387,22 @@ describe("flattenReview — blocked drafts", () => {
 describe("flattenReview — rejections", () => {
   it("collects each candidate rejection with its source and title", () => {
     const data = response(
-      source("s1", [draft("d1", [], {
-        candidateRejections: [
-          { reason: "too_short", message: "Nothing to save", snippet: "ok" },
-          { reason: "duplicate" },
+      source(
+        "s1",
+        [
+          draft("d1", [], {
+            candidateRejections: [
+              { reason: "too_short", message: "Nothing to save", snippet: "ok" },
+              { reason: "duplicate" },
+            ],
+          }),
         ],
-      })], []),
+        [],
+      ),
     );
-    expect(flattenReview(data, new Map([["s1", makeNote({ id: "s1", type: "source", title: "Chat One" })]])).rejections).toEqual([
+    expect(
+      flattenReview(data, new Map([["s1", makeNote({ id: "s1", type: "source", title: "Chat One" })]])).rejections,
+    ).toEqual([
       { sourceNoteId: "s1", sourceTitle: "Chat One", reason: "too_short", message: "Nothing to save", snippet: "ok" },
       { sourceNoteId: "s1", sourceTitle: "Chat One", reason: "duplicate", message: undefined, snippet: undefined },
     ]);
@@ -401,10 +417,16 @@ describe("flattenReview — rejections", () => {
 
   it("collects rejections from a blocked draft too", () => {
     const data = response(
-      source("s1", [draft("d1", [], {
-        blockReasons: [{ code: "stale", message: "m" }],
-        candidateRejections: [{ reason: "too_short" }],
-      })], []),
+      source(
+        "s1",
+        [
+          draft("d1", [], {
+            blockReasons: [{ code: "stale", message: "m" }],
+            candidateRejections: [{ reason: "too_short" }],
+          }),
+        ],
+        [],
+      ),
     );
     const { blocked, rejections } = flattenReview(data, new Map());
     expect(blocked).toHaveLength(1);
@@ -412,17 +434,26 @@ describe("flattenReview — rejections", () => {
   });
 
   it("survives a draft with no candidateRejections field", () => {
-    const bare = { draft: { id: "d1", status: "pending", mutations: [] }, freshness: "fresh", blockReasons: [], diagnostics: [] };
+    const bare = {
+      draft: { id: "d1", status: "pending", mutations: [] },
+      freshness: "fresh",
+      blockReasons: [],
+      diagnostics: [],
+    };
     const data = response(source("s1", [bare as unknown as Draft], []));
     expect(flattenReview(data, new Map()).rejections).toEqual([]);
   });
 
   it("keeps rejections in draft order across drafts and sources", () => {
     const data = response(
-      source("s1", [
-        draft("d1", [], { candidateRejections: [{ reason: "r1" }] }),
-        draft("d2", [], { candidateRejections: [{ reason: "r2" }] }),
-      ], []),
+      source(
+        "s1",
+        [
+          draft("d1", [], { candidateRejections: [{ reason: "r1" }] }),
+          draft("d2", [], { candidateRejections: [{ reason: "r2" }] }),
+        ],
+        [],
+      ),
       source("s2", [draft("d3", [], { candidateRejections: [{ reason: "r3" }] })], []),
     );
     expect(flattenReview(data, new Map()).rejections.map((r) => r.reason)).toEqual(["r1", "r2", "r3"]);
@@ -436,7 +467,10 @@ describe("row.text and row.parts — create_note", () => {
     const note = makeNote({ sections: { core: section("first"), history: section("second") } });
     const row = oneRow(makeMutation({ kind: "create_note", note, summary: "the summary" }));
     expect(row.text).toBe("first");
-    expect(row.parts).toEqual([{ key: "core", text: "first" }, { key: "history", text: "second" }]);
+    expect(row.parts).toEqual([
+      { key: "core", text: "first" },
+      { key: "history", text: "second" },
+    ]);
   });
 
   it("falls back to the summary when the note has no sections", () => {
@@ -490,14 +524,24 @@ describe("row.text and row.parts — section writes", () => {
   });
 
   it("produces one part keyed by sectionKey for update_section", () => {
-    const m = makeMutation({ kind: "update_section", sectionKey: "voice", section: section("rewritten"), text: "stale" });
+    const m = makeMutation({
+      kind: "update_section",
+      sectionKey: "voice",
+      section: section("rewritten"),
+      text: "stale",
+    });
     const row = oneRow(m);
     expect(row.text).toBe("rewritten");
     expect(row.parts).toEqual([{ key: "voice", text: "rewritten" }]);
   });
 
   it("measures the same string in text and in parts", () => {
-    const m = makeMutation({ kind: "update_section", sectionKey: "voice", text: chars(3), section: section(chars(50)) });
+    const m = makeMutation({
+      kind: "update_section",
+      sectionKey: "voice",
+      text: chars(3),
+      section: section(chars(50)),
+    });
     const row = oneRow(m);
     expect(row.parts[0]!.text).toBe(row.text);
   });
@@ -580,7 +624,13 @@ describe("row.text and row.parts — kinds that write no section text", () => {
     for (const kind of ["add_link", "set_keywords", "set_status", "set_subjects"] as const) {
       // text and section are populated to prove the kind, not the fields, is
       // what empties parts.
-      const m = makeMutation({ kind, summary: `${kind} summary`, sectionKey: "history", text: "ignored", section: section("ignored") });
+      const m = makeMutation({
+        kind,
+        summary: `${kind} summary`,
+        sectionKey: "history",
+        text: "ignored",
+        section: section("ignored"),
+      });
       const row = oneRow(m);
       expect(row.text).toBe(`${kind} summary`);
       expect(row.parts).toEqual([]);

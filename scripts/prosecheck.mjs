@@ -75,9 +75,7 @@ if (added.size === 0) {
   process.exit(0);
 }
 
-const report = JSON.parse(
-  run("vale", ["--no-global", "--output=JSON", ...added.keys()]) || "{}",
-);
+const report = JSON.parse(run("vale", ["--no-global", "--output=JSON", ...added.keys()]) || "{}");
 
 const alerts = [];
 for (const [file, list] of Object.entries(report)) {

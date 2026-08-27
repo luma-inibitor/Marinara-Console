@@ -41,14 +41,18 @@ export function MemoryTool({ rest }: { rest: string[] }) {
   const loadedNotes = useStore(notesById);
   const peek = useStore(peeked);
   const listedMemories = useMemo(
-    () => [...loadedNotes.values()].filter((n) => n.type !== "source" && listedInVault(n) && noteInScope(n, scope)).length,
+    () =>
+      [...loadedNotes.values()].filter((n) => n.type !== "source" && listedInVault(n) && noteInScope(n, scope)).length,
     // Scope is a fresh object each render, so depending on it would recompute
     // every time. Its two fields ARE the whole of it, and noteInScope reads
     // nothing else, so listing them covers the object exactly.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [loadedNotes, scope.characterId, scope.chatId]);
+    [loadedNotes, scope.characterId, scope.chatId],
+  );
 
-  useEffect(() => { void refreshLtmStatus(); }, [view]);
+  useEffect(() => {
+    void refreshLtmStatus();
+  }, [view]);
 
   const health = s?.indexes.health;
   const unhealthy = Boolean(s && health !== "healthy" && health !== "not_built");
@@ -77,12 +81,26 @@ export function MemoryTool({ rest }: { rest: string[] }) {
           // /status is likewise a server-wide aggregate that cannot see scope.
           // Both remain the fallback for the moment before anything has loaded,
           // where the alternative is a badge reading zero over a full vault.
-          const count = id === "review" ? (reviewData ? scopedRows.length : s?.notes.pendingDrafts ?? 0)
-            : id === "vault" ? (loadedNotes.size ? listedMemories : s?.notes.savedMemories ?? 0)
-            : (ready ?? 0);
+          const count =
+            id === "review"
+              ? reviewData
+                ? scopedRows.length
+                : (s?.notes.pendingDrafts ?? 0)
+              : id === "vault"
+                ? loadedNotes.size
+                  ? listedMemories
+                  : (s?.notes.savedMemories ?? 0)
+                : (ready ?? 0);
           return (
-            <button key={id} className="mem-tab t-label" aria-current={view === id ? "page" : undefined}
-              onClick={() => { if (id === "review") activeFacets.set(new Map()); navigate(`memory/${id}`); }}>
+            <button
+              key={id}
+              className="mem-tab t-label"
+              aria-current={view === id ? "page" : undefined}
+              onClick={() => {
+                if (id === "review") activeFacets.set(new Map());
+                navigate(`memory/${id}`);
+              }}
+            >
               <I size={15} stroke={1.75} aria-hidden />
               {tAny(`memory.nav.${id}`)}
               {count > 0 && <b className="mem-badge t-data">{count}</b>}
@@ -94,7 +112,11 @@ export function MemoryTool({ rest }: { rest: string[] }) {
       {(unhealthy || noEmbeddings) && (
         <div className="health-banner">
           <span className="t-prose">
-            {unhealthy && <><Copy k="memory.index.unhealthy" slots={{ state: <b>{health!.replaceAll("_", " ")}</b> }} />{" "}</>}
+            {unhealthy && (
+              <>
+                <Copy k="memory.index.unhealthy" slots={{ state: <b>{health!.replaceAll("_", " ")}</b> }} />{" "}
+              </>
+            )}
             {noEmbeddings && t("memory.index.noEmbeddings")}
           </span>
           {unhealthy && (

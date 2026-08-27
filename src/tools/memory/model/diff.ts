@@ -3,10 +3,14 @@
 // with word-level emphasis when a changed line keeps enough common context.
 // Sections are capped at 20k chars, so the quadratic DP is comfortably small.
 
-export interface DiffOp { t: "ctx" | "del" | "add"; text: string }
+export interface DiffOp {
+  t: "ctx" | "del" | "add";
+  text: string;
+}
 
 export function lineDiff(a: string[], b: string[]): DiffOp[] {
-  const n = a.length, m = b.length;
+  const n = a.length,
+    m = b.length;
   const dp: number[][] = Array.from({ length: n + 1 }, () => new Array<number>(m + 1).fill(0));
   for (let i = n - 1; i >= 0; i--) {
     for (let j = m - 1; j >= 0; j--) {
@@ -14,11 +18,20 @@ export function lineDiff(a: string[], b: string[]): DiffOp[] {
     }
   }
   const out: DiffOp[] = [];
-  let i = 0, j = 0;
+  let i = 0,
+    j = 0;
   while (i < n && j < m) {
-    if (a[i] === b[j]) { out.push({ t: "ctx", text: a[i] }); i++; j++; }
-    else if (dp[i + 1][j] >= dp[i][j + 1]) { out.push({ t: "del", text: a[i] }); i++; }
-    else { out.push({ t: "add", text: b[j] }); j++; }
+    if (a[i] === b[j]) {
+      out.push({ t: "ctx", text: a[i] });
+      i++;
+      j++;
+    } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+      out.push({ t: "del", text: a[i] });
+      i++;
+    } else {
+      out.push({ t: "add", text: b[j] });
+      j++;
+    }
   }
   while (i < n) out.push({ t: "del", text: a[i++] });
   while (j < m) out.push({ t: "add", text: b[j++] });
@@ -29,12 +42,16 @@ const EDGE_WS = /^(\s*)([\s\S]*?)(\s*)$/;
 
 /** Common word prefix/suffix of a del/add pair. Null when the lines share too
  *  little for word emphasis to help — the caller falls back to plain lines. */
-export function wordEmphasis(del: string, add: string): { pre: string; delMid: string; addMid: string; post: string } | null {
+export function wordEmphasis(
+  del: string,
+  add: string,
+): { pre: string; delMid: string; addMid: string; post: string } | null {
   // Identical lines have nothing to emphasize, and the length guard below
   // cannot catch them: it would compare the whole common prefix against 30% of
   // itself, and for two empty strings it compares 0 < 0.
   if (del === add) return null;
-  const aw = del.split(/(\s+)/), bw = add.split(/(\s+)/);
+  const aw = del.split(/(\s+)/),
+    bw = add.split(/(\s+)/);
   let p = 0;
   while (p < aw.length && p < bw.length && aw[p] === bw[p]) p++;
   let s = 0;
@@ -62,4 +79,7 @@ export function wordEmphasis(del: string, add: string): { pre: string; delMid: s
 }
 
 export const splitLines = (text: string | undefined | null): string[] =>
-  (text ?? "").split("\n").map((l) => l.trimEnd()).filter((l) => l.trim() !== "");
+  (text ?? "")
+    .split("\n")
+    .map((l) => l.trimEnd())
+    .filter((l) => l.trim() !== "");

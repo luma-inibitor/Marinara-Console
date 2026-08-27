@@ -45,31 +45,41 @@ function define(): void {
   // element scrolled entirely away is dropped; hidden and clip shrink the rect.
   const clipTo = (el: Element, r: Box): Box | null => {
     const box = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
-    let l = r.left, t = r.top, rt = r.right, b = r.bottom;
+    let l = r.left,
+      t = r.top,
+      rt = r.right,
+      b = r.bottom;
     // A positioned box escapes ancestors outside its containing block chain:
     // fixed escapes all of them, absolute until the first positioned ancestor.
     let escaping = getComputedStyle(el).position;
     if (escaping === "fixed") return box;
     for (let p = el.parentElement; p && p !== document.documentElement; p = p.parentElement) {
       const s = getComputedStyle(p);
-      const clipsX = s.overflowX !== "visible", clipsY = s.overflowY !== "visible";
+      const clipsX = s.overflowX !== "visible",
+        clipsY = s.overflowY !== "visible";
       if ((clipsX || clipsY) && escaping !== "absolute") {
         // overflow clips to the padding box, so the borders come off the rect.
         const c = p.getBoundingClientRect();
         const edge = {
-          left: c.left + parseFloat(s.borderLeftWidth), top: c.top + parseFloat(s.borderTopWidth),
-          right: c.right - parseFloat(s.borderRightWidth), bottom: c.bottom - parseFloat(s.borderBottomWidth),
+          left: c.left + parseFloat(s.borderLeftWidth),
+          top: c.top + parseFloat(s.borderTopWidth),
+          right: c.right - parseFloat(s.borderRightWidth),
+          bottom: c.bottom - parseFloat(s.borderBottomWidth),
         };
         if (clipsX) {
-          l = Math.max(l, edge.left); rt = Math.min(rt, edge.right);
+          l = Math.max(l, edge.left);
+          rt = Math.min(rt, edge.right);
           if (s.overflowX === "hidden" || s.overflowX === "clip") {
-            box.left = Math.max(box.left, edge.left); box.right = Math.min(box.right, edge.right);
+            box.left = Math.max(box.left, edge.left);
+            box.right = Math.min(box.right, edge.right);
           }
         }
         if (clipsY) {
-          t = Math.max(t, edge.top); b = Math.min(b, edge.bottom);
+          t = Math.max(t, edge.top);
+          b = Math.min(b, edge.bottom);
           if (s.overflowY === "hidden" || s.overflowY === "clip") {
-            box.top = Math.max(box.top, edge.top); box.bottom = Math.min(box.bottom, edge.bottom);
+            box.top = Math.max(box.top, edge.top);
+            box.bottom = Math.min(box.bottom, edge.bottom);
           }
         }
         if (rt <= l || b <= t) return null;
@@ -90,11 +100,14 @@ function define(): void {
     const cs = getComputedStyle(el);
     const x = r.left + parseFloat(cs.borderLeftWidth) + parseFloat(s.left);
     const y = r.top + parseFloat(cs.borderTopWidth) + parseFloat(s.top);
-    const w = parseFloat(s.width), h = parseFloat(s.height);
+    const w = parseFloat(s.width),
+      h = parseFloat(s.height);
     if (![x, y, w, h].every(Number.isFinite)) return null;
     return {
-      left: Math.min(r.left, x), top: Math.min(r.top, y),
-      right: Math.max(r.right, x + w), bottom: Math.max(r.bottom, y + h),
+      left: Math.min(r.left, x),
+      top: Math.min(r.top, y),
+      right: Math.max(r.right, x + w),
+      bottom: Math.max(r.bottom, y + h),
     };
   };
 

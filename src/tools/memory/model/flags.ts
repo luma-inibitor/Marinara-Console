@@ -82,7 +82,8 @@ export function flagsOf(r: Row, ctx: FlagContext): RowFlag[] {
 
   if (r.conflicts.length) {
     f.push({
-      label: FLAG.conflicts, severity: "danger",
+      label: FLAG.conflicts,
+      severity: "danger",
       sentence: t("memory.flag.conflictCount", { count: r.conflicts.length }),
     });
   }
@@ -101,28 +102,33 @@ export function flagsOf(r: Row, ctx: FlagContext): RowFlag[] {
   }
   if (conf < LOW_CONFIDENCE) {
     f.push({
-      label: FLAG.lowConfidence, severity: "warn",
+      label: FLAG.lowConfidence,
+      severity: "warn",
       sentence: t("memory.flag.confidenceSentence", {
-        pct: Math.round(conf * 100), threshold: Math.round(LOW_CONFIDENCE * 100),
+        pct: Math.round(conf * 100),
+        threshold: Math.round(LOW_CONFIDENCE * 100),
       }),
     });
   }
   if (r.restates) {
     f.push({
-      label: FLAG.restates, severity: "warn",
+      label: FLAG.restates,
+      severity: "warn",
       sentence: t("memory.flag.restatesSentence", { score: r.restates.score.toFixed(2) }),
     });
   }
   if (r.duplicateOf) {
     f.push({
-      label: FLAG.duplicate, severity: "warn",
+      label: FLAG.duplicate,
+      severity: "warn",
       sentence: t("memory.flag.duplicateSentence", { score: r.duplicateOf.score.toFixed(2) }),
     });
   }
   const chars = contributionChars(r);
   if (chars >= LONG_CHARS) {
     f.push({
-      label: FLAG.long, severity: "warn",
+      label: FLAG.long,
+      severity: "warn",
       sentence: t("memory.flag.longSentence", { chars: chars.toLocaleString() }),
     });
   }
@@ -138,7 +144,8 @@ export function flagsOf(r: Row, ctx: FlagContext): RowFlag[] {
   const targetKeywords = target ? manualKeywords(target).length : 0;
   if (targetKeywords >= KEYWORD_CAP) {
     f.push({
-      label: FLAG.keywordCapFull, severity: "warn",
+      label: FLAG.keywordCapFull,
+      severity: "warn",
       sentence: t("memory.flag.keywordCapFullSentence", { cap: KEYWORD_CAP }),
     });
   }

@@ -17,7 +17,9 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("../../../copy", () => ({
   t: (key: string, params?: Record<string, unknown>) =>
     params && Object.keys(params).length
-      ? `${key}|${Object.entries(params).map(([k, v]) => `${k}=${v}`).join(",")}`
+      ? `${key}|${Object.entries(params)
+          .map(([k, v]) => `${k}=${v}`)
+          .join(",")}`
       : key,
 }));
 
@@ -35,7 +37,9 @@ function notes(...list: Note[]): Map<string, Note> {
 }
 
 /** The pressure map keyed the way store.ts and the badges index into it. */
-function pressureMap(...entries: Array<Omit<SectionPressure, "additive"> & { additive?: boolean }>): Map<string, SectionPressure> {
+function pressureMap(
+  ...entries: Array<Omit<SectionPressure, "additive"> & { additive?: boolean }>
+): Map<string, SectionPressure> {
   return new Map(entries.map((e) => [`${e.noteId} ${e.key}`, { additive: true, ...e }]));
 }
 
@@ -94,7 +98,11 @@ describe("computePressure — projected chars per written section", () => {
     const note = makeNote({ id: "c1", type: "character", sections: { items: section(chars(19000)) } });
     const p = computePressure([makeWrite("c1", "items", chars(5000))], undecided, notes(note));
     expect(p.get("c1 items")).toEqual({
-      noteId: "c1", key: "items", current: 19000, projected: 5000, additive: false,
+      noteId: "c1",
+      key: "items",
+      current: 19000,
+      projected: 5000,
+      additive: false,
     });
   });
 
@@ -122,7 +130,11 @@ describe("computePressure — projected chars per written section", () => {
     );
     expect([...p.keys()]).toEqual(["c1 progression", "c1 voice"]);
     expect(p.get("c1 progression")).toEqual({
-      noteId: "c1", key: "progression", current: 50, projected: 10, additive: false,
+      noteId: "c1",
+      key: "progression",
+      current: 50,
+      projected: 10,
+      additive: false,
     });
     expect(p.get("c1 voice")).toEqual({ noteId: "c1", key: "voice", current: 50, projected: 62, additive: true });
   });
@@ -154,7 +166,11 @@ describe("computePressure — projected chars per written section", () => {
       notes(note),
     );
     expect(p.get("t1 observations")).toEqual({
-      noteId: "t1", key: "observations", current: 10, projected: 16, additive: true,
+      noteId: "t1",
+      key: "observations",
+      current: 10,
+      projected: 16,
+      additive: true,
     });
     expect(p.get("t1 rules")).toEqual({ noteId: "t1", key: "rules", current: 10, projected: 4, additive: false });
   });
@@ -195,7 +211,11 @@ describe("computePressure — projected chars per written section", () => {
     const row = makeWrite("new-c", "items", chars(25), { targetType: "character" });
     const p = computePressure([row], undecided, new Map());
     expect(p.get("new-c items")).toEqual({
-      noteId: "new-c", key: "items", current: 0, projected: 25, additive: false,
+      noteId: "new-c",
+      key: "items",
+      current: 0,
+      projected: 25,
+      additive: false,
     });
   });
 
@@ -224,7 +244,13 @@ describe("computePressure — projected chars per written section", () => {
 
   it("charges the separator once per part when one row writes several sections", () => {
     const note = makeNote({ id: "n1", type: "world", sections: {} });
-    const row = makeRow({ targetId: "n1", parts: [{ key: "a", text: chars(3) }, { key: "b", text: chars(4) }] });
+    const row = makeRow({
+      targetId: "n1",
+      parts: [
+        { key: "a", text: chars(3) },
+        { key: "b", text: chars(4) },
+      ],
+    });
     const p = computePressure([row], undecided, notes(note));
     expect(p.get("n1 a")!.projected).toBe(5);
     expect(p.get("n1 b")!.projected).toBe(6);
@@ -299,7 +325,13 @@ describe("rowOverflows — STRICT > against SECTION_CAP on the projection", () =
   });
 
   it("is true when ANY part of a multi-section row overflows", () => {
-    const multi = makeRow({ targetId: "n1", parts: [{ key: "a", text: "" }, { key: "b", text: "" }] });
+    const multi = makeRow({
+      targetId: "n1",
+      parts: [
+        { key: "a", text: "" },
+        { key: "b", text: "" },
+      ],
+    });
     const map = pressureMap(
       { noteId: "n1", key: "a", current: 0, projected: 10 },
       { noteId: "n1", key: "b", current: 0, projected: SECTION_CAP + 1 },
@@ -334,9 +366,7 @@ describe("capFlag via sectionViews — NON-STRICT >= 0.8 on the note's CURRENT c
   it("flags near-cap at EXACTLY 0.8 of the cap", () => {
     const flag = view(NEAR).flag!;
     expect(flag.ratio).toBe(0.8);
-    expect(flag.sentence).toBe(
-      `memory.detail.sectionNearCap|key=core,pct=80,cap=${SECTION_CAP.toLocaleString()}`,
-    );
+    expect(flag.sentence).toBe(`memory.detail.sectionNearCap|key=core,pct=80,cap=${SECTION_CAP.toLocaleString()}`);
   });
 
   it("flags near-cap one char above 0.8 of the cap", () => {
@@ -355,31 +385,27 @@ describe("capFlag via sectionViews — NON-STRICT >= 0.8 on the note's CURRENT c
     // SECTION_CAP is the schema's maximum, so sitting on it is full, not past.
     const flag = view(SECTION_CAP).flag!;
     expect(flag.ratio).toBe(1);
-    expect(flag.sentence).toBe(
-      `memory.detail.sectionNearCap|key=core,pct=100,cap=${SECTION_CAP.toLocaleString()}`,
-    );
+    expect(flag.sentence).toBe(`memory.detail.sectionNearCap|key=core,pct=100,cap=${SECTION_CAP.toLocaleString()}`);
   });
 
   it("switches to over-cap one char above the cap", () => {
     const flag = view(SECTION_CAP + 1).flag!;
     expect(flag.ratio).toBeGreaterThan(1);
-    expect(flag.sentence).toBe(
-      `memory.detail.sectionOverCap|key=core,pct=100,cap=${SECTION_CAP.toLocaleString()}`,
-    );
+    expect(flag.sentence).toBe(`memory.detail.sectionOverCap|key=core,pct=100,cap=${SECTION_CAP.toLocaleString()}`);
   });
 
   it("stays over-cap above the cap, with a ratio past 1", () => {
     const flag = view(SECTION_CAP + 4000).flag!;
     expect(flag.ratio).toBe(1.2);
-    expect(flag.sentence).toBe(
-      `memory.detail.sectionOverCap|key=core,pct=120,cap=${SECTION_CAP.toLocaleString()}`,
-    );
+    expect(flag.sentence).toBe(`memory.detail.sectionOverCap|key=core,pct=120,cap=${SECTION_CAP.toLocaleString()}`);
   });
 
   it("flags each section independently and in payload order", () => {
-    const views = sectionViews(makeNote({
-      sections: { core: section(chars(10)), swollen: section(chars(SECTION_CAP)), mid: section(chars(NEAR)) },
-    }));
+    const views = sectionViews(
+      makeNote({
+        sections: { core: section(chars(10)), swollen: section(chars(SECTION_CAP)), mid: section(chars(NEAR)) },
+      }),
+    );
     expect(views.map((v) => v.key)).toEqual(["core", "swollen", "mid"]);
     expect(views.map((v) => v.flag === null)).toEqual([true, false, false]);
   });
@@ -404,7 +430,11 @@ describe("readings that must not be flattened back out", () => {
     const map = computePressure([row], undecided, notes(note));
     expect(map.size).toBe(1);
     expect(map.get("c1 items")).toEqual({
-      noteId: "c1", key: "items", current: 19000, projected: 24000, additive: false,
+      noteId: "c1",
+      key: "items",
+      current: 19000,
+      projected: 24000,
+      additive: false,
     });
     expect(rowOverflows(row, map)).toBe(true);
   });
@@ -414,7 +444,11 @@ describe("readings that must not be flattened back out", () => {
     const dropped = makeWrite("n1", "core", chars(10));
     const map = computePressure([dropped], (k) => (k === dropped.key ? "drop" : undefined), notes(note));
     expect(map.get("n1 core")).toEqual({
-      noteId: "n1", key: "core", current: SECTION_CAP + 1, projected: SECTION_CAP + 1, additive: true,
+      noteId: "n1",
+      key: "core",
+      current: SECTION_CAP + 1,
+      projected: SECTION_CAP + 1,
+      additive: true,
     });
     // An already-over-cap note stays over cap when its last claim is declined.
     expect(rowOverflows(dropped, map)).toBe(true);
@@ -430,11 +464,9 @@ describe("readings that must not be flattened back out", () => {
 
   it("CLASSIFIES a create_note exactly as the same claim against an existing note", () => {
     const existing = makeNote({ id: "c1", type: "character", sections: {} });
-    const againstExisting = computePressure(
-      [makeWrite("c1", "items", chars(25))],
-      undecided,
-      notes(existing),
-    ).get("c1 items")!;
+    const againstExisting = computePressure([makeWrite("c1", "items", chars(25))], undecided, notes(existing)).get(
+      "c1 items",
+    )!;
     const asCreate = computePressure(
       [makeWrite("new-c", "items", chars(25), { targetType: "character" })],
       undecided,
@@ -493,7 +525,11 @@ describe("relationship between the three cap-pressure computations", () => {
     const note = makeNote({ id: "n1", type: "world", sections: { core: section(chars(SECTION_CAP - 100)) } });
     const map = computePressure([makeWrite("n1", "core", chars(500))], undecided, notes(note));
     expect(map.get("n1 core")).toEqual({
-      noteId: "n1", key: "core", current: SECTION_CAP - 100, projected: SECTION_CAP + 402, additive: true,
+      noteId: "n1",
+      key: "core",
+      current: SECTION_CAP - 100,
+      projected: SECTION_CAP + 402,
+      additive: true,
     });
     expect(rowOverflows(row, map)).toBe(true);
     const [v] = sectionViews(note);
@@ -508,7 +544,11 @@ describe("relationship between the three cap-pressure computations", () => {
     const itemsRow = makeWrite("c1", "items", chars(1000));
     const map = computePressure([itemsRow], undecided, notes(note));
     expect(map.get("c1 items")).toEqual({
-      noteId: "c1", key: "items", current: SECTION_CAP + 5000, projected: 1000, additive: false,
+      noteId: "c1",
+      key: "items",
+      current: SECTION_CAP + 5000,
+      projected: 1000,
+      additive: false,
     });
     expect(rowOverflows(itemsRow, map)).toBe(false);
     const [v] = sectionViews(note);

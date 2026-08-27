@@ -39,8 +39,13 @@ export function App() {
   return (
     <div className="shell">
       <nav className="rail" aria-label={t("shell.nav.tools")}>
-        {/* eslint-disable-next-line i18next/no-literal-string -- the product name is not copy and has no catalog entry. */}
-        <div className="rail-brand t-label-s t-label" data-brand data-contrast-exempt>Marinara<br />Console</div>
+        {/* eslint-disable i18next/no-literal-string -- the product name is not copy and has no catalog entry. */}
+        <div className="rail-brand t-label-s t-label" data-brand data-contrast-exempt>
+          Marinara
+          <br />
+          Console
+        </div>
+        {/* eslint-enable i18next/no-literal-string */}
         {TOOLS.map((d) => (
           <button
             key={d.id}
@@ -48,7 +53,9 @@ export function App() {
             aria-current={d.id === active.id ? "page" : undefined}
             onClick={() => navigate(d.id)}
           >
-            <span className="rail-glyph" aria-hidden="true">{d.glyph}</span>
+            <span className="rail-glyph" aria-hidden="true">
+              {d.glyph}
+            </span>
             <span className="rail-label">{d.label}</span>
           </button>
         ))}

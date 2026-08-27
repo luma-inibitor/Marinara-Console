@@ -18,7 +18,7 @@ function toggleDensity() {
 interface Item {
   id: string;
   label: string;
-  hint?: string;   // right-aligned context (book name, shortcut)
+  hint?: string; // right-aligned context (book name, shortcut)
   group: string;
   run: () => void;
 }
@@ -33,7 +33,12 @@ const GROUP = {
 };
 
 const BASE: Item[] = [
-  { id: "nav-lorebooks", label: t("shell.palette.goLorebooks"), group: GROUP.navigate, run: () => navigate("lorebooks") },
+  {
+    id: "nav-lorebooks",
+    label: t("shell.palette.goLorebooks"),
+    group: GROUP.navigate,
+    run: () => navigate("lorebooks"),
+  },
   { id: "nav-presets", label: t("shell.palette.goPresets"), group: GROUP.navigate, run: () => navigate("presets") },
   { id: "nav-memory", label: t("shell.palette.goMemory"), group: GROUP.navigate, run: () => navigate("memory") },
   { id: "act-density", label: t("shell.palette.density"), group: GROUP.actions, run: toggleDensity },
@@ -50,25 +55,38 @@ async function loadDataItems(): Promise<Item[]> {
       api<Array<{ id: string; name: string }>>("/prompts").catch(() => []),
     ]);
     const bookItems: Item[] = books.map((b) => ({
-      id: `b:${b.id}`, label: b.name, group: GROUP.lorebooks,
+      id: `b:${b.id}`,
+      label: b.name,
+      group: GROUP.lorebooks,
       run: () => navigate(`lorebooks/${b.id}`),
     }));
-    const entryLists = await Promise.all(books.map(async (b) => {
-      try {
-        const es = await api<Array<{ id: string; name: string }>>(`/lorebooks/${b.id}/entries`);
-        return es.map((e): Item => ({
-          id: `e:${e.id}`, label: e.name, hint: b.name, group: GROUP.entries,
-          run: () => navigate(`lorebooks/${b.id}/${e.id}`),
-        }));
-      } catch { return []; }
-    }));
+    const entryLists = await Promise.all(
+      books.map(async (b) => {
+        try {
+          const es = await api<Array<{ id: string; name: string }>>(`/lorebooks/${b.id}/entries`);
+          return es.map((e): Item => ({
+            id: `e:${e.id}`,
+            label: e.name,
+            hint: b.name,
+            group: GROUP.entries,
+            run: () => navigate(`lorebooks/${b.id}/${e.id}`),
+          }));
+        } catch {
+          return [];
+        }
+      }),
+    );
     const presetItems: Item[] = prompts.map((p) => ({
-      id: `p:${p.id}`, label: p.name, group: GROUP.presets,
+      id: `p:${p.id}`,
+      label: p.name,
+      group: GROUP.presets,
       run: () => navigate(`presets/${p.id}`),
     }));
     cache = [...bookItems, ...presetItems, ...entryLists.flat()];
     cacheAt = Date.now();
-  } catch { /* engine unreachable — navigation items still work */ }
+  } catch {
+    /* engine unreachable — navigation items still work */
+  }
   return cache;
 }
 
@@ -78,7 +96,10 @@ function score(label: string, q: string): number {
   if (l.startsWith(q)) return 0;
   if (l.includes(q)) return 1;
   let i = 0;
-  for (const ch of l) { if (ch === q[i]) i++; if (i === q.length) return 2; }
+  for (const ch of l) {
+    if (ch === q[i]) i++;
+    if (i === q.length) return 2;
+  }
   return -1;
 }
 
@@ -95,44 +116,82 @@ export function Palette() {
     setActive(0);
     inputRef.current?.focus();
     let live = true;
-    void loadDataItems().then((data) => { if (live) setItems([...BASE, ...data]); });
-    return () => { live = false; };
+    void loadDataItems().then((data) => {
+      if (live) setItems([...BASE, ...data]);
+    });
+    return () => {
+      live = false;
+    };
   }, [open]);
 
   if (!open) return null;
 
   const q = query.trim().toLowerCase();
-  const results = (q
-    ? items.map((it) => ({ it, s: score(it.label, q) })).filter((x) => x.s >= 0)
-        .sort((a, b) => a.s - b.s || a.it.label.length - b.it.label.length).map((x) => x.it)
-    : items.filter((it) => it.group !== GROUP.entries)   // unqueried: don't dump every entry
-  ).slice(0, 12);
+  const results = (
+    q
+      ? items
+          .map((it) => ({ it, s: score(it.label, q) }))
+          .filter((x) => x.s >= 0)
+          .sort((a, b) => a.s - b.s || a.it.label.length - b.it.label.length)
+          .map((x) => x.it)
+      : items.filter((it) => it.group !== GROUP.entries)
+  ) // unqueried: don't dump every entry
+    .slice(0, 12);
 
-  const run = (it: Item) => { paletteOpen.set(false); it.run(); };
+  const run = (it: Item) => {
+    paletteOpen.set(false);
+    it.run();
+  };
 
   const onKey = (ev: KeyboardEvent<HTMLInputElement>) => {
-    if (ev.key === "ArrowDown") { ev.preventDefault(); setActive((a) => Math.min(results.length - 1, a + 1)); }
-    else if (ev.key === "ArrowUp") { ev.preventDefault(); setActive((a) => Math.max(0, a - 1)); }
-    else if (ev.key === "Enter" && results[active]) { ev.preventDefault(); run(results[active]); }
-    else if (ev.key === "Escape") { ev.preventDefault(); paletteOpen.set(false); }
+    if (ev.key === "ArrowDown") {
+      ev.preventDefault();
+      setActive((a) => Math.min(results.length - 1, a + 1));
+    } else if (ev.key === "ArrowUp") {
+      ev.preventDefault();
+      setActive((a) => Math.max(0, a - 1));
+    } else if (ev.key === "Enter" && results[active]) {
+      ev.preventDefault();
+      run(results[active]);
+    } else if (ev.key === "Escape") {
+      ev.preventDefault();
+      paletteOpen.set(false);
+    }
   };
 
   let lastGroup = "";
   return (
-    <div className="palette-backdrop" onClick={() => { paletteOpen.set(false); }}>
-      <div className="palette" role="dialog" aria-modal="true" aria-label={t("shell.palette.title")}
-        onClick={(ev) => ev.stopPropagation()}>
+    <div
+      className="palette-backdrop"
+      onClick={() => {
+        paletteOpen.set(false);
+      }}
+    >
+      <div
+        className="palette"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("shell.palette.title")}
+        onClick={(ev) => ev.stopPropagation()}
+      >
         <input
           ref={inputRef}
           className="palette-input t-data"
           placeholder={t("shell.palette.placeholder")}
           aria-label={t("shell.palette.searchLabel")}
           value={query}
-          onInput={(ev) => { setQuery(ev.currentTarget.value); setActive(0); }}
+          onInput={(ev) => {
+            setQuery(ev.currentTarget.value);
+            setActive(0);
+          }}
           onKeyDown={onKey}
         />
         <div className="palette-results" role="listbox">
-          {results.length === 0 && <div className="palette-empty meta"><span>{t("shell.palette.empty")}</span></div>}
+          {results.length === 0 && (
+            <div className="palette-empty meta">
+              <span>{t("shell.palette.empty")}</span>
+            </div>
+          )}
           {results.map((it, i) => {
             const header = it.group !== lastGroup ? (lastGroup = it.group) : null;
             return (
@@ -153,7 +212,9 @@ export function Palette() {
           })}
         </div>
         <div className="palette-foot meta">
-          <span>{t("shell.palette.hintMove")}</span><span>{t("shell.palette.hintOpen")}</span><span>{t("shell.palette.hintClose")}</span>
+          <span>{t("shell.palette.hintMove")}</span>
+          <span>{t("shell.palette.hintOpen")}</span>
+          <span>{t("shell.palette.hintClose")}</span>
         </div>
       </div>
     </div>

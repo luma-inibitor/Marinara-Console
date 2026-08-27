@@ -28,7 +28,12 @@ import { flattenReview } from "./review";
 import { makeMutation, makeNote } from "../test/factories";
 
 const STATES: SourceState[] = [
-  "new", "current", "source_updated", "context_updated", "extraction_incomplete", "source_missing",
+  "new",
+  "current",
+  "source_updated",
+  "context_updated",
+  "extraction_incomplete",
+  "source_missing",
 ];
 
 /** The preview sample shape, plus the field buildSources reads through a cast:
@@ -50,13 +55,18 @@ function sample(over: Partial<Sample> = {}): Sample {
 }
 
 function previews(...entries: Array<[SourceKind, Sample[]]>): Map<SourceKind, ImportPreview> {
-  return new Map(entries.map(([kind, samples]) => [kind, {
-    source: kind,
-    scanned: samples.length,
-    draftable: samples.length,
-    importedCount: 0,
-    samples,
-  }]));
+  return new Map(
+    entries.map(([kind, samples]) => [
+      kind,
+      {
+        source: kind,
+        scanned: samples.length,
+        draftable: samples.length,
+        importedCount: 0,
+        samples,
+      },
+    ]),
+  );
 }
 
 type WireSource = ReviewResponse["sources"][number];
@@ -94,7 +104,14 @@ function review(...sources: WireSource[]): ReviewResponse {
   return {
     generatedAt: "2026-01-01T00:00:00Z",
     sources,
-    counts: { sources: sources.length, drafts: 0, mutations: 0, blockedDrafts: 0, candidateRejections: 0, deduplications: 0 },
+    counts: {
+      sources: sources.length,
+      drafts: 0,
+      mutations: 0,
+      blockedDrafts: 0,
+      candidateRejections: 0,
+      deduplications: 0,
+    },
   };
 }
 
@@ -171,52 +188,68 @@ describe("buildSources — shape and empties", () => {
 
   it("tolerates a null review and an empty note list", () => {
     const out = buildSources(previews(["chats", [sample({ sourceId: "c1", title: "A chat" })]]), null, []);
-    expect(out).toEqual([{
-      kind: "chats",
-      sourceId: "c1",
-      title: "A chat",
-      group: "",
-      importMode: "full",
-      state: "new",
-      noteId: undefined,
-      snippet: "",
-      derived: [],
-      pending: 0,
-      blocked: [],
-    }]);
+    expect(out).toEqual([
+      {
+        kind: "chats",
+        sourceId: "c1",
+        title: "A chat",
+        group: "",
+        importMode: "full",
+        state: "new",
+        noteId: undefined,
+        snippet: "",
+        derived: [],
+        pending: 0,
+        blocked: [],
+      },
+    ]);
   });
 
   it("emits one row per sample, previews in map order and samples in list order", () => {
-    const out = buildSources(previews(
-      ["characters", [sample({ sourceId: "ch1", title: "Character - Alice" })]],
-      ["chats", [sample({ sourceId: "c1", title: "One" }), sample({ sourceId: "c2", title: "Two" })]],
-    ), null, []);
+    const out = buildSources(
+      previews(
+        ["characters", [sample({ sourceId: "ch1", title: "Character - Alice" })]],
+        ["chats", [sample({ sourceId: "c1", title: "One" }), sample({ sourceId: "c2", title: "Two" })]],
+      ),
+      null,
+      [],
+    );
     expect(out.map((r) => [r.kind, r.sourceId])).toEqual([
-      ["characters", "ch1"], ["chats", "c1"], ["chats", "c2"],
+      ["characters", "ch1"],
+      ["chats", "c1"],
+      ["chats", "c2"],
     ]);
   });
 
   it("does NOT de-duplicate: two samples sharing a sourceId make two rows", () => {
     // SUSPECT: nothing joins on sourceId, so a source listed under two kinds —
     // or twice inside one preview — is listed twice in the workspace.
-    const out = buildSources(previews(
-      ["chats", [sample({ sourceId: "dup", title: "One" }), sample({ sourceId: "dup", title: "Two" })]],
-    ), null, []);
+    const out = buildSources(
+      previews(["chats", [sample({ sourceId: "dup", title: "One" }), sample({ sourceId: "dup", title: "Two" })]]),
+      null,
+      [],
+    );
     expect(out.map((r) => r.title)).toEqual(["One", "Two"]);
   });
 
   it("passes the snippet through, defaulting an absent one to empty string", () => {
-    const out = buildSources(previews(["chats", [
-      sample({ sourceId: "a", snippet: "the text" }),
-      sample({ sourceId: "b", snippet: undefined as unknown as string }),
-    ]]), null, []);
+    const out = buildSources(
+      previews([
+        "chats",
+        [
+          sample({ sourceId: "a", snippet: "the text" }),
+          sample({ sourceId: "b", snippet: undefined as unknown as string }),
+        ],
+      ]),
+      null,
+      [],
+    );
     expect(out.map((r) => r.snippet)).toEqual(["the text", ""]);
   });
 });
 
 describe("buildSources — titles and groups", () => {
-  const titleOf = (kind: SourceKind, title: string) =>
-    buildSources(previews([kind, [sample({ title })]]), null, [])[0];
+  const titleOf = (kind: SourceKind, title: string) => buildSources(previews([kind, [sample({ title })]]), null, [])[0];
 
   it("strips the kind prefix from a character title and groups it under nothing", () => {
     const r = titleOf("characters", "Character - Alice Vane");
@@ -363,7 +396,12 @@ describe("buildSources — joining the note, its memories and its queue", () => 
     const out = buildSources(
       previews(["chats", [sample({ freshness: "current", existingNoteId: "note-src" })]]),
       review(
-        wireSource("note-src", { targets: [{ noteId: "t1", rows: 2 }, { noteId: "t2", rows: 3 }] }),
+        wireSource("note-src", {
+          targets: [
+            { noteId: "t1", rows: 2 },
+            { noteId: "t2", rows: 3 },
+          ],
+        }),
         wireSource("other", { targets: [{ noteId: "t3", rows: 9 }] }),
       ),
       [],
@@ -377,12 +415,14 @@ describe("buildSources — joining the note, its memories and its queue", () => 
     // queue does not produce.
     const out = buildSources(
       previews(["chats", [sample({ freshness: "current", existingNoteId: "note-src" })]]),
-      review(wireSource("note-src", {
-        // wireSource numbers its rows' draftIds d0..dn and its drafts d0..dn,
-        // so this holds d0 and leaves d1, d2, d3 waiting.
-        targets: [{ noteId: "t1", rows: 4 }],
-        drafts: [["source_stale"]],
-      })),
+      review(
+        wireSource("note-src", {
+          // wireSource numbers its rows' draftIds d0..dn and its drafts d0..dn,
+          // so this holds d0 and leaves d1, d2, d3 waiting.
+          targets: [{ noteId: "t1", rows: 4 }],
+          drafts: [["source_stale"]],
+        }),
+      ),
       [],
     );
     expect(out[0].pending).toBe(3);
@@ -392,10 +432,15 @@ describe("buildSources — joining the note, its memories and its queue", () => 
   it("agrees with the number of rows flattenReview will actually emit", () => {
     // The count and the queue are two readings of one payload; if they drift,
     // a source advertises N and the queue shows fewer.
-    const data = review(wireSource("note-src", {
-      targets: [{ noteId: "t1", rows: 3 }, { noteId: "t2", rows: 2 }],
-      drafts: [["source_stale"], []],
-    }));
+    const data = review(
+      wireSource("note-src", {
+        targets: [
+          { noteId: "t1", rows: 3 },
+          { noteId: "t2", rows: 2 },
+        ],
+        drafts: [["source_stale"], []],
+      }),
+    );
     const out = buildSources(
       previews(["chats", [sample({ freshness: "current", existingNoteId: "note-src" })]]),
       data,
@@ -408,10 +453,12 @@ describe("buildSources — joining the note, its memories and its queue", () => 
   it("counts nothing pending when every draft of the source is held", () => {
     const out = buildSources(
       previews(["chats", [sample({ freshness: "current", existingNoteId: "note-src" })]]),
-      review(wireSource("note-src", {
-        targets: [{ noteId: "t1", rows: 2 }],
-        drafts: [["source_stale"], ["source_missing"]],
-      })),
+      review(
+        wireSource("note-src", {
+          targets: [{ noteId: "t1", rows: 2 }],
+          drafts: [["source_stale"], ["source_missing"]],
+        }),
+      ),
       [],
     );
     expect(out[0].pending).toBe(0);
@@ -439,10 +486,13 @@ describe("buildSources — joining the note, its memories and its queue", () => 
     // SUSPECT: the joined list is shared, not copied. Anything that mutates one
     // row's `derived` mutates the other's.
     const out = buildSources(
-      previews(["chats", [
-        sample({ sourceId: "a", freshness: "current", existingNoteId: "note-src" }),
-        sample({ sourceId: "b", freshness: "current", existingNoteId: "note-src" }),
-      ]]),
+      previews([
+        "chats",
+        [
+          sample({ sourceId: "a", freshness: "current", existingNoteId: "note-src" }),
+          sample({ sourceId: "b", freshness: "current", existingNoteId: "note-src" }),
+        ],
+      ]),
       null,
       [extractedFrom("note-src", { id: "m1" })],
     );
@@ -460,13 +510,11 @@ describe("partition", () => {
     ["context_updated", true, true],
     ["extraction_incomplete", true, true],
     ["source_missing", false, true],
-  ] as Array<[SourceState, boolean, boolean]>)(
-    "%s is ready=%s imported=%s",
-    (state, ready, imported) => {
-      const p = partition([row({ sourceId: state, state })]);
-      expect(p.ready).toHaveLength(ready ? 1 : 0);
-      expect(p.imported).toHaveLength(imported ? 1 : 0);
-    });
+  ] as Array<[SourceState, boolean, boolean]>)("%s is ready=%s imported=%s", (state, ready, imported) => {
+    const p = partition([row({ sourceId: state, state })]);
+    expect(p.ready).toHaveLength(ready ? 1 : 0);
+    expect(p.imported).toHaveLength(imported ? 1 : 0);
+  });
 
   it("covers every state the model declares", () => {
     // Fails when a state is added, so the table above cannot go stale.

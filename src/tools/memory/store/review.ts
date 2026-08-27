@@ -58,10 +58,7 @@ export async function refresh(first = false) {
     await loadPersisted();
   }
   try {
-    const [data, allNotes] = await Promise.all([
-      fetchReview(),
-      loadAllNotes(),
-    ]);
+    const [data, allNotes] = await Promise.all([fetchReview(), loadAllNotes()]);
     review.set(data);
     notesById.set(new Map(allNotes.map((n) => [n.id, n])));
     const sourceNotes = new Map(allNotes.filter((n) => n.type === "source").map((n) => [n.id, n]));

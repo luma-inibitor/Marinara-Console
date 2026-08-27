@@ -8,11 +8,28 @@ import * as v from "valibot";
 
 // Closed sets rather than `v.string()`: the copy catalog holds one label per
 // member and no fallback, so an unknown member has nothing to render as.
-export const NOTE_TYPES = ["source", "timeline_event", "character", "relationship", "scene", "thread", "world", "tone"] as const;
+export const NOTE_TYPES = [
+  "source",
+  "timeline_event",
+  "character",
+  "relationship",
+  "scene",
+  "thread",
+  "world",
+  "tone",
+] as const;
 const NOTE_STATUSES = ["active", "resolved", "archived"] as const;
 const DISPOSITIONS = ["new", "merge", "rewrite"] as const;
 const RISKS = ["low", "medium", "high"] as const;
-const MUTATION_KINDS = ["create_note", "append_section", "update_section", "add_link", "set_keywords", "set_status", "set_subjects"] as const;
+const MUTATION_KINDS = [
+  "create_note",
+  "append_section",
+  "update_section",
+  "add_link",
+  "set_keywords",
+  "set_status",
+  "set_subjects",
+] as const;
 const CHANGE_KINDS = ["section", "link", "keywords", "status", "subjects"] as const;
 
 /** Non-empty: a memory with a blank id keys the notes map under `undefined`. */
@@ -101,35 +118,41 @@ const DraftEntrySchema = v.looseObject({
   freshness: v.string(),
   blockReasons: v.array(v.looseObject({ code: v.string(), message: v.string() })),
   diagnostics: v.array(v.unknown()),
-  candidateRejections: v.array(v.looseObject({
-    reason: v.string(),
-    message: v.optional(v.string()),
-    snippet: v.optional(v.string()),
-    recovery: v.optional(v.looseObject({ noteId: v.optional(v.string()) })),
-  })),
+  candidateRejections: v.array(
+    v.looseObject({
+      reason: v.string(),
+      message: v.optional(v.string()),
+      snippet: v.optional(v.string()),
+      recovery: v.optional(v.looseObject({ noteId: v.optional(v.string()) })),
+    }),
+  ),
 });
 
 const TargetSchema = v.looseObject({
   noteId: v.string(),
   title: v.optional(v.string()),
   noteType: v.picklist(NOTE_TYPES),
-  rows: v.array(v.looseObject({
-    draftId: v.string(),
-    mutation: MutationSchema,
-    disposition: v.picklist(DISPOSITIONS),
-    diagnostics: v.array(v.unknown()),
-    changes: v.array(ReviewChangeSchema),
-  })),
+  rows: v.array(
+    v.looseObject({
+      draftId: v.string(),
+      mutation: MutationSchema,
+      disposition: v.picklist(DISPOSITIONS),
+      diagnostics: v.array(v.unknown()),
+      changes: v.array(ReviewChangeSchema),
+    }),
+  ),
 });
 
 export const ReviewResponseSchema = v.looseObject({
   generatedAt: v.string(),
-  sources: v.array(v.looseObject({
-    sourceNoteId: v.string(),
-    modes: strings,
-    drafts: v.array(DraftEntrySchema),
-    targets: v.array(TargetSchema),
-  })),
+  sources: v.array(
+    v.looseObject({
+      sourceNoteId: v.string(),
+      modes: strings,
+      drafts: v.array(DraftEntrySchema),
+      targets: v.array(TargetSchema),
+    }),
+  ),
   counts: v.looseObject({
     sources: v.number(),
     drafts: v.number(),

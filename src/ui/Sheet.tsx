@@ -30,23 +30,13 @@ export function Sheet(props: {
  *
  *  A Modal sits in the middle because it interrupts, where a Sheet arrives from
  *  an edge because it extends. They share a dismissal contract, not a shape. */
-export function Modal(props: {
-  label: string;
-  onClose: () => void;
-  children: ReactNode;
-  className?: string;
-}) {
+export function Modal(props: { label: string; onClose: () => void; children: ReactNode; className?: string }) {
   return <Overlay {...props} surface={`modal ${props.className ?? ""}`} />;
 }
 
 /** Scrim, dialog semantics, and the overlay-stack registration that every
  *  layered surface needs. */
-function Overlay(props: {
-  label: string;
-  onClose: () => void;
-  children: ReactNode;
-  surface: string;
-}) {
+function Overlay(props: { label: string; onClose: () => void; children: ReactNode; surface: string }) {
   // Captured in a ref on purpose: the stack stores this closer for the lifetime
   // of the entry, and re-registering on render would push history entries.
   const close = useRef(props.onClose);
@@ -85,8 +75,10 @@ export function SheetHead(props: {
   const closeRef = useRef<HTMLButtonElement>(null);
   // Mount-only on purpose. Depending on autoFocus would re-run the effect when
   // it later flips true and yank focus out of whatever the reader is using.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (props.autoFocus) closeRef.current?.focus(); }, []);
+  useEffect(() => {
+    if (props.autoFocus) closeRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <header className="sheet-head">
       {props.icon}

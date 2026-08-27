@@ -7,8 +7,7 @@ import { openScreen, screen } from "./screens";
 
 test.skip(({ isMobile }) => !!isMobile, "the other three projects emulate touch");
 
-const focusedRow = (page: Page) =>
-  page.evaluate(() => document.activeElement?.getAttribute("data-row") ?? null);
+const focusedRow = (page: Page) => page.evaluate(() => document.activeElement?.getAttribute("data-row") ?? null);
 
 test("Cmd-K opens the palette and Enter navigates", async ({ page }) => {
   await openScreen(page, screen("lorebooks"));

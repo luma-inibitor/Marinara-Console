@@ -29,12 +29,17 @@ export function FullscreenText(props: {
   const startTokens = useMemo(() => tokensOf(props.initial), [props.initial]);
   const restoreTo = useRef<HTMLElement | null>(null);
 
-  const ch = value.length, tk = tokensOf(value);
-  const dCh = ch - props.initial.length, dTk = tk - startTokens;
+  const ch = value.length,
+    tk = tokensOf(value);
+  const dCh = ch - props.initial.length,
+    dTk = tk - startTokens;
   const dirty = value !== props.initial;
   const sign = (n: number) => (n > 0 ? `+${n.toLocaleString()}` : n.toLocaleString());
 
-  const cancel = () => { if (dirty && !confirming) setConfirming(true); else props.onCancel(); };
+  const cancel = () => {
+    if (dirty && !confirming) setConfirming(true);
+    else props.onCancel();
+  };
 
   // The key handler reads live state through a ref, not a render closure.
   // Escape pressed in the same tick as a keystroke would otherwise see the
@@ -48,12 +53,14 @@ export function FullscreenText(props: {
     const onKey = (ev: KeyboardEvent) => {
       const st = live.current;
       if (ev.key === "Escape") {
-        ev.preventDefault(); ev.stopPropagation();
+        ev.preventDefault();
+        ev.stopPropagation();
         if (st.confirming) setConfirming(false);
         else if (st.dirty) setConfirming(true);
         else props.onCancel();
       } else if (ev.key === "Enter" && (ev.metaKey || ev.ctrlKey)) {
-        ev.preventDefault(); ev.stopPropagation();
+        ev.preventDefault();
+        ev.stopPropagation();
         props.onDone(st.value);
       }
     };
@@ -85,17 +92,26 @@ export function FullscreenText(props: {
     const register = () => {
       dispose = openOverlay(() => {
         dispose = null; // the stack already removed this entry before closing us
-        if (!live.current.dirty) { props.onCancel(); return; }
+        if (!live.current.dirty) {
+          props.onCancel();
+          return;
+        }
         setConfirming(true);
         // Staying open spends the entry, so the editor needs a fresh one or the
         // next back escapes to the list. Re-register off a microtask: the
         // stack's hashchange teardown drains synchronously, and pushing back
         // into that drain would loop forever.
-        queueMicrotask(() => { if (alive && !dispose) register(); });
+        queueMicrotask(() => {
+          if (alive && !dispose) register();
+        });
       });
     };
     register();
-    return () => { alive = false; dispose?.(); dispose = null; };
+    return () => {
+      alive = false;
+      dispose?.();
+      dispose = null;
+    };
     // Mount-only: re-running would spend and re-push overlay entries mid-edit.
     // Dirtiness is read through `live.current`; props.onCancel is not, so it is
     // the one captured at mount — safe only while the parent passes a stable
@@ -106,10 +122,14 @@ export function FullscreenText(props: {
   const insert = (tok: string) => {
     const ta = document.getElementById("fs-ta") as HTMLTextAreaElement | null;
     if (!ta) return;
-    const a = ta.selectionStart, b = ta.selectionEnd;
+    const a = ta.selectionStart,
+      b = ta.selectionEnd;
     const next = value.slice(0, a) + tok + value.slice(b);
     setValue(next);
-    requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = a + tok.length; ta.focus(); });
+    requestAnimationFrame(() => {
+      ta.selectionStart = ta.selectionEnd = a + tok.length;
+      ta.focus();
+    });
   };
 
   return (
@@ -122,13 +142,23 @@ export function FullscreenText(props: {
             {dirty && <span className="is-dirty-dot">{t("ui.editor.unsaved")}</span>}
           </div>
         </div>
-        <Chip pressed={wrap} onClick={() => setWrap(!wrap)}>{t("ui.editor.wrap")}</Chip>
-        <button className="dbtn" onClick={cancel}>{t("ui.editor.cancel")}</button>
-        <button className="dbtn is-primary" onClick={() => props.onDone(value)}>{t("ui.editor.done")}</button>
+        <Chip pressed={wrap} onClick={() => setWrap(!wrap)}>
+          {t("ui.editor.wrap")}
+        </Chip>
+        <button className="dbtn" onClick={cancel}>
+          {t("ui.editor.cancel")}
+        </button>
+        <button className="dbtn is-primary" onClick={() => props.onDone(value)}>
+          {t("ui.editor.done")}
+        </button>
       </div>
       <div className="fs-counts meta">
-        <span><b className="t-num">{ch.toLocaleString()}</b> {t("ui.editor.charUnit")}</span>
-        <span><b className="t-num">{tk.toLocaleString()}</b> {t("ui.editor.tokensEst")}</span>
+        <span>
+          <b className="t-num">{ch.toLocaleString()}</b> {t("ui.editor.charUnit")}
+        </span>
+        <span>
+          <b className="t-num">{tk.toLocaleString()}</b> {t("ui.editor.tokensEst")}
+        </span>
         {props.budget !== undefined && props.budget > 0 && (
           <span>{t("ui.editor.ofBudget", { pct: ((tk / props.budget) * 100).toFixed(1) })}</span>
         )}
@@ -139,12 +169,19 @@ export function FullscreenText(props: {
         )}
       </div>
       <div className="fs-body">
-        <textarea id="fs-ta" className={wrap ? "" : "is-nowrap"} spellCheck={false} value={value}
-          onInput={(ev) => setValue(ev.currentTarget.value)} />
+        <textarea
+          id="fs-ta"
+          className={wrap ? "" : "is-nowrap"}
+          spellCheck={false}
+          value={value}
+          onInput={(ev) => setValue(ev.currentTarget.value)}
+        />
       </div>
       <div className="fs-foot">
         {MD_TOKENS.map((t) => (
-          <button key={t} className="mdb t-data" onClick={() => insert(t)}>{t.trim() || "↵"}</button>
+          <button key={t} className="mdb t-data" onClick={() => insert(t)}>
+            {t.trim() || "↵"}
+          </button>
         ))}
       </div>
 
@@ -153,12 +190,14 @@ export function FullscreenText(props: {
         <div className="fs-confirm" role="alertdialog" aria-label={t("ui.editor.discardTitle")}>
           <div className="fs-confirm-box">
             <p className="t-label">{t("ui.editor.discardTitle")}</p>
-            <p className="prose-note">
-              {t("ui.editor.discardBody", { delta: sign(dCh) })}
-            </p>
+            <p className="prose-note">{t("ui.editor.discardBody", { delta: sign(dCh) })}</p>
             <div className="fs-confirm-acts">
-              <button className="dbtn" onClick={() => setConfirming(false)}>{t("ui.editor.keepEditing")}</button>
-              <button className="dbtn is-danger" onClick={props.onCancel}>{t("ui.editor.discard")}</button>
+              <button className="dbtn" onClick={() => setConfirming(false)}>
+                {t("ui.editor.keepEditing")}
+              </button>
+              <button className="dbtn is-danger" onClick={props.onCancel}>
+                {t("ui.editor.discard")}
+              </button>
             </div>
           </div>
         </div>

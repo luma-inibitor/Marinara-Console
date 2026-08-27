@@ -19,7 +19,11 @@ export function docRefs(root = ROOT) {
   const docs = [
     "README.md",
     "CLAUDE.md",
-    ...(existsSync(design) ? readdirSync(design).filter((f) => f.endsWith(".md")).map((f) => join("design", f)) : []),
+    ...(existsSync(design)
+      ? readdirSync(design)
+          .filter((f) => f.endsWith(".md"))
+          .map((f) => join("design", f))
+      : []),
   ].filter((f) => existsSync(join(root, f)));
 
   if (!docs.length) return { findings: [], docs, integrity: ["no documents to read"] };
@@ -52,6 +56,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   console.log(`docrefs · ${r.docs.length} document(s)`);
   for (const f of r.findings) console.log(`  ${f.doc}: ${f.name} does not exist`);
-  console.log(r.findings.length ? `\n${r.findings.length} name(s) with nothing behind them` : "\nevery named script exists");
+  console.log(
+    r.findings.length ? `\n${r.findings.length} name(s) with nothing behind them` : "\nevery named script exists",
+  );
   process.exit(r.findings.length ? 1 : 0);
 }

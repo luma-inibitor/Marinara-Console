@@ -32,7 +32,13 @@ export async function peekNote(id: string) {
  *  sit inside rows that are themselves tap targets. */
 export function NoteRef(props: { id: string; label?: string }) {
   return (
-    <button className="notelink t-data" onClick={(e) => { e.stopPropagation(); peekNote(props.id); }}>
+    <button
+      className="notelink t-data"
+      onClick={(e) => {
+        e.stopPropagation();
+        peekNote(props.id);
+      }}
+    >
       {props.label ?? props.id}
     </button>
   );
@@ -59,9 +65,7 @@ export function MemoryRef(props: {
   return (
     <span className={props.className ?? "nref"}>
       {icon && (props.educate ? <Term tip={TYPE_TIP[props.type!] ?? props.type!}>{icon}</Term> : icon)}
-      {props.id
-        ? <NoteRef id={props.id} label={props.title} />
-        : <b className="nref-plain">{props.title}</b>}
+      {props.id ? <NoteRef id={props.id} label={props.title} /> : <b className="nref-plain">{props.title}</b>}
     </span>
   );
 }
@@ -73,12 +77,7 @@ export function MemoryRef(props: {
  *  queue can still find the target among the batch's own pending creates, and
  *  the detail card would rather show a hueless glyph than none. Left off, the
  *  target degrades to the bare id, still openable. */
-export function LinkTarget(props: {
-  id: string;
-  educate?: boolean;
-  className?: string;
-  unresolved?: ReactNode;
-}) {
+export function LinkTarget(props: { id: string; educate?: boolean; className?: string; unresolved?: ReactNode }) {
   const note = useStore(notesById).get(props.id);
   if (!note) return <>{props.unresolved ?? <NoteRef id={props.id} />}</>;
   return (

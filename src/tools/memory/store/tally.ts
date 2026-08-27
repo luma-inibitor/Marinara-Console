@@ -20,9 +20,7 @@ export const readyToSend = derived([preflight, rows, decisions], (pf, allRows, d
   countReadyToSend(pf, allRows, dec),
 );
 
-export const tally = derived([rows, decisions, edited], (allRows, dec, ed) =>
-  countTally(allRows, dec, ed.size),
-);
+export const tally = derived([rows, decisions, edited], (allRows, dec, ed) => countTally(allRows, dec, ed.size));
 
 export const droppedDependencyWarnings = derived([rows, decisions, notesById], (allRows, dec, notes) =>
   droppedDependencies(allRows, dec, notes),

@@ -7,7 +7,7 @@ message: "Em-dash joins two independent clauses. Use a period or a semicolon."
 link: https://docs.vale.sh/checks/sequence
 level: suggestion
 tokens:
-  - pattern: '—'
+  - pattern: "—"
   - tag: PRP|DT
   - tag: VBZ|VBD|VBP|MD
     skip: 2

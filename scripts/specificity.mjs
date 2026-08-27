@@ -51,7 +51,9 @@ try {
     // `source` is set for every result linted from a file glob; it is
     // undefined only for one linted from a code string, which is not a
     // shape this script produces.
-    const file = relative(ROOT, /** @type {string} */ (res.source)).split(sep).join("/");
+    const file = relative(ROOT, /** @type {string} */ (res.source))
+      .split(sep)
+      .join("/");
     // Gotcha: a CSS the parser cannot read arrives as a warning whose rule is
     // CssSyntaxError, and res.parseErrors stays empty. Filtering the warnings
     // by RULE first drops it, and the run then reads as clean.

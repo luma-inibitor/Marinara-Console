@@ -11,9 +11,7 @@ import { createStore, useStore } from "../lib/store";
  *  should reset — a queue you are working through is not the same as a
  *  ninety-row inventory you keep folded. */
 export function collapsedGroups(storageKey?: string) {
-  const initial: string[] = storageKey
-    ? safeParse(localStorage.getItem(storageKey))
-    : [];
+  const initial: string[] = storageKey ? safeParse(localStorage.getItem(storageKey)) : [];
   const ids = createStore<Set<string>>(new Set(initial));
 
   function toggle(id: string) {
@@ -43,6 +41,6 @@ function safeParse(raw: string | null): string[] {
     const v = JSON.parse(raw);
     return Array.isArray(v) ? v.filter((x) => typeof x === "string") : [];
   } catch {
-    return [];   // a corrupt key should fold nothing, not throw on first paint
+    return []; // a corrupt key should fold nothing, not throw on first paint
   }
 }

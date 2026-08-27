@@ -63,7 +63,7 @@ function openProject(roots) {
       extends: join(ROOT, "tsconfig.json"),
       compilerOptions: { typeRoots: [join(ROOT, "node_modules", "@types")] },
       include: roots,
-    })
+    }),
   );
   const api = new API({ cwd: ROOT });
   const project = api.updateSnapshot({ openProjects: [config] }).getProjects()[0];
@@ -157,10 +157,11 @@ function edgesOf(source, read) {
     if (ts.isExportDeclaration(node) && node.moduleSpecifier) {
       if (node.isTypeOnly) continue;
       const clause = node.exportClause;
-      const names =
-        !clause ? ["*"]
-        : ts.isNamespaceExport(clause) ? [`* as ${clause.name.text}`]
-        : read.namesOf(null, clause.elements);
+      const names = !clause
+        ? ["*"]
+        : ts.isNamespaceExport(clause)
+          ? [`* as ${clause.name.text}`]
+          : read.namesOf(null, clause.elements);
       push(node, node.moduleSpecifier, "re-exports", names);
     }
   }
@@ -280,9 +281,7 @@ for (const abs of files) {
   if (layer === "unclassified") unclassified.push(from);
 
   const source = session.project.program.getSourceFile(abs);
-  const broken = source
-    ? session.project.program.getSyntacticDiagnostics(abs)
-    : [{ text: "not part of the program" }];
+  const broken = source ? session.project.program.getSyntacticDiagnostics(abs) : [{ text: "not part of the program" }];
   if (!source || broken.length) {
     parseErrors.push(`${from}: ${broken[0].text}`);
     continue;
@@ -293,13 +292,12 @@ for (const abs of files) {
   // still may not own a fetch, and that is exactly where some of them are.
   if (isPresentation(from)) {
     for (const e of edges) {
-      const rule =
-        isEndpointsModule(e) ? "endpoints"
-        : isTransportClient(e, from) ? "transport"
-        : null;
+      const rule = isEndpointsModule(e) ? "endpoints" : isTransportClient(e, from) ? "transport" : null;
       if (!rule) continue;
       ownership.push({
-        file: from, line: e.line, rule,
+        file: from,
+        line: e.line,
+        rule,
         text: `${e.kind} { ${e.names.join(", ")} } from "${e.spec}"`,
       });
     }
@@ -337,7 +335,7 @@ console.log("per directory:");
 for (const d of [...perDir.values()].sort((a, b) => a.dir.localeCompare(b.dir))) {
   console.log(
     `  ${d.dir.padEnd(28)} ${String(d.files).padStart(3)} files  ${String(d.edges).padStart(3)} value imports  ` +
-    `[${d.layer}]${d.bad ? `  ${d.bad} FORBIDDEN` : ""}`
+      `[${d.layer}]${d.bad ? `  ${d.bad} FORBIDDEN` : ""}`,
   );
 }
 
@@ -362,7 +360,7 @@ if (violations.length) {
 console.log(
   violations.length
     ? `\n${violations.length} forbidden value import(s) — every value import points downward or not at all`
-    : "\nevery value import points downward"
+    : "\nevery value import points downward",
 );
 
 // ── rule 2 · ownership ────────────────────────────────────────────────────
@@ -381,7 +379,10 @@ if (ownership.length) {
     console.log(`\n  ${RULE_TEXT[rule]}:`);
     let last = null;
     for (const o of hits) {
-      if (o.file !== last) { console.log(`    ${o.file}`); last = o.file; }
+      if (o.file !== last) {
+        console.log(`    ${o.file}`);
+        last = o.file;
+      }
       console.log(`      :${String(o.line).padStart(4)}  ${o.text}`);
     }
   }

@@ -7,8 +7,13 @@ export interface KeywordMatchOptions {
 export type SelectiveLogic = "and" | "and_all" | "or" | "not" | "not_all";
 export function testKeyword(keyword: string, text: string, options: KeywordMatchOptions): boolean;
 export function testPrimaryKeys(
-  keys: string[], text: string, options: KeywordMatchOptions,
+  keys: string[],
+  text: string,
+  options: KeywordMatchOptions,
 ): { matched: boolean; matchedKeys: string[] };
 export function testSecondaryKeys(
-  secondaryKeys: string[], text: string, logic: SelectiveLogic, options: KeywordMatchOptions,
+  secondaryKeys: string[],
+  text: string,
+  logic: SelectiveLogic,
+  options: KeywordMatchOptions,
 ): boolean;

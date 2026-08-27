@@ -95,16 +95,17 @@ export function useDraft<T extends { id: string }>(
     loadedAt.current = current[vf];
   }
 
-  const value = useMemo(
-    () => (current ? ({ ...current, ...patch } as T) : ({} as T)),
-    [current, patch],
-  );
+  const value = useMemo(() => (current ? ({ ...current, ...patch } as T) : ({} as T)), [current, patch]);
   const dirtyFields = Object.keys(patch).filter((k) => current && changed(patch[k as keyof T], current[k as keyof T]));
   const dirty = dirtyFields.length > 0;
 
   const set = useCallback((field: keyof T, v: unknown) => {
     setPatch((p) => ({ ...p, [field]: v }));
-    setFieldErrors((fe) => { const n = { ...fe }; delete n[field as string]; return n; });   // clear on fix
+    setFieldErrors((fe) => {
+      const n = { ...fe };
+      delete n[field as string];
+      return n;
+    }); // clear on fix
     setError(null);
   }, []);
 
@@ -114,19 +115,32 @@ export function useDraft<T extends { id: string }>(
   }, []);
 
   const cancel = useCallback(() => {
-    setPatch({}); setError(null); setFieldErrors({}); setConflict(null);
+    setPatch({});
+    setError(null);
+    setFieldErrors({});
+    setConflict(null);
   }, []);
 
-  const rebase = useCallback((next: T) => {
-    setOverride(next); loadedAt.current = next[vf]; loadedId.current = next.id;
-    setPatch({}); setError(null); setFieldErrors({}); setConflict(null);
-  }, [vf]);
+  const rebase = useCallback(
+    (next: T) => {
+      setOverride(next);
+      loadedAt.current = next[vf];
+      loadedId.current = next.id;
+      setPatch({});
+      setError(null);
+      setFieldErrors({});
+      setConflict(null);
+    },
+    [vf],
+  );
 
   const save = useCallback(async (): Promise<boolean> => {
     if (!current) return false;
     const pending = { ...patch };
     if (Object.keys(pending).length === 0) return true;
-    setSaving(true); setError(null); setFieldErrors({});
+    setSaving(true);
+    setError(null);
+    setFieldErrors({});
     try {
       // Detect-don't-clobber. The engine has no If-Match, so compare the version
       // we loaded against the server's current one immediately before writing.
@@ -142,15 +156,18 @@ export function useDraft<T extends { id: string }>(
         }
       }
       const saved = await opts.commit(pending);
-      setOverride(saved); loadedAt.current = saved[vf]; loadedId.current = saved.id;
-      setPatch({}); setSaving(false);
+      setOverride(saved);
+      loadedAt.current = saved[vf];
+      loadedId.current = saved.id;
+      setPatch({});
+      setSaving(false);
       return true;
     } catch (err) {
       const fe = parseFieldErrors(err);
       setFieldErrors(fe);
       setError((err as Error).message ?? String(err));
       setSaving(false);
-      return false;   // draft is preserved — nothing was lost
+      return false; // draft is preserved — nothing was lost
     }
   }, [current, patch, opts, vf]);
 
@@ -169,6 +186,21 @@ export function useDraft<T extends { id: string }>(
     setPatch(keep);
   }, [conflict, patch, vf]);
 
-  return { value, patch, dirty, dirtyFields, saving, error, fieldErrors, conflict,
-    set, merge, save, cancel, rebase, takeTheirs, keepMine };
+  return {
+    value,
+    patch,
+    dirty,
+    dirtyFields,
+    saving,
+    error,
+    fieldErrors,
+    conflict,
+    set,
+    merge,
+    save,
+    cancel,
+    rebase,
+    takeTheirs,
+    keepMine,
+  };
 }

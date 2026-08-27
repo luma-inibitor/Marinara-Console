@@ -59,11 +59,14 @@ async function persistNow(keepalive = false) {
   clearTimeout(persistTimer);
   persistTimer = undefined;
   try {
-    const ok = await saveLedger({
-      dec: Object.fromEntries(decisions.get()),
-      edited: Object.fromEntries(edited.get()),
-      savedAt: new Date().toISOString(),
-    }, keepalive);
+    const ok = await saveLedger(
+      {
+        dec: Object.fromEntries(decisions.get()),
+        edited: Object.fromEntries(edited.get()),
+        savedAt: new Date().toISOString(),
+      },
+      keepalive,
+    );
     if (ok) ledgerDirty = false;
     saveState.set(ok ? "saved" : "failed");
   } catch {
@@ -100,7 +103,9 @@ export async function loadPersisted() {
     const s = await fetchLedger();
     decisions.set(new Map(Object.entries(s.dec ?? {})));
     edited.set(new Map(Object.entries(s.edited ?? {})));
-  } catch { /* fresh start */ }
+  } catch {
+    /* fresh start */
+  }
 }
 
 /** Forget every decision and edit whose claim the last refresh no longer
@@ -108,10 +113,22 @@ export async function loadPersisted() {
 export function pruneLedger(liveKeys: Set<string>) {
   let pruned = false;
   const dec = new Map(decisions.get());
-  for (const k of [...dec.keys()]) if (!liveKeys.has(k)) { dec.delete(k); pruned = true; }
+  for (const k of [...dec.keys()])
+    if (!liveKeys.has(k)) {
+      dec.delete(k);
+      pruned = true;
+    }
   const ed = new Map(edited.get());
-  for (const k of [...ed.keys()]) if (!liveKeys.has(k)) { ed.delete(k); pruned = true; }
-  if (pruned) { decisions.set(dec); edited.set(ed); persist(); }
+  for (const k of [...ed.keys()])
+    if (!liveKeys.has(k)) {
+      ed.delete(k);
+      pruned = true;
+    }
+  if (pruned) {
+    decisions.set(dec);
+    edited.set(ed);
+    persist();
+  }
 }
 
 // ── decisions ───────────────────────────────────────────────────────
@@ -127,7 +144,8 @@ export function undo() {
   if (!snap) return;
   const next = new Map(decisions.get());
   for (const [k, v] of snap.entries) {
-    if (v == null) next.delete(k); else next.set(k, v);
+    if (v == null) next.delete(k);
+    else next.set(k, v);
   }
   decisions.set(next);
   persist();
@@ -139,7 +157,8 @@ export function setDecision(row: Row, value: Decision | null) {
   snapshot(value ?? "undecide", [row.key]);
   canUndo.set(true);
   const next = new Map(decisions.get());
-  if (value == null) next.delete(row.key); else next.set(row.key, value);
+  if (value == null) next.delete(row.key);
+  else next.set(row.key, value);
   decisions.set(next);
   persist();
 }
@@ -153,11 +172,15 @@ export function cycleDecision(row: Row) {
 export function bulkDecide(list: Row[], value: Decision | null, label: string) {
   list = list.filter((r) => (decisions.get().get(r.key) ?? null) !== value);
   if (!list.length) return;
-  snapshot(label, list.map((r) => r.key));
+  snapshot(
+    label,
+    list.map((r) => r.key),
+  );
   canUndo.set(true);
   const next = new Map(decisions.get());
   for (const r of list) {
-    if (value == null) next.delete(r.key); else next.set(r.key, value);
+    if (value == null) next.delete(r.key);
+    else next.set(r.key, value);
   }
   decisions.set(next);
   persist();
@@ -166,7 +189,8 @@ export function bulkDecide(list: Row[], value: Decision | null, label: string) {
 
 export function setEdited(key: string, mutation: Mutation | null) {
   const next = new Map(edited.get());
-  if (mutation == null) next.delete(key); else next.set(key, mutation);
+  if (mutation == null) next.delete(key);
+  else next.set(key, mutation);
   edited.set(next);
   persist();
 }

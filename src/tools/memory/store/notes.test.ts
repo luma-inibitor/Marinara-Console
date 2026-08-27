@@ -32,7 +32,8 @@ describe("patchNote", () => {
 
   it("keys the saved memory by its own id when the store writes it", async () => {
     request.mockImplementation((_path: string, opts?: { method?: string }) =>
-      opts?.method === "PATCH" ? Promise.resolve({ note: NOTE, rebuild: {} }) : Promise.resolve([]));
+      opts?.method === "PATCH" ? Promise.resolve({ note: NOTE, rebuild: {} }) : Promise.resolve([]),
+    );
     await saveNoteSections("char_watson", { bio: { text: "hello" } });
     expect([...notesById.get().keys()]).toEqual(["char_watson"]);
     expect(notesById.get().get("char_watson")).toEqual(NOTE);
