@@ -8,11 +8,8 @@
 //   node scripts/specificity.mjs --adopt        # record today's set as the baseline
 //   node scripts/specificity.mjs --prune        # drop baseline entries that no longer appear
 //
-// The findings come from stylelint's no-descending-specificity, which is a
-// warning rather than an error because fixing one means reordering rules and
-// every reorder is a rendering risk. This file is the baseline ratchet over it,
-// the same arrangement typescale.mjs has over marinara/font-size-token: today's
-// set is recorded and only growth fails. See scripts/lib/baseline.mjs.
+// The baseline ratchet over stylelint's no-descending-specificity: today's set
+// is recorded and only growth fails. See scripts/lib/baseline.mjs.
 //
 // Exit codes: 0 clean · 1 a finding outside the baseline · 2 the check itself
 // is compromised and must never read as a pass.
@@ -39,9 +36,8 @@ if (!existsSync(join(ROOT, target))) {
 }
 const scanned = target.split(sep).join("/").replace(/\/+$/, "");
 const files = statSync(join(ROOT, target)).isDirectory() ? `${scanned}/**/*.css` : scanned;
-// Scope by path rather than by the files stylelint read, so a baseline entry
-// naming a deleted stylesheet is reported as vanished instead of surviving
-// forever unmatched.
+// Gotcha: scope by path, not by the files stylelint read. A deleted stylesheet
+// is never read, so its entries would survive --prune forever.
 const scope = (f) => f === scanned || f.startsWith(scanned + "/");
 
 const integrity = [];

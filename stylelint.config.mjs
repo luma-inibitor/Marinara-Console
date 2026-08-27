@@ -27,8 +27,8 @@ export default {
     "shorthand-property-no-redundant-values": true,
     "declaration-block-no-redundant-longhand-properties": true,
 
-    // Warning, not error: the 25 findings are still open, and would be fixed
-    // by reordering rules. scripts/specificity.mjs holds them at 25.
+    // Warning, not error: fixing one means reordering rules. Held at 25 by
+    // scripts/specificity.mjs.
     "no-descending-specificity": [true, { severity: "warning" }],
   },
 };
