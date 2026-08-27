@@ -234,6 +234,12 @@ Some of these have a script behind them and some don't. Each rule says which, be
 
 The house habit is to encode a rule in a script rather than to trust a convention. `copycatalog` guards the copy catalog, `deadcss` guards CSS, `layercheck` guards the dependency direction. `scripts/checks.mjs` lists the static checks one name per line, and `npm run check:static` runs every one of them rather than stopping at the first failure.
 
+**Prettier owns whitespace in `.ts`, `.tsx`, `.mjs` and the hand-written config files.** `eslint.config.js` extends no stylistic preset by design, so nothing read whitespace in the application code before this. `format:check` fails the build. `npm run format` fixes every finding.
+
+**The pre-commit hook in `.githooks/` formats staged files.** `scripts/prepare.mjs` points `core.hooksPath` at that directory, and npm runs `prepare` after an install, so the hook arrives with a clone rather than with an instruction. `scripts/precommit.mjs` holds the logic, which keeps it linted and type-checked like the rest of `scripts/`. It formats a staged file and re-stages it. It refuses to touch an unformatted file that also carries worktree edits, because `git add` on that file would commit the unstaged half. Staged Markdown goes through `prosecheck`. The hook stops on every finding, not on the error-level ones alone. The CI prose job stays advisory, so the hook is the one place a suggestion still gets read.
+
+`.prettierignore` holds Prettier back from four things. stylelint owns CSS, where Prettier gives each row of a hand-aligned token table three lines. Vale owns Markdown, where Prettier rewrites the emphasis marks to no rendered effect. The vendored engine sources keep the engine's formatting, which leaves a re-vendor a clean diff. The generated `design/*-baseline.json` files keep theirs, since the next generator run would undo the change and fail the check.
+
 **`scripts/layercheck.mjs`** carries two rules, and both fail the build. It reads the tree through the TypeScript compiler, using `typescript/unstable/ast` and `typescript/unstable/sync`. Module resolution and the value-or-type answer are therefore the ones `tsc` would give.
 
 Rule 1 reads every import and fails when a *value* import points upward. Type-only imports are exempt, per §1. The directory gives the check its layer with no manifest to maintain and no default that claims files nobody classified.

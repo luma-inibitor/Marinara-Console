@@ -16,5 +16,4 @@ interface LedgerRecord {
 
 export const fetchLedger = () => readConsoleState<LedgerRecord>(KEY);
 
-export const saveLedger = (record: LedgerRecord, keepalive = false) =>
-  writeConsoleState(KEY, record, { keepalive });
+export const saveLedger = (record: LedgerRecord, keepalive = false) => writeConsoleState(KEY, record, { keepalive });

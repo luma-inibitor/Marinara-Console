@@ -13,7 +13,17 @@
 // that check them; everything below is still asserted with `as T`.
 
 import type * as v from "valibot";
-import type { ConflictSchema, ExtractResponseSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteSectionSchema, NOTE_TYPES, ReviewChangeSchema, ReviewResponseSchema } from "./schema";
+import type {
+  ConflictSchema,
+  ExtractResponseSchema,
+  MutationSchema,
+  NoteArchiveSchema,
+  NoteSchema,
+  NoteSectionSchema,
+  NOTE_TYPES,
+  ReviewChangeSchema,
+  ReviewResponseSchema,
+} from "./schema";
 
 export type NoteType = (typeof NOTE_TYPES)[number];
 export type Disposition = "new" | "merge" | "rewrite";
@@ -43,7 +53,15 @@ export interface PreflightResponse {
   readyMutationIds: string[];
   blockedMutationIds: string[];
   autoIncludedMutationIds: string[];
-  rows: Array<{ mutationId: string; targetId: string; disposition: Disposition; status: "ready" | "blocked"; autoIncluded: boolean; blockers: Array<{ code: string; message: string }>; conflicts: Conflict[] }>;
+  rows: Array<{
+    mutationId: string;
+    targetId: string;
+    disposition: Disposition;
+    status: "ready" | "blocked";
+    autoIncluded: boolean;
+    blockers: Array<{ code: string; message: string }>;
+    conflicts: Conflict[];
+  }>;
 }
 
 export interface AcceptResponse {
@@ -54,7 +72,14 @@ export interface AcceptResponse {
 }
 
 export interface LtmStatus {
-  notes: { total: number; sourceNotes: number; savedMemories: number; pendingDrafts: number; byType: Record<string, number>; byStatus: Record<string, number> };
+  notes: {
+    total: number;
+    sourceNotes: number;
+    savedMemories: number;
+    pendingDrafts: number;
+    byType: Record<string, number>;
+    byStatus: Record<string, number>;
+  };
   indexes: { health: string; dirty: boolean; rebuildState: string; embeddingsAvailable: boolean };
 }
 
@@ -63,7 +88,16 @@ export interface ImportPreview {
   scanned: number;
   draftable: number;
   importedCount: number;
-  samples: Array<{ sourceId: string; title: string; importMode: string; mutationCount: number; summary: string; snippet: string; status?: string; freshness: string }>;
+  samples: Array<{
+    sourceId: string;
+    title: string;
+    importMode: string;
+    mutationCount: number;
+    summary: string;
+    snippet: string;
+    status?: string;
+    freshness: string;
+  }>;
 }
 
 export interface ImportResult {
@@ -76,7 +110,14 @@ export interface ImportResult {
     draft?: {
       mutations?: Mutation[];
       source?: { sourceNoteId?: string };
-      accounting?: { providerCandidates: number; normalizedAdditions: number; parserRejections: number; validationRejections: number; deduplications: number; keptUnits: number };
+      accounting?: {
+        providerCandidates: number;
+        normalizedAdditions: number;
+        parserRejections: number;
+        validationRejections: number;
+        deduplications: number;
+        keptUnits: number;
+      };
       extractionOutcome?: { state: string };
     };
   }>;

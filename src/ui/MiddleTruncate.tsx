@@ -14,7 +14,11 @@ export function splitTitle(text: string, tail = TAIL): [string, string] {
   const units = [...new Intl.Segmenter().segment(text)].map((s) => s.segment);
   if (units.length <= tail) return [text, ""];
   let cut = units.length - tail;
-  for (let i = cut; i > cut - SNAP && i > 0; i--) if (units[i - 1] === " ") { cut = i; break; }
+  for (let i = cut; i > cut - SNAP && i > 0; i--)
+    if (units[i - 1] === " ") {
+      cut = i;
+      break;
+    }
   return [units.slice(0, cut).join(""), units.slice(cut).join("")];
 }
 
@@ -41,11 +45,17 @@ export function MiddleTruncate(props: { text: string; tail?: number; className?:
   return (
     <span className={cls} title={props.text}>
       <span className="mtrunc-whole">{props.text}</span>
-      <span className="mtrunc-head" aria-hidden>{head}</span>
+      <span className="mtrunc-head" aria-hidden>
+        {head}
+      </span>
       {/* bdi: the tail's box is laid out right-to-left so its ellipsis lands at
           the start, and the isolate keeps the text itself in its own reading
           order inside that box. */}
-      {tail && <span className="mtrunc-tail" aria-hidden><bdi>{tail}</bdi></span>}
+      {tail && (
+        <span className="mtrunc-tail" aria-hidden>
+          <bdi>{tail}</bdi>
+        </span>
+      )}
     </span>
   );
 }

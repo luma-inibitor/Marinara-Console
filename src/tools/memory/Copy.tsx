@@ -16,11 +16,7 @@ import { tAny, type Params } from "../../copy";
 
 const SLOT = /\{\{\s*(\w+)\s*\}\}/g;
 
-export function Copy(props: {
-  k: string;
-  params?: Params;
-  slots?: Record<string, ReactNode>;
-}) {
+export function Copy(props: { k: string; params?: Params; slots?: Record<string, ReactNode> }) {
   const text = tAny(props.k, props.params);
   const out: ReactNode[] = [];
   let last = 0;
@@ -33,5 +29,11 @@ export function Copy(props: {
     last = m.index + m[0].length;
   }
   if (last < text.length) out.push(text.slice(last));
-  return <>{out.map((node, i) => <Fragment key={i}>{node}</Fragment>)}</>;
+  return (
+    <>
+      {out.map((node, i) => (
+        <Fragment key={i}>{node}</Fragment>
+      ))}
+    </>
+  );
 }

@@ -19,7 +19,9 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("../../../copy", () => ({
   t: (key: string, params?: Record<string, unknown>) =>
     params && Object.keys(params).length
-      ? `${key}|${Object.entries(params).map(([k, v]) => `${k}=${v}`).join(",")}`
+      ? `${key}|${Object.entries(params)
+          .map(([k, v]) => `${k}=${v}`)
+          .join(",")}`
       : key,
   // Pulled in transitively by the store/flags chain, which reads these off the
   // same module.
@@ -65,10 +67,26 @@ const plain = (over: Partial<Row> = {}) => makeRow(over);
 describe("FACETS", () => {
   it("declares one facet per id, with provenance kept apart", () => {
     expect(FACETS.map((f) => f.id)).toEqual([
-      "flags", "anyFlag", "disposition", "risk", "kind", "claimKind", "targetType", "source", "status",
+      "flags",
+      "anyFlag",
+      "disposition",
+      "risk",
+      "kind",
+      "claimKind",
+      "targetType",
+      "source",
+      "status",
     ]);
     expect(FACETS.map((f) => f.source)).toEqual([
-      "computed", "computed", "model", "model", "model", "model", "model", "model", "yours",
+      "computed",
+      "computed",
+      "model",
+      "model",
+      "model",
+      "model",
+      "model",
+      "model",
+      "yours",
     ]);
   });
 
@@ -145,17 +163,38 @@ describe("applyFilters — OR within a facet, AND across facets", () => {
   });
 
   it("ANDs two different facets", () => {
-    const got = applyFilters(list, active([["risk", ["high", "low"]], ["disposition", ["new"]]]), ctx());
+    const got = applyFilters(
+      list,
+      active([
+        ["risk", ["high", "low"]],
+        ["disposition", ["new"]],
+      ]),
+      ctx(),
+    );
     expect(keys(got)).toEqual([a.key, c.key]);
   });
 
   it("lets one facet exclude what the other admitted", () => {
-    const got = applyFilters(list, active([["risk", ["high", "medium"]], ["disposition", ["merge"]]]), ctx());
+    const got = applyFilters(
+      list,
+      active([
+        ["risk", ["high", "medium"]],
+        ["disposition", ["merge"]],
+      ]),
+      ctx(),
+    );
     expect(keys(got)).toEqual([b.key]);
   });
 
   it("returns empty when two facets have no row in common", () => {
-    const got = applyFilters(list, active([["risk", ["high"]], ["disposition", ["merge"]]]), ctx());
+    const got = applyFilters(
+      list,
+      active([
+        ["risk", ["high"]],
+        ["disposition", ["merge"]],
+      ]),
+      ctx(),
+    );
     expect(got).toEqual([]);
   });
 
@@ -197,28 +236,68 @@ describe("facetCounts", () => {
     const counts = facetCounts(list, new Map(), ctx());
     // "medium" is in risk's declared domain and absent from these rows, so it
     // is listed at zero rather than dropped.
-    expect(counts.get("risk")).toEqual(new Map([["high", 2], ["medium", 0], ["low", 1]]));
-    expect(counts.get("disposition")).toEqual(new Map([["new", 2], ["merge", 1]]));
+    expect(counts.get("risk")).toEqual(
+      new Map([
+        ["high", 2],
+        ["medium", 0],
+        ["low", 1],
+      ]),
+    );
+    expect(counts.get("disposition")).toEqual(
+      new Map([
+        ["new", 2],
+        ["merge", 1],
+      ]),
+    );
   });
 
   it("EXCLUDES a facet's own filter from its own counts", () => {
     // This is what makes a count read as "what would I get if I toggled this":
     // with risk=high active, the risk counts still show the low rows.
     const counts = facetCounts(list, active([["risk", ["high"]]]), ctx());
-    expect(counts.get("risk")).toEqual(new Map([["high", 2], ["medium", 0], ["low", 1]]));
+    expect(counts.get("risk")).toEqual(
+      new Map([
+        ["high", 2],
+        ["medium", 0],
+        ["low", 1],
+      ]),
+    );
   });
 
   it("APPLIES every other facet's filter to a facet's counts", () => {
     const counts = facetCounts(list, active([["risk", ["high"]]]), ctx());
-    expect(counts.get("disposition")).toEqual(new Map([["new", 1], ["merge", 1]]));
+    expect(counts.get("disposition")).toEqual(
+      new Map([
+        ["new", 1],
+        ["merge", 1],
+      ]),
+    );
   });
 
   it("excludes only its own facet when several are active", () => {
-    const counts = facetCounts(list, active([["risk", ["high"]], ["disposition", ["new"]]]), ctx());
+    const counts = facetCounts(
+      list,
+      active([
+        ["risk", ["high"]],
+        ["disposition", ["new"]],
+      ]),
+      ctx(),
+    );
     // risk counts: disposition=new applied, risk not → a and c.
-    expect(counts.get("risk")).toEqual(new Map([["high", 1], ["medium", 0], ["low", 1]]));
+    expect(counts.get("risk")).toEqual(
+      new Map([
+        ["high", 1],
+        ["medium", 0],
+        ["low", 1],
+      ]),
+    );
     // disposition counts: risk=high applied, disposition not → a and b.
-    expect(counts.get("disposition")).toEqual(new Map([["new", 1], ["merge", 1]]));
+    expect(counts.get("disposition")).toEqual(
+      new Map([
+        ["new", 1],
+        ["merge", 1],
+      ]),
+    );
   });
 
   // Changed deliberately (owner-asked): a value the slice does not contain is
@@ -228,7 +307,13 @@ describe("facetCounts", () => {
   it("keeps a value at zero rather than omitting it", () => {
     const counts = facetCounts(list, active([["disposition", ["merge"]]]), ctx());
     expect(counts.get("risk")!.get("low")).toBe(0);
-    expect(counts.get("risk")).toEqual(new Map([["high", 1], ["medium", 0], ["low", 0]]));
+    expect(counts.get("risk")).toEqual(
+      new Map([
+        ["high", 1],
+        ["medium", 0],
+        ["low", 0],
+      ]),
+    );
   });
 
   it("keeps an undeclared value discovered on a filtered-out row", () => {
@@ -238,35 +323,63 @@ describe("facetCounts", () => {
     const ch = plain({ targetType: "character", disposition: "new" });
     const wo = plain({ targetType: "world", disposition: "merge" });
     const counts = facetCounts([ch, wo], active([["disposition", ["merge"]]]), ctx());
-    expect(counts.get("targetType")).toEqual(new Map([["character", 0], ["world", 1]]));
+    expect(counts.get("targetType")).toEqual(
+      new Map([
+        ["character", 0],
+        ["world", 1],
+      ]),
+    );
   });
 
   it("counts a multi-valued facet once per value", () => {
     const row = plain();
-    const counts = facetCounts([row], new Map(), ctx({
-      decisions: new Map([[row.key, "keep"]]),
-      edited: new Map([[row.key, makeMutation()]]),
-    }));
+    const counts = facetCounts(
+      [row],
+      new Map(),
+      ctx({
+        decisions: new Map([[row.key, "keep"]]),
+        edited: new Map([[row.key, makeMutation()]]),
+      }),
+    );
     // keep/drop/undecided are status's declared domain, so the axis shows all
     // three however this one row landed.
     expect(counts.get("status")).toEqual(
-      new Map([["keep", 1], ["drop", 0], ["memory.undecided", 0], ["edited", 1]]),
+      new Map([
+        ["keep", 1],
+        ["drop", 0],
+        ["memory.undecided", 0],
+        ["edited", 1],
+      ]),
     );
   });
 
   it("counts every flag a row carries, and nothing for a row with none", () => {
     const flagged = plain({ mutation: makeMutation({ risk: "high", confidence: 0.5 }) });
     const counts = facetCounts([flagged, plain()], new Map(), ctx());
-    expect(counts.get("flags")).toEqual(new Map([
-      [FLAG.highRisk, 1],
-      [FLAG.lowConfidence, 1],
-    ]));
+    expect(counts.get("flags")).toEqual(
+      new Map([
+        [FLAG.highRisk, 1],
+        [FLAG.lowConfidence, 1],
+      ]),
+    );
   });
 
   it("gives an empty list nothing but the declared domains, at zero", () => {
     const counts = facetCounts([], active([["risk", ["high"]]]), ctx());
-    expect(counts.get("risk")).toEqual(new Map([["high", 0], ["medium", 0], ["low", 0]]));
-    expect(counts.get("status")).toEqual(new Map([["keep", 0], ["drop", 0], ["memory.undecided", 0]]));
+    expect(counts.get("risk")).toEqual(
+      new Map([
+        ["high", 0],
+        ["medium", 0],
+        ["low", 0],
+      ]),
+    );
+    expect(counts.get("status")).toEqual(
+      new Map([
+        ["keep", 0],
+        ["drop", 0],
+        ["memory.undecided", 0],
+      ]),
+    );
     // Facets with no declared domain learn theirs from the rows, and there
     // are none.
     expect(counts.get("source")!.size).toBe(0);
@@ -305,12 +418,11 @@ describe("buildGroups — groupers", () => {
   });
 
   it("groups by disposition, using the raw value as both id and label", () => {
-    const groups = buildGroups(
-      [row({ disposition: "merge" }), row({ disposition: "new" })],
-      "disposition",
-      "risk",
-    );
-    expect(groups.map((g) => [g.id, g.label])).toEqual([["merge", "merge"], ["new", "new"]]);
+    const groups = buildGroups([row({ disposition: "merge" }), row({ disposition: "new" })], "disposition", "risk");
+    expect(groups.map((g) => [g.id, g.label])).toEqual([
+      ["merge", "merge"],
+      ["new", "new"],
+    ]);
   });
 
   it("gives disposition and the `none` bucket no icon", () => {
@@ -360,7 +472,10 @@ describe("buildGroups — a missing group key", () => {
     const b = plain({ targetId: "", targetTitle: "" });
     const c = plain({ targetId: "n1", targetTitle: "Alice" });
     const groups = buildGroups([a, b, c], "target", "risk");
-    expect(groups.map((g) => [g.id, g.label])).toEqual([["", ""], ["n1", "Alice"]]);
+    expect(groups.map((g) => [g.id, g.label])).toEqual([
+      ["", ""],
+      ["n1", "Alice"],
+    ]);
     expect(groups[0].rows).toHaveLength(2);
   });
 
@@ -418,8 +533,7 @@ describe("buildGroups — sorting", () => {
   it("sorts by confidence ascending — least confident first", () => {
     const hi = at("low", "a", 0.99);
     const lo = at("low", "b", 0.2);
-    expect(buildGroups([hi, lo], "none", "confidence")[0].rows.map((r) => r.mutation.confidence))
-      .toEqual([0.2, 0.99]);
+    expect(buildGroups([hi, lo], "none", "confidence")[0].rows.map((r) => r.mutation.confidence)).toEqual([0.2, 0.99]);
   });
 
   it("sorts by target title with localeCompare", () => {

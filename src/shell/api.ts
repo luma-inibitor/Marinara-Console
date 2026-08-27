@@ -18,14 +18,17 @@ export class ApiError extends Error {
     // eslint-disable-next-line i18next/no-literal-string -- a stack-trace label, not copy.
     this.name = "ApiError";
     this.status = opts.status;
-    this.details = Array.isArray(opts.details) ? opts.details as Array<{ path?: string; message?: string }> : [];
+    this.details = Array.isArray(opts.details) ? (opts.details as Array<{ path?: string; message?: string }>) : [];
     this.offline = opts.offline ?? false;
   }
 }
 
 let restorePointWarned = false;
 
-export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "body"> & { body?: unknown } = {}): Promise<T> {
+export async function api<T = unknown>(
+  path: string,
+  opts: Omit<RequestInit, "body"> & { body?: unknown } = {},
+): Promise<T> {
   const { body, ...rest } = opts;
   let res: Response;
   try {
@@ -47,14 +50,19 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
   }
   if (!res.ok) {
     let payload: { error?: string; detail?: string; details?: unknown } = {};
-    try { payload = (await res.json()) as typeof payload; } catch { /* not json */ }
+    try {
+      payload = (await res.json()) as typeof payload;
+    } catch {
+      /* not json */
+    }
     // The proxy returns 502 + {error, detail} when the engine itself is unreachable.
     const engineDown = res.status === 502;
     const msg = payload.error || payload.detail || `${res.status} ${res.statusText}`;
-    const e = new ApiError(
-      payload.detail && payload.error ? `${payload.error} (${payload.detail})` : msg,
-      { status: res.status, details: payload.details, offline: engineDown },
-    );
+    const e = new ApiError(payload.detail && payload.error ? `${payload.error} (${payload.detail})` : msg, {
+      status: res.status,
+      details: payload.details,
+      offline: engineDown,
+    });
     onResult?.(e);
     throw e;
   }
@@ -67,8 +75,9 @@ export async function api<T = unknown>(path: string, opts: Omit<RequestInit, "bo
  * api.ts stays free of UI dependencies.
  */
 let onResult: ((err: unknown | null) => void) | null = null;
-export const setResultHook = (fn: (err: unknown | null) => void) => { onResult = fn; };
+export const setResultHook = (fn: (err: unknown | null) => void) => {
+  onResult = fn;
+};
 
 /** Engine-faithful token estimate — approximateTokens() in packages/shared. */
-export const tokensOf = (text: string | null | undefined): number =>
-  Math.ceil((text ?? "").length / 4);
+export const tokensOf = (text: string | null | undefined): number => Math.ceil((text ?? "").length / 4);

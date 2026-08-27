@@ -1,0 +1,49 @@
+# Prettier already reads .gitignore, so dist/, node_modules/ and the other
+# generated trees are covered without being named here. This file is for
+# tracked files Prettier must not touch.
+#
+# Prettier owns .ts, .tsx, .mjs, .js and the hand-written config files. That is
+# the gap: eslint.config.js extends no stylistic preset, so before this nothing
+# looked at whitespace in the application code. CSS and Markdown are excluded
+# below because they already have owners.
+
+# ── Vendored engine code, never edited ───────────────────────────────────
+# ARCHITECTURE.md §"Engine logic stays vendored". These are compiler output
+# from Marinara-Engine, carrying its 4-space indent. Formatting them would
+# make every future re-vendor a conflict, and the diff would read as ours.
+src/lib/lorebook-keyword-matching.js
+src/lib/regex-safety.js
+src/copy/vendor/
+
+# ── CSS: stylelint owns it ───────────────────────────────────────────────
+# `npm run csslint`, plus typescale.mjs, specificity.mjs and deadcss.mjs, all
+# read these files already. Prettier would add nothing and cost a great deal:
+# the token tables are hand-aligned one-liners
+#
+#   .type-thread       { --tc: var(--type-thread); }
+#
+# and Prettier gives every one of them three lines. Measured over src/styles
+# alone that is memory.css going from 451 lines to 1,779 — a design-system
+# reference that is read as a table, reformatted into something that is not.
+*.css
+
+# ── Markdown: Vale owns it ───────────────────────────────────────────────
+# `npm run prosecheck`. Prettier does not reflow prose at the default
+# proseWrap, but it does rewrite *emphasis* to _emphasis_ across every
+# document — 23 files and roughly 500 lines of churn that changes no rendered
+# output, in exactly the hand-formatted rationale blocks BACKLOG.md called out.
+*.md
+
+# ── Generated baselines ──────────────────────────────────────────────────
+# Written by verify.mjs, typescale.mjs, deadcss.mjs and the CSS collision
+# check. Formatting them means the next regeneration reverts the formatting
+# and `format:check` fails, forever.
+design/*-baseline.json
+
+# ── Design surfaces that are not application source ──────────────────────
+# The mockups are hand-written specimen pages kept close to what Luma was
+# shown; kit.css is Tailwind output.
+public/mockups/
+
+# Lockfile: npm owns its formatting.
+package-lock.json

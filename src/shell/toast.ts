@@ -28,7 +28,7 @@ export const toasts = createStore<Toast[]>([]);
 let seq = 0;
 const timers = new Map<number, ReturnType<typeof setTimeout>>();
 
-const UNDO_MS = 9_000;     // long enough to notice and act on a delete
+const UNDO_MS = 9_000; // long enough to notice and act on a delete
 const ERROR_MS = 8_000;
 const INFO_MS = 4_000;
 
@@ -60,20 +60,35 @@ export function toast(message: string, opts: Partial<Omit<Toast, "id" | "message
   if (!isUndoable(opts)) {
     const dup = toasts.get().find((t) => t.message === message && t.kind === (opts.kind ?? "info"));
     if (dup) {
-      const ttl = (opts.kind === "error" ? ERROR_MS : INFO_MS);
+      const ttl = opts.kind === "error" ? ERROR_MS : INFO_MS;
       clearTimeout(timers.get(dup.id));
-      timers.set(dup.id, setTimeout(() => remove(dup.id, true), ttl));
-      toasts.update((list) => list.map((t) =>
-        t.id === dup.id ? { ...t, count: t.count + 1, expiresAt: Date.now() + ttl } : t));
+      timers.set(
+        dup.id,
+        setTimeout(() => remove(dup.id, true), ttl),
+      );
+      toasts.update((list) =>
+        list.map((t) => (t.id === dup.id ? { ...t, count: t.count + 1, expiresAt: Date.now() + ttl } : t)),
+      );
       return dup.id;
     }
   }
 
   const id = ++seq;
   const ttl = isUndoable(opts) ? UNDO_MS : opts.kind === "error" ? ERROR_MS : INFO_MS;
-  toasts.update((list) => [...list, {
-    id, message, kind: opts.kind ?? "info", count: 1, expiresAt: Date.now() + ttl, ...opts,
-  }]);
-  timers.set(id, setTimeout(() => remove(id, true), ttl));
+  toasts.update((list) => [
+    ...list,
+    {
+      id,
+      message,
+      kind: opts.kind ?? "info",
+      count: 1,
+      expiresAt: Date.now() + ttl,
+      ...opts,
+    },
+  ]);
+  timers.set(
+    id,
+    setTimeout(() => remove(id, true), ttl),
+  );
   return id;
 }

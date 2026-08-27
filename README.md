@@ -83,4 +83,6 @@ and a fenced example fixes the cause rather than the symptom.
 | `design/` | DESIGN.md, tokens rationale, vendored UI research |
 | `scripts/precompress.mjs` | Part of `npm run build`, not a check: writes a `.br` and a `.gz` beside each compressible file in `dist/` for the server to send. `npm run precompress` runs it alone |
 | `.vale.ini` | prose lint config: Microsoft style, exemptions in the vocabulary rather than rule switches |
+| `.prettierrc.json` | formatter config. One setting, `printWidth`. `.prettierignore` names what Prettier stays out of and why: CSS belongs to stylelint, Markdown to Vale, and the vendored engine sources to the engine |
+| `.githooks/` | the pre-commit hook, installed by `npm run prepare` through `core.hooksPath`. It formats staged code and holds a commit whose staged Markdown carries any Vale finding |
 | `scripts/` | the executable checks that run without a test runner: `components` (inventory of what returns markup, and what each one couples to), `copycatalog`, `layercheck`, `deadcss`, `typescale`, `specificity`, `pkgcheck`, `prosecheck`, `domsnap`. `domsnap` drives a real browser and takes its harness from `lib/browser.mjs` |

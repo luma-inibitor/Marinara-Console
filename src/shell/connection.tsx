@@ -15,14 +15,18 @@ const engineReachable = createStore(true);
 /** Bumped by a successful request, so recovery is announced once. */
 const lastOk = createStore<number>(0);
 
-export const reach: Store<Reach> = derived(
-  [browserOnline, engineReachable],
-  (online, engine) => (!online ? "offline" : engine ? "ok" : "engine-down"),
+export const reach: Store<Reach> = derived([browserOnline, engineReachable], (online, engine) =>
+  !online ? "offline" : engine ? "ok" : "engine-down",
 );
 
 if (typeof window !== "undefined") {
-  window.addEventListener("online", () => { browserOnline.set(true); void probe(); });
-  window.addEventListener("offline", () => { browserOnline.set(false); });
+  window.addEventListener("online", () => {
+    browserOnline.set(true);
+    void probe();
+  });
+  window.addEventListener("offline", () => {
+    browserOnline.set(false);
+  });
 }
 
 /** Record the outcome of a real request — the honest signal. */
@@ -44,10 +48,18 @@ async function probe(): Promise<boolean> {
   probing = true;
   try {
     const res = await fetch("/api/lorebooks", { cache: "no-store" });
-    if (res.ok) { engineReachable.set(true); lastOk.set(Date.now()); backoff = 1_000; return true; }
+    if (res.ok) {
+      engineReachable.set(true);
+      lastOk.set(Date.now());
+      backoff = 1_000;
+      return true;
+    }
     return false;
-  } catch { return false; }
-  finally { probing = false; }
+  } catch {
+    return false;
+  } finally {
+    probing = false;
+  }
 }
 
 let timer: ReturnType<typeof setTimeout> | null = null;
@@ -56,7 +68,10 @@ export function startReconnect() {
   if (timer) return;
   const tick = async () => {
     timer = null;
-    if (reach.get() === "ok") { backoff = 1_000; return; }
+    if (reach.get() === "ok") {
+      backoff = 1_000;
+      return;
+    }
     const ok = await probe();
     if (!ok) {
       backoff = Math.min(backoff * 2, 30_000);
@@ -79,7 +94,9 @@ export function ConnectionBanner() {
         {" — "}
         {offline ? t("shell.conn.offlineBody") : t("shell.conn.engineBody")}
       </span>
-      <button className="connbar-btn" onClick={() => void probe()}>{t("shell.conn.retry")}</button>
+      <button className="connbar-btn" onClick={() => void probe()}>
+        {t("shell.conn.retry")}
+      </button>
     </div>
   );
 }

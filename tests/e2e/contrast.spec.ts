@@ -79,8 +79,10 @@ for (const screen of SCREENS) {
     }
 
     const accepted = new Set(BASELINE[screen.name]?.[testInfo.project.name] ?? []);
-    expect(found.filter((f) => !accepted.has(f)), `${screen.name} ink below the §1 floor`)
-      .toEqual([]);
+    expect(
+      found.filter((f) => !accepted.has(f)),
+      `${screen.name} ink below the §1 floor`,
+    ).toEqual([]);
   });
 }
 
@@ -93,7 +95,12 @@ interface ContrastData {
 
 /** The last step of an axe target, minus the position axe adds to disambiguate
  *  siblings: reordering a row must not read as a new finding. */
-const leaf = (target: string) => target.split(">").pop()!.trim().replace(/:nth-child\(\d+\)/g, "");
+const leaf = (target: string) =>
+  target
+    .split(">")
+    .pop()!
+    .trim()
+    .replace(/:nth-child\(\d+\)/g, "");
 
 /** Runs in the page: which of these selectors are painted and carry no
  *  exemption of their own.
@@ -112,7 +119,10 @@ function measurable({ targets, exempt }: { targets: string[]; exempt: string[] }
 
 /** Runs in the page: contrast for pseudo-element and placeholder ink, and for
  *  the nodes axe left unresolved. */
-function measureInk({ exemptions, unresolved }: {
+function measureInk({
+  exemptions,
+  unresolved,
+}: {
   exemptions: Exemptions;
   unresolved: { target: string; label: string }[];
 }): { findings: string[]; unlisted: string[] } {
@@ -121,7 +131,10 @@ function measureInk({ exemptions, unresolved }: {
   const unlisted: string[] = [];
 
   const lum = (r: number, g: number, b: number) => {
-    const f = (c: number) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+    const f = (c: number) => {
+      c /= 255;
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    };
     return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
   };
   // A computed color can be rgb(), color(srgb …) or color-mix(). Painting a
@@ -148,12 +161,19 @@ function measureInk({ exemptions, unresolved }: {
   // The node carrying the background comes back with it. Opacity at or above
   // that node dims text and background together, so measure() stops there.
   const bgOf = (el: Element) => {
-    let node: Element | null = el, acc = null;
+    let node: Element | null = el,
+      acc = null;
     while (node && node !== document.documentElement) {
       const c = parse(getComputedStyle(node).backgroundColor);
       if (c && c.a > 0) {
         if (!acc) acc = { ...c };
-        else { const a = acc.a; acc.r = acc.r * a + c.r * (1 - a); acc.g = acc.g * a + c.g * (1 - a); acc.b = acc.b * a + c.b * (1 - a); acc.a = a + c.a * (1 - a); }
+        else {
+          const a = acc.a;
+          acc.r = acc.r * a + c.r * (1 - a);
+          acc.g = acc.g * a + c.g * (1 - a);
+          acc.b = acc.b * a + c.b * (1 - a);
+          acc.a = a + c.a * (1 - a);
+        }
         if (acc.a >= 0.99) return { ...acc, node };
       }
       node = node.parentElement;
@@ -168,14 +188,17 @@ function measureInk({ exemptions, unresolved }: {
   const seen = new Set<string>();
   const measure = (el: Element, pseudo: string, text: string, label: string) => {
     const s = getComputedStyle(el, pseudo);
-    const raw = parse(s.color); if (!raw) return;
+    const raw = parse(s.color);
+    if (!raw) return;
     const bg = bgOf(el);
     // Ink composites over its background at its own alpha times every opacity
     // between the two.
     let a = raw.a;
-    for (let n: Element | null = el; n && n !== bg.node && n !== document.documentElement; n = n.parentElement) a *= parseFloat(getComputedStyle(n).opacity);
+    for (let n: Element | null = el; n && n !== bg.node && n !== document.documentElement; n = n.parentElement)
+      a *= parseFloat(getComputedStyle(n).opacity);
     const fg = { r: raw.r * a + bg.r * (1 - a), g: raw.g * a + bg.g * (1 - a), b: raw.b * a + bg.b * (1 - a) };
-    const L1 = lum(fg.r, fg.g, fg.b), L2 = lum(bg.r, bg.g, bg.b);
+    const L1 = lum(fg.r, fg.g, fg.b),
+      L2 = lum(bg.r, bg.g, bg.b);
     const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
     const px = parseFloat(s.fontSize);
     const bold = parseInt(s.fontWeight, 10) >= 700;
@@ -186,7 +209,9 @@ function measureInk({ exemptions, unresolved }: {
     seen.add(key);
     // px * 0.75 is the pt axe reports beside it, so one finding reads the same
     // whichever pass measured it.
-    findings.push(`${label} — ${Math.round(ratio * 100) / 100}:1 (needs ${floor}:1) ${(px * 0.75).toFixed(1)}pt (${px}px)`);
+    findings.push(
+      `${label} — ${Math.round(ratio * 100) / 100}:1 (needs ${floor}:1) ${(px * 0.75).toFixed(1)}pt (${px}px)`,
+    );
   };
 
   const exempt = (el: Element, pseudo: string) => exemptions.pseudo.some((e) => e.name === pseudo && el.matches(e.sel));
@@ -204,13 +229,17 @@ function measureInk({ exemptions, unresolved }: {
       measure(el, pseudo, glyph, `${describe(el)}${pseudo}`);
     }
     const placeholder = (el as HTMLInputElement).placeholder;
-    if (placeholder && !exempt(el, "::placeholder")) measure(el, "::placeholder", placeholder, `${describe(el)}::placeholder`);
+    if (placeholder && !exempt(el, "::placeholder"))
+      measure(el, "::placeholder", placeholder, `${describe(el)}::placeholder`);
   }
 
   for (const { target, label } of unresolved) {
     const el = document.querySelector(target);
     if (!el || !vis(el) || exemptions.element.some((sel) => el.matches(sel))) continue;
-    const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent!.trim()).join("");
+    const text = [...el.childNodes]
+      .filter((n) => n.nodeType === 3)
+      .map((n) => n.textContent!.trim())
+      .join("");
     if (text) measure(el, "", text, label);
   }
 

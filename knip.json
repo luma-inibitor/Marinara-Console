@@ -1,19 +1,9 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "entry": [
-    "server.mjs",
-    "scripts/*.mjs",
-    "test/helpers/*.mjs",
-    "tests/e2e/**/*.ts",
-    ".design-sync/previews/*.tsx"
-  ],
-  "project": [
-    "**/*.{ts,tsx,js,mjs,css}"
-  ],
+  "entry": ["server.mjs", "scripts/*.mjs", "test/helpers/*.mjs", "tests/e2e/**/*.ts", ".design-sync/previews/*.tsx"],
+  "project": ["**/*.{ts,tsx,js,mjs,css}"],
   "paths": {
-    "marinara-console": [
-      "./src/ui/index.ts"
-    ]
+    "marinara-console": ["./src/ui/index.ts"]
   },
   "ignore": [
     "scripts/fixtures/**",
@@ -22,10 +12,6 @@
     "design/mockup-kit.css",
     "public/mockups/kit.css"
   ],
-  "ignoreBinaries": [
-    "vale"
-  ],
-  "ignoreDependencies": [
-    "@babel/preset-typescript"
-  ]
+  "ignoreBinaries": ["vale"],
+  "ignoreDependencies": ["@babel/preset-typescript"]
 }

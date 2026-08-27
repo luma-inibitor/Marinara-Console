@@ -33,13 +33,24 @@ export const GLOSSARY: Record<string, string> = {
 };
 
 export const OP_TIP: Record<Mutation["kind"], string> = table("memory.optip.", [
-  "create_note", "append_section", "update_section",
-  "add_link", "set_keywords", "set_status", "set_subjects",
+  "create_note",
+  "append_section",
+  "update_section",
+  "add_link",
+  "set_keywords",
+  "set_status",
+  "set_subjects",
 ] as const);
 
 export const TYPE_TIP: Record<string, string> = table("memory.typetip.", [
-  "character", "relationship", "timeline_event", "thread",
-  "world", "tone", "source", "scene",
+  "character",
+  "relationship",
+  "timeline_event",
+  "thread",
+  "world",
+  "tone",
+  "source",
+  "scene",
 ] as const);
 
 // Term is a tooltip, not a glossary, so it lives in src/ui.

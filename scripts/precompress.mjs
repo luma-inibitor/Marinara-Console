@@ -23,9 +23,7 @@ const DIST = process.argv[2] ? resolve(process.cwd(), process.argv[2]) : join(DE
 
 // Measured on this tree: .woff2 carries brotli inside already, and
 // recompressing each of the seventeen fonts moves it between -0.1% and +0.2%.
-const COMPRESSIBLE = new Set([
-  ".css", ".html", ".js", ".json", ".map", ".mjs", ".svg", ".txt", ".webmanifest", ".xml",
-]);
+const COMPRESSIBLE = new Set([".css", ".html", ".js", ".json", ".map", ".mjs", ".svg", ".txt", ".webmanifest", ".xml"]);
 
 // One MTU: a body under it fits in a single packet compressed or not.
 const FLOOR = 1024;
@@ -65,13 +63,23 @@ export function precompress(dist) {
     const bytes = readFileSync(file);
     const drop = (skipped) => {
       for (const ext of [".br", ".gz"]) {
-        try { unlinkSync(file + ext); } catch { /* nothing to drop */ }
+        try {
+          unlinkSync(file + ext);
+        } catch {
+          /* nothing to drop */
+        }
       }
       rows.push({ file, size: bytes.length, wrote: [], skipped });
     };
 
-    if (!COMPRESSIBLE.has(extname(file))) { drop("not a compressible type"); continue; }
-    if (bytes.length < FLOOR) { drop(`under ${FLOOR} bytes`); continue; }
+    if (!COMPRESSIBLE.has(extname(file))) {
+      drop("not a compressible type");
+      continue;
+    }
+    if (bytes.length < FLOOR) {
+      drop(`under ${FLOOR} bytes`);
+      continue;
+    }
 
     // Quality 11 takes 843 ms on the 688 kB bundle where 10 takes 346 ms and 9
     // takes 29 ms, for 2.0% over 10 and 8.3% over 9.
@@ -93,7 +101,11 @@ export function precompress(dist) {
         writeFileSync(file + ext, out);
         wrote.push({ ext, size: out.length });
       } else {
-        try { unlinkSync(file + ext); } catch { /* nothing to drop */ }
+        try {
+          unlinkSync(file + ext);
+        } catch {
+          /* nothing to drop */
+        }
       }
     }
     rows.push({ file, size: bytes.length, wrote, skipped: wrote.length ? null : "no encoding was smaller" });
@@ -121,6 +133,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(`  ${row.file.slice(DIST.length + 1)}  ${kb(row.size)} → ${parts}`);
   }
   const saved = before ? ((1 - after / before) * 100).toFixed(1) : "0.0";
-  console.log(`\n${rows.filter((r) => r.wrote.length).length} of ${rows.length} files compressed: ` +
-    `${kb(before)} → ${kb(after)} brotli, ${saved}% smaller`);
+  console.log(
+    `\n${rows.filter((r) => r.wrote.length).length} of ${rows.length} files compressed: ` +
+      `${kb(before)} → ${kb(after)} brotli, ${saved}% smaller`,
+  );
 }

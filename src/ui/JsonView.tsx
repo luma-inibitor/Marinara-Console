@@ -1,7 +1,5 @@
 import { useState } from "react";
-import {
-  Preview, Raw, Copy, Copied, ChevronRight, ChevronDown,
-} from "./icons";
+import { Preview, Raw, Copy, Copied, ChevronRight, ChevronDown } from "./icons";
 import { toast } from "../shell/toast";
 import { t } from "../copy";
 import "./JsonView.css";
@@ -34,24 +32,43 @@ export function JsonView(props: { value: unknown; label?: string }) {
   return (
     <div className="jsonview">
       <div className="jsonview-tools" role="group" aria-label={props.label ?? t("ui.json.viewLabel")}>
-        <button type="button" className="jsonview-t" aria-pressed={mode === "tree"}
-          aria-label={t("ui.json.folding")} title={t("ui.json.folding")} onClick={() => setMode("tree")}>
+        <button
+          type="button"
+          className="jsonview-t"
+          aria-pressed={mode === "tree"}
+          aria-label={t("ui.json.folding")}
+          title={t("ui.json.folding")}
+          onClick={() => setMode("tree")}
+        >
           <Preview size={13} stroke={1.75} aria-hidden />
         </button>
-        <button type="button" className="jsonview-t" aria-pressed={mode === "raw"}
-          aria-label={t("ui.json.plain")} title={t("ui.json.plain")} onClick={() => setMode("raw")}>
+        <button
+          type="button"
+          className="jsonview-t"
+          aria-pressed={mode === "raw"}
+          aria-label={t("ui.json.plain")}
+          title={t("ui.json.plain")}
+          onClick={() => setMode("raw")}
+        >
           <Raw size={13} stroke={1.75} aria-hidden />
         </button>
-        <button type="button" className="jsonview-t" aria-label={copied ? t("ui.copy.copied") : t("ui.copy.json")}
-          title={t("ui.copy.json")} onClick={copy}>
-          {copied
-            ? <Copied size={13} stroke={2} aria-hidden />
-            : <Copy size={13} stroke={1.75} aria-hidden />}
+        <button
+          type="button"
+          className="jsonview-t"
+          aria-label={copied ? t("ui.copy.copied") : t("ui.copy.json")}
+          title={t("ui.copy.json")}
+          onClick={copy}
+        >
+          {copied ? <Copied size={13} stroke={2} aria-hidden /> : <Copy size={13} stroke={1.75} aria-hidden />}
         </button>
       </div>
-      {mode === "raw"
-        ? <pre className="jsonview-raw t-data">{text}</pre>
-        : <div className="jsonview-tree t-data"><Node value={props.value} depth={0} last /></div>}
+      {mode === "raw" ? (
+        <pre className="jsonview-raw t-data">{text}</pre>
+      ) : (
+        <div className="jsonview-tree t-data">
+          <Node value={props.value} depth={0} last />
+        </div>
+      )}
     </div>
   );
 }
@@ -92,30 +109,48 @@ function Node(props: { name?: string; value: unknown; depth: number; last: boole
         style={{ paddingLeft: `${props.depth * 12}px` }}
         aria-expanded={open}
         aria-label={t(open ? "ui.group.collapse" : "ui.group.expand", {
-          label: props.name ?? t("ui.json.root"), count: entries.length })}
+          label: props.name ?? t("ui.json.root"),
+          count: entries.length,
+        })}
         onClick={() => setOpen(!open)}
       >
-        <span className="jtoggle"><Chevron size={11} stroke={2} aria-hidden /></span>
+        <span className="jtoggle">
+          <Chevron size={11} stroke={2} aria-hidden />
+        </span>
         {props.name !== undefined && <span className="jk">{props.name}:</span>}
         <span className="jb">{openBrace}</span>
         {/* a folded node still says how much it hides, so a fold never reads
             as missing content */}
-        {!open && <><span className="jn-count">{entries.length}</span><span className="jb">{closeBrace}</span>
-          {!props.last && <span className="jc">,</span>}</>}
+        {!open && (
+          <>
+            <span className="jn-count">{entries.length}</span>
+            <span className="jb">{closeBrace}</span>
+            {!props.last && <span className="jc">,</span>}
+          </>
+        )}
       </button>
       {open && (
         <>
           {entries.map(([k, v], i) => (
-            <Node key={k} name={isArray ? undefined : k} value={v}
-              depth={props.depth + 1} last={i === entries.length - 1} />
+            <Node
+              key={k}
+              name={isArray ? undefined : k}
+              value={v}
+              depth={props.depth + 1}
+              last={i === entries.length - 1}
+            />
           ))}
           {/* the closing brace closes the group too — the same target, at the
               other end, for when you have scrolled past the header */}
-          <button type="button" className="jn jn-head jn-close"
+          <button
+            type="button"
+            className="jn jn-head jn-close"
             style={{ paddingLeft: `${props.depth * 12}px` }}
             aria-label={t("ui.group.collapse", { label: props.name ?? t("ui.json.root"), count: entries.length })}
-            onClick={() => setOpen(false)}>
-            <span className="jb">{closeBrace}</span>{!props.last && <span className="jc">,</span>}
+            onClick={() => setOpen(false)}
+          >
+            <span className="jb">{closeBrace}</span>
+            {!props.last && <span className="jc">,</span>}
           </button>
         </>
       )}
@@ -130,9 +165,13 @@ function Leaf({ value }: { value: unknown }) {
   // the boolean and number cases below.
   if (value === null) return <span className="jv jv-null">{String(value)}</span>;
   switch (typeof value) {
-    case "string": return <span className="jv jv-str">"{value}"</span>;
-    case "number": return <span className="jv jv-num">{String(value)}</span>;
-    case "boolean": return <span className="jv jv-bool">{String(value)}</span>;
-    default: return <span className="jv">{String(value)}</span>;
+    case "string":
+      return <span className="jv jv-str">"{value}"</span>;
+    case "number":
+      return <span className="jv jv-num">{String(value)}</span>;
+    case "boolean":
+      return <span className="jv jv-bool">{String(value)}</span>;
+    default:
+      return <span className="jv">{String(value)}</span>;
   }
 }

@@ -29,17 +29,17 @@ import reactHooks from "eslint-plugin-react-hooks";
 // a position, so a bare word passes in a copy position as well as in a key.
 const COPY_SELECTORS = [
   {
-    selector: 'JSXText[value=/^\\s*[a-z][A-Za-z0-9]*\\s*$/]:not([value=/^\\s*[kst]\\s*$/])',
+    selector: "JSXText[value=/^\\s*[a-z][A-Za-z0-9]*\\s*$/]:not([value=/^\\s*[kst]\\s*$/])",
     message: "a bare word in JSX text must come from t()",
   },
   {
     selector:
-      'JSXAttribute[name.name=/^aria-(description|placeholder|valuetext|roledescription)$/] > Literal[value=/[a-zA-Z]/]',
+      "JSXAttribute[name.name=/^aria-(description|placeholder|valuetext|roledescription)$/] > Literal[value=/[a-zA-Z]/]",
     message: "aria text must come from t()",
   },
   {
     selector:
-      'JSXAttribute[name.name=/^(aria-label|title|placeholder|alt|label|body|heading|hint|caption|tip|summary|empty|note)$/] > Literal[value=/^_*[a-z][A-Za-z0-9]*$/]',
+      "JSXAttribute[name.name=/^(aria-label|title|placeholder|alt|label|body|heading|hint|caption|tip|summary|empty|note)$/] > Literal[value=/^_*[a-z][A-Za-z0-9]*$/]",
     message: "a one-word copy attribute must come from t()",
   },
 ];
@@ -47,7 +47,7 @@ const COPY_SELECTORS = [
 // It also skips everything inside an ALL-CAPS declarator, which is where the
 // two files below keep their enum-to-label tables.
 const COPY_TABLE_SELECTOR = {
-  selector: 'VariableDeclarator[id.name=/^[A-Z][A-Z_0-9]*$/] Literal[value=/[a-zA-Z] [a-zA-Z]/]',
+  selector: "VariableDeclarator[id.name=/^[A-Z][A-Z_0-9]*$/] Literal[value=/[a-zA-Z] [a-zA-Z]/]",
   message: "a label in a copy table must come from t()",
 };
 
@@ -161,10 +161,7 @@ export default [
     // in the page, so document and friends are defined there and nowhere else
     // in scripts/ -- listing the files keeps a stray `document` in a Node-only
     // script reportable.
-    files: [
-      "scripts/domsnap.mjs",
-      "scripts/lib/browser.mjs",
-    ],
+    files: ["scripts/domsnap.mjs", "scripts/lib/browser.mjs"],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 ];

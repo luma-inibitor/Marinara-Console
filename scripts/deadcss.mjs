@@ -68,7 +68,7 @@ const DOMAINS = {
   // SavePill (dirty/saved/err) plus the group-run boundaries the presets audit
   // composes as `is-${run}` — see groupRunBoundaries in src/tools/presets/data.ts.
   "is-": ["dirty", "saved", "err", "start", "mid", "end", "solo"],
-  "es-": ["ok", "danger"],          // EmptyState tone
+  "es-": ["ok", "danger"], // EmptyState tone
 };
 
 const src = [];
@@ -83,12 +83,11 @@ const code = src.join("\n");
 
 const live = new Set();
 const add = (s) => {
-  for (const tok of s.replace(/["'`]/g, " ").split(/[\s${}?:()|&]+/))
-    if (/^[a-zA-Z][\w-]*$/.test(tok)) live.add(tok);
+  for (const tok of s.replace(/["'`]/g, " ").split(/[\s${}?:()|&]+/)) if (/^[a-zA-Z][\w-]*$/.test(tok)) live.add(tok);
 };
 for (const m of code.matchAll(/class(?:Name)?=(?:"([^"]*)"|\{`([^`]*)`\})/g)) add(m[1] ?? m[2]);
 for (const m of code.matchAll(/\bcls=(?:"([^"]*)"|\{`([^`]*)`\})/g)) add(m[1] ?? m[2]);
-for (const m of code.matchAll(/"([a-z][\w-]*(?: [\w-]+)*)"/g)) add(m[1]);   // case 3
+for (const m of code.matchAll(/"([a-z][\w-]*(?: [\w-]+)*)"/g)) add(m[1]); // case 3
 // Every template literal, not only the ones sitting in a class= attribute.
 // Sheet/Modal hand their class down as `surface={`sheet ${...}`}`, and the
 // tone icon in EmptyState nests a template inside its class template, which
@@ -111,7 +110,8 @@ for (const m of code.matchAll(/`([^`$]+)\$\{/g)) add(m[1]);
 const classExpressions = [];
 for (const m of code.matchAll(/\b(?:className|cls|surface)=\{/g)) {
   const start = m.index + m[0].length;
-  let i = start, depth = 1;
+  let i = start,
+    depth = 1;
   while (i < code.length && depth) {
     if (code[i] === "{") depth++;
     else if (code[i] === "}") depth--;
@@ -121,15 +121,15 @@ for (const m of code.matchAll(/\b(?:className|cls|surface)=\{/g)) {
 }
 
 const prefixes = new Set();
-for (const expr of classExpressions)
-  for (const m of expr.matchAll(/([a-z][\w-]*-)\$\{/g)) prefixes.add(m[1]);
+for (const expr of classExpressions) for (const m of expr.matchAll(/([a-z][\w-]*-)\$\{/g)) prefixes.add(m[1]);
 
 // An unregistered prefix means the check never scanned that namespace, so it
 // exits 2 rather than reporting the rules as unused candidates.
 const unregistered = [...prefixes].filter((p) => !(p in DOMAINS)).sort();
 if (unregistered.length) {
   console.log("\nUNREGISTERED CLASS PREFIX — the check itself is compromised:");
-  for (const p of unregistered) console.log(`  \`${p}\${...}\` is composed in a class position and DOMAINS has no entry`);
+  for (const p of unregistered)
+    console.log(`  \`${p}\${...}\` is composed in a class position and DOMAINS has no entry`);
   console.log("\nAdd each prefix and its value domain to DOMAINS in scripts/deadcss.mjs.");
   process.exit(2);
 }
@@ -189,9 +189,7 @@ for (const abs of SHEETS) {
   const raw = fs.readFileSync(abs, "utf8");
   // Gotcha: the stripped copy is for the class harvest only. A `/*` inside a
   // quoted value is not a comment, so stripping before postcss truncates the sheet.
-  const css = raw
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/^\s*@(?:import|charset|use)[^;]*;/gm, "");   // URLs are not selectors
+  const css = raw.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*@(?:import|charset|use)[^;]*;/gm, ""); // URLs are not selectors
   const names = new Set();
   for (const m of css.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) names.add(m[1]);
   const dead = [...names].filter((n) => !live.has(n)).sort();
@@ -217,7 +215,9 @@ for (const [item, sites] of [...declared].sort()) {
   for (const file of files)
     collisions.push({ file, item, detail: `${item} also declared in ${files.filter((o) => o !== file).join(", ")}` });
 }
-console.log(collisions.length === 0 ? "\nno cross-sheet conflicts" : `\n${collisions.length} cross-sheet conflict findings`);
+console.log(
+  collisions.length === 0 ? "\nno cross-sheet conflicts" : `\n${collisions.length} cross-sheet conflict findings`,
+);
 
 const adopt = flags.has("--adopt");
 const prune = flags.has("--prune");

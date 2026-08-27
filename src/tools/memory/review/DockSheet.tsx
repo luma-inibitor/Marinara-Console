@@ -75,24 +75,37 @@ export function DockSheet(props: { model: DockSheetModel; onClose: () => void; o
             Failures and omissions first, additions last: the order is how
             badly each one wants a decision changed. */}
         {m.warnings > 0 && (
-          <Section tone="danger" icon={<Failure size={ICON_SIZE.sm} stroke={1.75} aria-hidden />}
+          <Section
+            tone="danger"
+            icon={<Failure size={ICON_SIZE.sm} stroke={1.75} aria-hidden />}
             title={t("memory.dock.willFail", { count: m.warnings })}
-            why={t("memory.dock.willFailWhy", { count: m.warnings })} />
+            why={t("memory.dock.willFailWhy", { count: m.warnings })}
+          />
         )}
 
         {m.held.length > 0 && (
-          <Section tone="danger" icon={<Failure size={ICON_SIZE.sm} stroke={1.75} aria-hidden />}
+          <Section
+            tone="danger"
+            icon={<Failure size={ICON_SIZE.sm} stroke={1.75} aria-hidden />}
             title={t("memory.dock.blocked", { count: m.held.length })}
-            why={t("memory.dock.blockedWhy", { count: m.held.length })}>
-            {m.held.map(({ row, why }) => <ClaimLine key={row.key} row={row} why={why} />)}
+            why={t("memory.dock.blockedWhy", { count: m.held.length })}
+          >
+            {m.held.map(({ row, why }) => (
+              <ClaimLine key={row.key} row={row} why={why} />
+            ))}
           </Section>
         )}
 
         {m.droppedRequired.length > 0 && (
-          <Section tone="danger" icon={<Failure size={ICON_SIZE.sm} stroke={1.75} aria-hidden />}
+          <Section
+            tone="danger"
+            icon={<Failure size={ICON_SIZE.sm} stroke={1.75} aria-hidden />}
             title={t("memory.dock.droppedRequired", { count: m.droppedRequired.length })}
-            why={t("memory.dock.droppedRequiredWhy", { count: m.droppedRequired.length })}>
-            {m.droppedRequired.map((row) => <ClaimLine key={row.key} row={row} />)}
+            why={t("memory.dock.droppedRequiredWhy", { count: m.droppedRequired.length })}
+          >
+            {m.droppedRequired.map((row) => (
+              <ClaimLine key={row.key} row={row} />
+            ))}
           </Section>
         )}
 
@@ -100,9 +113,14 @@ export function DockSheet(props: { model: DockSheetModel; onClose: () => void; o
             also the reason the outcome above exceeds what the reviewer kept.
             An explanatory line here would say that fact a second time. */}
         {m.auto.length > 0 && (
-          <Section tone="flag" icon={<Flag size={ICON_SIZE.sm} stroke={1.75} aria-hidden />}
-            title={t("memory.autoIncluded", { count: m.auto.length })}>
-            {m.auto.map((row) => <ClaimLine key={row.key} row={row} />)}
+          <Section
+            tone="flag"
+            icon={<Flag size={ICON_SIZE.sm} stroke={1.75} aria-hidden />}
+            title={t("memory.autoIncluded", { count: m.auto.length })}
+          >
+            {m.auto.map((row) => (
+              <ClaimLine key={row.key} row={row} />
+            ))}
           </Section>
         )}
 

@@ -88,8 +88,8 @@ describe("the collisions ratchet", () => {
 });
 
 describe("a scan of a tree outside the repository", () => {
-  const baselines = () => ["css-collisions-baseline.json", "deadcss-baseline.json"]
-    .map((f) => readFileSync(join(ROOT, "design", f), "utf8"));
+  const baselines = () =>
+    ["css-collisions-baseline.json", "deadcss-baseline.json"].map((f) => readFileSync(join(ROOT, "design", f), "utf8"));
 
   function outside(flag) {
     const dir = mkdtempSync(join(tmpdir(), "deadcss-"));

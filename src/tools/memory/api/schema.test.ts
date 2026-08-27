@@ -4,7 +4,14 @@
 
 import { describe, expect, it } from "vitest";
 import * as v from "valibot";
-import { ExtractResponseSchema, MutationSchema, NoteArchiveSchema, NoteSchema, NoteWriteSchema, ReviewResponseSchema } from "./schema";
+import {
+  ExtractResponseSchema,
+  MutationSchema,
+  NoteArchiveSchema,
+  NoteSchema,
+  NoteWriteSchema,
+  ReviewResponseSchema,
+} from "./schema";
 
 const ok = (schema: Parameters<typeof v.safeParse>[0], value: unknown) => v.safeParse(schema, value).success;
 
@@ -134,39 +141,47 @@ describe("MutationSchema", () => {
 
 const review = () => ({
   generatedAt: "2026-08-24T01:00:00.000Z",
-  sources: [{
-    sourceNoteId: "source_example",
-    modes: ["roleplay"],
-    drafts: [{
-      draft: {
-        id: "draft-1",
-        status: "pending",
-        mutations: [mutation()],
-        source: { sourceNoteId: "source_example" },
-        applyState: "idle",
-        reviewRequired: true,
-        scope: {},
-        accounting: {},
-      },
-      freshness: "fresh",
-      blockReasons: [],
-      diagnostics: [{ code: "x", severity: "info" }],
-      candidateRejections: [{ reason: "invalid_format", message: "no", snippet: "…", index: 3 }],
-      deduplications: [],
-    }],
-    targets: [{
-      noteId: "note-1",
-      title: "Example",
-      noteType: "world",
-      rows: [{
-        draftId: "draft-1",
-        mutation: mutation(),
-        disposition: "merge",
-        diagnostics: [],
-        changes: [{ kind: "section", key: "voice", before: "a", after: "b" }],
-      }],
-    }],
-  }],
+  sources: [
+    {
+      sourceNoteId: "source_example",
+      modes: ["roleplay"],
+      drafts: [
+        {
+          draft: {
+            id: "draft-1",
+            status: "pending",
+            mutations: [mutation()],
+            source: { sourceNoteId: "source_example" },
+            applyState: "idle",
+            reviewRequired: true,
+            scope: {},
+            accounting: {},
+          },
+          freshness: "fresh",
+          blockReasons: [],
+          diagnostics: [{ code: "x", severity: "info" }],
+          candidateRejections: [{ reason: "invalid_format", message: "no", snippet: "…", index: 3 }],
+          deduplications: [],
+        },
+      ],
+      targets: [
+        {
+          noteId: "note-1",
+          title: "Example",
+          noteType: "world",
+          rows: [
+            {
+              draftId: "draft-1",
+              mutation: mutation(),
+              disposition: "merge",
+              diagnostics: [],
+              changes: [{ kind: "section", key: "voice", before: "a", after: "b" }],
+            },
+          ],
+        },
+      ],
+    },
+  ],
   counts: { sources: 1, drafts: 1, mutations: 1, blockedDrafts: 0, candidateRejections: 1, deduplications: 0 },
 });
 
@@ -176,7 +191,13 @@ describe("ReviewResponseSchema", () => {
   });
 
   it("accepts a queue with no sources", () => {
-    expect(ok(ReviewResponseSchema, { ...review(), sources: [], counts: { sources: 0, drafts: 0, mutations: 0, blockedDrafts: 0, candidateRejections: 0, deduplications: 0 } })).toBe(true);
+    expect(
+      ok(ReviewResponseSchema, {
+        ...review(),
+        sources: [],
+        counts: { sources: 0, drafts: 0, mutations: 0, blockedDrafts: 0, candidateRejections: 0, deduplications: 0 },
+      }),
+    ).toBe(true);
   });
 
   it("keeps the draft fields it does not name", () => {
@@ -205,7 +226,15 @@ describe("ReviewResponseSchema", () => {
 // The write fixtures are the live dev-engine replies with contents replaced.
 // `rebuild` is verbatim: nothing reads it, and a change to it must still not
 // fail a write.
-const rebuild = () => ({ status: "complete", root: "/data/long-term-memory", generatedAt: "2026-08-25T08:22:31.487Z", noteCount: 31, chunkCount: 27, embeddedChunkCount: 0, embeddingsAvailable: false });
+const rebuild = () => ({
+  status: "complete",
+  root: "/data/long-term-memory",
+  generatedAt: "2026-08-25T08:22:31.487Z",
+  noteCount: 31,
+  chunkCount: 27,
+  embeddedChunkCount: 0,
+  embeddingsAvailable: false,
+});
 
 describe("NoteWriteSchema", () => {
   it("accepts the envelope PATCH actually sends", () => {
@@ -228,7 +257,12 @@ describe("NoteWriteSchema", () => {
 });
 
 describe("NoteArchiveSchema", () => {
-  const archive = () => ({ archived: true, note: note(), notes: [note(), { ...note(), id: "world_example", type: "world" }], rebuild: rebuild() });
+  const archive = () => ({
+    archived: true,
+    note: note(),
+    notes: [note(), { ...note(), id: "world_example", type: "world" }],
+    rebuild: rebuild(),
+  });
 
   it("accepts the cascade DELETE actually sends", () => {
     expect(ok(NoteArchiveSchema, archive())).toBe(true);
@@ -252,7 +286,12 @@ describe("NoteArchiveSchema", () => {
 describe("ExtractResponseSchema", () => {
   const extraction = () => ({
     operationId: "5c9b3f22-0a7e-4a1e-9d2f-6d6a1b4c8e01",
-    draft: { id: "d4dba4df-d77f-4afe-a142-0149e55c0e0f", status: "pending", mutations: [mutation()], source: { sourceNoteId: "source_example" } },
+    draft: {
+      id: "d4dba4df-d77f-4afe-a142-0149e55c0e0f",
+      status: "pending",
+      mutations: [mutation()],
+      source: { sourceNoteId: "source_example" },
+    },
     diagnostics: [],
     outcome: { state: "draft_created", totalCandidates: 4, keptUnits: 3, droppedUnits: 1 },
     appliedMutationIds: [],

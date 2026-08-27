@@ -16,4 +16,7 @@ export const preflightDraft = (draftId: string, body: { mutationIds: string[]; e
 export const acceptDraft = (draftId: string, body: { mutationIds: string[]; editedMutations?: Mutation[] }) =>
   api<AcceptResponse>(`${LTM}/drafts/${draftId}/accept`, { method: "POST", body });
 export const skipMutations = (draftId: string, mutationIds: string[]) =>
-  api<{ deleted: boolean; mutationIds?: string[] }>(`${LTM}/drafts/${draftId}/skip`, { method: "POST", body: { mutationIds } });
+  api<{ deleted: boolean; mutationIds?: string[] }>(`${LTM}/drafts/${draftId}/skip`, {
+    method: "POST",
+    body: { mutationIds },
+  });

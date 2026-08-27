@@ -88,8 +88,9 @@ function* children(n) {
   for (const k of Object.keys(n)) {
     if (k === "loc" || k === "range" || k.endsWith("Comments")) continue;
     const v = n[k];
-    if (Array.isArray(v)) { for (const c of v) if (isNode(c)) yield c; }
-    else if (isNode(v)) yield v;
+    if (Array.isArray(v)) {
+      for (const c of v) if (isNode(c)) yield c;
+    } else if (isNode(v)) yield v;
   }
 }
 
@@ -158,8 +159,9 @@ function referencedNames(n) {
       // not a reference to a binding in this one.
       if (!cur.computed && (k === "property" || k === "key")) continue;
       const v = cur[k];
-      if (Array.isArray(v)) { for (const c of v) if (isNode(c)) stack.push(c); }
-      else if (isNode(v)) stack.push(v);
+      if (Array.isArray(v)) {
+        for (const c of v) if (isNode(c)) stack.push(c);
+      } else if (isNode(v)) stack.push(v);
     }
   }
   return names;
@@ -189,9 +191,11 @@ function nameFrom(fn, parents) {
   if (p?.type === "CallExpression") {
     const c = p.callee;
     const label =
-      c?.type === "Identifier" ? c.name
-      : c?.type === "MemberExpression" && !c.computed ? (c.property?.name ?? "call")
-      : "call";
+      c?.type === "Identifier"
+        ? c.name
+        : c?.type === "MemberExpression" && !c.computed
+          ? (c.property?.name ?? "call")
+          : "call";
     // Wrappers that hand the component straight back: the name is the
     // variable the wrapped call is assigned to, not `memo`.
     if (["memo", "forwardRef", "observer"].includes(label) && gp?.type === "VariableDeclarator") {
@@ -244,7 +248,10 @@ const parseErrors = [];
 
 for (const abs of files) {
   const mod = parseModule(abs);
-  if (mod.parseError) { parseErrors.push(`${rel(abs)}: ${mod.parseError}`); continue; }
+  if (mod.parseError) {
+    parseErrors.push(`${rel(abs)}: ${mod.parseError}`);
+    continue;
+  }
   modules.push(mod);
 }
 
@@ -288,9 +295,16 @@ for (const mod of modules) {
 function throughBarrels(file, name) {
   for (let hop = 0; hop < 4; hop++) {
     const direct = alias.get(`${file}\0${name}`);
-    if (direct) { file = direct.file; name = direct.name ?? name; continue; }
+    if (direct) {
+      file = direct.file;
+      name = direct.name ?? name;
+      continue;
+    }
     const star = alias.get(`${file}\0*star*`);
-    if (star) { file = star.file; continue; }
+    if (star) {
+      file = star.file;
+      continue;
+    }
     break;
   }
   return { file, name };
@@ -304,9 +318,7 @@ for (const mod of modules) {
     if (rel(edge.resolved) === mod.rel) continue;
     for (const s of edge.specifiers) {
       if (s.typeOnly) continue;
-      const at = s.star
-        ? { file: rel(edge.resolved), name: "*" }
-        : throughBarrels(rel(edge.resolved), s.imported);
+      const at = s.star ? { file: rel(edge.resolved), name: "*" } : throughBarrels(rel(edge.resolved), s.imported);
       if (at.file === mod.rel) continue; // a module importing back through a barrel
       const key = `${at.file}\0${at.name}`;
       if (!externalRefs.has(key)) externalRefs.set(key, new Set());
@@ -344,7 +356,11 @@ for (const mod of modules) {
         if (r === name) continue;
         const inner = localRefs.get(r);
         if (!inner) continue;
-        for (const x of inner) if (!refs.has(x)) { refs.add(x); grew = true; }
+        for (const x of inner)
+          if (!refs.has(x)) {
+            refs.add(x);
+            grew = true;
+          }
       }
     }
     if (!grew) break;
@@ -377,7 +393,11 @@ for (const mod of modules) {
       for (const r of [...reach]) {
         const inner = localRefs.get(r);
         if (!inner) continue;
-        for (const x of inner) if (!reach.has(x)) { reach.add(x); grew = true; }
+        for (const x of inner)
+          if (!reach.has(x)) {
+            reach.add(x);
+            grew = true;
+          }
       }
       if (!grew) break;
     }
@@ -394,11 +414,13 @@ for (const mod of modules) {
     }
     for (const k of Object.keys(signals)) signals[k].sort();
 
-    const cls =
-      signals.api.length ? "violating"
-      : signals.model.length ? "domain"
-      : signals.store.length ? "store-bound"
-      : "presentational";
+    const cls = signals.api.length
+      ? "violating"
+      : signals.model.length
+        ? "domain"
+        : signals.store.length
+          ? "store-bound"
+          : "presentational";
 
     const isExported = depth === 0 && exported.has(name);
     const exportName = isExported ? exported.get(name) : null;
@@ -431,14 +453,20 @@ const CLASSES = ["presentational", "store-bound", "domain", "violating"];
 
 if (JSON_MODE) {
   const totals = Object.fromEntries(CLASSES.map((c) => [c, components.filter((x) => x.class === c).length]));
-  console.log(JSON.stringify({
-    files: files.length,
-    components: components.filter((c) => c.kind === "component").length,
-    closures: components.filter((c) => c.kind === "closure").length,
-    byClass: totals,
-    parseErrors,
-    inventory: components,
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        files: files.length,
+        components: components.filter((c) => c.kind === "component").length,
+        closures: components.filter((c) => c.kind === "closure").length,
+        byClass: totals,
+        parseErrors,
+        inventory: components,
+      },
+      null,
+      2,
+    ),
+  );
   process.exit(0);
 }
 
@@ -446,24 +474,34 @@ const count = (list, k, v) => list.filter((x) => x[k] === v).length;
 
 console.log(
   `components · ${files.length} files · ${components.length} functions return markup ` +
-  `(${count(components, "kind", "component")} components, ${count(components, "kind", "closure")} inline closures)\n`
+    `(${count(components, "kind", "component")} components, ${count(components, "kind", "closure")} inline closures)\n`,
 );
 
 const dirs = new Map();
 for (const c of components) {
-  const agg = dirs.get(c.dir) || { dir: c.dir, component: 0, closure: 0, presentational: 0, "store-bound": 0, domain: 0, violating: 0 };
+  const agg = dirs.get(c.dir) || {
+    dir: c.dir,
+    component: 0,
+    closure: 0,
+    presentational: 0,
+    "store-bound": 0,
+    domain: 0,
+    violating: 0,
+  };
   agg[c.kind]++;
   agg[c.class]++;
   dirs.set(c.dir, agg);
 }
 
 console.log("per directory:");
-console.log(`  ${"".padEnd(30)} ${"cmp".padStart(4)} ${"clo".padStart(4)}   ${"pres".padStart(5)} ${"store".padStart(5)} ${"dom".padStart(4)} ${"viol".padStart(4)}`);
+console.log(
+  `  ${"".padEnd(30)} ${"cmp".padStart(4)} ${"clo".padStart(4)}   ${"pres".padStart(5)} ${"store".padStart(5)} ${"dom".padStart(4)} ${"viol".padStart(4)}`,
+);
 for (const d of [...dirs.values()].sort((a, b) => a.dir.localeCompare(b.dir))) {
   console.log(
     `  ${d.dir.padEnd(30)} ${String(d.component).padStart(4)} ${String(d.closure).padStart(4)}   ` +
-    `${String(d.presentational).padStart(5)} ${String(d["store-bound"]).padStart(5)} ` +
-    `${String(d.domain).padStart(4)} ${String(d.violating).padStart(4)}`
+      `${String(d.presentational).padStart(5)} ${String(d["store-bound"]).padStart(5)} ` +
+      `${String(d.domain).padStart(4)} ${String(d.violating).padStart(4)}`,
   );
 }
 
@@ -478,15 +516,18 @@ console.log(`\n  domain + violating: ${coupled} of ${components.length} — the 
 
 console.log("\ninventory:");
 console.log(
-  `  ${"component".padEnd(28)} ${"line".padStart(5)}  ${"class".padEnd(14)} ${"exp".padEnd(3)} ${"refs".padStart(4)}  file`
+  `  ${"component".padEnd(28)} ${"line".padStart(5)}  ${"class".padEnd(14)} ${"exp".padEnd(3)} ${"refs".padStart(4)}  file`,
 );
 let lastFile = null;
 for (const c of components) {
-  if (c.file !== lastFile) { console.log(`  ── ${c.file}`); lastFile = c.file; }
+  if (c.file !== lastFile) {
+    console.log(`  ── ${c.file}`);
+    lastFile = c.file;
+  }
   const label = (c.kind === "closure" ? "  ↳ " : "  ") + c.name;
   console.log(
     `  ${label.padEnd(28)} ${String(c.line).padStart(5)}  ${c.class.padEnd(14)} ` +
-    `${(c.exported ? "yes" : "—").padEnd(3)} ${String(c.exported ? c.refs : "—").padStart(4)}  ${c.file}`
+      `${(c.exported ? "yes" : "—").padEnd(3)} ${String(c.exported ? c.refs : "—").padStart(4)}  ${c.file}`,
   );
 }
 
@@ -497,8 +538,8 @@ if (parseErrors.length) {
 
 console.log(
   "\nnote · `domain` counts a model/ import only; domain logic written inline in a\n" +
-  "       component is invisible to a parser, so that column is a floor.\n" +
-  "note · closure names are inferred from context and are not grep-able symbols."
+    "       component is invisible to a parser, so that column is a floor.\n" +
+    "note · closure names are inferred from context and are not grep-able symbols.",
 );
 
 process.exit(0);

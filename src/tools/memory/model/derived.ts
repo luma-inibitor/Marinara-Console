@@ -36,11 +36,18 @@ const DEDUPE_MIN_LINE = 25;
  *  bullet keeps that second character, which is a separate question from this
  *  one. */
 export function normalizeLine(raw: string): string {
-  return raw.trim().replace(/^[-•*]\s*/, "").trim();
+  return raw
+    .trim()
+    .replace(/^[-•*]\s*/, "")
+    .trim();
 }
 
 export function shingles(text: string, size = 4): Set<string> {
-  const words = text.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
+  const words = text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
   const out = new Set<string>();
   if (words.length < size) {
     if (words.length) out.add(words.join(" "));
@@ -58,7 +65,12 @@ export function jaccard(a: Set<string>, b: Set<string>): number {
   return hit / (a.size + b.size - hit);
 }
 
-export interface VaultLine { noteId: string; sectionKey: string; line: string; sh: Set<string> }
+export interface VaultLine {
+  noteId: string;
+  sectionKey: string;
+  line: string;
+  sh: Set<string>;
+}
 
 /** Every stored section line in the vault, pre-shingled. Source notes are
  *  audit records, not memories, and are excluded. */
@@ -143,17 +155,37 @@ function dedupePass(text: string): { text: string; dropped: number } | null {
   let dropped = 0;
   for (const line of raw) {
     const body = normalizeLine(line);
-    if (body.length < DEDUPE_MIN_LINE) { keep.push(line); sh.push(null); continue; }
+    if (body.length < DEDUPE_MIN_LINE) {
+      keep.push(line);
+      sh.push(null);
+      continue;
+    }
     const g = shingles(body);
     let hit = -1;
     for (let j = 0; j < sh.length; j++) {
-      if (sh[j] && jaccard(g, sh[j]!) >= DUPLICATE_THRESHOLD) { hit = j; break; }
+      if (sh[j] && jaccard(g, sh[j]!) >= DUPLICATE_THRESHOLD) {
+        hit = j;
+        break;
+      }
     }
-    if (hit < 0) { keep.push(line); sh.push(g); continue; }
+    if (hit < 0) {
+      keep.push(line);
+      sh.push(g);
+      continue;
+    }
     dropped += 1;
     const kept = normalizeLine(keep[hit]);
-    if (body.length > kept.length) { keep[hit] = line; sh[hit] = g; }
+    if (body.length > kept.length) {
+      keep[hit] = line;
+      sh[hit] = g;
+    }
   }
   if (!dropped) return null;
-  return { text: keep.join("\n").replace(/\n{3,}/g, "\n\n").trim(), dropped };
+  return {
+    text: keep
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim(),
+    dropped,
+  };
 }

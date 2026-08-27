@@ -79,7 +79,9 @@ async function ensureLtmRestorePoint() {
       const oldest = entries.shift();
       if (oldest) await unlink(join(BACKUPS, oldest)).catch(() => {});
     }
-  })().finally(() => { ltmBackupInFlight = null; });
+  })().finally(() => {
+    ltmBackupInFlight = null;
+  });
   await ltmBackupInFlight;
 }
 
@@ -194,7 +196,9 @@ const apiProxy = createProxyMiddleware({
         return;
       }
       res.writeHead(502, { "content-type": "application/json" });
-      res.end(JSON.stringify({ error: `Cannot reach engine at ${TARGET}`, detail: String(err?.code ?? err?.message ?? err) }));
+      res.end(
+        JSON.stringify({ error: `Cannot reach engine at ${TARGET}`, detail: String(err?.code ?? err?.message ?? err) }),
+      );
     },
   },
 });
@@ -232,8 +236,13 @@ function notFound(_req, res) {
 // to the file itself where there is none. sirv sets Vary on every static reply
 // once either is on, including the replies with no sibling to choose from.
 const sirvOptions = {
-  dev: true, etag: true, extensions: [], brotli: true, gzip: true,
-  setHeaders: staticHeaders, onNoMatch: notFound,
+  dev: true,
+  etag: true,
+  extensions: [],
+  brotli: true,
+  gzip: true,
+  setHeaders: staticHeaders,
+  onNoMatch: notFound,
 };
 const distFiles = sirv(DIST, sirvOptions);
 const publicFiles = sirv(PUBLIC, sirvOptions);
@@ -241,7 +250,10 @@ const publicFiles = sirv(PUBLIC, sirvOptions);
 async function isDirectory(root, pathname) {
   const abs = normalize(join(root, pathname));
   if (!abs.startsWith(root)) return false;
-  return stat(abs).then((info) => info.isDirectory(), () => false);
+  return stat(abs).then(
+    (info) => info.isDirectory(),
+    () => false,
+  );
 }
 
 async function serveStatic(req, res, url) {

@@ -80,9 +80,7 @@ export function useRovingFocus(input: RovingOpts) {
       const opts = latest.current;
       opts.onFocus(key);
       const land = () => {
-        const el = opts.listRef.current?.querySelector(
-          `[data-row="${CSS.escape(key)}"]`,
-        ) as HTMLElement | null;
+        const el = opts.listRef.current?.querySelector(`[data-row="${CSS.escape(key)}"]`) as HTMLElement | null;
         if (!el) return false;
         el.scrollIntoView({ block: "nearest" });
         el.focus?.({ preventScroll: true });
@@ -98,9 +96,8 @@ export function useRovingFocus(input: RovingOpts) {
       const opts = latest.current;
       if (!opts.keys.length) return;
       const i = opts.current ? opts.keys.indexOf(opts.current) : -1;
-      const next = i === -1
-        ? (delta > 0 ? 0 : opts.keys.length - 1)
-        : Math.max(0, Math.min(opts.keys.length - 1, i + delta));
+      const next =
+        i === -1 ? (delta > 0 ? 0 : opts.keys.length - 1) : Math.max(0, Math.min(opts.keys.length - 1, i + delta));
       reveal(opts.keys[next]!);
     };
 

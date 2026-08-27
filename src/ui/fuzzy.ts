@@ -17,17 +17,17 @@ export function fuzzyScore(needle: string, haystack: string): number | null {
   const h = haystack.toLowerCase();
 
   const exact = h.indexOf(n);
-  if (exact >= 0) return 1000 - exact;          // a real substring always wins
+  if (exact >= 0) return 1000 - exact; // a real substring always wins
 
   let score = 0;
   let hi = 0;
   let prevHit = -2;
   for (const ch of n) {
     const at = h.indexOf(ch, hi);
-    if (at < 0) return null;                     // not a subsequence: no match
-    if (at === prevHit + 1) score += 8;          // adjacent run
-    if (at === 0 || /[\s\-_:/·]/.test(h[at - 1]!)) score += 12;  // word start
-    score += Math.max(0, 10 - at / 4);           // early in the string
+    if (at < 0) return null; // not a subsequence: no match
+    if (at === prevHit + 1) score += 8; // adjacent run
+    if (at === 0 || /[\s\-_:/·]/.test(h[at - 1]!)) score += 12; // word start
+    score += Math.max(0, 10 - at / 4); // early in the string
     prevHit = at;
     hi = at + 1;
   }

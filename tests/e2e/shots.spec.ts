@@ -36,6 +36,8 @@ test("capture", async ({ page }, info) => {
     return { scrollW: d.scrollWidth, clientW: d.clientWidth, wide };
   });
   const overflowing = over.scrollW > over.clientW + 1;
-  console.log(`${info.project.name.padEnd(8)} → ${path}` +
-    (overflowing ? `  OVERFLOW ${over.scrollW}>${over.clientW}: ${over.wide.join(", ")}` : ""));
+  console.log(
+    `${info.project.name.padEnd(8)} → ${path}` +
+      (overflowing ? `  OVERFLOW ${over.scrollW}>${over.clientW}: ${over.wide.join(", ")}` : ""),
+  );
 });

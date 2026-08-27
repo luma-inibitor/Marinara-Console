@@ -27,8 +27,18 @@ import { Back, ChevronRight, ChevronDown, Confirm, Flag, ICON_SIZE } from "../..
 import { TypeIcon, DecisionIcon } from "../icons";
 import "./FilterSheet.css";
 
-interface SheetValue { value: string; label: string; count: number; on: boolean }
-export interface SheetFacet { id: string; label: string; values: SheetValue[]; selected: number }
+interface SheetValue {
+  value: string;
+  label: string;
+  count: number;
+  on: boolean;
+}
+export interface SheetFacet {
+  id: string;
+  label: string;
+  values: SheetValue[];
+  selected: number;
+}
 
 /** Everything the sheet renders, computed by the caller — it is the screen
  *  that holds the stores, and a facet count read here would not subscribe. */
@@ -59,15 +69,16 @@ export function FilterSheet(props: {
   const [query, setQuery] = useState("");
   const m = props.model;
 
-  const facet = (id: string): SheetFacet =>
-    m.facets.get(id) ?? { id, label: "", values: [], selected: 0 };
+  const facet = (id: string): SheetFacet => m.facets.get(id) ?? { id, label: "", values: [], selected: 0 };
   const flags = facet("flags");
   const sources = facet("source");
 
-  const back = () => { setView("main"); setQuery(""); };
-  const title = view === "flags" ? flags.label
-    : view === "source" ? t("reviewqueue.sources")
-      : t("memory.review.filter");
+  const back = () => {
+    setView("main");
+    setQuery("");
+  };
+  const title =
+    view === "flags" ? flags.label : view === "source" ? t("reviewqueue.sources") : t("memory.review.filter");
 
   return (
     <Sheet label={t("memory.review.filter")} onClose={props.onClose} className="filter-sheet">
@@ -75,12 +86,14 @@ export function FilterSheet(props: {
           that sits after the title has to be hunted for. */}
       <SheetHead
         title={<span className="t-label t-label-s">{title}</span>}
-        icon={view !== "main" ? (
-          <button type="button" className="fs-back t-label t-label-s" onClick={back}>
-            <Back size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
-            {t("memory.review.filter")}
-          </button>
-        ) : undefined}
+        icon={
+          view !== "main" ? (
+            <button type="button" className="fs-back t-label t-label-s" onClick={back}>
+              <Back size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
+              {t("memory.review.filter")}
+            </button>
+          ) : undefined
+        }
       >
         <span className="fs-meta t-data">
           {m.activeCount ? t("memory.review.activeCount", { count: m.activeCount }) : t("memory.review.noneActive")}
@@ -101,7 +114,9 @@ export function FilterSheet(props: {
             <div className={`fs-any ${m.anyFlagOn || flags.selected ? "is-on" : ""}`}>
               <button type="button" className="fs-any-t" aria-pressed={m.anyFlagOn} onClick={props.onToggleAnyFlag}>
                 <Box on={m.anyFlagOn} partial={flags.selected > 0} flag />
-                <span className="fs-any-i"><Flag size={ICON_SIZE.sm} stroke={1.75} aria-hidden /></span>
+                <span className="fs-any-i">
+                  <Flag size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
+                </span>
                 <span className="t-label t-label-s fs-any-l">{t("memory.review.anyFlag")}</span>
                 <span className="fs-sum t-data">{flags.selected ? selectedSummary(flags) : ""}</span>
                 {/* Claims carrying a flag — what this toggle would keep. The
@@ -110,7 +125,9 @@ export function FilterSheet(props: {
                 <span className="t-data fs-n">{m.anyFlagCount}</span>
               </button>
               <button type="button" className="fs-drill" onClick={() => setView("flags")}>
-                <span className="t-data fs-n">{flags.selected ? `${flags.selected}/${flags.values.length}` : flags.values.length}</span>
+                <span className="t-data fs-n">
+                  {flags.selected ? `${flags.selected}/${flags.values.length}` : flags.values.length}
+                </span>
                 <ChevronRight size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
               </button>
             </div>
@@ -122,7 +139,9 @@ export function FilterSheet(props: {
               <span className="fs-sum t-data">
                 {sources.selected ? selectedSummary(sources) : t("memory.review.anySource")}
               </span>
-              <span className="t-data fs-n">{sources.selected ? `${sources.selected}/${sources.values.length}` : sources.values.length}</span>
+              <span className="t-data fs-n">
+                {sources.selected ? `${sources.selected}/${sources.values.length}` : sources.values.length}
+              </span>
               <ChevronRight className="fs-chev" size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
             </button>
 
@@ -134,16 +153,14 @@ export function FilterSheet(props: {
               <span className="t-label t-label-s fs-row-l">
                 {more ? t("memory.review.fewerFilters") : t("memory.review.moreFilters")}
               </span>
-              <span className={`t-data fs-n ${moreSelected(m) ? "is-on" : ""}`}>
-                {moreSelected(m) || TAIL.length}
-              </span>
-              {more
-                ? <ChevronDown className="fs-chev" size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
-                : <ChevronRight className="fs-chev" size={ICON_SIZE.sm} stroke={1.75} aria-hidden />}
+              <span className={`t-data fs-n ${moreSelected(m) ? "is-on" : ""}`}>{moreSelected(m) || TAIL.length}</span>
+              {more ? (
+                <ChevronDown className="fs-chev" size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
+              ) : (
+                <ChevronRight className="fs-chev" size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
+              )}
             </button>
-            {more && TAIL.map((id) => (
-              <CheckList key={id} facet={facet(id)} onToggle={props.onToggle} heading />
-            ))}
+            {more && TAIL.map((id) => <CheckList key={id} facet={facet(id)} onToggle={props.onToggle} heading />)}
           </>
         )}
 
@@ -152,9 +169,8 @@ export function FilterSheet(props: {
             them means coining category words the product does not have, and
             the count order already puts what this batch actually tripped at
             the top, which is the order a reviewer scans in. */}
-        {view === "flags" && flags.values.map((v) => (
-          <Check key={v.value} v={v} flag onToggle={() => props.onToggle("flags", v.value)} />
-        ))}
+        {view === "flags" &&
+          flags.values.map((v) => <Check key={v.value} v={v} flag onToggle={() => props.onToggle("flags", v.value)} />)}
 
         {view === "source" && (
           <SourceList facet={sources} query={query} setQuery={setQuery} onToggle={props.onToggle} />
@@ -178,8 +194,7 @@ const PINNED = ["targetType", "status"];
 /** The model's enums — real, but reached for far less often than the rest. */
 const TAIL = ["disposition", "risk", "kind", "claimKind"];
 
-const moreSelected = (m: FilterSheetModel) =>
-  TAIL.reduce((n, id) => n + (m.facets.get(id)?.selected ?? 0), 0);
+const moreSelected = (m: FilterSheetModel) => TAIL.reduce((n, id) => n + (m.facets.get(id)?.selected ?? 0), 0);
 
 /** "restates vault, long +2" — the first two names, then a count. Naming one
  *  more would cost the row its single line at 390px. */
@@ -271,9 +286,11 @@ function Tiles(props: { facet: SheetFacet; onToggle: (id: string, v: string) => 
               title={v.label}
               onClick={() => props.onToggle(f.id, v.value)}
             >
-              {f.id === "targetType"
-                ? <TypeIcon type={v.value} size={13} />
-                : <DecisionIcon d={decisionOf(v.value)} size={13} />}
+              {f.id === "targetType" ? (
+                <TypeIcon type={v.value} size={13} />
+              ) : (
+                <DecisionIcon d={decisionOf(v.value)} size={13} />
+              )}
               <span className="t-data fs-tile-l">{v.label}</span>
               <span className="t-data fs-n">{v.count}</span>
             </button>
@@ -311,9 +328,7 @@ function SourceList(props: {
       {list.map((v) => (
         <Check key={v.value} v={v} onToggle={() => props.onToggle("source", v.value)} />
       ))}
-      {list.length === 0 && (
-        <p className="fs-empty t-prose dim">{t("memory.noMatchingSources")}</p>
-      )}
+      {list.length === 0 && <p className="fs-empty t-prose dim">{t("memory.noMatchingSources")}</p>}
     </>
   );
 }

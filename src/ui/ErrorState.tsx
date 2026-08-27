@@ -30,24 +30,32 @@ export function ErrorState(props: {
 
   // The offline heading reuses the connection banner's string — one key across
   // both surfaces, so they cannot drift.
-  const title = props.title ?? (
-    api?.offline ? t("shell.conn.engineTitle")
-      : status === 403 ? t("ui.error.notAllowed")
-      : status === 404 ? t("ui.error.notFound")
-      : status >= 500 ? t("ui.error.serverFault")
-      : status >= 400 ? t("ui.error.rejected")
-      : t("ui.error.unknown")
-  );
+  const title =
+    props.title ??
+    (api?.offline
+      ? t("shell.conn.engineTitle")
+      : status === 403
+        ? t("ui.error.notAllowed")
+        : status === 404
+          ? t("ui.error.notFound")
+          : status >= 500
+            ? t("ui.error.serverFault")
+            : status >= 400
+              ? t("ui.error.rejected")
+              : t("ui.error.unknown"));
 
-  const cause = props.message
-    ?? (props.error instanceof Error ? props.error.message : props.error != null ? String(props.error) : "");
+  const cause =
+    props.message ??
+    (props.error instanceof Error ? props.error.message : props.error != null ? String(props.error) : "");
 
   // Advice only where the cause genuinely implies a next move.
-  const advice =
-    api?.offline ? t("ui.error.adviceOffline")
-      : status >= 500 ? t("ui.error.adviceServer")
-      : status === 403 ? t("ui.error.adviceForbidden")
-      : null;
+  const advice = api?.offline
+    ? t("ui.error.adviceOffline")
+    : status >= 500
+      ? t("ui.error.adviceServer")
+      : status === 403
+        ? t("ui.error.adviceForbidden")
+        : null;
 
   return (
     <EmptyState
@@ -57,14 +65,28 @@ export function ErrorState(props: {
       body={
         <>
           <span className="t-data">{cause}</span>
-          {advice && <><br />{advice}</>}
-          {status > 0 && <><br /><span className="t-data dim">{t("ui.error.http", { status })}</span></>}
+          {advice && (
+            <>
+              <br />
+              {advice}
+            </>
+          )}
+          {status > 0 && (
+            <>
+              <br />
+              <span className="t-data dim">{t("ui.error.http", { status })}</span>
+            </>
+          )}
         </>
       }
       actions={
         (props.onRetry || props.actions) && (
           <>
-            {props.onRetry && <button className="dbtn is-primary" onClick={props.onRetry}>{t("ui.error.tryAgain")}</button>}
+            {props.onRetry && (
+              <button className="dbtn is-primary" onClick={props.onRetry}>
+                {t("ui.error.tryAgain")}
+              </button>
+            )}
             {props.actions}
           </>
         )

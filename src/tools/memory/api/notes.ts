@@ -17,7 +17,11 @@ export const fetchNote = async (id: string): Promise<Note> =>
 /** Unwrapping the `{note, rebuild}` envelope here keeps it out of the store,
  *  which stores memories. */
 export const patchNote = async (id: string, patch: Record<string, unknown>): Promise<Note> =>
-  parseWrite(NoteWriteSchema, await api(`${LTM}/notes/${id}`, { method: "PATCH", body: patch }), `PATCH ${LTM}/notes/:id`).note;
+  parseWrite(
+    NoteWriteSchema,
+    await api(`${LTM}/notes/${id}`, { method: "PATCH", body: patch }),
+    `PATCH ${LTM}/notes/:id`,
+  ).note;
 
 /** Permanent removal is `POST /notes/permanent-delete`, which this console does
  *  not call: DELETE only archives. */
@@ -25,4 +29,8 @@ export const deleteNote = async (id: string): Promise<NoteArchive> =>
   parseWrite(NoteArchiveSchema, await api(`${LTM}/notes/${id}`, { method: "DELETE" }), `DELETE ${LTM}/notes/:id`);
 
 export const extractNote = async (id: string, body: Record<string, unknown> = {}): Promise<ExtractResponse> =>
-  parseWrite(ExtractResponseSchema, await api(`${LTM}/notes/${id}/extract`, { method: "POST", body }), `POST ${LTM}/notes/:id/extract`);
+  parseWrite(
+    ExtractResponseSchema,
+    await api(`${LTM}/notes/${id}/extract`, { method: "POST", body }),
+    `POST ${LTM}/notes/:id/extract`,
+  );
