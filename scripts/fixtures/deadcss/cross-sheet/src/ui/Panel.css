@@ -1,0 +1,7 @@
+.panel { bottom: 10px; }
+.panel-note { color: red; }
+.safe-box { margin: 0; }
+.panel-host { color: red; .panel-kid { color: blue; } }
+@keyframes panel-in { from { opacity: 0; } to { opacity: 1; } }
+.panel-quote { content: "/*"; }
+/* an ordinary comment, after that quote, is what a stripper would run into */

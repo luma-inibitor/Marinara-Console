@@ -740,7 +740,7 @@ Each of the five named types is already in `design/deadexports-baseline.json:6-1
 - `curl -sD- localhost:7872/index.html` shows `no-store`.
 - A second request with `If-None-Match` gives status 304.
 - `node scripts/pkgcheck.mjs` reports `package.json clean`.
-- `design/css-collisions-baseline.json` holds the `.toaster` and `bottom` pair.
+- `design/css-collisions-baseline.json` holds the `.toaster` and `bottom` pair, and records all 28 findings.
 - `node scripts/deadcss.mjs` gives exit code 0.
 
 | Branch | Title | Work | Depends on |
@@ -779,10 +779,14 @@ The stylesheet load order decides the result.
 stylelint examines one file at a time. Thus it reports nothing for this fault.
 
 Use the form that compares a selector and a property together.
-That form gives 23 findings at four real places.
-The simple form compares a class name in two files. That form gives 65 findings and isn't useful.
+That form finds 14 conflicting selector-and-property pairs.
+The check records 28 findings, because it records each pair under both of its files.
+`node scripts/deadcss.mjs` over `src/` on this tree prints `28 cross-sheet conflict findings` under 14 headings.
+The simple form compares a class name in two files.
+That form finds 69 class names that two or more sheets share, which is 153 findings.
+It isn't useful.
 
-Use a record file. Don't correct each of the 23 findings in this pull request.
+Use a record file. Don't correct each of the 14 conflicts in this pull request.
 That gate condition then becomes possible to meet.
 
 #### `chore/package-hygiene`
@@ -790,7 +794,8 @@ That gate condition then becomes possible to meet.
 This pull request isn't the last one to write to `package.json`. Wave 5 has two more.
 The correct reason for its position is different.
 It must come after the last dependency addition and after the last change to its four fields.
-Wave 4 meets both conditions.
+`chore/css-cross-sheet` adds `postcss` in this same wave.
+So merge `chore/package-hygiene` after it.
 
 Note that `npm pkg fix` alone changes nothing in this file.
 The real work is `npm pkg delete main description keywords author`.
@@ -996,7 +1001,7 @@ The rule `at-rule-no-unknown` is off. It gives an incorrect error for the Tailwi
 Thus one tool holds the base rule and another tool holds the variants.
 This isn't a duplicate definition.
 `no-duplicate-selectors` doesn't report it. The cross-file test doesn't report it.
-The general test that finds it gives 65 findings. It includes `.is-open` across five files.
+The general test that finds it gives 153 findings. It includes `.is-open` across five files.
 `eslint.config.js:18-19` gives the reason to avoid that quantity of noise.
 
 ### The loss that the first plan almost introduced
@@ -1036,6 +1041,7 @@ For a conflict, use these steps:
 
 Wave 2 has two pull requests that add a dependency: knip and stylelint.
 Merge them some hours apart.
+Wave 4 has one more: `chore/css-cross-sheet` adds `postcss`.
 
 **`.github/workflows/check.yml`.**
 Three pull requests own this file, one for each wave:
@@ -1084,7 +1090,8 @@ Don't try to merge two configuration additions together.
 
 **`src/styles/memory.css` and `src/styles/lorebooks.css`.**
 `chore/stylelint-hygiene` joins the four duplicate selectors in wave 3.
-`chore/css-cross-sheet` corrects the 23 conflicts in wave 4, after the join.
+`chore/css-cross-sheet` records the 14 conflicts in wave 4, after the join.
+It corrects none of them, so it must read the joined selectors to record the right set.
 
 **`scripts/deadcss.mjs` and `scripts/lib/baseline.mjs`.**
 The two changes to `deadcss.mjs` go in wave 1 and wave 4.

@@ -1,0 +1,39 @@
+{
+  "scripts/fixtures/deadcss/cross-sheet/src/ui/Panel.css": [
+    ".never-declared { color }"
+  ],
+  "src/styles/lorebooks.css": [
+    ".fs-foot { gap }",
+    ".fs-foot { padding }",
+    ".hint { font-size }",
+    ".movebar { grid-template-columns }",
+    ".savepill.is-dirty { color }",
+    ".savepill.is-saved { color }",
+    ".toast { gap }",
+    ".toast { padding }",
+    ".toast-action { color }",
+    ".toast-action { font-size }",
+    ".toast-action { letter-spacing }",
+    ".toast-action { padding }",
+    ".toast-x { font-size }",
+    ".toaster { bottom }"
+  ],
+  "src/styles/presets.css": [
+    ".hint { font-size }",
+    ".movebar { grid-template-columns }",
+    ".savepill.is-dirty { color }",
+    ".savepill.is-saved { color }",
+    ".toast { gap }",
+    ".toast { padding }",
+    ".toast-action { color }",
+    ".toast-action { font-size }",
+    ".toast-action { letter-spacing }",
+    ".toast-action { padding }",
+    ".toast-x { font-size }",
+    ".toaster { bottom }"
+  ],
+  "src/tools/memory/review/FilterSheet.css": [
+    ".fs-foot { gap }",
+    ".fs-foot { padding }"
+  ]
+}

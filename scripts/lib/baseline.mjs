@@ -89,7 +89,7 @@ export function ratchet(path, findings, { adopt = false, prune = false, scope = 
  * and pick the exit code. 2 means the check itself is compromised and must
  * never read as a pass.
  */
-export function reportRatchet({ fresh, vanished, integrity, label, noun, adopt, prune }) {
+export function reportRatchet({ fresh, vanished, integrity, label, noun, adopt, prune, vanishedFails = false, adoptFlag = "--adopt", pruneFlag = "--prune" }) {
   if (integrity.length) {
     console.log("\nBASELINE INTEGRITY FAILURE — the check itself is compromised:");
     for (const m of integrity) console.log("  " + m);
@@ -103,8 +103,10 @@ export function reportRatchet({ fresh, vanished, integrity, label, noun, adopt, 
   }
   if (prune) console.log(`\nbaseline pruned: ${label}`);
 
+  const stale = vanished.length && vanishedFails && !prune;
   if (vanished.length) {
-    console.log(`\nWARN: ${vanished.length} baseline ${noun}(s) no longer appear (fixed or deleted). Run --prune to drop them.`);
+    const head = stale ? "GONE FROM THE TREE" : "WARN";
+    console.log(`\n${head}: ${vanished.length} baseline ${noun}(s) no longer appear (fixed or deleted). Run ${pruneFlag} to drop them.`);
     let last = null;
     for (const v of vanished) {
       if (v.file !== last) { console.log(`  ${v.file}`); last = v.file; }
@@ -113,6 +115,7 @@ export function reportRatchet({ fresh, vanished, integrity, label, noun, adopt, 
   }
 
   if (!fresh.length) {
+    if (stale) return 1;
     console.log(`\nno ${noun} outside the baseline (${label})`);
     return 0;
   }
@@ -122,6 +125,6 @@ export function reportRatchet({ fresh, vanished, integrity, label, noun, adopt, 
     if (f.file !== last) { console.log(`  ${f.file}`); last = f.file; }
     console.log(`    ${f.detail ?? f.item}`);
   }
-  console.log(`\nFix them, or record them with --adopt and say why in the PR body.`);
+  console.log(`\nFix them, or record them with ${adoptFlag} and say why in the PR body.`);
   return 1;
 }
