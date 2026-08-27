@@ -12,6 +12,7 @@
     "csslint": "stylelint \"src/**/*.css\"",
     "deadcss": "node scripts/deadcss.mjs",
     "dev": "vite",
+    "docrefs": "node scripts/docrefs.mjs",
     "domsnap": "node scripts/domsnap.mjs",
     "jscpd": "jscpd",
     "kit": "npx @tailwindcss/cli -i design/mockup-kit.css -o public/mockups/kit.css",

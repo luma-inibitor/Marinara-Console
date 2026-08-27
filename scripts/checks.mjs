@@ -47,6 +47,7 @@ export const checks = [
   "specificity",
   // Package metadata and .gitignore
   "pkgcheck",
-  // Docs: Markdown links resolve
+  // Docs: Markdown links resolve, and named scripts exist
   "linkcheck",
+  "docrefs",
 ];

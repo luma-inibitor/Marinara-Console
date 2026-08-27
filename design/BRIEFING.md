@@ -96,7 +96,7 @@ Owner-confirmed. Don't re-litigate; see `DESIGN.md` §2 for the full list.
   from the data, not from constants someone picked.
 - Copy comes from the engine's own catalog (`ltm-en.json`) wherever the
   concept exists upstream. Anything genuinely new is registered in `OURS` with a
-  reason. `scripts/copycheck.mjs` enforces this.
+  reason. The eslint copy rules enforce this at the call site.
 - Content is markdown; editors are plain textareas with counts. No rich editing.
 
 ## 6. Requirements this work established
@@ -208,8 +208,9 @@ Not optional, and not judgment calls:
 | Command | Checks |
 |---|---|
 | `npx playwright test` | Every screen at four viewports: contrast, tap targets, console errors, sideways scroll, overlay dismissal, keyboard |
-| `node scripts/copycheck.mjs <file>` | Every user-visible string traces to the catalog or `OURS` |
+| `npm run lint` | Every user-visible string traces to the catalog or `OURS` |
+| `npm run copycatalog` | The catalog entries themselves: shape, notes, and duplicate text |
 | `node scripts/deadcss.mjs` | CSS classes nothing uses — fails when the list grows past `design/deadcss-baseline.json` |
-| `node scripts/deadexports.mjs` | Symbols exported but used only where declared, dead re-exports included — same baseline ratchet |
+| `npx knip` | Symbols exported but never imported, dead re-exports included |
 | `node scripts/domsnap.mjs before` / `after --diff` | A refactor renders identically, and what it didn't reach |
 | `MC_SHOTS=1 MC_SHOT_URL=<path> npx playwright test shots` | Screen captures at 390 / 486 / 768 / 1280 |
