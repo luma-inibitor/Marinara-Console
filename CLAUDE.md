@@ -23,8 +23,12 @@
   else belongs there rather than in the diff that found it. A decision that
   changes is rewritten correct at the top, never appended to.
 - Validate: `npx tsc --noEmit && npm test && npm run layercheck && npm run build`,
-  then the checks in DESIGN.md §7 (screenshot at 390/768/1280, zero console errors, contrast +
-  tap-target floors).
+  then `npx playwright test`, which is the definition of done in DESIGN.md §7.
+  It renders every screen at 390/486/768/1280. It fails on a console error or
+  warning, on a page error, on a screen that scrolls sideways, and on an overlay
+  that won't dismiss. A recorded baseline backs the contrast and tap-target
+  checks, so each of those two fails on a new offender and passes the offenders
+  already measured.
 - Run `npm run prosecheck` after you edit a `.md` file. It runs Vale over the
   Markdown you changed. It reports only what lands on lines you added, so the
   backlog in the rest of the docs stays out of your way. It exits non-zero on an

@@ -45,8 +45,12 @@ Tailwind utilities are available too (`bg-surface-2`, `text-dim`, `font-data`,
 
 - **A phone frame is `wf-phone`, which is 486px** — the width Luma's device
   reports. A 300px box on a desktop page isn't a phone and proves nothing.
-- **Screenshot with `node scripts/shots.mjs <url> <name>`**, which renders at
-  390 / 486 / 768 / 1280 and reports horizontal overflow per viewport.
+- **Capture the screen with
+  `MC_SHOTS=1 MC_SHOT_URL=/mockups/<file>.html MC_SHOT_NAME=<name> npx playwright test shots`**,
+  which renders at 390 / 486 / 768 / 1280 and reports horizontal overflow per
+  viewport. The images land in `/tmp/shots/<name>-<viewport>.png`. A bare path
+  is enough, because the suite starts its own preview server and resolves the
+  address there.
 - **Wireframes stay greyscale.** Color is a decision; a wireframe is about
   where things sit. If a wireframe needs color to make its point, it's a
   specimen, not a wireframe.

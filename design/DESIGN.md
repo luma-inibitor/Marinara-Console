@@ -47,7 +47,8 @@ is already prose, so applying it anywhere else is noise. Never put a type
 utility on an element whose component class sets a different face: the two
 rules have equal specificity and the winner is decided by stylesheet order,
 which means the markup asserts one face and the page renders another.
-`node scripts/faceprobe.mjs` reports the face every utility actually gets.
+No check measures the rendered face, so read the computed style in the
+browser before claiming that a utility applies.
 
 ### Color — semantic first, chrome second
 
@@ -86,14 +87,14 @@ which means the markup asserts one face and the page renders another.
   pair still sits below 20 — open, and untouched by this fix.
 - Surface ladder `--canvas → --surface-1..3` for depth; hairline `--edge` between
   regions. One subtle separator, never full grids of lines.
-- **Contrast floors are enforced by `verify.mjs`**: body/data text ≥4.5:1, large text
+- **Contrast floors are enforced by `tests/e2e/contrast.spec.ts`**: body/data text ≥4.5:1, large text
   and essential labels ≥3:1. `--text-faint` exists but is restricted to decorative
   or ≥12px non-essential text. (The legacy app's dim grays failed AA; the token
   ladder here was rebuilt to pass. Don't reintroduce darker grays ad hoc.)
   The sweep reads pseudo-element and placeholder ink too, so a `::before` glyph
   is held to the same floor as a text node. `data-contrast-exempt` in the markup
   only *claims* an exemption: it is honored solely for elements matching an entry
-  in `verify.mjs`'s `CONTRAST_EXEMPTIONS`, and each entry has to state why the ink
+  in that spec's `CONTRAST_EXEMPTIONS`, and each entry has to state why the ink
   may sit below the floor. An exemption with no entry is measured like anything
   else, so the attribute can never silence the check on its own.
 
@@ -370,31 +371,72 @@ exists, use it; if it needs a new one, add it here in the same change.
   child collections in side panel; breadcrumbs for depth. Mobile: stacked screens;
   side panel → bottom sheet.
 
-## 7. Definition of done — `verify.mjs`
+## 7. Definition of done — `npx playwright test`
 
-A UI change is not done until `node scripts/verify.mjs` passes:
+A UI change is not done until the browser suite passes. The suite builds the
+bundle, serves it with `vite preview`, answers every request from the fixture
+corpus in `tests/e2e/fixtures/`, and runs each spec at the four standard
+viewports.
 
-1. Screenshots at the standard viewports — `node scripts/shots.mjs <url> <name>`:
-   **390×844** `narrow`, the floor · **486×1085** `phone`, Luma's device and the
-   one that must be right · **768×1024** `tablet`, the band between the
-   breakpoints · **1280×800** `desktop`. Those four names are the only viewport
-   vocabulary; they are declared once in `scripts/lib/browser.mjs` and every
-   browser check imports them rather than restating widths.
-   A "mobile" rendering drawn in a small box on a wide page is not a mobile
-   rendering; render at the viewport or do not claim the result.
+1. The standard viewports: **390×844** `narrow`, the floor · **486×1085**
+   `phone`, Luma's device and the one that must be right · **768×1024**
+   `tablet`, the band between the breakpoints · **1280×800** `desktop`. Those
+   four names are the only viewport vocabulary; they are declared once as
+   Playwright projects in `playwright.config.ts` and every spec runs in all
+   four. A "mobile" rendering drawn in a small box on a wide page is not a
+   mobile rendering; render at the viewport or do not claim the result.
    CSS breakpoints are two, semantic: **720px** (below it everything stacks)
    and **900px** (above it master-detail sits side by side).
-2. Zero console/page errors *and warnings* on every screen visited.
-3. Tap-target sweep: interactive elements ≥44px primary / ≥24px+spacing secondary.
-   A control under 44px fails unless it clears 24px *and* sits ≥8px from the
-   nearest other target — that spacing is what §2 grants a secondary control, so
-   without it there is no band left for the element to be legitimate in. Segments
-   of one `[role="group"]` are a single control, not competing targets.
-4. Contrast sweep: computed fg/bg pairs meet the floors in §1.
-5. No horizontal document overflow at any viewport.
-6. Density check on list screens: collapsed rows/screen reported (mobile target ~10+).
-7. Keyboard walk on desktop screens: tab order sane, focus visible, list navigation
-   works without a mouse.
+2. Every screen assembles from the corpus and lists what the corpus put in it —
+   `tests/e2e/smoke.spec.ts`.
+3. Zero console errors, console warnings and page errors on every screen
+   visited. The shared fixture in `tests/e2e/harness.ts` fails any test that
+   leaves a request unanswered, writes anything to the console at error or
+   warning level, or throws an exception after render, so this holds for the
+   whole suite rather than for one spec. There is no allow list, so the check is
+   absolute. The suite runs silent today, and an escape hatch no test exercises
+   is a worse answer than editing this check on the day a message genuinely
+   cannot be fixed.
+4. Tap-target sweep — `tests/e2e/tap-targets.spec.ts`: interactive elements
+   ≥44px primary / ≥24px+spacing secondary. A control under 44px fails unless it
+   clears 24px *and* sits ≥8px from the nearest other target — that spacing is
+   what §2 grants a secondary control, so without it there is no band left for
+   the element to be legitimate in. Segments of one `[role="group"]` are a
+   single control, not competing targets. Held to the `RECORDED` list in that
+   spec, which records sixteen signatures covering forty-seven undersized
+   elements, so a new undersized target fails while those recorded ones pass.
+5. Contrast sweep — `tests/e2e/contrast.spec.ts`: axe over element text, plus a
+   pass of our own over `::before`, `::after` and `::placeholder` ink, against
+   the floors in §1. Held to `design/contrast-baseline.json`, so only growth
+   fails.
+6. Dismissal and keyboard — `tests/e2e/overlays.spec.ts` and
+   `tests/e2e/keyboard.spec.ts`: every layered surface closes on scrim tap, on
+   Escape and on back, and the command palette, the `g` jump sequences and j/k
+   down a list all work without a mouse.
+7. No sideways scroll — `tests/e2e/overflow.spec.ts`: on every screen at every
+   viewport, neither the document nor any box that scrolls may scroll
+   horizontally. Every scroll container on the screen is measured, not just the
+   document, because a box that sets `overflow-y: auto` computes `overflow-x` to
+   auto too, so an over-wide row scrolls that box and leaves the document at
+   exactly the viewport width. A document-only measure reports every screen
+   clean. The boxes are found by their computed overflow rather than named,
+   because `.stage` carries the rows on two screens and `.audit-list` carries
+   them on six. The chip rail is allowed to scroll sideways by name, since it
+   asks for `overflow-x: auto` itself and fades its right edge to say so.
+8. Screen captures for a visual read — `tests/e2e/shots.spec.ts`, which is
+   skipped unless `MC_SHOTS=1`:
+
+   ```
+   MC_SHOTS=1 MC_SHOT_URL=/#/memory/vault npx playwright test shots
+   ```
+
+   The address is resolved against the preview server the suite starts, so a
+   bare path reaches an app route or a mockup page. It writes
+   `/tmp/shots/shot-<viewport>.png` at all four viewports and reports horizontal
+   document overflow per viewport. `MC_SHOT_NAME` changes the file stem,
+   `MC_SHOT_SEL` captures one element, `MC_SHOT_FULL` captures the whole page.
+   Density on list screens is read off the narrow capture: the mobile target is
+   about ten collapsed rows a screen.
 
 Screenshot before claiming; measure before asserting density. This habit has caught
 real bugs every time it was applied — treat it as part of the build, not QA.
@@ -655,7 +697,7 @@ place on. Measured before and after in the claim detail at a 1600px viewport:
   rows and expanded editors a URL cannot reach. Any refactor claiming "renders
   identically" runs this instead of asserting it. Each run ends with the
   components it did not reach.
-- `node scripts/overlaycheck.mjs` — every layered surface must close on scrim
+- `npx playwright test overlays` — every layered surface must close on scrim
   tap, on Escape, and on back. The import confirm answered only one of those
   for weeks, because each sheet registered with the overlay stack by hand and
   one forgot. `Sheet` and `Modal` now do it, so the check guards a rule the
