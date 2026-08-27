@@ -6,7 +6,8 @@
    `.fs-n`, always mono, always in the same column position, so "how many would
    this give me" is answered in one place at every level. */
 
-.filter-sheet { display: flex; flex-direction: column; }
+/* --fs-trail is the chevron plus the row gap it sits behind. */
+.filter-sheet { display: flex; flex-direction: column; --fs-trail: 22px; }
 
 /* ── head ── */
 .fs-back { display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap-2);
@@ -66,8 +67,6 @@
   font-variant-numeric: tabular-nums; }
 .fs-n.is-on { color: var(--accent); }
 .fs-chev { flex: none; }
-/* chevron + the row gap it sits behind */
-.filter-sheet { --fs-trail: 22px; }
 
 /* ── checkable rows ── */
 .fs-checks { display: grid; grid-template-columns: 1fr 1fr; }

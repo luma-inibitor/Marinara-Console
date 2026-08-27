@@ -644,6 +644,12 @@ place on. Measured before and after in the claim detail at a 1600px viewport:
   cannot follow the scale when it moves. The scale is parsed from `tokens.css`
   rather than restated, so the check cannot drift from the thing it checks.
   Baseline-ratcheted like `deadcss`; only growth fails.
+- `node scripts/specificity.mjs` — a rule that comes after a higher-specificity
+  rule it overlaps loses to it wherever both match, so the later rule reads as
+  if it applies and does not. stylelint's `no-descending-specificity` finds
+  these. It is a warning rather than an error because every fix is a reorder,
+  and a reorder can change what renders. The tree holds 25 of them.
+  Baseline-ratcheted like `deadcss`; only growth fails.
 - `node scripts/domsnap.mjs before` / `... after --diff` — snapshots the rendered
   element tree and its class hooks across the routes plus the overlays, selected
   rows and expanded editors a URL cannot reach. Any refactor claiming "renders

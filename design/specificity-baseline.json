@@ -1,0 +1,39 @@
+{
+  "src/styles/lorebooks.css": [
+    "Expected selector \".num\" to come before selector \".row.is-idle .num\"",
+    "Expected selector \".row-summary\" to come before selector \".row.is-focused .row-summary\"",
+    "Expected selector \".row-summary:hover\" to come before selector \".row.is-focused .row-summary\""
+  ],
+  "src/styles/memory.css": [
+    "Expected selector \".action-sec\" to come before selector \".health-banner .action-sec\"",
+    "Expected selector \".chead svg\" to come before selector \".dock-counts > svg:last-child\"",
+    "Expected selector \".claim-text\" to come before selector \"[data-d=\"drop\"] .claim-text\"",
+    "Expected selector \".dsec p\" to come before selector \".mem-card details p\"",
+    "Expected selector \".edu svg\" to come before selector \".dock-counts > svg:last-child\"",
+    "Expected selector \".gn\" to come before selector \".ghead-body .gn\"",
+    "Expected selector \".jobnote svg\" to come before selector \".dock-counts > svg:last-child\"",
+    "Expected selector \".mem-summary\" to come before selector \".mem-row.is-open .mem-summary\"",
+    "Expected selector \".mem-summary:hover\" to come before selector \".mem-row.is-open .mem-summary\"",
+    "Expected selector \".mem-tab svg\" to come before selector \".dock-counts > svg:last-child\"",
+    "Expected selector \".pendrow > svg\" to come before selector \".dock-counts > svg:last-child\"",
+    "Expected selector \".reshead2 > svg\" to come before selector \".dock-counts > svg:last-child\"",
+    "Expected selector \".sig svg\" to come before selector \".dock-counts > svg:last-child\"",
+    "Expected selector \".sig-ok svg\" to come before selector \".dock-counts > svg:last-child\"",
+    "Expected selector \".trunc svg\" to come before selector \".dock-counts > svg:last-child\""
+  ],
+  "src/styles/presets.css": [
+    "Expected selector \".fs-confirm-acts .dbtn\" to come before selector \".savebar .dbtn:disabled\"",
+    "Expected selector \".fs-confirm-box .t-label\" to come before selector \".savebar.has-conflict .t-label\""
+  ],
+  "src/tools/memory/review/FilterSheet.css": [
+    "Expected selector \".fs-check:disabled\" to come before selector \".fs-check:hover:not(:disabled)\"",
+    "Expected selector \".fs-tile:disabled\" to come before selector \".fs-tile:hover:not(:disabled)\""
+  ],
+  "src/ui/JsonView.css": [
+    "Expected selector \".jn\" to come before selector \".jsonview-tree > .jgroup > .jn:first-child\"",
+    "Expected selector \".jtoggle\" to come before selector \".jn-head:hover .jtoggle\""
+  ],
+  "src/ui/SearchDisclosure.css": [
+    "Expected selector \".disclosure-value\" to come before selector \".disclosure-trigger .disclosure-value\""
+  ]
+}
