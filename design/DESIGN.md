@@ -500,8 +500,21 @@ CSS problem:
   rules, not fighting back with `!important`.
 - **Two utilities on one property: the sheet's order decides, not yours.**
   `"uppercase … normal-case"` renders uppercase, because Tailwind emits them in
-  its own order. Never emit both — give each property exactly one lookup that
-  owns it, and switch which string that lookup returns.
+  its own order. **Compose with `cx` (`src/ui/cx.ts`), never with `join`** — it
+  is `tailwind-merge` taught this theme's scale names, and it makes the written
+  order authoritative, so the later class wins as every reader expects.
+  This is not optional for a component that accepts `className`: a property the
+  call site can also set is not a property the component can own, and
+  concatenating leaves the winner to the sheet.
+
+  `cx` needs teaching because `tailwind-merge` does not read `@theme`. The
+  ambiguity it cannot resolve alone is `text-*`, which this theme spends on both
+  font sizes (`--text-label`) and inks (`--color-ink`); grouped together, one
+  would be silently dropped. **A new `--text-*`, `--color-*` or `--spacing-*`
+  token has to be added to `cx.ts` and pinned in `cx.test.ts`**, or it will not
+  merge — which is how `min-h-tap` and `min-h-tap-2` were found surviving side
+  by side. A wrong group there fails exactly like the bugs above: at render,
+  invisibly.
 
 Genuinely un-utility-able CSS — keyframes with several stops, a complex
 `::after`, a container query no variant covers — belongs in an

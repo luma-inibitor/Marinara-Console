@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { t } from "../copy";
 import { Term } from "./Term";
+import { cx } from "./cx";
 import { ICON_SIZE, Working } from "./icons";
 
 /** The console's one button.
@@ -66,17 +67,9 @@ export type ButtonProps = Common &
  *  is already inert during the delay — the wait is hidden, not ignored. */
 const SPINNER_DELAY_MS = 1000;
 
-// Two rules govern every string below.
-//
-// Tailwind's scanner reads source text, so each is a whole literal. Composing
-// one (`bg-${tone}`) produces a class that is never generated, and the failure
-// is a silently unstyled button rather than an error.
-//
-// And two utilities setting the SAME property must never both be emitted: the
-// winner is their order in the generated sheet, not in this string. Shipping
-// `border border-transparent` in the base and `border-edge-strong` in the skin
-// left every secondary button borderless, because `border-transparent` sorts
-// later. So each property is owned by exactly one lookup below.
+// Tailwind's scanner reads source text, so each string below is a whole
+// literal: `bg-${tone}` generates nothing, and renders as a silently unstyled
+// button. Nothing checks this. Conflicts between them are `cx`'s problem.
 
 const BASE =
   "relative inline-flex items-center justify-center rounded-m border " +
@@ -154,7 +147,9 @@ export function Button(props: ButtonProps) {
   // honest — it drops the button out of the tab order entirely.
   const softDisabled = inert && (pending || disabledReason != null);
 
-  const cls = [
+  // cx, not join: the call site's `className` may set a property this
+  // component also sets, and join leaves the winner to the generated sheet.
+  const cls = cx(
     BASE,
     BOX[`${size}:${iconOnly ? "icon" : "label"}`],
     TYPE[`${labelCase}:${size}`],
@@ -162,7 +157,7 @@ export function Button(props: ButtonProps) {
     !pressed && !inert && HOVER[variant],
     fullWidth && "w-full",
     className,
-  ].filter(Boolean).join(" ");
+  );
 
   const hide = spinning ? "invisible" : undefined;
   const glyph = icon && <span className={hide}>{icon}</span>;
