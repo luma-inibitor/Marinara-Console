@@ -51,11 +51,9 @@ const group = (findings) => {
  * (`deadexports src/ui`) saw nothing of the rest of the tree, so it may neither
  * call those entries vanished nor prune them away.
  *
- * A file that is no longer in the tree is the exception: no run of any scope
- * can ever reproduce its findings, so scope does not shelter it. Without this,
- * a scope built from the files a run actually opened protects exactly the
- * entries a deletion orphaned, and every baseline silently accretes ghosts that
- * `--prune` refuses to drop. `root` is what the recorded paths are relative to.
+ * A file that has left the tree is the exception: no run of any scope can
+ * reproduce its findings, so scope does not shelter it. `root` is what the
+ * recorded paths are relative to.
  */
 export function ratchet(path, findings, { adopt = false, prune = false, scope = () => true, root = process.cwd() } = {}) {
   const { entries, integrity } = loadBaseline(path);
