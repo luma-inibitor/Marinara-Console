@@ -43,8 +43,7 @@ export default [
       "import/parsers": { "@babel/eslint-parser": [".ts", ".tsx"] },
     },
     rules: {
-      // Copy that reaches the reader must come out of t().
-      // `words` replaces the plugin's default excludes rather than extending them.
+      // Gotcha: `words` replaces the plugin's default excludes rather than extending them.
       "i18next/no-literal-string": [
         "error",
         {
@@ -62,8 +61,7 @@ export default [
           },
         },
       ],
-      // Two of the word patterns above admit any bare lowercase word. One in
-      // JSX text position is copy, and only this rule still sees it.
+      // Two patterns above admit any bare lowercase word; in JSX text that is copy.
       "no-restricted-syntax": [
         "error",
         {
