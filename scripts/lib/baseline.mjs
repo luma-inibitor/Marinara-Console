@@ -11,6 +11,7 @@
 // as long as an old one is deleted in the same change, which is the defect the
 // check exists to catch.
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
 
 /** The recorded set, or an integrity complaint when it cannot be read. */
 function loadBaseline(path) {
@@ -46,27 +47,33 @@ const group = (findings) => {
  * `--adopt` records today's set; `--prune` only ever REMOVES entries that no
  * longer appear. Neither grows the record as a side effect of a normal run.
  *
- * `scope` is which files this run actually looked at. A narrowed run
+ * `scope` is which files this run was answerable for. A narrowed run
  * (`deadexports src/ui`) saw nothing of the rest of the tree, so it may neither
  * call those entries vanished nor prune them away.
+ *
+ * A file that has left the tree is the exception: no run of any scope can
+ * reproduce its findings, so scope does not shelter it. `root` is what the
+ * recorded paths are relative to.
  */
-export function ratchet(path, findings, { adopt = false, prune = false, scope = () => true } = {}) {
+export function ratchet(path, findings, { adopt = false, prune = false, scope = () => true, root = process.cwd() } = {}) {
   const { entries, integrity } = loadBaseline(path);
   const today = group(findings);
 
   const known = (f) => (entries[f.file] ?? []).includes(f.item);
   const fresh = integrity.length ? [] : findings.filter((f) => !known(f));
 
+  const answerable = (file) => scope(file) || !existsSync(join(root, file));
+
   const vanished = [];
   for (const [file, items] of Object.entries(entries)) {
-    if (!scope(file)) continue;
+    if (!answerable(file)) continue;
     for (const item of items) if (!(today[file] ?? []).includes(item)) vanished.push({ file, item });
   }
 
   if (!integrity.length && (adopt || prune)) {
     const next = {};
     for (const [file, items] of Object.entries(entries)) {
-      const keep = scope(file) ? items.filter((i) => (today[file] ?? []).includes(i)) : items;
+      const keep = answerable(file) ? items.filter((i) => (today[file] ?? []).includes(i)) : items;
       if (keep.length) next[file] = keep;
     }
     if (adopt) for (const [file, items] of Object.entries(today)) next[file] = items;
