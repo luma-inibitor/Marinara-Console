@@ -34,8 +34,8 @@ export const checks = [
   "layercheck",
   // Inventory, not a gate: `components` always exits 0.
   "components",
-  // Copy: every user-visible string comes from the catalog
-  "copycheck",
+  // Copy: the catalog entries themselves. `lint` covers the call sites.
+  "copycatalog",
   // Dead code
   "deadcss",
   "knip",

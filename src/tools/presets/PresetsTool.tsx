@@ -28,9 +28,8 @@ export function PresetsTool({ rest }: { rest: string[] }) {
 // "Description", "Content", "Advanced", "Edit in full screen" and "all default"
 // live in src/copy/lorebooks.json (lorebooks.entry.*, lorebooks.record.*) and are
 // the drawer-and-editor vocabulary BOTH tools use. Do NOT re-coin them under
-// presets.*: one string under two keys is exactly what checkCatalog rejects.
-// They stay literals here, and copycheck resolves them against the lorebooks
-// entries.
+// presets.*: one string under two keys is exactly what copycatalog rejects.
+// They are called here by their lorebooks.* keys.
 
 // ══ browser ══════════════════════════════════════════════════════
 type BrowserSort = "tokens" | "sections" | "name";

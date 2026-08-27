@@ -6,8 +6,6 @@ import { dismissToast, isUndoable, toast, toasts } from "./toast";
 const UNDO_MS = 9_000;
 const INFO_MS = 4_000;
 
-// copycheck treats every literal passed to toast() as user-visible copy, so
-// these fixtures are named rather than inline.
 const MSG = "fixture";
 const OTHER = "other fixture";
 

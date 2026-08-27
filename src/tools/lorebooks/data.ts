@@ -1,12 +1,8 @@
-/* @copy-strict */
 // Lorebook tool: types, derived data, and engine-faithful evaluation.
 //
-// The copy TABLES below (status labels and hints, position labels) are enum ->
-// label maps living in object initialisers, not rendered slots, so no position
-// rule in design/copycheck.mjs reaches them. Hence the @copy-strict marker
-// above: in a strict file EVERY string literal with a letter and a space is
-// read as copy, so a label added to one of these maps without a catalog entry
-// fails the check instead of shipping unnoticed. Do not drop the marker.
+// Gotcha: eslint-plugin-i18next skips the whole initialiser of an ALL-CAPS
+// declarator, which is what the label tables below are. eslint.config.js adds
+// back one case, a quoted label of two words. A template literal stays unchecked.
 import { api, tokensOf } from "../../shell/api";
 import { tAny } from "../../copy";
 import { testPrimaryKeys, testSecondaryKeys } from "../../lib/lorebook-keyword-matching.js";
@@ -63,7 +59,7 @@ const byPosition = (key: (name: string) => string): Record<number, string> =>
 
 export const POS_COMPACT = byPosition((name) => `lorebooks.pos.${name}.compact`);
 // `outlet` reads the same at both densities, and one string may hold only one
-// key (design/copycheck.mjs), so the full table borrows the compact label there
+// key (scripts/copycatalog.mjs), so the full table borrows the compact label there
 // rather than registering a second entry with identical text.
 export const POS_FULL = byPosition((name) =>
   name === "outlet" ? "lorebooks.pos.outlet.compact" : `lorebooks.pos.${name}.full`);

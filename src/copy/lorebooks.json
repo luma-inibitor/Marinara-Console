@@ -1,5 +1,5 @@
 {
-  "_readme": "lorebooks area copy. The vendored catalog is the long-term-memory agent's own strings: it knows a lorebook only as a SOURCE it can import from (sourcesworkspace.lorebooks, longtermmemorydetail.sourceLorebooks) and never reaches inside one. So it has no vocabulary for entries, keys, positions, trigger settings or token budgets per book, and most of this file is necessarily coined. Where the catalog does have the word — the lorebook-as-source nouns, and the ordinary verbs of a list — it is mirrored. See src/copy/index.ts for the entry shapes and design/copycheck.mjs for what is enforced. Keys beginning with an underscore are metadata and are never copy.",
+  "_readme": "lorebooks area copy. The vendored catalog is the long-term-memory agent's own strings: it knows a lorebook only as a SOURCE it can import from (sourcesworkspace.lorebooks, longtermmemorydetail.sourceLorebooks) and never reaches inside one. So it has no vocabulary for entries, keys, positions, trigger settings or token budgets per book, and most of this file is necessarily coined. Where the catalog does have the word — the lorebook-as-source nouns, and the ordinary verbs of a list — it is mirrored. See src/copy/index.ts for the entry shapes and scripts/copycatalog.mjs for what is enforced. Keys beginning with an underscore are metadata and are never copy.",
   "_shared": "Keys under lorebooks.record.* are the draft/commit vocabulary of an editable record. src/tools/presets renders the same sentences byte-for-byte over a prompt section; they are parked here so exactly one key owns each string, and presets should point at these rather than coin a second copy. See the migration report.",
   "lorebooks.title": {
     "use": "sourcesworkspace.lorebooks"
@@ -102,7 +102,7 @@
   },
   "lorebooks.pos.outlet.compact": {
     "text": "Outlet",
-    "note": "Position 7: injected into a named outlet declared by the prompt template. One label serves both the compact control and the full readout, because the word is already short and a second key holding the same text is what design/copycheck.mjs refuses. Outlets are a template feature the memory agent has no access to and no word for."
+    "note": "Position 7: injected into a named outlet declared by the prompt template. One label serves both the compact control and the full readout, because the word is already short and a second key holding the same text is what scripts/copycatalog.mjs refuses. Outlets are a template feature the memory agent has no access to and no word for."
   },
   "lorebooks.field.order": {
     "text": "Order",
@@ -301,7 +301,7 @@
   },
   "lorebooks.entry.add": {
     "text": "Add entry",
-    "note": "One key for the dock button, the first-run empty state's action, and the title of the prompt that asks for a name — three affordances that start the same act, and design/copycheck.mjs refuses a second key holding the same words. The catalog's add family is all memory-side (addMemories, addKeyword, addEvidence)."
+    "note": "One key for the dock button, the first-run empty state's action, and the title of the prompt that asks for a name — three affordances that start the same act, and scripts/copycatalog.mjs refuses a second key holding the same words. The catalog's add family is all memory-side (addMemories, addKeyword, addEvidence)."
   },
   "lorebooks.entry.addDefaultName": {
     "text": "New Entry",
@@ -447,6 +447,6 @@
   },
   "lorebooks.record.backToBooks": {
     "text": "Back to the lorebook list",
-    "note": "Accessible name of the audit screen's back control. Deliberately worded away from ui.notfound.back ('Back to lorebooks'), which is the recovery button on a dead link and belongs to the shared component; this is ordinary upward navigation and design/copycheck.mjs allows each string exactly one key."
+    "note": "Accessible name of the audit screen's back control. Deliberately worded away from ui.notfound.back ('Back to lorebooks'), which is the recovery button on a dead link and belongs to the shared component; this is ordinary upward navigation and scripts/copycatalog.mjs allows each string exactly one key."
   }
 }

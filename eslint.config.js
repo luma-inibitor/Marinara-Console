@@ -22,6 +22,35 @@ import reactHooks from "eslint-plugin-react-hooks";
 // Deliberately not extending any preset. tsc --strict and the bespoke checks in
 // scripts/ already cover the ground a preset would, and a linter that reports
 // things nobody acts on gets ignored.
+
+// ── the copy rules eslint-plugin-i18next cannot express ───────────────────
+// Gotcha: its attribute list is fixed at five, so `jsx-attributes` cannot reach
+// the other four aria attributes. Its `words.exclude` matches a string and not
+// a position, so a bare word passes in a copy position as well as in a key.
+const COPY_SELECTORS = [
+  {
+    selector: 'JSXText[value=/^\\s*[a-z][A-Za-z0-9]*\\s*$/]:not([value=/^\\s*[kst]\\s*$/])',
+    message: "a bare word in JSX text must come from t()",
+  },
+  {
+    selector:
+      'JSXAttribute[name.name=/^aria-(description|placeholder|valuetext|roledescription)$/] > Literal[value=/[a-zA-Z]/]',
+    message: "aria text must come from t()",
+  },
+  {
+    selector:
+      'JSXAttribute[name.name=/^(aria-label|title|placeholder|alt|label|body|heading|hint|caption|tip|summary|empty|note)$/] > Literal[value=/^_*[a-z][A-Za-z0-9]*$/]',
+    message: "a one-word copy attribute must come from t()",
+  },
+];
+
+// It also skips everything inside an ALL-CAPS declarator, which is where the
+// two files below keep their enum-to-label tables.
+const COPY_TABLE_SELECTOR = {
+  selector: 'VariableDeclarator[id.name=/^[A-Z][A-Z_0-9]*$/] Literal[value=/[a-zA-Z] [a-zA-Z]/]',
+  message: "a label in a copy table must come from t()",
+};
+
 export default [
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],
@@ -43,8 +72,7 @@ export default [
       "import/parsers": { "@babel/eslint-parser": [".ts", ".tsx"] },
     },
     rules: {
-      // Copy that reaches the reader must come out of t().
-      // `words` replaces the plugin's default excludes rather than extending them.
+      // Gotcha: `words` replaces the plugin's default excludes rather than extending them.
       "i18next/no-literal-string": [
         "error",
         {
@@ -53,7 +81,7 @@ export default [
             exclude: [
               /^[^\p{L}]+$/u, // no letter anywhere: a number, a separator, a glyph
               /^[kst]$/, // unit suffixes glued to a number: k, seconds, tokens
-              /^[A-Z_-]+$/, // a constant or an engine code
+              /^(?:GET|POST|PUT|PATCH|DELETE)$/, // an HTTP method
               /^_*[a-z][A-Za-z0-9]*$/, // an identifier
               /^[.#/]{0,1}-{0,2}[a-z0-9]+(?:[_./:-][a-z0-9]+)*\/?$/, // a route, a class, a data attribute
               /^[a-z][A-Za-z0-9]*(?:\.[A-Za-z0-9]+)+$/, // a catalog key passed as a prop
@@ -62,15 +90,7 @@ export default [
           },
         },
       ],
-      // Two of the word patterns above admit any bare lowercase word. One in
-      // JSX text position is copy, and only this rule still sees it.
-      "no-restricted-syntax": [
-        "error",
-        {
-          selector: 'JSXText[value=/^\\s*[a-z][a-z0-9]*\\s*$/]:not([value=/^\\s*[kst]\\s*$/])',
-          message: "bare lowercase JSX text must come from t()",
-        },
-      ],
+      "no-restricted-syntax": ["error", ...COPY_SELECTORS],
       "react-hooks/exhaustive-deps": "error",
       "react-hooks/rules-of-hooks": "error",
       // No module may take part in an import cycle.
@@ -83,6 +103,10 @@ export default [
         },
       ],
     },
+  },
+  {
+    files: ["src/tools/lorebooks/data.ts", "src/tools/presets/data.ts"],
+    rules: { "no-restricted-syntax": ["error", ...COPY_SELECTORS, COPY_TABLE_SELECTOR] },
   },
   {
     // Fixtures.
@@ -129,9 +153,6 @@ export default [
     plugins: { import: importPlugin },
     rules: {
       ...js.configs.recommended.rules,
-      // copycheck masks catalog placeholders with a NUL sentinel and matches
-      // it back out, so a control character in a regex is the design.
-      "no-control-regex": "off",
       "import/no-cycle": ["error", { ignoreExternal: true }],
     },
   },

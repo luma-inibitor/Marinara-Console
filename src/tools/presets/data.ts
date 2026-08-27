@@ -1,4 +1,3 @@
-/* @copy-strict */
 // Prompt presets: types, wire normalization, and derived cost.
 //
 // WIRE FORMAT WARNING — the engine stores booleans and nested objects as TEXT
@@ -9,6 +8,8 @@
 // engine's own client normalizes the same way (PresetEditor.tsx: `enabled ===
 // "true" || enabled === true`). Everything here is normalized at the fetch
 // boundary; components only ever see real booleans and parsed objects.
+//
+// eslint.config.js adds a copy rule for the ALL-CAPS label tables below.
 import { api, tokensOf } from "../../shell/api";
 import { tAny } from "../../copy";
 

@@ -8,7 +8,7 @@
     "check:static": "node scripts/run-checks.mjs",
     "check:test": "vitest run",
     "components": "node scripts/components.mjs",
-    "copycheck": "node scripts/copycheck.mjs",
+    "copycatalog": "node scripts/copycatalog.mjs",
     "csslint": "stylelint \"src/**/*.css\"",
     "deadcss": "node scripts/deadcss.mjs",
     "dev": "vite",
