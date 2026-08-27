@@ -34,15 +34,16 @@ MC_PROXY_TARGET=http://127.0.0.1:7874 MC_DEV_PORT=5174 npm run dev
 
 ## Prose
 
-[Vale](https://vale.sh) checks the Markdown docs. It reads the Microsoft style
-plus a small local style in `.vale/styles/Luma/`. Treat it as advisory: `npm run
-check` doesn't run it, and the CI job never blocks a merge.
+[Vale](https://vale.sh) checks the Markdown docs, and the code comments in
+`.ts`, `.tsx` and `.js`. Docs read the Microsoft style plus a small local style
+in `.vale/styles/Luma/`. Comments read `Luma` and `Code` only. Treat it as
+advisory: `npm run check` doesn't run it, and the CI job never blocks a merge.
 
 CI annotates only the lines a pull request touches, which keeps it useful while
-the rest of the docs still carry a large backlog. `npm run prosecheck` does the
-same locally: it lints the Markdown your branch changed and reports the alerts on
-lines you added, so a clean run means clean annotations on the pull request. `npm
-run prose` reports on the whole repo.
+the rest of the corpus still carries a large backlog. `npm run prosecheck` does
+the same locally: it lints every Markdown and code file your branch changed. A
+clean run means clean annotations on the pull request. `npm run prose` reports
+on the whole repo.
 
 ```sh
 brew install vale
@@ -58,6 +59,23 @@ the word in the project vocabulary, which Vale skips in every check.
 One comes from `ASD-STE100`, the Simplified Technical English standard, and
 catches the perfect tenses, which neither Google nor Microsoft check. It matches
 on part-of-speech tags rather than on spelling, so `has a value` stays quiet.
+
+### Comments
+
+A comment reaches those rules only because `.vale.ini` maps the code extensions
+onto `md`. Vale's code path skips its own language pipeline, and without that
+pipeline no sentence-scoped rule and no part-of-speech rule matches anything in
+a `.ts` file. Nothing reports the gap. The rules just never fire.
+`docs/misc/vale-code-comments.md` has the mechanism and the measurements.
+
+`.mjs` and `.cjs` are the gap the mapping can't close: Vale has no grammar for
+either, so it lints the whole file — code and all — as prose. They're switched
+off in `.vale.ini`, and `npm run prosecheck` reaches them through a symlink
+named `.js`. `npm run prose` doesn't, because Vale's own file walk has nowhere
+to put the shim.
+
+Node has to be new enough to strip types from `scripts/prosecheck.ts` on its
+own, which the version in `.nvmrc` is.
 
 One caveat matters here. The vocabulary doesn't apply to that rule, because Vale
 skips vocabulary terms for every check except `sequence`. To exempt a word from
@@ -81,5 +99,5 @@ and a fenced example fixes the cause rather than the symptom.
 | `src/` | the console: Vite + Preact + TS, hash routing, tokens-based CSS |
 | `tests/e2e/` | the browser suite: the definition of done in DESIGN.md §7 — screens, contrast, tap targets, sideways scroll, overlays, keyboard, screen captures. It drives the built bundle at four viewports and answers every request from a fixture corpus |
 | `design/` | DESIGN.md, tokens rationale, vendored UI research |
-| `.vale.ini` | prose lint config: Microsoft style, exemptions in the vocabulary rather than rule switches |
+| `.vale.ini` | prose lint config: Microsoft style over the docs, `Luma` and `Code` over the comments, exemptions in the vocabulary rather than rule switches |
 | `scripts/` | the executable checks that run without a test runner: `components` (inventory of what returns markup, and what each one couples to), `copycatalog`, `layercheck`, `deadcss`, `typescale`, `specificity`, `pkgcheck`, `prosecheck`, `domsnap`. `domsnap` drives a real browser and takes its harness from `lib/browser.mjs` |

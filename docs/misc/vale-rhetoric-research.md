@@ -4,6 +4,10 @@ Research note behind the rhetoric rules in `.vale/styles/Luma/`. Every claim
 below was tested against Vale 3.18.0, the version the CI job pins. The paired
 hit and control fixtures are in `.vale/fixtures/rhetoric.txt`.
 
+Measured over Markdown. What these rules do on a code comment, and why three of
+them did nothing there at all until `.vale.ini` grew a `[formats]` block, is in
+`vale-code-comments.md`.
+
 Six rules came out of this; three were kept. `EmDashClause`, `LeftBranching`
 and `Polysyndeton` are precise enough to leave on. `Chiasmus`, `Epistrophe` and
 `Litotes` were built, measured and dropped — their patterns and their failure

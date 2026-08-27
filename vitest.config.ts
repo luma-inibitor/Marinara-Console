@@ -8,7 +8,7 @@ export default defineConfig({
   test: {
     environment: "node",
     // test/ is the HTTP conformance suite for server.mjs.
-    include: ["src/**/*.test.ts", "scripts/**/*.test.mjs", "test/**/*.test.mjs"],
+    include: ["src/**/*.test.ts", "scripts/**/*.test.{mjs,ts}", "test/**/*.test.mjs"],
     setupFiles: ["src/tools/memory/test/setup.ts"],
   },
 });

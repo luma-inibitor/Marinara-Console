@@ -1,9 +1,12 @@
 # A balanced two-clause construction that lands a point instead of stating a
 # fact. DESIGN.md's comment rule names these.
 #
-# Gotcha: `scope: text`, not `scope: sentence`. Vale never segments code
-# comments into sentences, so a sentence-scoped rule silently matches nothing
-# in a .ts file. It does not error; it never fires. Anchor in the pattern.
+# `scope: text`, not `scope: sentence`, and both patterns anchor themselves.
+# That was once forced: Vale's code path skips its NLP pipeline, so a
+# sentence-scoped rule matched nothing in a .ts file and never said so. The
+# `[formats]` mapping in .vale.ini lifts that, and a sentence scope would work
+# here now. It stays as it is because both constructions span a semicolon,
+# which segmentation would cut in half.
 extends: existence
 message: "Balanced aphorism ('%s'). State the fact instead."
 level: warning

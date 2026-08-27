@@ -28,7 +28,7 @@ export function docRefs(root = ROOT) {
   const findings = [];
   for (const doc of docs) {
     const text = readFileSync(join(root, doc), "utf8");
-    for (const [, file] of text.matchAll(/`?(scripts\/[a-z0-9-]+\.mjs)`?/g)) {
+    for (const [, file] of text.matchAll(/`?(scripts\/[a-z0-9-]+\.(?:mjs|ts))`?/g)) {
       if (!existsSync(join(root, file))) findings.push({ doc, name: file });
     }
     for (const [, task] of text.matchAll(/`npm run ([a-z][a-z0-9:-]*)`/g)) {

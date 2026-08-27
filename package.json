@@ -23,7 +23,7 @@
     "pkgcheck": "node scripts/pkgcheck.mjs",
     "preview": "vite preview",
     "prose": "vale --no-global .",
-    "prosecheck": "node scripts/prosecheck.mjs",
+    "prosecheck": "node scripts/prosecheck.ts",
     "specificity": "node scripts/specificity.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test",

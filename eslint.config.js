@@ -23,6 +23,30 @@ import reactHooks from "eslint-plugin-react-hooks";
 // scripts/ already cover the ground a preset would, and a linter that reports
 // things nobody acts on gets ignored.
 
+// Every block that parses TypeScript shares this. `isTSX` is safe across .ts
+// and .tsx alike; it is not safe over plain JavaScript, which is why the .mjs
+// block below keeps the default parser.
+const TS_LANGUAGE_OPTIONS = {
+  parser: babelParser,
+  parserOptions: {
+    requireConfigFile: false,
+    babelOptions: {
+      babelrc: false,
+      configFile: false,
+      presets: [["@babel/preset-typescript", { isTSX: true, allExtensions: true }]],
+    },
+  },
+};
+
+// scripts/ takes the recommended preset, which src/ does not, because nothing
+// else checks it: tsconfig.json includes only src, so these 3,900 lines have no
+// compiler over them at all. The preset earns its place here for the same
+// reason it would be redundant there.
+const SCRIPT_RULES = {
+  ...js.configs.recommended.rules,
+  "import/no-cycle": ["error", { ignoreExternal: true }],
+};
+
 // ── the copy rules eslint-plugin-i18next cannot express ───────────────────
 // Gotcha: its attribute list is fixed at five, so `jsx-attributes` cannot reach
 // the other four aria attributes. Its `words.exclude` matches a string and not
@@ -54,17 +78,7 @@ const COPY_TABLE_SELECTOR = {
 export default [
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],
-    languageOptions: {
-      parser: babelParser,
-      parserOptions: {
-        requireConfigFile: false,
-        babelOptions: {
-          babelrc: false,
-          configFile: false,
-          presets: [["@babel/preset-typescript", { isTSX: true, allExtensions: true }]],
-        },
-      },
-    },
+    languageOptions: TS_LANGUAGE_OPTIONS,
     plugins: { "react-hooks": reactHooks, import: importPlugin, i18next },
     settings: {
       // Resolution is the node resolver's, over TypeScript extensions.
@@ -140,10 +154,11 @@ export default [
     },
   },
   {
-    // scripts/ takes the recommended preset, which src/ does not, because
-    // nothing else checks it: tsconfig.json includes only src, so these 3,900
-    // lines have no compiler over them at all. The preset earns its place here
-    // for the same reason it would be redundant there.
+    // Fixtures: deliberately broken source, fed to the checks in scripts/ as
+    // input. Nothing here is meant to pass a linter.
+    ignores: ["scripts/fixtures/**"],
+  },
+  {
     files: ["scripts/**/*.mjs"],
     languageOptions: {
       ecmaVersion: 2023,
@@ -151,9 +166,19 @@ export default [
       globals: { ...globals.node },
     },
     plugins: { import: importPlugin },
+    rules: SCRIPT_RULES,
+  },
+  {
+    files: ["scripts/**/*.ts"],
+    languageOptions: { ...TS_LANGUAGE_OPTIONS, sourceType: "module", globals: { ...globals.node } },
+    plugins: { import: importPlugin },
     rules: {
-      ...js.configs.recommended.rules,
-      "import/no-cycle": ["error", { ignoreExternal: true }],
+      ...SCRIPT_RULES,
+      // Babel leaves the type annotations in the tree and eslint's scope
+      // analysis has no idea what they are, so every interface member reads as
+      // an undeclared global. This is why typescript-eslint turns the rule off
+      // on TypeScript too; it is not a judgement that the rule is unwanted.
+      "no-undef": "off",
     },
   },
   {

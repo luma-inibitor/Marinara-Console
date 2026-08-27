@@ -2,7 +2,7 @@
 # that reasoning in the design document, not beside the code.
 #
 # Narrow on purpose: a wider `would ...` pattern reports every gotcha. See
-# Aphorism.yml for the `scope: text` gotcha.
+# Aphorism.yml for why this scope is `text`.
 extends: existence
 message: "Arguing against an alternative ('%s'). The design doc is where that goes."
 level: warning
