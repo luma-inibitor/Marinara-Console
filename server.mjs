@@ -45,6 +45,7 @@ function stripVectors(node) {
 // atomic write. Preflight/search/previews are reads in POST clothing.
 const BACKUPS = join(HERE, ".backups");
 let ltmBackupDone = false;
+/** @type {Promise<void>|null} */
 let ltmBackupInFlight = null;
 
 function isLtmWrite(method, pathname) {
@@ -74,7 +75,10 @@ async function ensureLtmRestorePoint() {
     ltmBackupDone = true;
     console.log(`ltm restore point: ${dest} (${bytes.length.toLocaleString()} bytes)`);
     const entries = (await readdir(BACKUPS)).filter((n) => n.startsWith("ltm-backup-")).sort();
-    while (entries.length > 10) await unlink(join(BACKUPS, entries.shift())).catch(() => {});
+    while (entries.length > 10) {
+      const oldest = entries.shift();
+      if (oldest) await unlink(join(BACKUPS, oldest)).catch(() => {});
+    }
   })().finally(() => { ltmBackupInFlight = null; });
   await ltmBackupInFlight;
 }
@@ -138,8 +142,10 @@ const apiProxy = createProxyMiddleware({
       // A compressed upstream body cannot be rewritten below.
       proxyReq.removeHeader("accept-encoding");
     },
-    proxyRes(proxyRes, req, res) {
-      const status = proxyRes.statusCode;
+    proxyRes(proxyRes, _req, res) {
+      // An upstream response always carries a status; 502 stands for one
+      // that somehow did not, which is a broken engine either way.
+      const status = proxyRes.statusCode ?? 502;
       const type = proxyRes.headers["content-type"] ?? "application/octet-stream";
       if (!type.includes("application/json")) {
         const len = proxyRes.headers["content-length"];
@@ -175,7 +181,14 @@ const apiProxy = createProxyMiddleware({
         res.end(slimmed);
       });
     },
-    error(err, req, res) {
+    error(/** @type {NodeJS.ErrnoException} */ err, _req, res) {
+      // `res` is a raw Socket when a websocket upgrade fails, and has no HTTP
+      // response to write. This proxy sets no `ws`, so nothing reaches that
+      // path today; closing the socket keeps it right if one ever does.
+      if (!("writeHead" in res)) {
+        res.destroy();
+        return;
+      }
       if (res.headersSent) {
         res.end();
         return;
@@ -206,7 +219,7 @@ function staticHeaders(res, pathname) {
   res.setHeader("cache-control", HASHED_ASSET.test(pathname) ? "public,max-age=31536000,immutable" : "no-store");
 }
 
-function notFound(req, res) {
+function notFound(_req, res) {
   res.writeHead(404, { "content-type": "text/plain" });
   res.end("Not found");
 }
@@ -246,7 +259,7 @@ async function serveStatic(req, res, url) {
 
 createServer(async (req, res) => {
   try {
-    const url = new URL(req.url, "http://localhost");
+    const url = new URL(req.url ?? "/", "http://localhost");
     if (url.pathname === "/__config") {
       const cfg = JSON.stringify({ target: TARGET });
       res.writeHead(200, { "content-type": "application/json", "content-length": cfg.length });

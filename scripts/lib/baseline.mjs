@@ -52,6 +52,10 @@ const group = (findings) => {
  * A file that has left the tree is the exception: no run of any scope can
  * reproduce its findings, so scope does not shelter it. `root` is what the
  * recorded paths are relative to.
+ *
+ * @param {string} path
+ * @param {{file: string, item: string}[]} findings
+ * @param {{adopt?: boolean, prune?: boolean, scope?: (file: string) => boolean, root?: string}} [options]
  */
 export function ratchet(path, findings, { adopt = false, prune = false, scope = () => true, root = process.cwd() } = {}) {
   const { entries, integrity } = loadBaseline(path);

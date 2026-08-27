@@ -382,6 +382,7 @@ for (const mod of modules) {
       if (!grew) break;
     }
 
+    /** @type {{api: string[], model: string[], store: string[]}} */
     const signals = { api: [], model: [], store: [] };
     for (const r of reach) {
       const b = bindings.get(r);

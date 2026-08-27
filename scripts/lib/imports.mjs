@@ -77,6 +77,7 @@ function resolveSpecifier(fromAbs, spec) {
 }
 
 // ── parsing ───────────────────────────────────────────────────────────────
+/** @type {import("@babel/parser").ParserPlugin[]} */
 const PLUGINS = ["typescript", "jsx", "decorators-legacy", "explicitResourceManagement"];
 
 function namesOfDeclaration(d) {
@@ -105,31 +106,74 @@ const TYPE_DECLARATIONS = new Set([
 ]);
 
 /**
+ * One name a statement pulls in. A side-effect import (`import "./x"`) has none.
+ *
+ * @typedef {object} Specifier
+ * @property {string} imported
+ * @property {string|null} local
+ * @property {boolean} typeOnly
+ * @property {boolean} star
+ */
+
+/**
+ * One statement that runs another module. `bare` marks a side-effect import,
+ * which carries no specifiers and is still an edge, because the module runs.
+ *
+ * @typedef {object} ImportEdge
+ * @property {number} line
+ * @property {string} spec
+ * @property {string|null} resolved
+ * @property {"imports"|"re-exports"} kind
+ * @property {boolean} statementTypeOnly
+ * @property {boolean} bare
+ * @property {Specifier[]} specifiers
+ */
+
+/**
+ * One name this module offers. `from` is set only for a re-export, where the
+ * name is not declared here.
+ *
+ * @typedef {object} ExportEntry
+ * @property {string} name
+ * @property {string|null} local
+ * @property {number} line
+ * @property {boolean} typeOnly
+ * @property {boolean} isDefault
+ * @property {string|null} from
+ * @property {string|null} resolvedFrom
+ * @property {boolean} star
+ */
+
+/**
  * Parse one file and normalize its module edges.
  *
- * Returns `{ path, rel, source, ast, parseError, imports, exports }`.
- *
- * `imports` entries — one per statement that runs another module:
- *   { line, spec, resolved, kind: "imports" | "re-exports", statementTypeOnly,
- *     bare, specifiers: [{ imported, local, typeOnly, star }] }
- * A side-effect import (`import "./x"`) has no specifiers and `bare: true`; it
- * is still an edge, because the module runs.
- *
- * `exports` entries — one per name this module offers:
- *   { name, local, line, typeOnly, isDefault, from, resolvedFrom, star }
- * `from` is set only for a re-export, where the name is not declared here.
+ * Returns `{ path, rel, source, ast, parseError, imports, exports }`. On a
+ * parse failure `ast` is null, `parseError` carries the message, and both
+ * edge lists stay empty.
  */
 export function parseModule(absPath) {
   const source = readFileSync(absPath, "utf8");
+  /** @type {ReturnType<typeof babel.parse>|null} */
   let ast = null;
+  /** @type {string|null} */
   let parseError = null;
   try {
     ast = babel.parse(source, { sourceType: "module", plugins: PLUGINS });
   } catch (e) {
     parseError = e.message;
   }
-  const mod = { path: absPath, rel: rel(absPath), source, ast, parseError, imports: [], exports: [] };
-  if (parseError) return mod;
+  const mod = {
+    path: absPath,
+    rel: rel(absPath),
+    source,
+    ast,
+    parseError,
+    /** @type {ImportEdge[]} */ imports: [],
+    /** @type {ExportEntry[]} */ exports: [],
+  };
+  // Checked rather than `parseError`: the two are set together, but only this
+  // form narrows `ast` for the rest of the function.
+  if (!ast) return mod;
 
   const edge = (n, kind, specifiers, bare = false) => {
     mod.imports.push({
@@ -143,7 +187,10 @@ export function parseModule(absPath) {
     });
   };
 
-  for (const n of ast.program.body) {
+  // Cast: the traversal below duck-types babel's node unions, which are narrow
+  // enough that proving each access costs more than it catches. The types are
+  // load-bearing for `ast` itself, not for the walk.
+  for (const n of /** @type {any[]} */ (ast.program.body)) {
     if (n.type === "ImportDeclaration") {
       const stmtType = n.importKind === "type";
       const specifiers = n.specifiers.map((s) => ({

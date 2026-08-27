@@ -18,6 +18,7 @@ const ROOT = process.argv[2] ? resolve(process.cwd(), process.argv[2]) : DEFAULT
 const BANNED = ["main", "description", "keywords", "author"];
 const LICENSE = "UNLICENSED";
 
+/** @type {(message: string) => never} */
 const integrityFailure = (message) => {
   console.error(`INTEGRITY FAILURE — ${message}`);
   process.exit(2);
