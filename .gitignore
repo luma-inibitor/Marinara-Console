@@ -2,12 +2,10 @@ dist/
 entries.json
 mockups/data.js
 node_modules/
-shots/
 .backups/
 .state/
 .claude/
 .decisions/
-.decisions
 .ds-sync/
 ds-bundle/
 .design-sync/.cache/
