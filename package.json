@@ -24,6 +24,7 @@
     "lint": "eslint src scripts",
     "pkgcheck": "node scripts/pkgcheck.mjs",
     "precompress": "node scripts/precompress.mjs",
+    "prepare": "node scripts/prepare.mjs",
     "preview": "vite preview",
     "prose": "vale --no-global .",
     "prosecheck": "node scripts/prosecheck.mjs",
