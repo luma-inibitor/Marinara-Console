@@ -698,6 +698,30 @@ This pull request must **not** delete `scripts/lib/baseline.mjs`.
 This plan has no replacement for `deadcss`. Thus `baseline.mjs` continues after the migration.
 The same is true for `scripts/lib/imports.mjs`. `components.mjs:71` imports it.
 
+The deletion leaves a reference to `scripts/deadexports.mjs` in four files this pull request doesn't own.
+`design/ARCHITECTURE.md` describes the script and its baseline ratchet.
+`docs/architecture-prose` rewrites that document and keeps the paragraph on purpose.
+The reason is that `deadexports` is still a live blocking check on that branch.
+A document has to be true of the tree it ships with.
+So whichever of the two pull requests lands second must delete the paragraph in the same change.
+`design/BRIEFING.md:211` lists `node scripts/deadexports.mjs` as a command a person runs.
+`chore/retire-verify` owns that file in wave 3, and the head of that branch still holds the row.
+Delete the row there.
+`tests/e2e/contrast.spec.ts:26` names the `deadcss/deadexports` shape in a comment about its own baseline.
+`test/e2e-axe-contrast` owns that file and the reference is still at its head, so the correction belongs there.
+`scripts/lib/baseline.mjs:50` gives `deadexports src/ui` as an example inside a comment.
+`fix/baseline-ghosts` and `chore/css-cross-sheet` both write to that file, so the correction belongs to whichever lands first.
+`chore/deadcss-drift` doesn't: it has no commits ahead of main, and its own plan section scopes it to `scripts/deadcss.mjs`.
+`linkcheck` reports neither Markdown reference, because each one is inline code rather than a Markdown link.
+It never opens `scripts/lib/baseline.mjs`, because `package.json:23` hands it `README.md`, `CLAUDE.md`, `BACKLOG.md` and `design/*.md` only.
+
+This pull request adds no check to replace the listing `deadexports` printed.
+`deadexports` named every baseline finding on every run and suppressed only the exit code.
+knip prints nothing about an export that carries a `/** @public */` tag.
+`npx knip --exports --tags=+public` prints nothing either, so knip offers no way to list the tagged exports.
+A reader who wants the list runs `grep -rn -A1 '@public' src`, which prints each tag with the line below it.
+The tree carries seven tags today, in `src/ui/ListGroup.tsx`, `src/ui/icons.tsx`, `src/ui/index.ts` and `src/tools/memory/detail/model.ts`.
+
 This pull request also corrects `docs/todo/components.md:184-185`.
 Both statements there are wrong.
 `deadexports.mjs` does examine exported types. Its header at `scripts/deadexports.mjs:15-19` says so.
@@ -874,13 +898,18 @@ Its two files are `src/tools/lorebooks/data.ts` and `src/tools/presets/data.ts`.
 Neither file holds an English string. Thus the marker does nothing today.
 
 **Three deadexports findings and the count for each directory.**
-knip accepts one level of reference from the declaration of a used export.
-Thus `FacetGroup`, `PickerOption`, and `DisclosureOption` become invisible.
+knip counts an exported type as used when a used export names it in a signature.
+This is a rule, not a fact about three symbols.
+Every exported type of that shape stays invisible, the ones written later included.
+`FacetGroup`, `PickerOption`, and `DisclosureOption` were the instances on the tree at the time.
 Each of the three occurs in the property type of the exported component next to it.
 `FacetValue` and `FacetLine` occur only inside another type. knip still finds them.
+No knip option closes this gap. `npx knip --trace-export DisclosureOption` prints `(no imports found)` and a tick.
 knip has no equivalent of the `deadexports` table.
 That table gives lines such as `src/ui  30 files  117 exports  9 used only in their own file`.
-`scripts/components.mjs` gives that information now.
+Nothing replaces that table.
+`scripts/components.mjs` prints a component inventory with an `exp` and a `refs` column for each component.
+It prints no export count and no over-export count for each directory.
 knip finds two items that `deadexports` can't find.
 The reason is that `deadexports` searches `/\.tsx?$/` in `src/` only.
 The two items are `testKeyword` at `src/lib/lorebook-keyword-matching.js:30`
