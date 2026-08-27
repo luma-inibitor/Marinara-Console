@@ -215,7 +215,13 @@ function notFound(req, res) {
 // startup, so a build during a run 404s every file it emits.
 // Gotcha: sirv's default `extensions` resolves /index to index.html as well as
 // finding a directory index, so the index is named below instead.
-const sirvOptions = { dev: true, etag: true, extensions: [], setHeaders: staticHeaders, onNoMatch: notFound };
+// `brotli`/`gz` send the sibling scripts/precompress.mjs wrote, and fall back
+// to the file itself where there is none. sirv sets Vary on every static reply
+// once either is on, including the replies with no sibling to choose from.
+const sirvOptions = {
+  dev: true, etag: true, extensions: [], brotli: true, gzip: true,
+  setHeaders: staticHeaders, onNoMatch: notFound,
+};
 const distFiles = sirv(DIST, sirvOptions);
 const publicFiles = sirv(PUBLIC, sirvOptions);
 
@@ -235,6 +241,12 @@ async function serveStatic(req, res, url) {
     res.writeHead(302, { location: `${url.pathname}/` }).end();
     return;
   }
+  // Gotcha: sirv reads `content-encoding` off the last three characters of the
+  // name and sets it even when the client offered no encoding, and even when
+  // its own brotli and gzip options are off. So a `.tar.gz` download reaches
+  // the browser unpacked under its packed name. Nothing under dist/ or public/
+  // is reachable only under a `.br` or `.gz` name.
+  if (/\.(br|gz)$/.test(url.pathname)) return notFound(req, res);
   // Gotcha: sirv strips a trailing slash before it looks, so /index.html/ would
   // otherwise serve the file.
   const pathname = url.pathname.endsWith("/") ? `${url.pathname}index.html` : url.pathname;

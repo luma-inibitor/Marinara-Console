@@ -860,8 +860,50 @@ That's a reasonable decision. It saves 30 minutes and one entry in `check:static
 
 #### `perf/precompress-dist`
 
-A measurement gives this result:
-`index-CrxHehqs.js` decreases from 666,225 bytes to 156,754 bytes with brotli quality 11.
+Done. `scripts/precompress.mjs` writes the siblings, `npm run build` runs it, and
+`server.mjs` turns on sirv's `brotli` and `gzip`.
+
+The bundle grew after the plan recorded that measurement, so it no longer holds.
+On the tree at `99ac36b`, `index-jDr26WZL.js` drops from 687,978 bytes to 161,361
+at brotli quality 11, and the CSS from 105,701 to 18,916. Those two files carry
+the whole saving, which comes to 77.3%.
+
+Only 2 of the 18 files in `dist/` get a sibling, and that's the right answer.
+Seventeen are `.woff2`, which already carries brotli inside: recompressing each
+font moves it between &minus;0.1% and +0.2%. `index.html` is 722 bytes, so it
+fits in one packet either way and gains nothing from a smaller body.
+
+Compressing costs 1.05 s beside a 1.28 s `vite build`, so `check:build` takes about
+twice as long as it did. A CI job that also installs dependencies and
+drives a browser won't notice. Quality 11 is the setting worth paying for.
+It takes 843 ms on the bundle where quality 10 takes 346 ms, and it buys 2.0%.
+
+The work turned up three things the plan didn't anticipate.
+
+`vite build` empties `dist/` before it writes, so a sibling can't outlive the
+file behind it. That removes the stale-sibling hazard for `index.html`, the one
+file Vite doesn't content-hash. The script sweeps orphans anyway, for a tree
+somebody edited by hand.
+
+Writing the siblings also gave every compressed file a second URL. Asked for by
+name, `/assets/app.js.br` answered 200 with `content-encoding: br`, and no client
+requesting that path ever offered to decode it.
+
+That turned out to be one case of something older. sirv reads `content-encoding`
+off the last three characters of a name. It sets that header even when the client
+offered no encoding at all. It sets it even when its own compression options are
+off. A genuine `data.tar.gz` in `public/` therefore reached the browser unpacked
+under its packed name, before this branch existed.
+
+So this server can serve no name ending `.br` or `.gz` correctly. `server.mjs`
+now 404s every one of them, the way it already treats `/index` and
+`/index.html/`. Call that a limitation rather than a fix. Nothing in `dist/` or
+`public/` is reachable only under such a name.
+
+The same confusion sat in the script. Its orphan sweep read any `.br` or `.gz`
+as a sibling, so it deleted a genuine `data.tar.gz` outright. The name strips to
+`data.tar`, no such file exists, and the sweep called it an orphan. It now sweeps
+only a name that strips to a type on its own compressible list.
 
 ---
 
