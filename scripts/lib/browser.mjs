@@ -28,6 +28,15 @@ export function launch(options = {}) {
   return chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH, ...options });
 }
 
+/**
+ * @typedef {object} OpenOptions
+ * @property {{width: number, height: number}} viewport
+ * @property {string} [hash]
+ * @property {string} [url]
+ * @property {number} [settle]
+ * @property {number} [timeout]
+ */
+
 // `settle` is how long #app must go without a DOM mutation before the page is
 // ready. A fixed wait can return while a screen is still loading.
 //
@@ -41,7 +50,7 @@ export function launch(options = {}) {
 // flaky app: a fresh index.html is what makes Vite re-emit the module graph
 // with current timestamps, and it is the only way out of a poisoned one.
 //
-async function openPage(browser, { viewport, hash = "", url = DEV_URL + hash, settle = 0, timeout = 60000 }) {
+async function openPage(browser, /** @type {OpenOptions} */ { viewport, hash = "", url = DEV_URL + hash, settle = 0, timeout = 60000 }) {
   const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
   let refused = new Set();
   page.on("requestfailed", (r) => { if (r.url().startsWith(DEV_URL)) refused.add(`${r.url()} ${r.failure()?.errorText ?? "failed"}`); });
@@ -50,7 +59,7 @@ async function openPage(browser, { viewport, hash = "", url = DEV_URL + hash, se
   await page.goto(url, { waitUntil: "networkidle", timeout });
   for (let attempt = 0; ; attempt++) {
     try {
-      await page.waitForFunction(() => document.getElementById("app")?.childElementCount > 0, null, { timeout: 15000 });
+      await page.waitForFunction(() => (document.getElementById("app")?.childElementCount ?? 0) > 0, null, { timeout: 15000 });
       break;
     } catch {
       const why = refused.size ? ` (dev server refused ${[...refused].join(", ")})` : "";
@@ -77,7 +86,10 @@ async function openPage(browser, { viewport, hash = "", url = DEV_URL + hash, se
 // Open a surface a URL cannot reach: an overlay, a selected row, an expanded
 // editor. `open` drives the app there. Without a `sel` to wait for, a click
 // that did nothing reads as a reached surface.
-export async function openSurface(browser, { open, sel, ...rest }) {
+export async function openSurface(
+  browser,
+  /** @type {OpenOptions & { open?: (page: any) => any, sel?: string }} */ { open, sel, ...rest },
+) {
   const page = await openPage(browser, rest);
   try {
     if (open) await open(page);
@@ -97,6 +109,7 @@ export async function openSurface(browser, { open, sel, ...rest }) {
 export async function renderedComponents(page) {
   const names = await page.evaluate(() => {
     const root = document.getElementById("app");
+    if (!root) return null;
     const key = Object.keys(root).find((k) => k.startsWith("__reactContainer$"));
     if (!key) return null;
     const nameOf = (t) => {

@@ -140,7 +140,11 @@ function edgesOf(source, read) {
         push(node, node.moduleSpecifier, "imports", [], true);
         continue;
       }
-      if (clause.isTypeOnly) continue;
+      // TypeScript 7's ImportClause declares `phaseModifier`, which carries
+      // `type` and `defer`, and no longer declares `isTypeOnly` — though the
+      // node still answers to it. Same edges either way; this is the spelling
+      // the published types know.
+      if (clause.phaseModifier === ts.SyntaxKind.TypeKeyword) continue;
       const bindings = clause.namedBindings;
       const names =
         bindings && ts.isNamespaceImport(bindings)
@@ -171,7 +175,12 @@ function edgesOf(source, read) {
     const pattern = declaration && ts.isVariableDeclaration(declaration) ? declaration.name : null;
     const names =
       pattern && ts.isObjectBindingPattern(pattern)
-        ? pattern.elements.map((e) => (e.propertyName ?? e.name).text)
+        ? // `{ a: { b } }` binds through `a`, so the name reached here is an
+          // identifier in every valid form; anything else has no name to take.
+          pattern.elements.flatMap((e) => {
+            const n = e.propertyName ?? e.name;
+            return n && ts.isIdentifier(n) ? [n.text] : [];
+          })
         : ["*"];
     push(node, specifier, "imports", names);
   });

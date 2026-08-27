@@ -65,4 +65,7 @@ const rule = (primary) => (root, result) => {
 
 rule.ruleName = ruleName;
 
-export default stylelint.createPlugin(ruleName, rule);
+// Cast: stylelint's `Rule` type expects a `messages` map of builders. This
+// rule composes each message inline instead, because the two halves have to
+// stay separable for typescale.mjs.
+export default stylelint.createPlugin(ruleName, /** @type {import("stylelint").Rule} */ (/** @type {unknown} */ (rule)));

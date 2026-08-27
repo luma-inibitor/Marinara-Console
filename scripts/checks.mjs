@@ -26,8 +26,10 @@
 // requests (.github/workflows/prose.yml sets fail_on_error: false), so listing
 // it here would make it blocking and change a decision main already made.
 export const checks = [
-  // Types
+  // Types. `typecheck` is src/ and tests/; the scripts have their own
+  // config because they need node globals and a laxer strictness.
   "typecheck",
+  "typecheck:scripts",
   // Lint
   "lint",
   // Layers: imports point downward, and no component owns a fetch

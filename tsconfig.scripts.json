@@ -1,0 +1,29 @@
+// Type checking for the tooling: scripts/ and the dev server. tsconfig.json
+// includes only src/ and tests/, so before this file nothing compiled these at
+// all — the code enforcing every invariant in the repo was the only code with
+// no compiler over it.
+//
+// Three deliberate differences from the root config:
+//
+//   `strict: false` with `strictNullChecks: true`. Full strict reports 346,
+//   163 of them implicit-any parameters. Annotating every callback in a tree of
+//   AST walkers buys nothing a null check does not; the null checks are what
+//   catch the bugs, so those are what is turned on.
+//
+//   `types: ["node"]` and the DOM lib. The root config lists only
+//   `vite/client`, on purpose: putting node globals on src/'s type list would
+//   let a browser module reach for `process`. The split keeps that intact. DOM
+//   is here for the `page.evaluate` callbacks, which run in Chromium — eslint
+//   scopes those globals to the five files that use them, and a tsconfig
+//   cannot, so this is the one place the two disagree.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "checkJs": true,
+    "strict": false,
+    "strictNullChecks": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"]
+  },
+  "include": ["scripts/**/*.mjs", "server.mjs"]
+}
