@@ -1,11 +1,8 @@
 // The test object every spec here imports: `@playwright/test` with the fixture
 // corpus installed.
 //
-// It also turns four things the browser swallows into failures — an unanswered
-// request, a `[wire]` console error (a fixture that no longer parses against the
-// app's own valibot schemas), any other console error or warning, and an
-// uncaught exception after render. All four are checked after `use()`, so they
-// report on the whole test.
+// Gotcha: the browser swallows an unanswered request, a console error and an
+// uncaught exception after render. Each is raised after `use()` instead.
 
 import { test as base, expect } from "@playwright/test";
 import { installApi, type Route } from "./api";

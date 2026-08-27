@@ -7,14 +7,12 @@ import { expect, test } from "./harness";
 // pixel of excess is measurement noise rather than a sideways scroll.
 const SLACK = 1;
 
-// `.chiprail` is the one box meant to scroll sideways: it sets `overflow-x:
-// auto` itself and fades its right edge to say so.
+// `.chiprail` is the one box meant to scroll sideways, and says so with a fade.
 const SIDEWAYS_OK = [".chiprail"];
 
 // Gotcha: `overflow-y: auto` computes `overflow-x` to auto too, so an over-wide
-// row scrolls its nearest scroller and leaves the document at exactly the
-// viewport width. Scrollers are collected by computed overflow rather than
-// named, because `.stage` holds the rows on two screens and `.audit-list` on six.
+// row scrolls its nearest scroller and leaves the document at the viewport
+// width. Hence collecting scrollers by computed overflow rather than by name.
 
 for (const screen of SCREENS) {
   test(screen.name, async ({ page }) => {

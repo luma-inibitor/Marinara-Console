@@ -75,9 +75,7 @@ export function useRovingFocus(input: RovingOpts) {
      *  Synchronous when the row is already in the DOM, deferred only when it is
      *  not. The deferral exists because the row may not be rendered until the
      *  state change this call just made has flushed. Deferring unconditionally
-     *  put focus a frame behind every keypress, which made the keyboard walk
-     *  fail intermittently — and an intermittent check is one people learn to
-     *  ignore. */
+     *  put focus a frame behind every keypress. */
     const reveal = (key: string) => {
       const opts = latest.current;
       opts.onFocus(key);
