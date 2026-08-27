@@ -2,8 +2,8 @@
 
 - **Run `design/CHECKLIST.md` before showing Luma any UI, mockup, or specimen
   book.** It's built from defects that actually shipped here; the copy phase
-  is mechanical (`node scripts/copycheck.mjs <file>`) and must pass or every
-  untraced string must be justified.
+  is mechanical (`npm run lint` for the call sites, `npm run copycatalog` for
+  the catalog itself) and must pass, or you must justify every untraced string.
 - **Start at `design/BRIEFING.md`** for orientation: what the memory tool is for,
   what's settled, and what the memory types actually look like in the live
   corpus. It points into the other two rather than repeating them.

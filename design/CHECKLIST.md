@@ -34,7 +34,7 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
 
 ## 2. Copy — before writing any label
 
-- [ ] **Run `node scripts/copycheck.mjs <file>`.** Every user-visible string must
+- [ ] **Run `npm run lint` and `npm run copycatalog`.** Every user-visible string must
       trace to `ltm-en.json` or be registered in `OURS` with a reason.
 - [ ] **Search the catalog for the concept, not the word.** The product almost
       always already has it.
@@ -103,7 +103,7 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
       actually drawn, or what you meant to draw?
       *(A caption promised the rail hid imported sources while the mockup showed
       them.)*
-- [ ] **Run the mechanical checks**: `copycheck.mjs`, and `npx playwright test`
+- [ ] **Run the mechanical checks**: `npm run check`, and `npx playwright test`
       for app code (contrast, tap targets, sideways scroll, overlay dismissal,
       keyboard).
 - [ ] **Read every comment the diff adds**, and delete the ones that fail

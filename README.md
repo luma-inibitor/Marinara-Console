@@ -82,4 +82,4 @@ and a fenced example fixes the cause rather than the symptom.
 | `tests/e2e/` | the browser suite: the definition of done in DESIGN.md §7 — screens, contrast, tap targets, sideways scroll, overlays, keyboard, screen captures. It drives the built bundle at four viewports and answers every request from a fixture corpus |
 | `design/` | DESIGN.md, tokens rationale, vendored UI research |
 | `.vale.ini` | prose lint config: Microsoft style, exemptions in the vocabulary rather than rule switches |
-| `scripts/` | the executable checks that run without a test runner: `components` (inventory of what returns markup, and what each one couples to), `copycheck`, `layercheck`, `deadcss`, `deadexports`, `typescale`, `prosecheck`, `domsnap`. `domsnap` drives a real browser and takes its harness from `lib/browser.mjs` |
+| `scripts/` | the executable checks that run without a test runner: `components` (inventory of what returns markup, and what each one couples to), `copycatalog`, `layercheck`, `deadcss`, `typescale`, `specificity`, `pkgcheck`, `prosecheck`, `domsnap`. `domsnap` drives a real browser and takes its harness from `lib/browser.mjs` |

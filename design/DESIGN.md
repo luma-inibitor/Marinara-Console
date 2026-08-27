@@ -285,7 +285,7 @@ exists, use it; if it needs a new one, add it here in the same change.
 - **Copy provenance** — every user-visible string traces to the vendored
   catalog (`src/copy/vendor/ltm-en.json`) or to a registered entry in
   `src/copy/<area>.json`, each carrying a `note` saying why the product has no
-  word for it. `scripts/copycheck.mjs` checks this mechanically against a
+  word for it. `scripts/copycatalog.mjs` checks this mechanically against a
   rendered surface. Coining silently has been the single most repeated defect
   in this tool. (The old `OURS` object and `src/tools/memory/strings.ts` are
   gone: `OURS` could not express a mirror, and its reasons were comments
