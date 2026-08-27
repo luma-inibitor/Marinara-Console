@@ -417,7 +417,17 @@ Luma is separately deciding whether to lower the primary floor from 44px, so the
 
 - **Keep `domsnap`.** Measured against Playwright's aria snapshot and screenshots on the real PR #21 commits: domsnap caught the class change, aria reported identical, and aria and screenshots each flaked twice in six runs on an unchanged commit. Text-immunity is load-bearing, since 87–95% of aria lines carry copy we reword constantly.
 - **Keep the router, the store, toasts, fuzzy search, the JSON viewer, and date handling.** TanStack Query specifically rejected: the data here is one shared map with cross-derivation, so it would sit beside the stores rather than replace them.
-- **No Prettier.** It reflows the hand-formatted rationale blocks.
+- **Prettier owns `.ts`, `.tsx`, `.mjs` and the config files — not CSS, not
+  Markdown.** This reverses the earlier "no Prettier", whose stated reason —
+  that it reflows the hand-formatted rationale blocks — did not survive
+  measurement. Prettier never rewrites comment text; it re-indents a comment
+  only when it re-indents the code around it. The half of the objection that
+  did survive is handled by exclusion rather than by refusal: CSS is out
+  because the token tables are hand-aligned one-liners it gives three lines
+  each (`memory.css` 451 → 1,779 lines), and Markdown is out because it
+  rewrites `*emphasis*` to `_emphasis_` across 23 documents to no rendered
+  effect. stylelint and Vale already own those two. `format:check` runs in
+  `check:static`; `npm run format` fixes.
 
 ## Bugs / unverified
 
