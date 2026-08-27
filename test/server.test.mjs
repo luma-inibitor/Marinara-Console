@@ -3,9 +3,12 @@
 // Every assertion states what the server does TODAY, including where that is
 // wrong; those cases are marked.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { readdir, rm } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
+import { brotliDecompressSync, gunzipSync } from "node:zlib";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ROOT, startConsole, startStub } from "./helpers/harness.mjs";
+import { precompress } from "../scripts/precompress.mjs";
+import { FIXTURES, ROOT, startConsole, startStub } from "./helpers/harness.mjs";
 
 // Gotcha: these two directories are not overridable and hold real data on a
 // developer's machine. Record what was there first and remove only what we add.
@@ -552,5 +555,86 @@ describe("static roots", () => {
     const dist = await mc.request("/manifest.json");
     expect(JSON.parse(dist.body)).toEqual({ marker: "dist manifest.json" });
     expect((await mc.request("/mockups/")).body).toContain("mockups index");
+  });
+});
+
+// ── precompressed siblings ────────────────────────────────────────
+// A temporary copy of the fixture tree, run through scripts/precompress.mjs.
+// Compressed fixtures are not committed: generating them here proves the script
+// and the server agree, which a checked-in blob could not.
+describe("static · precompressed siblings", () => {
+  const HASHED = "/assets/index-abcd1234.js";
+  const PLAIN = "/assets/app.js";
+  let tree;
+  let body;
+  let server;
+
+  beforeAll(async () => {
+    tree = await mkdtemp(join(tmpdir(), "mc-dist-"));
+    await cp(join(FIXTURES, "client"), tree, { recursive: true });
+    // Over the script's floor, and repetitive so both encodings beat it.
+    body = `globalThis.marker = "${"dist,hashed,asset;".repeat(200)}";\n`;
+    await mkdir(join(tree, "assets"), { recursive: true });
+    await writeFile(join(tree, HASHED.slice(1)), body);
+    precompress(tree);
+    server = await startConsole({ dist: tree });
+  });
+
+  afterAll(async () => {
+    await server?.close();
+    await rm(tree, { recursive: true, force: true });
+  });
+
+  const get = (path, encoding) => server.request(path, { headers: { "accept-encoding": encoding } });
+
+  it("sends brotli, and the bytes decode back to the file", async () => {
+    const res = await get(HASHED, "br");
+    expect(res.headers["content-encoding"]).toBe("br");
+    expect(res.headers["vary"]).toBe("Accept-Encoding");
+    expect(brotliDecompressSync(res.bytes).toString("utf8")).toBe(body);
+  });
+
+  it("sends gzip to a client that asks for gzip alone", async () => {
+    const res = await get(HASHED, "gzip");
+    expect(res.headers["content-encoding"]).toBe("gzip");
+    expect(gunzipSync(res.bytes).toString("utf8")).toBe(body);
+  });
+
+  it("prefers brotli when a client offers both", async () => {
+    expect((await get(HASHED, "gzip, br")).headers["content-encoding"]).toBe("br");
+  });
+
+  it("sends the file itself to a client that asks for no encoding", async () => {
+    const res = await get(HASHED, "");
+    expect(res.headers["content-encoding"]).toBeUndefined();
+    expect(res.body).toBe(body);
+  });
+
+  // The sibling is a different file, so its type would come from `.br` if the
+  // server read the name it opened rather than the name it was asked for.
+  it("types the reply by the file that was asked for, not by the sibling", async () => {
+    expect((await get(HASHED, "br")).headers["content-type"]).toBe("text/javascript; charset=utf-8");
+  });
+
+  it("still marks a hashed asset immutable when it sends the sibling", async () => {
+    expect((await get(HASHED, "br")).headers["cache-control"]).toBe("public,max-age=31536000,immutable");
+  });
+
+  // app.js is under the script's floor, so it has no sibling to send.
+  it("sends the file itself where no sibling was written", async () => {
+    const res = await get(PLAIN, "br, gzip");
+    expect(res.status).toBe(200);
+    expect(res.headers["content-encoding"]).toBeUndefined();
+    expect(res.headers["content-type"]).toBe("text/javascript; charset=utf-8");
+  });
+
+  // Without this a shared cache could hand compressed bytes to a client that
+  // never asked for them.
+  it("varies on the request encoding even where there is no sibling", async () => {
+    expect((await get(PLAIN, "br")).headers["vary"]).toBe("Accept-Encoding");
+  });
+
+  it("404s a sibling asked for by name, so there is one URL per file", async () => {
+    expect((await get(`${HASHED}.br`, "")).status).toBe(404);
   });
 });

@@ -10,7 +10,7 @@ Companion documents: `DESIGN.md` for the visual framework, `CHECKLIST.md` for th
 
 The console had no layering problem at its edges and a real one in its middle.
 
-The backend stays separate, because the Marinara Engine is the backend and the console adds nothing to it. `server.mjs` runs three jobs on top of `node:http`. It serves the built client and the design mockups through `sirv`. It forwards `/api/*` to the engine through `http-proxy-middleware`. On the way out it adds the headers the engine's cross-site request forgery check wants. On the way back it strips every `embedding` array out of the reply, so a large payload doesn't cross the wire twice. It also owns the console's own small JSON documents under `/console/state/:key`, which is where the review ledger lives.
+The backend stays separate, because the Marinara Engine is the backend and the console adds nothing to it. `server.mjs` runs three jobs on top of `node:http`. It serves the built client and the design mockups through `sirv`, sending the `.br` or `.gz` file `scripts/precompress.mjs` wrote beside an asset when the request accepts that encoding. It forwards `/api/*` to the engine through `http-proxy-middleware`. On the way out it adds the headers the engine's cross-site request forgery check wants. On the way back it strips every `embedding` array out of the reply, so a large payload doesn't cross the wire twice. It also owns the console's own small JSON documents under `/console/state/:key`, which is where the review ledger lives.
 
 Inside `src/`, four things tangled together. The memory tool resolves three of them outright. It resolves the fourth all but one write. The other two tools don't follow yet.
 

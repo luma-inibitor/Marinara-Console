@@ -215,7 +215,13 @@ function notFound(req, res) {
 // startup, so a build during a run 404s every file it emits.
 // Gotcha: sirv's default `extensions` resolves /index to index.html as well as
 // finding a directory index, so the index is named below instead.
-const sirvOptions = { dev: true, etag: true, extensions: [], setHeaders: staticHeaders, onNoMatch: notFound };
+// `brotli`/`gz` send the sibling scripts/precompress.mjs wrote, and fall back
+// to the file itself where there is none. sirv sets Vary on every static reply
+// once either is on, including the replies with no sibling to choose from.
+const sirvOptions = {
+  dev: true, etag: true, extensions: [], brotli: true, gzip: true,
+  setHeaders: staticHeaders, onNoMatch: notFound,
+};
 const distFiles = sirv(DIST, sirvOptions);
 const publicFiles = sirv(PUBLIC, sirvOptions);
 
@@ -235,6 +241,11 @@ async function serveStatic(req, res, url) {
     res.writeHead(302, { location: `${url.pathname}/` }).end();
     return;
   }
+  // A precompressed sibling is a representation of the file next to it, not a
+  // file of its own. Asked for by name it would answer 200 with the
+  // `content-encoding` sirv reads off the extension, which no client asking for
+  // `/app.js.br` offered to decode.
+  if (/\.(br|gz)$/.test(url.pathname)) return notFound(req, res);
   // Gotcha: sirv strips a trailing slash before it looks, so /index.html/ would
   // otherwise serve the file.
   const pathname = url.pathname.endsWith("/") ? `${url.pathname}index.html` : url.pathname;

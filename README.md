@@ -77,9 +77,10 @@ and a fenced example fixes the cause rather than the symptom.
 
 | path | what |
 | --- | --- |
-| `server.mjs` | Static server and proxy, built on `sirv` and `http-proxy-middleware`. Strips `embedding` vectors from entry payloads (~85% of bytes), serves `dist/` at `/` and the design mockups at `/mockups/`. For the memory tool it rotates a long-term-memory restore point before each run's first write (`.backups/`), stores review decisions (`.state/`), and forwards `MARINARA_ADMIN_SECRET` for engines off loopback |
+| `server.mjs` | Static server and proxy, built on `sirv` and `http-proxy-middleware`. Strips `embedding` vectors from entry payloads (~85% of bytes), serves `dist/` at `/` and the design mockups at `/mockups/`, preferring the `.br` or `.gz` sibling `scripts/precompress.mjs` wrote where the request accepts it. For the memory tool it rotates a long-term-memory restore point before each run's first write (`.backups/`), stores review decisions (`.state/`), and forwards `MARINARA_ADMIN_SECRET` for engines off loopback |
 | `src/` | the console: Vite + Preact + TS, hash routing, tokens-based CSS |
 | `tests/e2e/` | the browser suite: the definition of done in DESIGN.md §7 — screens, contrast, tap targets, sideways scroll, overlays, keyboard, screen captures. It drives the built bundle at four viewports and answers every request from a fixture corpus |
 | `design/` | DESIGN.md, tokens rationale, vendored UI research |
+| `scripts/precompress.mjs` | Part of `npm run build`, not a check: writes a `.br` and a `.gz` beside each compressible file in `dist/` for the server to send. `npm run precompress` runs it alone |
 | `.vale.ini` | prose lint config: Microsoft style, exemptions in the vocabulary rather than rule switches |
 | `scripts/` | the executable checks that run without a test runner: `components` (inventory of what returns markup, and what each one couples to), `copycatalog`, `layercheck`, `deadcss`, `typescale`, `specificity`, `pkgcheck`, `prosecheck`, `domsnap`. `domsnap` drives a real browser and takes its harness from `lib/browser.mjs` |

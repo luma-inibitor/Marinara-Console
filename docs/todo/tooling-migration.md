@@ -860,8 +860,31 @@ That's a reasonable decision. It saves 30 minutes and one entry in `check:static
 
 #### `perf/precompress-dist`
 
-A measurement gives this result:
-`index-CrxHehqs.js` decreases from 666,225 bytes to 156,754 bytes with brotli quality 11.
+Done. `scripts/precompress.mjs` writes the siblings, `npm run build` runs it, and
+`server.mjs` turns on sirv's `brotli` and `gzip`.
+
+The bundle grew after the plan recorded that measurement, so it no longer holds.
+On the tree at `99ac36b`, `index-jDr26WZL.js` drops from 687,978 bytes to 161,361
+at brotli quality 11, and the CSS from 105,701 to 18,916. Those two files carry
+the whole saving, which comes to 77.3%.
+
+Only 2 of the 18 files in `dist/` get a sibling, and that's the right answer.
+Seventeen are `.woff2`, which already carries brotli inside: recompressing each
+font moves it between &minus;0.1% and +0.2%. `index.html` is 722 bytes, so it
+fits in one packet either way and gains nothing from a smaller body.
+
+The work turned up two things the plan didn't anticipate.
+
+`vite build` empties `dist/` before it writes, so a sibling can't outlive the
+file behind it. That removes the stale-sibling hazard for `index.html`, the one
+file Vite doesn't content-hash. The script sweeps orphans anyway, for a tree
+somebody edited by hand.
+
+Writing the siblings also gave every compressed file a second URL. Asked for by
+name, `/assets/app.js.br` answered 200 with `content-encoding: br`, and no client
+requesting that path ever offered to decode it. `server.mjs` now 404s any
+`url.pathname` ending in `.br` or `.gz`, which matches how it already treats
+`/index` and `/index.html/`.
 
 ---
 
