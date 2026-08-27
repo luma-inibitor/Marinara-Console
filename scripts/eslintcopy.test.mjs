@@ -1,7 +1,5 @@
-// A rule without a fixture is a rule that can be disabled by an edit and stay
-// green, so every copy rule eslint-plugin-i18next cannot express itself has a
-// fixture here: the four aria attributes it never reads, the three literals its
-// default excludes would let through, and the copy tables it skips whole.
+// One fixture per copy rule eslint-plugin-i18next cannot express: the four aria
+// attributes, the three literals its excludes admit, and the copy tables.
 import { describe, expect, it } from "vitest";
 import { ESLint } from "eslint";
 import { readFileSync } from "node:fs";

@@ -24,12 +24,9 @@ import reactHooks from "eslint-plugin-react-hooks";
 // things nobody acts on gets ignored.
 
 // ── the copy rules eslint-plugin-i18next cannot express ───────────────────
-// It reads a fixed five-attribute list at
-// node_modules/eslint-plugin-i18next/lib/helper/index.js:15, so the other four
-// aria attributes that hold sentences are invisible to it whatever
-// `jsx-attributes` says. Its `words.exclude` list matches a string and not a
-// position, so the route and identifier patterns below admit a bare lowercase
-// or camelCase word in a copy position as well as in a key.
+// Gotcha: its attribute list is fixed at five, so `jsx-attributes` cannot reach
+// the other four aria attributes. Its `words.exclude` matches a string and not
+// a position, so a bare word passes in a copy position as well as in a key.
 const COPY_SELECTORS = [
   {
     selector: 'JSXText[value=/^\\s*[a-z][A-Za-z0-9]*\\s*$/]:not([value=/^\\s*[kst]\\s*$/])',

@@ -12,14 +12,14 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const COPY_DIR = join(ROOT, "src", "copy");
 const PREFIX = "ui.longTermMemory.";
-// Two clauses of prose. Below this every note read "the catalog has no word".
+// 40 characters is two clauses of prose; every shorter note said nothing.
 const MIN_NOTE = 40;
 // U+FFFF is a noncharacter, so no copy can contain it and collide with a mask.
 const SENT = "￿";
 
 // ── normalization ─────────────────────────────────────────────────────────
 // Placeholders collapse to one sentinel, so "{{count}} notes" and "{{n}} notes"
-// are the same string and neither one matches the bare word.
+// compare equal.
 const norm = (s) =>
   String(s)
     .toLowerCase()

@@ -1,11 +1,8 @@
 // Lorebook tool: types, derived data, and engine-faithful evaluation.
 //
-// The copy TABLES below (status labels and hints, position labels) are enum ->
-// label maps under ALL-CAPS names, and eslint-plugin-i18next skips the whole
-// initialiser of an ALL-CAPS declarator. eslint.config.js names this file and
-// adds back one narrow case: a quoted label holding two space-separated words.
-// A template literal is a different node, so the tables written that way are
-// still unchecked.
+// Gotcha: eslint-plugin-i18next skips the whole initialiser of an ALL-CAPS
+// declarator, which is what the label tables below are. eslint.config.js adds
+// back one case, a quoted label of two words. A template literal stays unchecked.
 import { api, tokensOf } from "../../shell/api";
 import { tAny } from "../../copy";
 import { testPrimaryKeys, testSecondaryKeys } from "../../lib/lorebook-keyword-matching.js";

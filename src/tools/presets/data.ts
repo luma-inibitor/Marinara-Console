@@ -9,8 +9,7 @@
 // "true" || enabled === true`). Everything here is normalized at the fetch
 // boundary; components only ever see real booleans and parsed objects.
 //
-// eslint.config.js names this file beside src/tools/lorebooks/data.ts, for the
-// copy rule on labels inside an ALL-CAPS table; see that file's header.
+// eslint.config.js adds a copy rule for the ALL-CAPS label tables below.
 import { api, tokensOf } from "../../shell/api";
 import { tAny } from "../../copy";
 
