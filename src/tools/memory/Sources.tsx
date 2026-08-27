@@ -230,7 +230,7 @@ export function Sources() {
                       else eligible.forEach((r) => n.add(r.sourceId));
                       return n;
                     })}>
-                    {allPicked ? "Clear" : `Select all ${eligible.length}`}
+                    {allPicked ? t("activityview.clear") : `Select all ${eligible.length}`}
                   </button>
                 )}
                 {!bulk && <span className="gact-note t-data dim">{t("memory.sourcesReviewEach")}</span>}
@@ -532,7 +532,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
           </div>
         </div>
         <span className="gsp" />
-        <Button iconOnly className="hit" label="Dismiss report" onClick={onDismiss}
+        <Button iconOnly className="hit" label={t("reviewqueue.dismissReport")} onClick={onDismiss}
           icon={<Close size={ICON_SIZE.xl} stroke={1.75} aria-hidden />} />
       </div>
 

@@ -65,6 +65,10 @@
     "text": "read-only",
     "note": "Tag on a preset the engine owns. The catalog states the same fact only inside a paragraph (extractionprompttemplates.promptTemplatesHelp, 'Built-in prompts are read-only.') and has no standalone marker for it."
   },
+  "presets.thisSection": {
+    "text": "this section",
+    "note": "Stands in for a section name in the save-first toast when the unsaved section has no name yet. The catalog's sections are the memory note's own fixed keys, which always have a name and never need a placeholder."
+  },
   "presets.modeConv": {
     "text": "conv",
     "note": "Abbreviated mode name in the editor's `.meta` data line, where the two totals sit side by side in tabular figures and the full word would wrap on a phone. The catalog's 'Conversation' is a mode name in prose and is never abbreviated."

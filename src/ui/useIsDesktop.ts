@@ -17,4 +17,4 @@ export function useIsDesktop(): boolean {
   return is;
 }
 
-const SPLIT = "(min-width: 900px)";
+export const SPLIT = "(min-width: 900px)";

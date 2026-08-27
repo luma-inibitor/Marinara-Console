@@ -772,6 +772,11 @@
     "text": "editing proposed content",
     "note": "Zone eyebrow while the preview is a textarea, naming what is being edited so it is clear the stored text is not. The catalog's reviewEdit is the verb on a button; there is no upstream edit mode to label. Lowercase because eyebrows uppercase in CSS."
   },
+  "memory.sort.limits": {
+    "text": "Limits",
+    "despite": "activityview.limits",
+    "note": "Vault sort chip ordering memories by how close each section sits to its character cap. The catalog's \"Limits:\" is a heading over a figure and carries the colon into anything that reuses it; a chip is a control, not a label for the value beside it."
+  },
   "memory.vault.id": {
     "text": "id",
     "note": "Key in the editor's key/value header. The catalog never exposes a note id as a labeled field — upstream ids live in diagnostics — so the one word this column needs has no source. Lowercase to match the column, whose other keys are catalog words rendered lowercase."

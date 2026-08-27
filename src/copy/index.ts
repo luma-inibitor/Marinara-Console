@@ -131,6 +131,7 @@ const fill = (s: string, params?: Params): string => {
 
 /** `count` is the only selector, matching the vendored catalog. */
 const pluralSuffix = (params?: Params): "One" | "Other" =>
+  // eslint-disable-next-line i18next/no-literal-string -- catalog field suffixes, not rendered text.
   Number(params?.count) === 1 ? "One" : "Other";
 
 function lookup(key: string, params?: Params): string | null {

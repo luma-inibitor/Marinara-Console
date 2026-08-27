@@ -15,6 +15,7 @@ export class WireMismatchError extends Error {
   context: string;
   constructor(context: string, issues: string[], message?: string) {
     super(message ?? `${context}: ${issues.join("; ")}`);
+    // eslint-disable-next-line i18next/no-literal-string -- a stack-trace label, not copy.
     this.name = "WireMismatchError";
     this.context = context;
     this.issues = issues;
