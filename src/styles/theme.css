@@ -87,7 +87,7 @@
   --radius-m: var(--r-m);
   --radius-l: var(--r-l);
 
-  /* the two semantic breakpoints (DESIGN.md §7) */
+  /* the two semantic breakpoints (tests/e2e/README.md §1) */
   --breakpoint-stack: 720px;
   --breakpoint-split: 900px;
 }

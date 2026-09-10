@@ -6,9 +6,9 @@ reviewers can catch regressions and repeat offenses.
 Each item carries: the invariant, how a reviewer checks it, and the feedback
 it came from. Corrections belong in this file, not in reviewers' heads.
 
-Relationship to DESIGN.md: DESIGN.md is the framework; this is the
+Relationship to `design.md`: `design.md` is the spec; this is the
 owner-feedback ledger in enforceable form. Items that prove durable should
-graduate into DESIGN.md §2 (owner preferences); this file then references,
+graduate into `design.md` §3 (interaction); this file then references,
 never restates.
 
 ## L · Layout and slot discipline

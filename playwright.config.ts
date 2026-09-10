@@ -10,7 +10,7 @@ import { defineConfig } from "@playwright/test";
 // already holds the default, so two worktrees running at once share one build.
 const PORT = Number(process.env.MC_E2E_PORT) || 4178;
 
-// design/DESIGN.md §7. 390 is the iPhone-class floor; 486 is Luma's device
+// tests/e2e/README.md §1. 390 is the iPhone-class floor; 486 is Luma's device
 // (1080 physical at DPR 2.22); 768 sits between the two CSS breakpoints; 1280
 // is desktop.
 const VIEWPORTS = [

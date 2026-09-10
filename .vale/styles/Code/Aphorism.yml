@@ -1,5 +1,5 @@
 # A balanced two-clause construction that lands a point instead of stating a
-# fact. DESIGN.md's comment rule names these.
+# fact. design.md's comment rule names these.
 #
 # Gotcha: `scope: text`, not `scope: sentence`. Vale never segments code
 # comments into sentences, so a sentence-scoped rule silently matches nothing

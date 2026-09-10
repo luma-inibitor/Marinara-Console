@@ -3,7 +3,7 @@
 Covering the work from the start of the memory tool through the component
 refactor. This is the orientation document: what the interface is
 for, what's settled, what the domain actually looks like, and what's still
-open. It sits above `DESIGN.md` (the framework) and `CHECKLIST.md` (the
+open. It sits above `design.md` (the spec) and `CHECKLIST.md` (the
 pre-flight), and points into both rather than repeating them.
 
 ---
@@ -65,7 +65,7 @@ route and chats carry no branch field), index-health repair.
 
 ## 4. The design system this must live inside
 
-Full detail in `DESIGN.md`. The parts that constrain new work:
+Full detail in `design.md`. The parts that constrain new work:
 
 - **Three type faces with strict roles.** `--font-label` for structure,
   `--font-data` for *all* data, `--font-prose` for sentences a human reads.
@@ -85,7 +85,7 @@ Full detail in `DESIGN.md`. The parts that constrain new work:
 
 ## 5. Requirements that are settled
 
-Owner-confirmed. Don't re-litigate; see `DESIGN.md` §2 for the full list.
+Owner-confirmed. Don't re-litigate; see `design.md` §3 for the full list.
 
 - Titles **truncate to one line** in list rows.
 - Collapsed headers still carry data — counts, totals, status. Closed isn't

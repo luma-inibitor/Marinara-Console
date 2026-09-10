@@ -95,7 +95,7 @@
 
 /* ══ active-filter track ══
    Every active value, removable where it is shown — on a phone the sheet is
-   dismissed and this is the only way back out of a filter (DESIGN.md §4). */
+   dismissed and this is the only way back out of a filter (design.md §3). */
 .ftrack { display: flex; align-items: center; gap: 5px; margin-top: 5px;
   overflow-x: auto; scrollbar-width: none; padding-bottom: var(--s2); }
 .ftrack::-webkit-scrollbar { display: none; }

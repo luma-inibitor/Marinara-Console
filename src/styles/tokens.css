@@ -1,5 +1,5 @@
 /* Marinara Console design tokens: color, type, space, shape, motion.
-   Themed by [data-theme], density by [data-density]. See design/DESIGN.md §1. */
+   Themed by [data-theme], density by [data-density]. See design/design.md §2. */
 
 :root,
 :root[data-theme="dark"] {

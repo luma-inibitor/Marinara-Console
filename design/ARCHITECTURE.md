@@ -1,8 +1,8 @@
 # Marinara Console — Architecture
 
-**Status: draft, under active revision.** `DESIGN.md` decides how things look. This file decides where things live and what may import what. The Open questions section at the end lists what this file doesn't yet decide. Closing one of those questions means moving its answer into the body and deleting the question.
+**Status: draft, under active revision.** `design.md` decides how things look. This file decides where things live and what may import what. The Open questions section at the end lists what this file doesn't yet decide. Closing one of those questions means moving its answer into the body and deleting the question.
 
-Companion documents: `DESIGN.md` for the visual framework, `CHECKLIST.md` for the pre-review gate, and `BRIEFING.md` for what the memory tool is for.
+Companion documents: `design.md` for the visual framework, `CHECKLIST.md` for the pre-review gate, and `BRIEFING.md` for what the memory tool is for.
 
 ---
 

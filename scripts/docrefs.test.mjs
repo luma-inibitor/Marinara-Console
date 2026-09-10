@@ -29,8 +29,8 @@ it("reports a script the tree does not have", () => {
 });
 
 it("reports an npm script package.json does not have", () => {
-  write("design/DESIGN.md", "Run `npm run verify` first.\n");
-  expect(docRefs(root).findings).toEqual([{ doc: "design/DESIGN.md", name: "npm run verify" }]);
+  write("design/design.md", "Run `npm run verify` first.\n");
+  expect(docRefs(root).findings).toEqual([{ doc: "design/design.md", name: "npm run verify" }]);
 });
 
 describe("what it deliberately does not read", () => {

@@ -107,7 +107,7 @@ purpose — the expensive mistake is building the wrong thing, not misaligning i
       for app code (contrast, tap targets, sideways scroll, overlay dismissal,
       keyboard).
 - [ ] **Read every comment the diff adds**, and delete the ones that fail
-      DESIGN.md §8: rationale, narrative about the bug being fixed, restating
+      `design.md` §5: rationale, narrative about the bug being fixed, restating
       the declaration below, or an alternative that was rejected. Keep a file
       header, a section divider, the derivation of a magic number, and a real
       gotcha. `git diff | grep -E '^\+.*(//|/\*)'` lists them.

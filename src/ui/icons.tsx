@@ -2,7 +2,8 @@
 // may import from "@tabler/icons-react"; everything else imports a semantic name
 // from here.
 //
-// Silhouette families are reserved — DESIGN.md §5 has the rule and the reasoning.
+// Silhouette families are reserved — design/component-docs/icons.md has the
+// rule and the reasoning.
 // The operative test: if you reach for a round glyph whose interior is a tick, a
 // cross, or a dotted edge, and you are not naming a decision, it's the wrong icon.
 //
@@ -198,7 +199,7 @@ export const Incomplete = IconAlertTriangle; // an extraction that stopped
 // partial harvest that needs
 // re-running
 // PartialResult and Degraded have no call site yet. They are the state-signal
-// vocabulary DESIGN.md §207 commits to; use these rather than a new glyph.
+// vocabulary this file commits to; use these rather than a new glyph.
 /** @public */
 export const PartialResult = IconProgressX; // partial: some of the batch
 // landed, some did not

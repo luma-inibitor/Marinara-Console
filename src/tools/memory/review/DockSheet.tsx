@@ -149,7 +149,7 @@ export function DockSheet(props: { model: DockSheetModel; onClose: () => void; o
  *
  *  The two are separate because the faces are: a heading is structure and gets
  *  the label face in caps, a consequence is something a person reads and gets
- *  prose (DESIGN.md §1). Carrying both in one string forced sentences —
+ *  prose (design.md §2). Carrying both in one string forced sentences —
  *  "1 blocked — held back from Apply" — through the caps treatment, where they
  *  wrapped to two lines of tracked upper-case red. */
 function Section(props: {

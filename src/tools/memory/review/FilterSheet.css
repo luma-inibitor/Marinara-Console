@@ -83,7 +83,7 @@
 
 /* ── the toggle mark ──
    A box, never a dot: these are multi-select, and the shape has to say so
-   before the accent does (DESIGN.md §1 — color is never the only carrier). */
+   before the accent does (design.md §2 — color is never the only carrier). */
 .fs-box { flex: none; width: 14px; height: 14px; border-radius: 3px;
   border: 1px solid var(--edge-strong); display: inline-flex;
   align-items: center; justify-content: center; color: var(--accent-ink); }
