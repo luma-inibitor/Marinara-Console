@@ -3,14 +3,14 @@ import "./Chip.css";
 
 /** A small pressable control: an action, or a toggle when `pressed` is passed.
  *
- *  Accent means interactive (design/DESIGN.md §2), so a non-interactive label
+ *  Accent means interactive, so a non-interactive label
  *  must not reach for it — use `<Tag>` for those. */
 export function Chip(props: {
   children: ReactNode;
   onClick?: () => void;
   /** Present makes this a toggle and renders the pressed state. */
   pressed?: boolean;
-  /** Computed-outlier hue, reserved for flag filters (DESIGN.md §2). */
+  /** Computed-outlier hue, reserved for flag filters. */
   flag?: boolean;
   disabled?: boolean;
   title?: string;

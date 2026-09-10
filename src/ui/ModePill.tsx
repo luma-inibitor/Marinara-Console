@@ -9,7 +9,7 @@ import "./ModePill.css";
  *  lit means no filter. Leave it off and the pill is a read-out.
  *
  *  Both forms light with a raised surface; only the interactive one adds the
- *  accent border, because accent is reserved for interactive (DESIGN.md §2). */
+ *  accent border, because accent is reserved for interactive. */
 export const MODES = [
   { id: "conversation", short: "DM", name: t("ui.mode.conversation"), Icon: MODE_ICON.conversation },
   { id: "roleplay", short: "RP", name: t("ui.mode.roleplay"), Icon: MODE_ICON.roleplay },

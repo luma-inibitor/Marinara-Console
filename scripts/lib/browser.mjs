@@ -10,7 +10,7 @@ import { chromium } from "@playwright/test";
 // is not a same-document URL Vite will serve.
 const DEV_URL = (process.env.MC_DEV_URL ?? "http://127.0.0.1:5233") + "/";
 
-// The standard viewports (design/DESIGN.md §7). 390 is the narrow floor
+// The standard viewports (tests/e2e/README.md §1). 390 is the narrow floor
 // (iPhone-class). 486 is Luma's actual device (1080 physical at DPR 2.22) and
 // is the one that has to look right — a layout tuned only at 390 has never
 // been seen at the width it ships to. 768 is the band between the two CSS

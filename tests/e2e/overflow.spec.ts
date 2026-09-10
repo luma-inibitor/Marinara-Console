@@ -1,4 +1,4 @@
-// design/DESIGN.md §7: no screen scrolls sideways at any of the four viewports.
+// tests/e2e/README.md §7: no screen scrolls sideways at any of the four viewports.
 
 import { SCREENS, openScreen } from "./screens";
 import { expect, test } from "./harness";

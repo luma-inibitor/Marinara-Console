@@ -6,7 +6,7 @@ import { Close, ICON_SIZE } from "./icons";
 import "./Sheet.css";
 
 /** A layered surface: a bottom sheet on a phone, a right-hand panel on a wide
- *  screen. The mobile projection of a panel or popover (DESIGN.md §6).
+ *  screen. The mobile projection of a panel or popover (DESIGN.md §3).
  *
  *  Sheet registers itself with the overlay stack on mount, so its opener only
  *  has to flip a signal and Escape and the Android back gesture reach it

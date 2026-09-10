@@ -49,7 +49,7 @@
     "RawJson": "value: unknown;\n    label?: string;",
     "Loading": "what?: string;\n    label?: string;\n    onRetry?: () => void;",
     "ListEmpty": "kind: \"first-run\" | \"filtered\" | \"cleared\";\n    what: string;\n    /** Active filters, for the diagnostic treatment. */\n    filters?: Array<{\n        label: string;\n        clear: () => void;\n    }>;\n    onClearAll?: () => void;\n    action?: {\n        label: string;\n        run: () => void;\n    };",
-    "Chip": "children: React.ReactNode;\n    onClick?: () => void;\n    /** Present makes this a toggle and renders the pressed state. */\n    pressed?: boolean;\n    /** Computed-outlier hue, reserved for flag filters (DESIGN.md §2). */\n    flag?: boolean;\n    disabled?: boolean;\n    title?: string;\n    className?: string;",
+    "Chip": "children: React.ReactNode;\n    onClick?: () => void;\n    /** Present makes this a toggle and renders the pressed state. */\n    pressed?: boolean;\n    /** Computed-outlier hue, reserved for flag filters. */\n    flag?: boolean;\n    disabled?: boolean;\n    title?: string;\n    className?: string;",
     "Tag": "children: React.ReactNode;\n    className?: string;",
     "DetailSection": "sectionKey: string;\n    meta?: React.ReactNode;\n    meter?: React.ReactNode;\n    children: React.ReactNode;\n    className?: string;",
     "FacetDrawer": "groups: FacetGroup[];\n    onToggle: (facetId: string, value: string) => void;\n    onClear: () => void;\n    onClose: () => void;\n    emptyText: string;",

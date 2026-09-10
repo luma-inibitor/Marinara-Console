@@ -1,4 +1,4 @@
-// Command palette (Cmd/Ctrl-K) — DESIGN.md §5. Fuzzy over tools, books,
+// Command palette (Cmd/Ctrl-K) — DESIGN.md §4. Fuzzy over tools, books,
 // entries, and actions; searches a local cache, refreshed on open.
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { createStore, useStore } from "../lib/store";

@@ -1,7 +1,7 @@
 // The console's shared UI vocabulary. Anything used by more than one screen
 // belongs here; anything used by one screen belongs beside that screen.
 //
-// Components are styled with Tailwind utilities in the JSX (DESIGN.md §8). The
+// Components are styled with Tailwind utilities in the JSX (DESIGN.md §5). The
 // co-located stylesheets still here are legacy — rewrite one as utilities when
 // the work already has you editing it.
 export { Button } from "./Button";

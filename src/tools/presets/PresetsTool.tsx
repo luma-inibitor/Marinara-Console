@@ -463,7 +463,7 @@ function Editor({ presetId }: { presetId: string }) {
     (s: PromptSection) => {
       setFocusId(s.id);
       if (desktop) return;
-      // one-at-a-time on phones (DESIGN.md §2 exception), and reveal the row
+      // one-at-a-time on phones (DESIGN.md §3 exception), and reveal the row
       setOpen((o) => (o.has(s.id) ? new Set() : new Set([s.id])));
       requestAnimationFrame(() => {
         (listRef.current?.querySelector(`[data-row="${CSS.escape(s.id)}"]`) as HTMLElement | null)?.scrollIntoView({

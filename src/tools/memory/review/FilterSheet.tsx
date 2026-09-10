@@ -9,7 +9,7 @@
 //                     icon-bearing lists that are worth the vertical space.
 //   the long tail     sources behind their own search (the list is as long as
 //                     the vault), and the four model enums behind a
-//                     disclosure (DESIGN.md §4: 3-5 inline, rest behind it).
+//                     disclosure.
 //
 // This replaces the provenance grouping the facet drawer used — computed /
 // from the model / yours. That grouping answered "who asserted this", which is

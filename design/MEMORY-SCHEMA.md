@@ -5,12 +5,13 @@ truth: `ltmNoteSchema` in
 `packages/long-term-memory/src/engine/packages/shared/src/features/agents/long-term-memory/schema.ts`
 (Pasta-Devs/Marinara-Agents).
 
-Base path `/api/long-term-memory`. `GET /notes` returns a bare array;
-`GET /notes/:id` returns one note. There is no DTO mapping — the on-disk file
-and the API response are the same object.
+Base path `/api/long-term-memory`. `GET /notes` returns a bare array.
+`GET /notes/:id` returns one note. Nothing maps between the two shapes: the
+on-disk file and the API response are the same object.
 
 Corpus counts throughout are from the local seeded corpus, measured
-2026-08-23: 31 notes, 38 sections.
+2026-08-23: 31 notes, 38 sections. Timestamps are International Organization
+for Standardization (ISO) 8601 strings.
 
 ---
 
@@ -27,11 +28,11 @@ Corpus counts throughout are from the local seeded corpus, measured
 | `world` | `world_`, `faction_`, `location_`, `rule_`, `rules` | `world` | 3 |
 | `tone` | `tone_` | `tone` | 3 |
 
-The ID prefix is enforced against the type. `world` is the only type with more
+The type determines the ID prefix. `world` is the only type with more
 than one allowed prefix.
 
-Any mutation touching a `scene_*` note is excluded from autoapply, as target,
-`noteId`, or link target.
+Autoapply skips any mutation touching a `scene_*` note, as target, `noteId`, or
+link target.
 
 ---
 
@@ -43,7 +44,7 @@ Any mutation touching a `scene_*` note is excluded from autoapply, as target,
 | Field | Type | Constraints |
 |---|---|---|
 | `id` | string | `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`, 1–120. Prefix must match type. |
-| `type` | enum | the eight above |
+| `type` | enum | the eight types listed earlier |
 | `status` | enum | `active` · `resolved` · `archived` |
 | `modes` | string[] | 1–8 of `roleplay` · `conversation` · `game`. Legacy `visual_novel` folds to `roleplay` at parse time. |
 | `scope` | object | defaults `{}`, which means global |
@@ -52,7 +53,7 @@ Any mutation touching a `scene_*` note is excluded from autoapply, as target,
 | `createdAt` | string | ISO-8601 with offset |
 | `updatedAt` | string | ISO-8601, must be ≥ `createdAt` |
 | `links` | Link[] | ≤250, defaults `[]` |
-| `sections` | Record&lt;string, Section&gt; | the memory content |
+| `sections` | `Record<string, Section>` | the memory content |
 | `version` | number | integer ≥ 1, bumped on each write |
 
 `tags`, `keywords` and `links` default to empty, so "required" means always
@@ -64,11 +65,11 @@ The note object is `.strict()`: an unknown top-level key is a parse error.
 
 | Field | Type | Constraints |
 |---|---|---|
-| `title` | string | trimmed 1–240. Genuinely optional — fall back to `id`. |
+| `title` | string | trimmed 1–240. Optional, so fall back to `id`. |
 | `manualKeywords` | string[] | ≤30. User-added overlay. |
 | `suppressedKeywords` | string[] | ≤30. Suppression overlay. |
 | `conflicts` | Conflict[] | ≤250 |
-| `extracted` | boolean | legacy v1 metadata; freshness derives from `extractionFingerprint` |
+| `extracted` | boolean | legacy v1 metadata. Freshness derives from `extractionFingerprint` |
 
 ## Fields restricted by type
 
@@ -80,12 +81,12 @@ The note object is `.strict()`: an unknown top-level key is a parse error.
 
 ---
 
-## `sections[key]` — Section
+## `sections[key]` — section
 
 `sections` is `Record<string, Section>`: any snake_case key up to 80
 characters is valid on any type. Section keys are convention, not constraint.
 
-The Section schema is `.strip()` — unknown keys are dropped, not rejected.
+The Section schema is `.strip()`: it drops unknown keys rather than rejecting them.
 
 | Field | Type | Req | Constraints | Populated |
 |---|---|---|---|---:|
@@ -99,8 +100,8 @@ The Section schema is `.strip()` — unknown keys are dropped, not rejected.
 | `dimensions` | Dimensions | no | absolute scores | 1/38 |
 | `dimensionChanges` | DimensionChanges | no | deltas | 0/38 |
 
-`importance` and the dimensions are structured fields by design. They're not
-to be parsed out of `text`.
+`importance` and the dimensions carry structure by design. Don't parse them out
+of `text`.
 
 ### `contributions[]`
 
@@ -120,17 +121,17 @@ Both `.strict()`, all keys optional, all integers. Same ten keys in each:
 `trust` · `respect` · `loyalty` · `intimacy` · `tension` · `hostility` ·
 `dependency` · `affection` · `lust` · `protectiveness`
 
-`dimensions` is absolute, 0–100; an omitted key means neutral baseline rather
+`dimensions` is absolute, 0–100. An omitted key means neutral baseline rather
 than zero. `dimensionChanges` is deltas, −100 to 100.
 
 ---
 
 ## Section merge behavior by type
 
-Whether an `append_section` merges into the existing text or rewrites it's
-decided by `isAdditiveLtmSection(note, sectionKey)`. When additive, new text is
-line-merged and duplicate normalized lines are dropped; otherwise the section
-is replaced.
+`isAdditiveLtmSection(note, sectionKey)` decides whether an `append_section`
+merges into the existing text or rewrites it. An additive section line-merges
+the new text and drops duplicate normalized lines. Any other section takes the
+new text whole.
 
 | Type | Additive sections |
 |---|---|
@@ -145,7 +146,7 @@ is replaced.
 
 | Type | Keys | Section text (min / med / max chars) |
 |---|---|---|
-| `character` | `core` always; `voice`, `backstory`, `habits`, `appearance` | 82 / 100 / 434 |
+| `character` | `core` always, plus `voice`, `backstory`, `habits`, `appearance` | 82 / 100 / 434 |
 | `relationship` | `state` | 78 / 78 / 78 |
 | `thread` | `state`, `summary` | 109 / 122 / 133 |
 | `timeline_event` | `event` | 75 / 83 / 96 |
@@ -159,7 +160,7 @@ type.
 
 ---
 
-## `links[]` — Link
+## `links[]` — link
 
 | Field | Type | Req | Constraints |
 |---|---|---|---|
@@ -186,14 +187,14 @@ All keys optional, `.strict()`. `{}` means global.
 `chatId` · `chatIds` · `groupId` · `groupIds` · `characterIds` · `personaId` ·
 `personaIds`
 
-Scalars are 1–120 chars; arrays are ≤100 entries. The scalar/array pairs are
+Scalars are 1–120 chars. Arrays are ≤100 entries. The scalar/array pairs are
 redundant aliases and must agree on write — a scalar absent from its array is a
 validation error. Normalization emits both, with the scalar set to the first
 array element.
 
 ---
 
-## `subjects[]` — Subject
+## `subjects[]` — subject
 
 1–2 entries, distinct by `key`, sorted ascending by `key`.
 
@@ -202,7 +203,7 @@ array element.
 | `key` | string | yes | trimmed 1–240, no control characters. Stable identity key. |
 | `ref` | object | no | `{ kind: "character" \| "persona", id: string }` |
 
-Cardinality is enforced per type: exactly 1 on `character`, exactly 2 on
+Cardinality varies per type: exactly 1 on `character`, exactly 2 on
 `relationship`, forbidden elsewhere.
 
 ---
@@ -221,9 +222,8 @@ Source notes only — required there, forbidden elsewhere. `.strict()`.
 
 ## `extractionFingerprint`
 
-Source notes only. Records the context a source was last successfully extracted
-against, so a stale draft can distinguish content changing from context
-changing.
+Source notes only. Records the context of the last successful extraction, so a
+stale draft can distinguish content changing from context changing.
 
 | Field | Type | Req | Constraints |
 |---|---|---|---|
@@ -238,7 +238,7 @@ Present on 4 of the 8 source notes in the corpus.
 
 ---
 
-## `conflicts[]` — Conflict
+## `conflicts[]` — conflict
 
 | Field | Type | Req | Constraints |
 |---|---|---|---|
@@ -255,7 +255,7 @@ None present in the corpus.
 
 ## Related shapes
 
-These aren't notes and shouldn't be rendered as one.
+These aren't notes. Don't render them as one.
 
 ### `GET /notes/:id/derived` → `memories[]` item
 

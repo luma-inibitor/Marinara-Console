@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 /** True at and above the split breakpoint — the width where a list and its
- *  detail can sit side by side instead of stacking (design/DESIGN.md §7).
+ *  detail can sit side by side instead of stacking (tests/e2e/README.md §1).
  *
  *  This is a width query, not a touch query. A touch laptop is wide and gets
  *  the split layout; it gets touch-sized targets from the token kit, not from

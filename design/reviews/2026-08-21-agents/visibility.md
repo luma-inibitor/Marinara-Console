@@ -1,62 +1,91 @@
-# UX Review — Memory tool: Visibility of system state, feedback, information scent
+# Memory tool — visibility of system state, feedback, information scent
 
-> **Status: audited 2026-08-22.** This is the report as it was written on
-> 2026-08-21, and its findings haven't been edited. The codebase has moved
-> substantially since — the P0 batch shipped and a shared `src/ui/` component
-> layer was extracted — so the line numbers cited below no longer resolve and
-> some findings describe surfaces that have since been rebuilt. Every finding
-> at **[critical]** or **[high]** severity now carries an inline status marker
-> (`SHIPPED`, `OPEN`, `SUPERSEDED` or `UNVERIFIED`) naming the evidence.
-> Findings without a marker weren't audited: check them against the current
-> code before acting on them. The reason this header exists is that the next
-> reader, human or agent, will otherwise re-fix a bug that's already fixed, or
-> "restore" a bug while reverting what looks like drift.
+> **Status: audited 2026-08-22.** This report carries the findings as written
+> on 2026-08-21, unedited. The codebase moved a long way since. The P0 batch
+> shipped and a shared `src/ui/` component layer came out of it, so the line
+> numbers cited below no longer resolve. Every **[critical]** or **[high]**
+> finding now carries an inline status marker (`SHIPPED`, `OPEN`,
+> `SUPERSEDED`, `UNVERIFIED`) naming the evidence. Findings without a marker
+> went unaudited: check them in the current code before acting on them, or
+> you'll re-fix something already fixed.
 
-Sources: live app at `http://127.0.0.1:7875/#/memory/*` (23 memories, 4 sources, 2 drafts / 17 claims), code in `/Users/eli/code/mc-port/src/tools/memory/`. Blocked-draft card and preflight blocked/auto counts were rendered via display-only response mocks (no engine writes). Items already in BACKLOG.md (grouped preflight blockers + per-blocker fixes, re-extract cost confirm, rejected-suggestion actions, cluster actions, persisted apply report, review text search) aren't re-reported.
+Sources: the live app at `http://127.0.0.1:7875/#/memory/*` (23 memories, 4
+sources, 2 drafts / 17 claims), and code in
+`/Users/eli/code/mc-port/src/tools/memory/`. Display-only response mocks stood
+in for the blocked-draft card and the preflight blocked/auto counts, with no
+engine writes. Items already in BACKLOG.md go unreported here: grouped
+preflight blockers with per-blocker fixes, re-extract cost confirm,
+rejected-suggestion actions, cluster actions, persisted apply report, review
+text search.
 
-## Review Queue
+## Review queue
 
-- **[high] [feedback]** — Preflight runs silently and the primary button lies during the window. After pressing `a`, the dock read "1 keep … **APPLY DECIDED (0)**" (disabled) for the 500ms debounce + RTT with nothing saying a check is running (`store.ts` `schedulePreflight`, `Review.tsx` `ApplyDock`). The user sees a dead button with a wrong number. Fix: a `preflightPending` signal; while pending render "checking with the engine…" in the dock's dim line and label the button "Apply decided (…)" rather than 0. **[SHIPPED — a `preflightPending` signal is set by `schedulePreflight()` and cleared in `runPreflight()`; the dock renders "· checking with the engine…" and labels the button "Apply decided (…)" rather than (0) while it's true (`store.ts`, `Review.tsx` `ApplyDock`).]**
-- **[high] [visibility]** — "N added as dependencies" is a bare number. Dock showed "1 ready · 2 blocked · **4 added as dependencies**"; `pf.perDraft[].pf.autoIncludedMutationIds` and `pf.rows` (per-mutation `autoIncluded`, target, blockers) are already in the store but never render anywhere — the user is told extra claims they never kept will be sent, with no way to see which. Fix: make the dock phrase expandable, listing the autoincluded rows by target title, same for the blocked count's identity. **[SHIPPED — the `preflightRowState` computed maps every preflight row back to its row key, the dock renders autoincluded and blocked rows as expandable `<details>` lists naming each target title, and `ClaimRow` carries a "dependency" tag (`store.ts`, `Review.tsx`).]**
-- **[high] [visibility]** — The decision meter's denominator includes claims the user can't decide. `total = review.counts.mutations` (`Review.tsx`), but `flattenReview` (`data.ts`) excludes blocked drafts' rows. With one blocked draft mocked: meter "1 · 0 / 24" over a 17-row list — "Decided x/24" can never be completed, and the shortfall is unexplained. Fix: denominator = `rows.value.length` (decidable), with held claims already accounted on the blocked card ("7 claims held"). **[SHIPPED — the meter reads `const total = rows.value.length`, the same decidable set the dock counts (`Review.tsx`).]**
-- **[med] [visibility]** — Meter counts are color-only and unlabeled: "1 · 0 / 17" distinguishes keep from drop purely by emerald/red — violates DESIGN §1's own "never color alone" rule, and "Decided 0 · 0 / 20" teaches a newcomer nothing. The codebase already pairs glyphs elsewhere (group headers "1✓", dock "✗"). Fix: "✓1 · ✗0 / 17".
-- **[med] [visibility]** — The autosave ledger is invisible at rest. `saveState === "saved"` renders an empty string — "Autosaving…" flashes ~800ms then nothing. "Saved" never appears, and no copy anywhere says decisions persist server-side and resume across devices — the ledger's whole point. Fix: render "Saved" persistently in the existing `.mem-save` span; first-run, say "Saved — resumes anywhere".
-- **[med] [feedback] [missing-interaction]** — Save failure has no recovery path. `failed` renders "Save FAILED" as small dim header text only — no toast, no inline error, no retry; the next persist happens only if the user makes another decision. A user who keeps deciding against a dead `/console/state` loses the whole session silently on another device. Fix: error toast + "Retry" chip that calls `persist()` immediately.
-- **[med] [copy]** — "1 draft will be sent · 1 stay pending" double-counts one draft. `tally.stayPending` counts drafts that are in `willSend` *and* keep undecided claims, so a single half-decided draft produces both numbers — it reads as two drafts. Fix: "1 draft will be sent (still holds 6 undecided claims)".
-- **[med] [feedback]** — Apply is an indeterminate multi-call loop. `applyDecided` iterates drafts sequentially with the only feedback being the button label "Accepting..."; the journey table says `applying` should show "transiently — progress on the row", and DESIGN §3 wants a determinate bar at 3s+. Fix: per-iteration progress in the dock ("draft 2/5") from the existing loop, and a transient state on affected rows.
-- **[med] [visibility]** — Index-rebuild failure after Apply is toast-only. `store.ts` fires `savedButRecallIsStale` as a toast and nothing else; the journey table specifies a persistent badge "saved, not searchable" and DESIGN forbids toast-only errors. Once the toast fades the degraded state survives only as the header's "index …" word — which itself is stale. Fix: persistent obligation card in the queue + badge on affected memories until `indexes.health` recovers.
-- **[low] [visibility]** — Preflight errors dead-end. `pf.error` renders raw in the dock and disables Apply; the only way to retry is making another decision. Fix: "couldn't check with the engine — Retry" chip calling `schedulePreflight()`.
-- **[low] [visibility]** — Apply button arithmetic is unexplained: with mocked blockers, "3 keep · … · 2 blocked" sat above "APPLY DECIDED (1)" — the button silently subtracts blocked keeps; nothing near the button states "1 ready + 0 drops; 2 stay pending". Fix: that clause as the button's subline/title.
-- **[low] [visibility]** — Pressure numbers never reach the screen. `computePressure` produces `current`/`projected` per section, but the UI only emits the binary flag "over the limit" (row metaline + facet). The claim detail — the place you'd trim an edit to fit — shows only "1,936 CH" with no cap context. Fix: in `ClaimDetail`, when the target section is in `pressure`, show "canon 19.4k → 21.3k / 20k".
-- **[low] [copy]** — Claim-edit "Saved" toast overstates: `ClaimDetail.save` stages the edit in the local ledger (sent only on Apply) but toasts the vault's "Saved" string. Fix: "Edit staged — applies with the batch".
-- **[low] [copy]** — Row chip "RESTATES 1.00" is a bare score in the metaline; the meaning (similarity to a stored line) only becomes legible after opening the detail. Fix: "restates stored" on the row, keep the score in the detail where the compared line is shown.
-- **[low] [visibility]** — Silent staleness and silent engine drops: `ReviewResponse.generatedAt` and `counts.deduplications` are fetched and never rendered, and neither Review nor Sources has a refresh affordance — drafts arriving mid-session, or N claims deduped upstream, are invisible. Fix: a mono meta line "generated 21:15 · 3 deduped upstream" + refresh button.
+- **[high] [feedback]** — Preflight runs with no sign of itself, and the primary button lies during the window. Pressing `a` left the dock reading `1 keep … Apply decided (0)`, disabled, for the 500ms debounce plus the round trip, with nothing saying a check was running (`store.ts` `schedulePreflight`, `Review.tsx` `ApplyDock`). The user sees a dead button carrying a wrong number. Fix: a `preflightPending` signal. Render `checking with the engine…` in the dock's dim line while it's pending, and label the button `Apply decided (…)` rather than 0. **[SHIPPED — `schedulePreflight()` sets a `preflightPending` signal and `runPreflight()` clears it. The dock renders `· checking with the engine…` and labels the button `Apply decided (…)` rather than (0) while it's true (`store.ts`, `Review.tsx` `ApplyDock`).]**
 
-## Blocked drafts / obligations
+- **[high] [visibility]** — Dependency autoinclude reports a bare number. The dock showed `1 ready · 2 blocked · 4 added as dependencies`. `pf.perDraft[].pf.autoIncludedMutationIds` and `pf.rows` (per-mutation `autoIncluded`, target, blockers) sit in the store and render nowhere. So the interface tells the user that extra claims they never kept will go over the wire, with no way to see which. Fix: make the dock phrase expandable, listing the autoincluded rows by target title. Same for the blocked count's identity. **[SHIPPED — `preflightRowState` maps every preflight row back to its row key, the dock renders autoincluded and blocked rows as expandable `<details>` lists naming each target title, and `ClaimRow` carries a `dependency` tag (`store.ts`, `Review.tsx`).]**
 
-- **[med] [visibility]** — The blocked card never names the source. Rendered: "SOURCE STALE **1** draft blocked · 7 claims held" + engine message + "EXTRACT TO REVIEW" — but `BlockedDraft.sourceTitle` is populated and unused, so with several sources held the user can't tell *which material* is stuck or preview its held claims. The copy also doesn't say re-extract supersedes the old draft. Fix: list source titles as `NoteRef`s on the card and add one clause: "re-extracting replaces this draft with a fresh one".
+- **[high] [visibility]** — The decision meter's denominator counts claims the user can't decide. `total = review.counts.mutations` (`Review.tsx`), but `flattenReview` (`data.ts`) excludes blocked drafts' rows. With one blocked draft mocked, the meter read `1 · 0 / 24` over a 17-row list. `Decided x/24` can never complete, and nothing explains the shortfall. Fix: use the decidable count, `rows.value.length`, as the denominator. The blocked card already accounts for held claims (`7 claims held`). **[SHIPPED — `Review.tsx`'s meter now reads `const total = rows.value.length`, the same decidable rows the dock counts.]**
 
-## Memory Vault
+- **[med] [visibility]** — Meter counts are color-only and unlabeled. `1 · 0 / 17` separates keep from drop by emerald and red alone, which violates DESIGN §1's own never-color-alone rule, and `Decided 0 · 0 / 20` teaches a newcomer nothing. The codebase already pairs glyphs elsewhere: group headers `1✓`, dock `✗`. Fix: `✓1 · ✗0 / 17`.
 
-- **[med] [visibility] [copy]** — A zero-result search shows the onboarding empty state: searching "zzzznope" with 23 memories present renders "No saved memories yet. Import a character, lorebook, or chat summary…" — wrong journey; it tells a stocked-vault user their vault is empty. Fix: branch on `query`/`typeFilter`: "No memories match 'x' — clear search."
-- **[med] [missing-interaction]** — No status facet; archived is never "aside". Resolved/archived notes intermix with active ones, distinguishable only by a metaline word and a Status *sort*; the journey table wants "active default, resolved dimmed, archived aside", and there is no way to answer "what have I archived?" short of sorting everything. Fix: status chips (`active 26 · resolved 1 · archived 0`) next to the type chips.
-- **[med] [feedback]** — Unsaved edits are unmarked and silently discardable. `NoteEditor` holds edits in `drafts` with no dirty indicator (Save is always enabled), and switching notes or navigating remounts the editor, dropping edits with no warning. Also deviates from the DESIGN §2 mandate of field-level autosave with a visible save pill. Fix: dirty dot on Save + guard on note switch, or adopt the save-pill autosave pattern.
-- **[low] [visibility]** — Cap-meter thresholds disagree and hide the sort's signal: row bars appear only at ≥50% pressure (0 of 23 rows currently — the "↓ Limits" sort visibly does nothing), row flag text at ≥80%, editor bar colors at 75/95%; and `pressureOf` folds keyword-cap pressure into the same number, so a keywords-28/30 row is indistinguishable from a fat section. Fix: one threshold set; always show mini-meters while sorted by Limits; name the pressured thing ("keywords 28/30").
-- **[low] [visibility]** — Vault saves never report rebuild outcome. The static footnote teaches the mechanism, but the save path never checks index state afterwards, and the header's "index healthy" refreshes only on tab switch — a failed rebuild after a vault save surfaces nowhere. Fix: refetch `ltmStatus` after save/apply and surface non-healthy as the tool-level banner.
-- **[low] [copy]** — "23 match" / "0 match" — pluralization ("matches").
+- **[med] [visibility]** — Nothing shows the autosave ledger at rest. `saveState === "saved"` renders an empty string, so `Autosaving…` flashes for ~800ms and then nothing. `Saved` never appears, and no copy anywhere says decisions persist server-side and resume across devices, which is the ledger's whole point. Fix: render `Saved` persistently in the existing `.mem-save` span, and on first run say `Saved — resumes anywhere`.
+
+- **[med] [feedback] [missing-interaction]** — Save failure has no recovery path. `failed` renders `Save FAILED` as small dim header text and nothing else: no toast, no inline error, no retry. The next persist happens only if the user makes another decision. A user who keeps deciding into a dead `/console/state` loses the whole session on another device, with no sign of it. Fix: an error toast plus a `Retry` chip that calls `persist()` immediately.
+
+- **[med] [copy]** — `1 draft will be sent · 1 stay pending` double-counts one draft. `tally.stayPending` counts drafts that sit in `willSend` *and* hold undecided claims, so a single half-decided draft produces both numbers and reads as two drafts. Fix: `1 draft will be sent (still holds 6 undecided claims)`.
+
+- **[med] [feedback]** — Apply is an indeterminate multi-call loop. `applyDecided` iterates drafts one at a time, and the only feedback is the button label `Accepting...`. The journey table says `applying` should show transiently, as progress on the row, and DESIGN §3 wants a determinate bar at 3s and over. Fix: per-iteration progress in the dock (`draft 2/5`) out of the existing loop, plus a transient state on affected rows.
+
+- **[med] [visibility]** — Index-rebuild failure after Apply is toast-only. `store.ts` fires `savedButRecallIsStale` as a toast and nothing else. The journey table specifies a persistent badge, `saved, not searchable`, and DESIGN forbids toast-only errors. The degraded state survives the toast only in the header's `index …` word, which is itself stale. Fix: a persistent obligation card in the queue, plus a badge on affected memories until `indexes.health` recovers.
+
+- **[low] [visibility]** — Preflight errors dead-end. `pf.error` renders raw in the dock and disables Apply, and the only way to retry is to make another decision. Fix: a `couldn't check with the engine — Retry` chip calling `schedulePreflight()`.
+
+- **[low] [visibility]** — Nothing explains the Apply button's arithmetic. With mocked blockers, `3 keep · … · 2 blocked` sat over `Apply decided (1)`. The button subtracts blocked keeps without saying so, and nothing near it states `1 ready + 0 drops; 2 stay pending`. Fix: use that clause as the button's subline or title.
+
+- **[low] [visibility]** — Pressure numbers never reach the screen. `computePressure` produces `current`/`projected` per section, and the interface emits only the binary `over the limit` flag in the row metaline and the facet. The claim detail, the place you'd trim an edit to fit, shows only `1,936 CH` with no cap context. Fix: in `ClaimDetail`, when the target section appears in `pressure`, show `canon 19.4k → 21.3k / 20k`.
+
+- **[low] [copy]** — The claim-edit `Saved` toast overstates. `ClaimDetail.save` stages the edit in the local ledger, which goes over the wire only on Apply, and then toasts the vault's `Saved` string. Fix: `Edit staged — applies with the batch`.
+
+- **[low] [copy]** — The row chip `RESTATES 1.00` is a bare score in the metaline. Its meaning, similarity to a stored line, becomes legible only after opening the detail. Fix: `restates stored` on the row, and keep the score in the detail beside the compared line.
+
+- **[low] [visibility]** — Staleness and engine drops both pass unremarked. `ReviewResponse.generatedAt` and `counts.deduplications` arrive and never render. Neither Review nor Sources has a refresh affordance. Drafts arriving mid-session, and N claims deduped upstream, are both invisible. Fix: a mono meta line, `generated 21:15 · 3 deduped upstream`, plus a refresh button.
+
+## Blocked drafts and obligations
+
+- **[med] [visibility]** — The blocked card never names the source. It rendered `SOURCE STALE 1 draft blocked · 7 claims held`, the engine message, and `EXTRACT TO REVIEW`. `BlockedDraft.sourceTitle` carries a value that nothing uses, so with several sources held the user can't tell *which material* sits stuck, or preview its held claims. The copy also doesn't say that re-extract supersedes the old draft. Fix: list source titles as `NoteRef`s on the card, and add one clause: `re-extracting replaces this draft with a fresh one`.
+
+## Memory vault
+
+- **[med] [visibility] [copy]** — Zero-result searches show the onboarding empty state. Searching `zzzznope` with 23 memories present renders `No saved memories yet. Import a character, lorebook, or chat summary…`, which is the wrong journey: it tells a stocked-vault user their vault is empty. Fix: branch on `query`/`typeFilter` and say `No memories match 'x' — clear search`.
+
+- **[med] [missing-interaction]** — No status facet exists, and archived is never set aside. Resolved and archived notes intermix with active ones, separable only by a metaline word and a Status *sort*. The journey table wants active by default, resolved dimmed, archived aside. Nothing answers `what did I archive?` short of sorting everything. Fix: status chips (`active 26 · resolved 1 · archived 0`) beside the type chips.
+
+- **[med] [feedback]** — Unsaved edits carry no mark and vanish without warning. `NoteEditor` holds edits in `drafts` with no dirty indicator, since Save is always enabled. Switching notes or navigating remounts the editor, which drops the edits. That also deviates from the DESIGN §2 mandate of field-level autosave with a visible save pill. Fix: a dirty dot on Save plus a guard on note switch, or adopt the save-pill autosave pattern.
+
+- **[low] [visibility]** — Cap-meter thresholds disagree, and they hide the sort's signal. Row bars appear only at ≥50% pressure, which is 0 of 23 rows today, so the `↓ Limits` sort visibly does nothing. Row flag text appears at ≥80%, and editor bar colors at 75% and 95%. `pressureOf` also folds keyword-cap pressure into the same number, so a keywords-28/30 row looks identical to a fat section. Fix: one threshold set, always show mini-meters while sorted by Limits, and name the pressured thing (`keywords 28/30`).
+
+- **[low] [visibility]** — Vault saves never report the rebuild outcome. The static footnote teaches the mechanism, and the save path never checks index state afterward. The header's `index healthy` refreshes only on tab switch, so a failed rebuild after a vault save surfaces nowhere. Fix: refetch `ltmStatus` after save and apply, and surface a non-healthy result as the tool-level banner.
+
+- **[low] [copy]** — `23 match` / `0 match` needs pluralization (`matches`).
 
 ## Sources
 
-- **[med] [visibility]** — The pane is fully blank while previews load: with a 2.5s response, only the scope header renders — no indicator of any kind; indistinguishable from "you have no sources". Fix: `KINDS` is static — render the three group headers immediately with "scanning…" placeholders.
-- **[med] [feedback]** — Long imports are a button label. `runImport` loops sources sequentially with `extract: true` (model calls per source); the only feedback is "Importing…", results appear all-at-once at the end, and nothing warns this takes real time/model calls. Fix: push each `ImportResult` into state as it lands and show "Importing 2/5…" in the dock.
-- **[med] [copy]** — Freshness chips name states, not obligations: "Context changed", "Extraction incomplete" (orange), "Update available" carry no explanation of meaning or consequence anywhere — exactly the fingerprint-message problem the journey notes call out. Fix: one dim subline (or title attr) per non-"New" freshness value stating what re-importing will do.
-- **[med] [visibility]** — "3 scanned · 1 ready to import" can't be mapped to rows: all three character rows are equally selectable and none is marked "ready"; the user must infer that "ready" ≈ the "New" chip. Fix: mark qualifying rows "ready" or restate the group line in row-chip vocabulary ("3 new · 1 update · 1 imported").
-- **[med] [copy]** — The chat-summaries zero explains the feature, not the zero: a capability blurb, not "why zero, when to return" (journey J1: "sources with nothing in them… explain their emptiness and when to return"). Characters'/lorebooks' zeros are equally reasonless. Fix: per-kind zero copy naming the producing action ("No chats have summaries yet — summaries appear once a chat is long enough to be summarized").
+- **[med] [visibility]** — Loading previews leave the pane fully blank. With a 2.5s response, only the scope header renders, with no indicator of any kind, which looks identical to having no sources. Fix: `KINDS` is static, so render the three group headers immediately with `scanning…` placeholders.
+
+- **[med] [feedback]** — Long imports are a button label. `runImport` loops sources one at a time with `extract: true`, meaning model calls per source. The only feedback is `Importing…`, results appear all at once at the end, and nothing warns that this costs real time and real model calls. Fix: push each `ImportResult` into state as it lands, and show `Importing 2/5…` in the dock.
+
+- **[med] [copy]** — Freshness chips name states, not obligations. `Context changed`, `Extraction incomplete` (orange) and `Update available` carry no explanation of meaning or consequence anywhere, which is exactly the fingerprint-message problem the journey notes call out. Fix: one dim subline, or title attribute, per non-New freshness value, stating what re-importing will do.
+
+- **[med] [visibility]** — `3 scanned · 1 ready to import` maps onto no rows. All three character rows are equally selectable and none carries a ready mark, so the user has to infer that ready ≈ the `New` chip. Fix: mark qualifying rows ready, or restate the group line in row-chip vocabulary (`3 new · 1 update · 1 imported`).
+
+- **[med] [copy]** — Chat-summaries zero-state explains the feature, not the zero. It's a capability blurb, not why zero and when to return (journey J1: sources with nothing in them explain their emptiness and when to return). The character and lorebook zeros are equally reasonless. Fix: per-kind zero copy naming the producing action, such as `No chats have summaries yet — summaries appear once a chat is long enough`.
 
 ## Tool level
 
-- **[med] [visibility] [missing-interaction]** — The status line shows states with no action or explanation: "index degraded / stale / not built" is one colored mono phrase; the journey table's prescription is "one banner, one repair action" — there is no rebuild affordance anywhere in the console. `ltmStatus` fetch failure sets the whole line to `null`, so the *worst* case (server unreachable) removes the health display entirely. And `indexes.dirty`, `rebuildState`, `embeddingsAvailable` (false = silently degraded recall) are fetched and never rendered. Fix: non-healthy → clickable banner with the repair action; fetch failure → "status unavailable"; fold `embeddingsAvailable: false` into the same banner.
+- **[med] [visibility] [missing-interaction]** — Status-line states come with no action and no explanation. `index degraded / stale / not built` is one colored mono phrase, where the journey table prescribes one banner and one repair action, and the console has no rebuild affordance anywhere. An `ltmStatus` fetch failure sets the whole line to `null`, so the *worst* case, an unreachable server, removes the health display entirely. `indexes.dirty`, `rebuildState` and `embeddingsAvailable` (false means degraded recall, unannounced) also arrive and never render. Fix: turn non-healthy into a clickable banner with the repair action, render a fetch failure as `status unavailable`, and fold `embeddingsAvailable: false` into the same banner.
 
 ## Count summary
 
-**26 findings** — 3 high · 14 medium · 9 low. By category (primary): visibility 15 · feedback 5 · copy 8 · missing-interaction 3 (some findings carry two tags). Strongest theme: the tool computes nearly everything the journeys demand (preflight rows, autoincluded ids, pressure projections, source titles on blocked drafts, index substates) and then ships only the count or the color — the data for most fixes is already in the client.
+**26 findings** — 3 high · 14 medium · 9 low. By category (primary): visibility 15 · feedback 5 · copy 8 · missing-interaction 3. Some findings carry two tags.
+
+Strongest theme: the tool computes almost everything the journeys demand, then ships only the count or the color. That includes preflight rows, autoincluded ids, pressure projections, source titles on blocked drafts, index substates. The data for most of these fixes already sits in the client.

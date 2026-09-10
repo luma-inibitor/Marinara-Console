@@ -3,11 +3,8 @@
 One stylesheet for every specimen book and wireframe:
 `design/mockup-kit.css` → built to `public/mockups/kit.css` with `npm run kit`.
 
-Before it existed, each generator carried its own 200-line copy of the same
-CSS. Four books meant four palettes drifting away from each other and from the
-app. The kit imports `src/styles/tokens.css` and `src/styles/theme.css`, so
-**the books and the product read the same tokens** — change a token and both
-move.
+The kit imports `src/styles/tokens.css` and `src/styles/theme.css`, so
+**the books and the product read the same tokens**.
 
 ## Using it
 
@@ -51,14 +48,13 @@ Tailwind utilities are available too (`bg-surface-2`, `text-dim`, `font-data`,
   viewport. The images land in `/tmp/shots/<name>-<viewport>.png`. A bare path
   is enough, because the suite starts its own preview server and resolves the
   address there.
-- **Wireframes stay greyscale.** Color is a decision; a wireframe is about
-  where things sit. If a wireframe needs color to make its point, it's a
-  specimen, not a wireframe.
+- **Wireframes stay greyscale.** Color is a decision. A wireframe is about
+  where things sit. A wireframe that needs color to make its point is a
+  specimen.
 - **The label goes outside the box.** `mk-label` sits on the page background,
-  above `wf-frame` / `mk-body`, never inside it. A label inside the specimen
-  reads as part of the thing being shown, and it changes the specimen's
-  spacing — which makes the specimen a lie about the layout it claims to
-  depict. One label per specimen, too: a name above the frame and a title
-  inside it's the same fact twice.
+  outside `wf-frame` / `mk-body`, never inside it. A label inside the specimen
+  reads as part of the specimen and changes its spacing. That makes the
+  specimen a lie about the layout it claims to depict. One label per specimen,
+  too: a name outside the frame and a title inside it's the same fact twice.
 - **Real values only.** Books use the seeded test corpus or synthesized data in
   its flavour, never live-instance content (see the publish-scrub rule).

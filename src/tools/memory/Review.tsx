@@ -3,7 +3,7 @@
 // Console header (tally meter, quick chips, facet sheet) · audit rows grouped
 // by target memory · tri-state decision rail · master-detail on desktop,
 // stacked detail on mobile · apply dock. Keyboard: j/k move, a/d keep/drop,
-// x undecide, space cycle, Enter opens, u undo (DESIGN.md §3, §6 triage).
+// x undecide, space cycle, Enter opens, u undo (DESIGN.md §3).
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { toast } from "../../shell/toast";
@@ -526,7 +526,7 @@ function toggleFacet(facetId: string, value: string) {
  *  buttons share the remaining width so the row scans as columns.
  *
  *  Active filters land in a track under it, each removable where it is shown —
- *  DESIGN.md §4 asks for exactly that, and it is the only path back out of a
+ *  DESIGN.md §3 asks for exactly that, and it is the only path back out of a
  *  filter that a phone has once the sheet is dismissed. */
 function ArrangeRail(props: {
   active: Map<string, Set<string>>;
@@ -1333,7 +1333,7 @@ function ApplyDock() {
         )}
         {/* What survives in the dock: progress while applying, and anything
           BLOCKING. A preflight error stops the apply, so it stays at the
-          cause rather than behind a tap (DESIGN.md §4). Every other figure and
+          cause rather than behind a tap (DESIGN.md §3). Every other figure and
           list moved into the tally's sheet, which has room to name the units
           and render a claim as a claim. */}
         {(progress || pf?.error) && (
