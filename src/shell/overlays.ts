@@ -15,7 +15,10 @@
 // handler and the history stack, and src/ui must be able to reach it without
 // importing out of a tool.
 
-interface Entry { close: () => void; restoreFocus: HTMLElement | null }
+interface Entry {
+  close: () => void;
+  restoreFocus: HTMLElement | null;
+}
 
 const stack: Entry[] = [];
 let installed = false;
@@ -64,12 +67,16 @@ function install() {
   window.addEventListener("hashchange", () => {
     while (stack.length) stack.pop()!.close();
   });
-  document.addEventListener("keydown", (ev) => {
-    if (ev.key !== "Escape" || !stack.length) return;
-    ev.preventDefault();
-    ev.stopPropagation();
-    history.back();
-  }, true);
+  document.addEventListener(
+    "keydown",
+    (ev) => {
+      if (ev.key !== "Escape" || !stack.length) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      history.back();
+    },
+    true,
+  );
 }
 
 /** Returns a disposer that unregisters the entry without running its closer —

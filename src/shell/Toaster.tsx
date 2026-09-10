@@ -26,8 +26,15 @@ function ToastRow({ t: item }: { t: Toast }) {
         {item.count > 1 && <span className="toast-count t-data">×{item.count}</span>}
       </span>
       {item.actionLabel && (
-        <button className="toast-action" onClick={() => { item.onAction?.(); dismissToast(item.id); }}>
-          {item.actionLabel}{undoable && left > 0 && <span className="toast-left t-data">{left}s</span>}
+        <button
+          className="toast-action"
+          onClick={() => {
+            item.onAction?.();
+            dismissToast(item.id);
+          }}
+        >
+          {item.actionLabel}
+          {undoable && left > 0 && <span className="toast-left t-data">{left}s</span>}
         </button>
       )}
       {/* No dismiss while a commit is pending: dismissing it would have to
@@ -46,7 +53,9 @@ export function Toaster() {
   const list = useStore(toasts);
   return (
     <div className="toaster" role="status" aria-live="polite">
-      {list.map((t) => <ToastRow key={t.id} t={t} />)}
+      {list.map((t) => (
+        <ToastRow key={t.id} t={t} />
+      ))}
     </div>
   );
 }

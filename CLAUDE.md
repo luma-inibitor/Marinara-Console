@@ -29,6 +29,17 @@
   that won't dismiss. A recorded baseline backs the contrast and tap-target
   checks, so each of those two fails on a new offender and passes the offenders
   already measured.
+- The pre-commit hook formats what you stage, so `npm run format` becomes a
+  thing you run when you want to rather than something to remember. It stops
+  for an unformatted file carrying unstaged edits, since formatting that one
+  would commit the half you didn't stage. It also runs `prosecheck` over
+  staged Markdown and stops on **every** finding, warnings and suggestions
+  included. `npm run prepare` installs the hook, and npm runs that after an
+  install. `git commit --no-verify` skips it.
+- Prettier owns `.ts`, `.tsx`, `.mjs` and the config files. `format:check`
+  sits in `check:static` and fails the build. It doesn't touch CSS or
+  Markdown, which belong to stylelint and Vale — see `.prettierignore`, which
+  gives a reason for every entry.
 - Run `npm run prosecheck` after you edit a `.md` file. It runs Vale over the
   Markdown you changed. It reports only what lands on lines you added, so the
   backlog in the rest of the docs stays out of your way. It exits non-zero on an

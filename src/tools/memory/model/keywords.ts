@@ -25,7 +25,11 @@ function dedupe(list: readonly string[]): string[] {
   });
 }
 
-interface Split { derived: string[]; manual: string[]; suppressed: string[] }
+interface Split {
+  derived: string[];
+  manual: string[];
+  suppressed: string[];
+}
 
 /** A note written before the engine split the arrays has no `manualKeywords`
  *  at all, and the engine reads its whole `keywords` list as manual. */

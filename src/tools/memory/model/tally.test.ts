@@ -37,7 +37,12 @@ function ledger(...entries: Array<[string, Decision]>): Map<string, Decision> {
 describe("countTally", () => {
   it("is all zeros for an empty queue", () => {
     expect(countTally([], new Map(), 0)).toEqual({
-      keep: 0, drop: 0, undecided: 0, edited: 0, willSend: 0, stayPending: 0,
+      keep: 0,
+      drop: 0,
+      undecided: 0,
+      edited: 0,
+      willSend: 0,
+      stayPending: 0,
     });
   });
 
@@ -46,9 +51,13 @@ describe("countTally", () => {
     const dec = ledger(["d1:m1", "keep"], ["d1:m2", "keep"], ["d1:m3", "drop"]);
 
     expect(countTally(rows, dec, 0)).toEqual({
-      keep: 2, drop: 1, undecided: 1, edited: 0,
+      keep: 2,
+      drop: 1,
+      undecided: 1,
+      edited: 0,
       // One draft carries a decision, and that same draft still holds m4.
-      willSend: 1, stayPending: 1,
+      willSend: 1,
+      stayPending: 1,
     });
   });
 
@@ -63,23 +72,31 @@ describe("countTally", () => {
     const rows = [row("d1", "m1"), row("d1", "m2")];
 
     expect(countTally(rows, new Map(), 0)).toMatchObject({
-      keep: 0, drop: 0, undecided: 2, willSend: 0, stayPending: 0,
+      keep: 0,
+      drop: 0,
+      undecided: 2,
+      willSend: 0,
+      stayPending: 0,
     });
   });
 
   it("counts drafts, not claims, in willSend and stayPending", () => {
     const rows = [
-      row("d1", "m1"), row("d1", "m2"), // decided + undecided -> stays pending
-      row("d2", "m3"), row("d2", "m4"), // both decided -> sent and finished
+      row("d1", "m1"),
+      row("d1", "m2"), // decided + undecided -> stays pending
+      row("d2", "m3"),
+      row("d2", "m4"), // both decided -> sent and finished
       row("d3", "m5"), // untouched -> not contacted
     ];
-    const dec = ledger(
-      ["d1:m1", "keep"],
-      ["d2:m3", "keep"], ["d2:m4", "drop"],
-    );
+    const dec = ledger(["d1:m1", "keep"], ["d2:m3", "keep"], ["d2:m4", "drop"]);
 
     expect(countTally(rows, dec, 0)).toEqual({
-      keep: 2, drop: 1, undecided: 2, edited: 0, willSend: 2, stayPending: 1,
+      keep: 2,
+      drop: 1,
+      undecided: 2,
+      edited: 0,
+      willSend: 2,
+      stayPending: 1,
     });
   });
 
@@ -96,7 +113,12 @@ describe("countTally", () => {
     // The row is edited but undecided: it still counts as undecided, and its
     // draft is neither contacted nor pending.
     expect(countTally(rows, new Map(), 1)).toEqual({
-      keep: 0, drop: 0, undecided: 1, edited: 1, willSend: 0, stayPending: 0,
+      keep: 0,
+      drop: 0,
+      undecided: 1,
+      edited: 1,
+      willSend: 0,
+      stayPending: 0,
     });
   });
 

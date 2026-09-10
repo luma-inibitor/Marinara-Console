@@ -46,8 +46,12 @@ export function useScopeData(): { chats: Chat[]; characters: Character[] } {
   const [chats, setChats] = useState<Chat[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   useEffect(() => {
-    fetchChats().then(setChats).catch(() => setChats([]));
-    fetchCharacters().then((r) => setCharacters(r.map(parseCharacter))).catch(() => setCharacters([]));
+    fetchChats()
+      .then(setChats)
+      .catch(() => setChats([]));
+    fetchCharacters()
+      .then((r) => setCharacters(r.map(parseCharacter)))
+      .catch(() => setCharacters([]));
   }, []);
   return { chats, characters };
 }

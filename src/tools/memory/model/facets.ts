@@ -55,7 +55,9 @@ export const FACETS: FacetDef[] = [
   // all of them. Selecting named flags and asking for any are mutually
   // exclusive — the sheet enforces that, so both are never live at once.
   {
-    id: "anyFlag", label: t("memory.review.anyFlag"), source: "computed",
+    id: "anyFlag",
+    label: t("memory.review.anyFlag"),
+    source: "computed",
     countsIgnore: ["flags"],
     get: (r, ctx) => (qualityFlags(r, ctx) ? ANY_FLAG : null),
   },
@@ -66,7 +68,9 @@ export const FACETS: FacetDef[] = [
   { id: "targetType", label: "memory type", source: "model", get: (r) => r.targetType },
   { id: "source", label: t("reviewqueue.sources"), source: "model", get: (r) => r.sourceTitle },
   {
-    id: "status", label: "decision", source: "yours",
+    id: "status",
+    label: "decision",
+    source: "yours",
     // Keep and drop are the point of the screen. They must be listed from the
     // start, at zero, or the axis claims the only thing a claim can be is
     // undecided.
@@ -93,7 +97,11 @@ export function applyFilters(list: Row[], active: Map<string, Set<string>>, ctx:
   );
 }
 
-export function facetCounts(list: Row[], active: Map<string, Set<string>>, ctx: FacetContext): Map<string, Map<string, number>> {
+export function facetCounts(
+  list: Row[],
+  active: Map<string, Set<string>>,
+  ctx: FacetContext,
+): Map<string, Map<string, number>> {
   const counts = new Map<string, Map<string, number>>();
   for (const f of FACETS) {
     const skip = new Set([f.id, ...(f.countsIgnore ?? [])]);
@@ -127,22 +135,39 @@ export function facetCounts(list: Row[], active: Map<string, Set<string>>, ctx: 
 
 /** The glyph a group header shows: a glyph table and a key into it. This layer
  *  names an icon rather than drawing one. */
-export interface GroupIconRef { family: "type" | "sourceKind" | "op"; value: string }
+export interface GroupIconRef {
+  family: "type" | "sourceKind" | "op";
+  value: string;
+}
 
-interface Grouper { label: string; key: (r: Row) => { id: string; label: string; icon?: GroupIconRef } }
+interface Grouper {
+  label: string;
+  key: (r: Row) => { id: string; label: string; icon?: GroupIconRef };
+}
 
 export const GROUPERS: Record<string, Grouper> = {
-  target: { label: "target memory", key: (r) => ({ id: r.targetId, label: r.targetTitle, icon: { family: "type", value: r.targetType } }) },
+  target: {
+    label: "target memory",
+    key: (r) => ({ id: r.targetId, label: r.targetTitle, icon: { family: "type", value: r.targetType } }),
+  },
   source: {
     label: t("reviewqueue.sources"),
     key: (r) => ({
-      id: r.sourceNoteId, label: r.sourceTitle,
+      id: r.sourceNoteId,
+      label: r.sourceTitle,
       icon: r.sourceKind ? { family: "sourceKind", value: r.sourceKind } : undefined,
     }),
   },
   // No glyph: the console draws none for new, merge or rewrite anywhere.
   disposition: { label: "disposition", key: (r) => ({ id: r.disposition, label: r.disposition }) },
-  kind: { label: "change kind", key: (r) => ({ id: r.mutation.kind, label: r.mutation.kind.replaceAll("_", " "), icon: { family: "op", value: r.mutation.kind } }) },
+  kind: {
+    label: "change kind",
+    key: (r) => ({
+      id: r.mutation.kind,
+      label: r.mutation.kind.replaceAll("_", " "),
+      icon: { family: "op", value: r.mutation.kind },
+    }),
+  },
   none: { label: "nothing", key: () => ({ id: "all", label: "all proposals" }) },
 };
 
@@ -154,7 +179,12 @@ export const SORTERS: Record<string, { label: string; cmp: (a: Row, b: Row) => n
   target: { label: "target memory", cmp: (a, b) => a.targetTitle.localeCompare(b.targetTitle) },
 };
 
-export interface Group { id: string; label: string; icon?: GroupIconRef; rows: Row[] }
+export interface Group {
+  id: string;
+  label: string;
+  icon?: GroupIconRef;
+  rows: Row[];
+}
 
 export function buildGroups(list: Row[], grouperId: string, sorterId: string, dir: 1 | -1 = 1): Group[] {
   const base = SORTERS[sorterId]?.cmp ?? SORTERS.risk.cmp;

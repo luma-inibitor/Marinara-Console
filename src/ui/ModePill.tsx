@@ -23,13 +23,16 @@ export function ModePill(props: {
   onToggle?: (id: string) => void;
   label?: string;
 }) {
-  const on = (id: string) =>
-    Array.isArray(props.modes) ? props.modes.includes(id) : props.modes.has(id);
+  const on = (id: string) => (Array.isArray(props.modes) ? props.modes.includes(id) : props.modes.has(id));
 
   if (!props.onToggle) {
     const lit = MODES.filter((m) => on(m.id)).map((m) => m.name);
     return (
-      <span className="modepill" role="img" aria-label={t("ui.mode.readout", { list: lit.length ? joinList(lit) : t("ui.mode.none") })}>
+      <span
+        className="modepill"
+        role="img"
+        aria-label={t("ui.mode.readout", { list: lit.length ? joinList(lit) : t("ui.mode.none") })}
+      >
         {MODES.map((m) => (
           <span key={m.id} className={`mseg ${on(m.id) ? "is-on" : ""}`} title={m.name}>
             <m.Icon size={13} stroke={1.75} aria-hidden />

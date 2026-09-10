@@ -5,19 +5,25 @@ import { effectiveKeywords, manualKeywords, splitKeywords } from "./keywords";
 describe("splitKeywords", () => {
   it("reads a note with no manualKeywords array as all-manual", () => {
     expect(splitKeywords({ keywords: ["harbour", "cargo"] })).toEqual({
-      derived: [], manual: ["harbour", "cargo"], suppressed: [],
+      derived: [],
+      manual: ["harbour", "cargo"],
+      suppressed: [],
     });
   });
 
   it("reads an empty manualKeywords array as manual-empty, not as legacy", () => {
     expect(splitKeywords({ keywords: ["harbour"], manualKeywords: [] })).toEqual({
-      derived: ["harbour"], manual: [], suppressed: [],
+      derived: ["harbour"],
+      manual: [],
+      suppressed: [],
     });
   });
 
   it("drops blank and case-duplicate entries within each list", () => {
     expect(splitKeywords({ keywords: [" Harbour ", "harbour", "  "], manualKeywords: ["Cargo", "cargo"] })).toEqual({
-      derived: ["Harbour"], manual: ["Cargo"], suppressed: [],
+      derived: ["Harbour"],
+      manual: ["Cargo"],
+      suppressed: [],
     });
   });
 });

@@ -6,7 +6,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("../copy", () => ({
   t: (key: string, params?: Record<string, unknown>) =>
     params && Object.keys(params).length
-      ? `${key}|${Object.entries(params).map(([k, v]) => `${k}=${v}`).join(",")}`
+      ? `${key}|${Object.entries(params)
+          .map(([k, v]) => `${k}=${v}`)
+          .join(",")}`
       : key,
 }));
 
@@ -41,14 +43,18 @@ describe("parseWire", () => {
   it("throws on a mismatch, naming the field", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     let thrown: unknown;
-    try { parseWire(Thing, { id: "a", on: "false" }, "GET /thing"); } catch (e) { thrown = e; }
+    try {
+      parseWire(Thing, { id: "a", on: "false" }, "GET /thing");
+    } catch (e) {
+      thrown = e;
+    }
     expect(thrown).toBeInstanceOf(WireMismatchError);
     expect((thrown as WireMismatchError).issues.join(" ")).toContain("on");
     expect((thrown as WireMismatchError).context).toBe("GET /thing");
   });
 
   // `"false"` is truthy, so believing it reads as `true` everywhere.
-  it("rejects a boolean sent as the string \"false\" rather than believing it", () => {
+  it('rejects a boolean sent as the string "false" rather than believing it', () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     expect(() => parseWire(Thing, { id: "a", on: "false" }, "GET /thing")).toThrow(WireMismatchError);
   });
@@ -74,7 +80,11 @@ describe("parseWrite", () => {
   it("carries copy saying the change was made, for the caller to report", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     let thrown: unknown;
-    try { parseWrite(Thing, { id: "a" }, "PATCH /thing"); } catch (e) { thrown = e; }
+    try {
+      parseWrite(Thing, { id: "a" }, "PATCH /thing");
+    } catch (e) {
+      thrown = e;
+    }
     expect((thrown as Error).message).toBe("shell.wire.writeMismatch|context=PATCH /thing");
   });
 
@@ -88,7 +98,10 @@ describe("parseWrite", () => {
 
 describe("parseItems", () => {
   it("returns every element when they all match", () => {
-    const items = [{ id: "a", on: true }, { id: "b", on: false }];
+    const items = [
+      { id: "a", on: true },
+      { id: "b", on: false },
+    ];
     expect(parseItems(Thing, items, "GET /things")).toEqual(items);
   });
 

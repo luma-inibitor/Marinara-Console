@@ -359,7 +359,7 @@ describe("/api/* · vector stripping", () => {
       ],
       count: 2,
     });
-    expect(res.body).not.toContain("embedding\":[");
+    expect(res.body).not.toContain('embedding":[');
   });
 
   it("reports the upstream byte count in x-lbm-original-bytes", async () => {
@@ -415,7 +415,11 @@ describe("/api/* · vector stripping", () => {
 
 describe("/api/* · forwarding", () => {
   it("forwards method, path, query and body, and returns the upstream status", async () => {
-    const res = await mc.request("/api/notes?limit=5&q=a%20b", { method: "POST", headers: { "content-type": "application/json" }, body: '{"text":"hi"}' });
+    const res = await mc.request("/api/notes?limit=5&q=a%20b", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: '{"text":"hi"}',
+    });
     expect(res.status).toBe(201);
     expect(JSON.parse(res.body)).toEqual({ saw: "/api/notes?limit=5&q=a%20b", method: "POST" });
     const sent = stub.requests.at(-1);

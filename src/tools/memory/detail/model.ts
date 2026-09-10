@@ -52,9 +52,10 @@ function capFlag(chars: number, key: string): SectionFlag | null {
     // Strictly over, not at: SECTION_CAP is the schema's maximum, so a section
     // sitting exactly on it is full rather than past the limit. rowOverflows
     // draws the line in the same place.
-    sentence: ratio > 1
-      ? t("memory.detail.sectionOverCap", { key, pct, cap: SECTION_CAP.toLocaleString() })
-      : t("memory.detail.sectionNearCap", { key, pct, cap: SECTION_CAP.toLocaleString() }),
+    sentence:
+      ratio > 1
+        ? t("memory.detail.sectionOverCap", { key, pct, cap: SECTION_CAP.toLocaleString() })
+        : t("memory.detail.sectionNearCap", { key, pct, cap: SECTION_CAP.toLocaleString() }),
   };
 }
 

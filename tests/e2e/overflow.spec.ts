@@ -25,8 +25,7 @@ for (const screen of SCREENS) {
         });
         return [document.documentElement, ...scrollers].map((box) => {
           const edge = box.getBoundingClientRect().right + slack;
-          const name = (el: Element) =>
-            `${el.tagName.toLowerCase()}${[...el.classList].map((c) => `.${c}`).join("")}`;
+          const name = (el: Element) => `${el.tagName.toLowerCase()}${[...el.classList].map((c) => `.${c}`).join("")}`;
           const wide = [...box.querySelectorAll("*")]
             .filter((el) => el.getBoundingClientRect().right > edge)
             .slice(0, 5)
@@ -42,8 +41,9 @@ for (const screen of SCREENS) {
     // means the collector stopped matching rather than the app stopped scrolling.
     expect(report.length, `${screen.name} found no scroll container to measure`).toBeGreaterThan(1);
     for (const box of report) {
-      expect(box.scrollW, `${screen.name} scrolls ${box.sel} sideways: ${box.wide.join(", ")}`)
-        .toBeLessThanOrEqual(box.clientW + SLACK);
+      expect(box.scrollW, `${screen.name} scrolls ${box.sel} sideways: ${box.wide.join(", ")}`).toBeLessThanOrEqual(
+        box.clientW + SLACK,
+      );
     }
   });
 }

@@ -13,12 +13,7 @@ export type SourceKind = "characters" | "lorebooks" | "chats";
 
 /** Catalog freshness values, mapped to the six states the UI draws. */
 export type SourceState =
-  | "new"
-  | "current"
-  | "source_updated"
-  | "context_updated"
-  | "extraction_incomplete"
-  | "source_missing";
+  "new" | "current" | "source_updated" | "context_updated" | "extraction_incomplete" | "source_missing";
 
 export interface SourceRow {
   kind: SourceKind;
@@ -90,7 +85,7 @@ export function buildSources(
   for (const [kind, preview] of previews) {
     for (const s of preview.samples) {
       const noteId = (s as { existingNoteId?: string }).existingNoteId;
-      const blocked = noteId ? blockedBySource.get(noteId) ?? [] : [];
+      const blocked = noteId ? (blockedBySource.get(noteId) ?? []) : [];
       out.push({
         kind,
         sourceId: s.sourceId,
@@ -100,8 +95,8 @@ export function buildSources(
         state: resolveState(s.freshness, blocked),
         noteId,
         snippet: s.snippet ?? "",
-        derived: noteId ? derivedBySource.get(noteId) ?? [] : [],
-        pending: noteId ? pendingBySource.get(noteId) ?? 0 : 0,
+        derived: noteId ? (derivedBySource.get(noteId) ?? []) : [],
+        pending: noteId ? (pendingBySource.get(noteId) ?? 0) : 0,
         blocked,
       });
     }
@@ -135,11 +130,16 @@ function resolveState(freshness: string, blocked: string[]): SourceState {
   if (blocked.includes("source_missing")) return "source_missing";
   if (blocked.includes("source_stale")) return "context_updated";
   switch (freshness) {
-    case "current": return "current";
-    case "source_updated": return "source_updated";
-    case "context_updated": return "context_updated";
-    case "extraction_incomplete": return "extraction_incomplete";
-    default: return "new";
+    case "current":
+      return "current";
+    case "source_updated":
+      return "source_updated";
+    case "context_updated":
+      return "context_updated";
+    case "extraction_incomplete":
+      return "extraction_incomplete";
+    default:
+      return "new";
   }
 }
 

@@ -15,7 +15,9 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("../../../copy", () => ({
   t: (key: string, params?: Record<string, unknown>) =>
     params && Object.keys(params).length
-      ? `${key}|${Object.entries(params).map(([k, v]) => `${k}=${v}`).join(",")}`
+      ? `${key}|${Object.entries(params)
+          .map(([k, v]) => `${k}=${v}`)
+          .join(",")}`
       : key,
   // store.ts is pulled in transitively (flags imports rowOverflows) and reads
   // these two off the same module.
@@ -57,7 +59,9 @@ const labels = (r: Row, c = ctx()) => flagsOf(r, c).map((f) => f.label);
 
 describe("contributionChars", () => {
   it("reads text on append_section", () => {
-    expect(contributionChars(cleanRow({ mutation: makeMutation({ kind: "append_section", text: chars(12) }) }))).toBe(12);
+    expect(contributionChars(cleanRow({ mutation: makeMutation({ kind: "append_section", text: chars(12) }) }))).toBe(
+      12,
+    );
   });
 
   it("falls back to section.text on append_section", () => {
@@ -132,7 +136,10 @@ describe("one section-text reader", () => {
 
   it("measures one string across the flag, the readline and the parts", () => {
     const m = makeMutation({
-      kind: "update_section", sectionKey: "history", text: chars(3), section: section(chars(50)),
+      kind: "update_section",
+      sectionKey: "history",
+      text: chars(3),
+      section: section(chars(50)),
     });
     const row = flatten(m);
     expect(sectionTextOf(m)).toBe(chars(50));
@@ -217,10 +224,18 @@ describe("flagsOf — one branch at a time", () => {
   it("names the worst section when the row writes several", () => {
     const row = cleanRow({
       targetId: "n1",
-      parts: [{ key: "history", text: "x" }, { key: "items", text: "x" }, { key: "anchors", text: "x" }],
+      parts: [
+        { key: "history", text: "x" },
+        { key: "items", text: "x" },
+        { key: "anchors", text: "x" },
+      ],
     });
     const c = ctx({
-      pressure: pressure([["n1", "history", 21000], ["n1", "items", 30000], ["n1", "anchors", 22000]]),
+      pressure: pressure([
+        ["n1", "history", 21000],
+        ["n1", "items", 30000],
+        ["n1", "anchors", 22000],
+      ]),
     });
     expect(flagsOf(row, c)[0]!.sentence).toBe(
       `memory.flag.sectionOverCapNamed|key=items,pct=150,cap=${SECTION_CAP.toLocaleString()}`,
@@ -286,7 +301,9 @@ describe("flagsOf — one branch at a time", () => {
   });
 
   it("flags a long contribution at-or-above the char threshold", () => {
-    const row = cleanRow({ mutation: makeMutation({ kind: "append_section", text: chars(LONG_CHARS), confidence: 0.99 }) });
+    const row = cleanRow({
+      mutation: makeMutation({ kind: "append_section", text: chars(LONG_CHARS), confidence: 0.99 }),
+    });
     expect(flagsOf(row, ctx())).toEqual([
       {
         label: FLAG.long,

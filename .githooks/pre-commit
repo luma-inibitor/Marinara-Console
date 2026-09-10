@@ -1,0 +1,5 @@
+#!/bin/sh
+# Installed by `npm run prepare`, which sets core.hooksPath to this directory.
+# The logic lives in scripts/precommit.mjs so it is linted, type-checked and
+# tested like everything else in scripts/.
+exec node "$(dirname "$0")/../scripts/precommit.mjs"

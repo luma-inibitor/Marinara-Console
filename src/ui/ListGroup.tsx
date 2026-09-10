@@ -27,7 +27,9 @@ export function CollapseButton(props: {
       className={`gexp hit ${props.className ?? ""}`}
       aria-expanded={!props.collapsed}
       aria-label={t(props.collapsed ? "ui.group.expand" : "ui.group.collapse", {
-        label: props.label, count: props.count })}
+        label: props.label,
+        count: props.count,
+      })}
       onClick={props.onToggle}
     >
       <Chevron size={props.size ?? 16} stroke={1.75} aria-hidden />

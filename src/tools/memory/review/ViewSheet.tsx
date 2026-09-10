@@ -36,7 +36,9 @@ export function ViewSheet(props: {
   return (
     <Sheet label={t("memory.review.view")} onClose={props.onClose} className="view-sheet">
       <SheetHead title={<span className="t-label t-label-s">{t("memory.review.view")}</span>}>
-        <span className="vs-meta t-data">{current?.label} · {currentSort?.label}</span>
+        <span className="vs-meta t-data">
+          {current?.label} · {currentSort?.label}
+        </span>
       </SheetHead>
 
       <div className="vs-sec">
@@ -76,9 +78,11 @@ export function ViewSheet(props: {
             <span className="t-data vs-opt-l">{o.label}</span>
             {on && (
               <span className="vs-dir">
-                {props.dir === 1
-                  ? <SortDown size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
-                  : <SortUp size={ICON_SIZE.sm} stroke={1.75} aria-hidden />}
+                {props.dir === 1 ? (
+                  <SortDown size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
+                ) : (
+                  <SortUp size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
+                )}
               </span>
             )}
           </button>

@@ -52,7 +52,9 @@ const problems = [];
 const seen = new Map();
 let coined = 0;
 
-for (const file of readdirSync(COPY_DIR).filter((f) => f.endsWith(".json")).sort()) {
+for (const file of readdirSync(COPY_DIR)
+  .filter((f) => f.endsWith(".json"))
+  .sort()) {
   const data = JSON.parse(readFileSync(join(COPY_DIR, file), "utf8"));
   for (const [key, entry] of Object.entries(data)) {
     if (key.startsWith("_")) continue;
@@ -75,7 +77,8 @@ for (const file of readdirSync(COPY_DIR).filter((f) => f.endsWith(".json")).sort
       continue;
     }
     if (isMirror) {
-      if (entry.despite != null) fail("is a mirror and cannot carry `despite`; that field is only for a coinage that declines a near-miss");
+      if (entry.despite != null)
+        fail("is a mirror and cannot carry `despite`; that field is only for a coinage that declines a near-miss");
       continue;
     }
 
@@ -106,9 +109,12 @@ for (const file of readdirSync(COPY_DIR).filter((f) => f.endsWith(".json")).sort
     }
 
     if (entry.despite != null) {
-      if (typeof lookup(entry.despite) !== "string") fail(`declares despite:"${entry.despite}", which is not in the vendored catalog`);
+      if (typeof lookup(entry.despite) !== "string")
+        fail(`declares despite:"${entry.despite}", which is not in the vendored catalog`);
       else if (!texts.some((t) => norm(t) === norm(lookup(entry.despite)))) {
-        fail(`declares despite:"${entry.despite}", but that string does not collide with this text; a stale exemption is an exemption for nothing`);
+        fail(
+          `declares despite:"${entry.despite}", but that string does not collide with this text; a stale exemption is an exemption for nothing`,
+        );
       }
     }
   }

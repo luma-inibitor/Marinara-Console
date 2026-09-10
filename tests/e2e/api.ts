@@ -23,7 +23,10 @@ export interface Route {
   status?: number;
 }
 
-const json = (value: unknown): Route["body"] => () => value;
+const json =
+  (value: unknown): Route["body"] =>
+  () =>
+    value;
 
 export const ROUTES: Route[] = [
   { method: "GET", path: /^\/api\/lorebooks$/, body: json(BOOKS) },
@@ -41,7 +44,8 @@ export const ROUTES: Route[] = [
   { method: "GET", path: /^\/api\/long-term-memory\/drafts\/review$/, body: json(REVIEW) },
   // The kind is in the POST body, not the path: one route, three answers.
   {
-    method: "POST", path: /^\/api\/long-term-memory\/import\/preview$/,
+    method: "POST",
+    path: /^\/api\/long-term-memory\/import\/preview$/,
     body: (_m, request) => PREVIEWS[(request.postDataJSON() as { source?: string }).source ?? ""],
   },
 

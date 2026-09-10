@@ -31,9 +31,16 @@ export function ListEmpty(props: {
         actions={
           <>
             {props.filters?.map((f) => (
-              <Chip key={f.label} onClick={f.clear}>{f.label}<Remove size={ICON_SIZE.sm} stroke={2} aria-hidden /></Chip>
+              <Chip key={f.label} onClick={f.clear}>
+                {f.label}
+                <Remove size={ICON_SIZE.sm} stroke={2} aria-hidden />
+              </Chip>
             ))}
-            {props.onClearAll && <button className="dbtn" onClick={props.onClearAll}>{t("ui.list.clearFilters")}</button>}
+            {props.onClearAll && (
+              <button className="dbtn" onClick={props.onClearAll}>
+                {t("ui.list.clearFilters")}
+              </button>
+            )}
           </>
         }
       />
@@ -56,13 +63,16 @@ export function ListEmpty(props: {
       icon={<FirstRun size={22} stroke={1.75} aria-hidden />}
       title={t("ui.list.firstRunTitle", { what })}
       body={t("ui.list.firstRunBody", { what })}
-      actions={props.action && (
-        <button className="dbtn is-primary" onClick={props.action.run}>
-          {/* First-run's only action is "make the first one", so the glyph is
+      actions={
+        props.action && (
+          <button className="dbtn is-primary" onClick={props.action.run}>
+            {/* First-run's only action is "make the first one", so the glyph is
               fixed here rather than smuggled into each caller's label string. */}
-          <Add size={ICON_SIZE.md} stroke={1.75} aria-hidden />{props.action.label}
-        </button>
-      )}
+            <Add size={ICON_SIZE.md} stroke={1.75} aria-hidden />
+            {props.action.label}
+          </button>
+        )
+      }
     />
   );
 }

@@ -10,9 +10,5 @@ import "./StatusPill.css";
  *  belongs to the value that will land rather than to the one it replaces. */
 export function StatusPill(props: { status: string; className?: string; muted?: boolean }) {
   const hue = props.muted ? "" : ` st-${props.status}`;
-  return (
-    <span className={`stt t-data${hue}${props.className ? ` ${props.className}` : ""}`}>
-      {props.status}
-    </span>
-  );
+  return <span className={`stt t-data${hue}${props.className ? ` ${props.className}` : ""}`}>{props.status}</span>;
 }

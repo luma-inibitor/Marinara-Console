@@ -9,7 +9,15 @@
 // the longer run's, so jaccard is (prefix shingles) / (longer shingles).
 
 import { beforeEach, describe, expect, it } from "vitest";
-import { DUPLICATE_THRESHOLD, computeDerived, dedupeLines, jaccard, normalizeLine, shingles, vaultLines } from "./derived";
+import {
+  DUPLICATE_THRESHOLD,
+  computeDerived,
+  dedupeLines,
+  jaccard,
+  normalizeLine,
+  shingles,
+  vaultLines,
+} from "./derived";
 import type { Row } from "./review";
 import { makeNote, makeRow, resetIds, section } from "../test/factories";
 
@@ -22,15 +30,11 @@ beforeEach(resetIds);
 
 describe("shingles", () => {
   it("defaults to a 4-word window", () => {
-    expect(shingles("the quick brown fox jumps")).toEqual(
-      new Set(["the quick brown fox", "quick brown fox jumps"]),
-    );
+    expect(shingles("the quick brown fox jumps")).toEqual(new Set(["the quick brown fox", "quick brown fox jumps"]));
   });
 
   it("honours an explicit window size", () => {
-    expect(shingles("the quick brown fox", 2)).toEqual(
-      new Set(["the quick", "quick brown", "brown fox"]),
-    );
+    expect(shingles("the quick brown fox", 2)).toEqual(new Set(["the quick", "quick brown", "brown fox"]));
   });
 
   it("returns a Set, so a repeated phrase collapses to one entry", () => {
@@ -77,16 +81,12 @@ describe("shingles", () => {
       // Not a no-op substitution: the space means "brown-fox" is two words, so
       // a 4-word window lands somewhere different than it would if the hyphen
       // were merely stripped.
-      expect(shingles("the quick brown-fox jumps")).toEqual(
-        new Set(["the quick brown fox", "quick brown fox jumps"]),
-      );
+      expect(shingles("the quick brown-fox jumps")).toEqual(new Set(["the quick brown fox", "quick brown fox jumps"]));
     });
 
     it("splits contractions and possessives into two words", () => {
       // Follows from punctuation becoming a space: "don't" is "don" + "t".
-      expect(shingles("don't stop believing", 2)).toEqual(
-        new Set(["don t", "t stop", "stop believing"]),
-      );
+      expect(shingles("don't stop believing", 2)).toEqual(new Set(["don t", "t stop", "stop believing"]));
     });
 
     it("collapses runs of whitespace and ignores leading/trailing whitespace", () => {
@@ -94,9 +94,7 @@ describe("shingles", () => {
     });
 
     it("drops punctuation-only tokens instead of emitting empty words", () => {
-      expect(shingles("alpha -- beta ... gamma !! delta")).toEqual(
-        new Set(["alpha beta gamma delta"]),
-      );
+      expect(shingles("alpha -- beta ... gamma !! delta")).toEqual(new Set(["alpha beta gamma delta"]));
     });
   });
 });
@@ -390,7 +388,9 @@ describe("computeDerived", () => {
 
 describe("dedupeLines", () => {
   it("returns null — not an empty result — when nothing was dropped", () => {
-    const out = dedupeLines(["the first distinct line of this section here", "an entirely different second line of text"].join("\n"));
+    const out = dedupeLines(
+      ["the first distinct line of this section here", "an entirely different second line of text"].join("\n"),
+    );
     expect(out).toBeNull();
   });
 

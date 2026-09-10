@@ -22,7 +22,10 @@ export function Loading(props: { what?: Key; label?: string; onRetry?: () => voi
   useEffect(() => {
     const slow = setTimeout(() => setPhase("slow"), 3_000);
     const stalled = setTimeout(() => setPhase("stalled"), 12_000);
-    return () => { clearTimeout(slow); clearTimeout(stalled); };
+    return () => {
+      clearTimeout(slow);
+      clearTimeout(stalled);
+    };
   }, []);
 
   const subject = t(props.what ?? "ui.loading.subject");
@@ -33,7 +36,13 @@ export function Loading(props: { what?: Key; label?: string; onRetry?: () => voi
       <EmptyState
         title={t("ui.loading.stalledTitle", { what: subject })}
         body={t("ui.loading.stalledBody")}
-        actions={props.onRetry && <button className="dbtn is-primary" onClick={props.onRetry}>{t("ui.error.tryAgain")}</button>}
+        actions={
+          props.onRetry && (
+            <button className="dbtn is-primary" onClick={props.onRetry}>
+              {t("ui.error.tryAgain")}
+            </button>
+          )
+        }
       />
     );
   }

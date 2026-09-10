@@ -57,7 +57,11 @@ const group = (findings) => {
  * @param {{file: string, item: string}[]} findings
  * @param {{adopt?: boolean, prune?: boolean, scope?: (file: string) => boolean, root?: string}} [options]
  */
-export function ratchet(path, findings, { adopt = false, prune = false, scope = () => true, root = process.cwd() } = {}) {
+export function ratchet(
+  path,
+  findings,
+  { adopt = false, prune = false, scope = () => true, root = process.cwd() } = {},
+) {
   const { entries, integrity } = loadBaseline(path);
   const today = group(findings);
 
@@ -79,7 +83,11 @@ export function ratchet(path, findings, { adopt = false, prune = false, scope = 
       if (keep.length) next[file] = keep;
     }
     if (adopt) for (const [file, items] of Object.entries(today)) next[file] = items;
-    const sorted = Object.fromEntries(Object.keys(next).sort().map((k) => [k, next[k]]));
+    const sorted = Object.fromEntries(
+      Object.keys(next)
+        .sort()
+        .map((k) => [k, next[k]]),
+    );
     writeFileSync(path, JSON.stringify(sorted, null, 2) + "\n");
   }
 
@@ -91,7 +99,18 @@ export function ratchet(path, findings, { adopt = false, prune = false, scope = 
  * and pick the exit code. 2 means the check itself is compromised and must
  * never read as a pass.
  */
-export function reportRatchet({ fresh, vanished, integrity, label, noun, adopt, prune, vanishedFails = false, adoptFlag = "--adopt", pruneFlag = "--prune" }) {
+export function reportRatchet({
+  fresh,
+  vanished,
+  integrity,
+  label,
+  noun,
+  adopt,
+  prune,
+  vanishedFails = false,
+  adoptFlag = "--adopt",
+  pruneFlag = "--prune",
+}) {
   if (integrity.length) {
     console.log("\nBASELINE INTEGRITY FAILURE — the check itself is compromised:");
     for (const m of integrity) console.log("  " + m);
@@ -108,10 +127,15 @@ export function reportRatchet({ fresh, vanished, integrity, label, noun, adopt, 
   const stale = vanished.length && vanishedFails && !prune;
   if (vanished.length) {
     const head = stale ? "GONE FROM THE TREE" : "WARN";
-    console.log(`\n${head}: ${vanished.length} baseline ${noun}(s) no longer appear (fixed or deleted). Run ${pruneFlag} to drop them.`);
+    console.log(
+      `\n${head}: ${vanished.length} baseline ${noun}(s) no longer appear (fixed or deleted). Run ${pruneFlag} to drop them.`,
+    );
     let last = null;
     for (const v of vanished) {
-      if (v.file !== last) { console.log(`  ${v.file}`); last = v.file; }
+      if (v.file !== last) {
+        console.log(`  ${v.file}`);
+        last = v.file;
+      }
       console.log(`    ${v.item}`);
     }
   }
@@ -124,7 +148,10 @@ export function reportRatchet({ fresh, vanished, integrity, label, noun, adopt, 
   console.log(`\nNEW since the baseline — ${fresh.length} ${noun}(s) not in ${label}:`);
   let last = null;
   for (const f of fresh) {
-    if (f.file !== last) { console.log(`  ${f.file}`); last = f.file; }
+    if (f.file !== last) {
+      console.log(`  ${f.file}`);
+      last = f.file;
+    }
     console.log(`    ${f.detail ?? f.item}`);
   }
   console.log(`\nFix them, or record them with ${adoptFlag} and say why in the PR body.`);

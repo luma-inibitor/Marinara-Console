@@ -195,9 +195,11 @@ export function parseModule(absPath) {
       const stmtType = n.importKind === "type";
       const specifiers = n.specifiers.map((s) => ({
         imported:
-          s.type === "ImportDefaultSpecifier" ? "default"
-          : s.type === "ImportNamespaceSpecifier" ? "*"
-          : s.imported.name ?? s.imported.value,
+          s.type === "ImportDefaultSpecifier"
+            ? "default"
+            : s.type === "ImportNamespaceSpecifier"
+              ? "*"
+              : (s.imported.name ?? s.imported.value),
         local: s.local.name,
         typeOnly: stmtType || s.importKind === "type",
         star: s.type === "ImportNamespaceSpecifier",
@@ -307,14 +309,19 @@ export function parseModule(absPath) {
 function collectDynamicImports(root, mod, absPath) {
   const seen = new Set();
   const walk = (n, parent, grandparent) => {
-    if (Array.isArray(n)) { for (const c of n) walk(c, parent, grandparent); return; }
+    if (Array.isArray(n)) {
+      for (const c of n) walk(c, parent, grandparent);
+      return;
+    }
     if (!n || typeof n !== "object" || typeof n.type !== "string") return;
     // Babel spells `import(x)` as a CallExpression whose callee is `Import`;
     // other parsers emit an `ImportExpression` with a `source`.
     const dyn =
-      n.type === "ImportExpression" ? n.source
-      : n.type === "CallExpression" && n.callee?.type === "Import" ? n.arguments?.[0]
-      : null;
+      n.type === "ImportExpression"
+        ? n.source
+        : n.type === "CallExpression" && n.callee?.type === "Import"
+          ? n.arguments?.[0]
+          : null;
     if (dyn && !seen.has(n)) {
       seen.add(n);
       const spec = dyn.type === "StringLiteral" ? dyn.value : null;
@@ -353,4 +360,3 @@ function collectDynamicImports(root, mod, absPath) {
   };
   walk(root, null, null);
 }
-

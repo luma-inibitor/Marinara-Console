@@ -127,11 +127,13 @@ Vitest
 [Uu]ndeciding(s|es|d|ed|ing|'s)?
 [Uu]ndrawn(s|es|d|ed|ing|'s)?
 [Uu]nenumerable(s|es|d|ed|ing|'s)?
+[Uu]nformatted(s|es|d|ed|ing|'s)?
 [Uu]nlayered(s|es|d|ed|ing|'s)?
 [Uu]nmocked(s|es|d|ed|ing|'s)?
 [Uu]nmount(s|es|d|ed|ing|'s)?
 [Uu]nrendered(s|es|d|ed|ing|'s)?
 [Uu]nscoped(s|es|d|ed|ing|'s)?
+[Uu]nstaged(s|es|d|ed|ing|'s)?
 [Uu]nstyled(s|es|d|ed|ing|'s)?
 [Uu]ntraced(s|es|d|ed|ing|'s)?
 [Uu]nwired(s|es|d|ed|ing|'s)?
@@ -140,6 +142,7 @@ Vitest
 [Vv]iewport(s|es|d|ed|ing|'s)?
 [Vv]irtualize(s|es|d|ed|ing|'s)?
 [Ww]ireframe(s|es|d|ed|ing|'s)?
+[Ww]orktree(s|es|d|ed|ing|'s)?
 
 # Tokens that also appear fully capitalised.
 [Cc][Ss][Ss](s|es|d|ed|ing|'s)?

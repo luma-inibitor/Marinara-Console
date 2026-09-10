@@ -21,16 +21,20 @@ interface Tally {
 /** `editedCount` rather than the ledger itself: the tally reads nothing from
  *  the edit map but its size. */
 export function countTally(rows: Row[], decisions: ReadonlyMap<string, Decision>, editedCount: number): Tally {
-  let keep = 0, drop = 0;
-  const touched = new Set<string>(), undecidedDrafts = new Set<string>();
+  let keep = 0,
+    drop = 0;
+  const touched = new Set<string>(),
+    undecidedDrafts = new Set<string>();
   for (const row of rows) {
     const d = decisions.get(row.key);
     if (d === "keep") keep += 1;
     else if (d === "drop") drop += 1;
-    if (d) touched.add(row.draftId); else undecidedDrafts.add(row.draftId);
+    if (d) touched.add(row.draftId);
+    else undecidedDrafts.add(row.draftId);
   }
   return {
-    keep, drop,
+    keep,
+    drop,
     undecided: rows.length - keep - drop,
     edited: editedCount,
     willSend: touched.size,

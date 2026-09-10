@@ -24,7 +24,9 @@ function Head(props: { title: string; count: number }) {
   return (
     <>
       <span className="spec-gn t-prose">{props.title}</span>
-      <span className="t-data" style={{ color: "var(--text-dim)" }}>{props.count}</span>
+      <span className="t-data" style={{ color: "var(--text-dim)" }}>
+        {props.count}
+      </span>
     </>
   );
 }
@@ -33,7 +35,9 @@ function Rows(props: { items: string[] }) {
   return (
     <ul className="spec-rows">
       {props.items.map((line) => (
-        <li key={line} className="t-prose">{line}</li>
+        <li key={line} className="t-prose">
+          {line}
+        </li>
       ))}
     </ul>
   );
@@ -104,9 +108,12 @@ export function Stack() {
   const groups: Array<{ id: string; title: string; label: string; items: string[] }> = [
     { id: "thread", title: "thread · open questions", label: "Open questions", items: THREADS },
     { id: "timeline", title: "timeline_event · the Kessen fire", label: "The Kessen fire", items: TIMELINE },
-    { id: "world", title: "world · the sea wall", label: "The sea wall", items: [
-      "The sea wall closes at the third bell and opens on the tide, not the clock.",
-    ] },
+    {
+      id: "world",
+      title: "world · the sea wall",
+      label: "The sea wall",
+      items: ["The sea wall closes at the third bell and opens on the tide, not the clock."],
+    },
   ];
   return (
     <div style={{ maxWidth: 460, display: "grid", gap: "var(--s2)" }}>

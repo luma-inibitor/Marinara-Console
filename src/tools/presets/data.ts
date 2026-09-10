@@ -14,17 +14,31 @@ import { api, tokensOf } from "../../shell/api";
 import { tAny } from "../../copy";
 
 const bool = (v: unknown): boolean => v === true || v === "true";
-const parseJson = <T,>(v: unknown, fallback: T): T => {
+const parseJson = <T>(v: unknown, fallback: T): T => {
   if (v == null) return fallback;
   if (typeof v !== "string") return v as T;
-  try { return JSON.parse(v) as T; } catch { return fallback; }
+  try {
+    return JSON.parse(v) as T;
+  } catch {
+    return fallback;
+  }
 };
 
 type MarkerType =
-  | "character" | "persona" | "lorebook" | "chat_history" | "chat_summary"
-  | "dialogue_examples" | "agent_data" | "id_macro_cards" | string;
+  | "character"
+  | "persona"
+  | "lorebook"
+  | "chat_history"
+  | "chat_summary"
+  | "dialogue_examples"
+  | "agent_data"
+  | "id_macro_cards"
+  | string;
 
-interface MarkerConfig { type: MarkerType; [extra: string]: unknown; }
+interface MarkerConfig {
+  type: MarkerType;
+  [extra: string]: unknown;
+}
 
 // Marker types the engine's assembler actually handles (packages/server/src/
 // services/prompt/{assembler,marker-expander}.ts). Do not invent entries here:
@@ -76,7 +90,11 @@ export interface PromptSection {
   forbidOverrides: boolean;
 }
 
-interface PromptGroup { id: string; name: string; enabled: boolean; }
+interface PromptGroup {
+  id: string;
+  name: string;
+  enabled: boolean;
+}
 
 export interface PresetFull {
   preset: PromptPreset;
@@ -158,7 +176,7 @@ export function effectivelyEnabled(s: PromptSection, groups: PromptGroup[]): boo
 export function expand(content: string, preset: PromptPreset): string {
   return content.replace(/\{\{([a-z0-9_]+)\}\}/gi, (whole, key: string) => {
     const v = preset.defaultChoices[key];
-    if (v == null) return whole;                       // {{user}} etc. resolve at runtime
+    if (v == null) return whole; // {{user}} etc. resolve at runtime
     return Array.isArray(v) ? v.join(", ") : String(v);
   });
 }
@@ -184,11 +202,15 @@ export function presetLoad(full: PresetFull, mode: "conversation" | "game"): Pre
   const ordered = orderedSections(full);
   const on = ordered.filter((s) => effectivelyEnabled(s, full.groups));
   const sectionTok = on.reduce((a, s) => a + sectionTokens(s, full.preset), 0);
-  const promptTok = tokensOf(expand(
-    mode === "game" ? full.preset.gamePrompt : full.preset.conversationPrompt, full.preset));
+  const promptTok = tokensOf(
+    expand(mode === "game" ? full.preset.gamePrompt : full.preset.conversationPrompt, full.preset),
+  );
   return {
-    sectionTok, promptTok, total: sectionTok + promptTok,
-    enabled: on.length, totalSections: ordered.length,
+    sectionTok,
+    promptTok,
+    total: sectionTok + promptTok,
+    enabled: on.length,
+    totalSections: ordered.length,
     markers: on.filter(isMarker).length,
   };
 }
@@ -242,5 +264,4 @@ export const deleteSection = (presetId: string, sectionId: string) =>
   api<null>(`/prompts/${presetId}/sections/${sectionId}`, { method: "DELETE" });
 export const duplicatePreset = async (id: string) =>
   normPreset(await api<Record<string, unknown>>(`/prompts/${id}/duplicate`, { method: "POST" }));
-export const setDefaultPreset = (id: string) =>
-  api(`/prompts/${id}/set-default`, { method: "POST" });
+export const setDefaultPreset = (id: string) => api(`/prompts/${id}/set-default`, { method: "POST" });

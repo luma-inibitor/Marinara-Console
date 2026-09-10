@@ -134,16 +134,35 @@ const HOVER: Record<Variant, string> = {
 
 export function Button(props: ButtonProps) {
   const {
-    variant = "secondary", tone, size = "md", labelCase = "upper",
-    icon, iconAlign = "start", pending = false, disabled = false, disabledReason,
-    href, download, target, pressed, expanded, haspopup, fullWidth,
-    onClick, className, autoFocus, label,
+    variant = "secondary",
+    tone,
+    size = "md",
+    labelCase = "upper",
+    icon,
+    iconAlign = "start",
+    pending = false,
+    disabled = false,
+    disabledReason,
+    href,
+    download,
+    target,
+    pressed,
+    expanded,
+    haspopup,
+    fullWidth,
+    onClick,
+    className,
+    autoFocus,
+    label,
   } = props;
   const iconOnly = props.iconOnly === true;
 
   const [spinning, setSpinning] = useState(false);
   useEffect(() => {
-    if (!pending) { setSpinning(false); return; }
+    if (!pending) {
+      setSpinning(false);
+      return;
+    }
     const id = setTimeout(() => setSpinning(true), SPINNER_DELAY_MS);
     return () => clearTimeout(id);
   }, [pending]);
@@ -162,7 +181,9 @@ export function Button(props: ButtonProps) {
     !pressed && !inert && HOVER[variant],
     fullWidth && "w-full",
     className,
-  ].filter(Boolean).join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const hide = spinning ? "invisible" : undefined;
   const glyph = icon && <span className={hide}>{icon}</span>;
@@ -198,9 +219,14 @@ export function Button(props: ButtonProps) {
 
   if (href) {
     return (
-      <a {...shared} href={inert ? undefined : href} download={download} target={target}
-         rel={target === "_blank" ? "noopener noreferrer" : undefined}
-         aria-disabled={inert || undefined}>
+      <a
+        {...shared}
+        href={inert ? undefined : href}
+        download={download}
+        target={target}
+        rel={target === "_blank" ? "noopener noreferrer" : undefined}
+        aria-disabled={inert || undefined}
+      >
         {body}
       </a>
     );
@@ -213,7 +239,9 @@ export function Button(props: ButtonProps) {
       autoFocus={autoFocus}
       disabled={inert && !softDisabled}
       aria-disabled={softDisabled || undefined}
-      onClick={() => { if (!inert) onClick?.(); }}
+      onClick={() => {
+        if (!inert) onClick?.();
+      }}
     >
       {body}
     </button>
@@ -221,7 +249,11 @@ export function Button(props: ButtonProps) {
 
   // -1 keeps the Term out of the tab order: the button inside it is already a
   // tab stop, and two stops for one control is a trap in miniature.
-  return disabledReason && disabled
-    ? <Term tip={disabledReason} tabIndex={-1}>{button}</Term>
-    : button;
+  return disabledReason && disabled ? (
+    <Term tip={disabledReason} tabIndex={-1}>
+      {button}
+    </Term>
+  ) : (
+    button
+  );
 }

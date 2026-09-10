@@ -32,8 +32,8 @@ snake_case stylelint subline syncpack
 substate tabbable tabindex teleport tokenizer togglable tooltip tri triaged
 typescale uFuzzy unauthored
 unawaited unclipped undecide undeciding undrawn unenumerable unlayered unmocked
-unmount unrendered unscoped unstyled untraced unwired upstream vendored
-viewport virtualize wireframe
+unformatted unmount unrendered unscoped unstaged unstyled untraced unwired
+upstream vendored viewport virtualize wireframe worktree
 """
 
 # Tokens that also turn up fully capitalised in prose: DOM tags, file types,

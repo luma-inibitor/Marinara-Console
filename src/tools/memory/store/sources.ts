@@ -63,14 +63,23 @@ export async function loadSources(): Promise<void> {
   sourcesLoading.set(true);
   const next = new Map<SourceKind, ImportPreview>();
   const errs = new Map<SourceKind, string>();
-  await Promise.all(KIND_IDS.map(async (id) => {
-    try { next.set(id, await importPreview(id)); }
-    catch (error) { errs.set(id, (error as Error).message); }
-  }));
+  await Promise.all(
+    KIND_IDS.map(async (id) => {
+      try {
+        next.set(id, await importPreview(id));
+      } catch (error) {
+        errs.set(id, (error as Error).message);
+      }
+    }),
+  );
   sourceErrors.set(errs);
   const notes = await loadAllNotes();
   let review: ReviewResponse | null = null;
-  try { review = await fetchReview(); } catch { review = null; }
+  try {
+    review = await fetchReview();
+  } catch {
+    review = null;
+  }
   sourceRows.set(buildSources(next, review, notes));
   blockedDrafts.set((review?.sources ?? []).flatMap((s) => s.drafts.filter((d) => d.blockReasons.length)));
   sourcesLoading.set(false);
@@ -79,8 +88,11 @@ export async function loadSources(): Promise<void> {
 /** The chats scope can name. Failure leaves the list empty rather than
  *  throwing: a scope picker with no names is still a usable screen. */
 export async function loadChats(): Promise<void> {
-  try { chats.set(await fetchChats()); }
-  catch { chats.set([]); }
+  try {
+    chats.set(await fetchChats());
+  } catch {
+    chats.set([]);
+  }
 }
 
 /** Import one source and extract from it — one model call, and a write to the
@@ -96,13 +108,16 @@ export function importSource(row: SourceRow): Promise<ImportResult> {
  *  and the caller can stop between them. Reports progress and per-row failure
  *  through callbacks — the screen owns the dock and the toast copy. A stopped
  *  run still returns what it managed, so the report covers it. */
-export async function importSources(batch: SourceRow[], hooks: {
-  shouldStop?: () => boolean;
-  /** `stopped` marks the last report of a run the caller halted, so the dock
-   *  can say where it got to rather than where it was going. */
-  onProgress?: (done: number, total: number, stopped: boolean) => void;
-  onError?: (row: SourceRow, error: Error) => void;
-} = {}): Promise<{ results: ImportResult[]; stopped: boolean }> {
+export async function importSources(
+  batch: SourceRow[],
+  hooks: {
+    shouldStop?: () => boolean;
+    /** `stopped` marks the last report of a run the caller halted, so the dock
+     *  can say where it got to rather than where it was going. */
+    onProgress?: (done: number, total: number, stopped: boolean) => void;
+    onError?: (row: SourceRow, error: Error) => void;
+  } = {},
+): Promise<{ results: ImportResult[]; stopped: boolean }> {
   const results: ImportResult[] = [];
   for (const [i, row] of batch.entries()) {
     if (hooks.shouldStop?.()) {
@@ -115,7 +130,11 @@ export async function importSources(batch: SourceRow[], hooks: {
     } catch (error) {
       // A failed row is still a row in the report: the source was saved even
       // when the extraction was not.
-      results.push({ batchStatus: "failed", source: row.kind, imported: [{ sourceId: row.sourceId, title: row.title }] } as ImportResult);
+      results.push({
+        batchStatus: "failed",
+        source: row.kind,
+        imported: [{ sourceId: row.sourceId, title: row.title }],
+      } as ImportResult);
       hooks.onError?.(row, error as Error);
     }
   }

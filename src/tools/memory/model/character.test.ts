@@ -7,13 +7,11 @@ import { parseCharacter } from "./character";
 
 describe("parseCharacter", () => {
   it("prefers the hoisted name and never parses the card", () => {
-    expect(parseCharacter({ id: "c1", name: "Marin", data: "{\"name\":\"Other\"}" }))
-      .toEqual({ id: "c1", name: "Marin" });
+    expect(parseCharacter({ id: "c1", name: "Marin", data: '{"name":"Other"}' })).toEqual({ id: "c1", name: "Marin" });
   });
 
   it("reads the name out of the card JSON when it was not hoisted", () => {
-    expect(parseCharacter({ id: "c2", data: "{\"name\":\"Marin\"}" }))
-      .toEqual({ id: "c2", name: "Marin" });
+    expect(parseCharacter({ id: "c2", data: '{"name":"Marin"}' })).toEqual({ id: "c2", name: "Marin" });
   });
 
   it("falls back to the id when the card carries no name", () => {
@@ -26,7 +24,6 @@ describe("parseCharacter", () => {
   });
 
   it("treats an empty hoisted name as absent", () => {
-    expect(parseCharacter({ id: "c6", name: "", data: "{\"name\":\"Marin\"}" }))
-      .toEqual({ id: "c6", name: "Marin" });
+    expect(parseCharacter({ id: "c6", name: "", data: '{"name":"Marin"}' })).toEqual({ id: "c6", name: "Marin" });
   });
 });

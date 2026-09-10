@@ -108,9 +108,7 @@ export function RetrievalCard({ note }: { note: Note }) {
             <span className="mdc-ret-kwfoot">
               {hidden > 0 && (
                 <button type="button" className="mdc-ret-more" onClick={toggleKw}>
-                  {kwOpen
-                    ? t("ui.showFewer")
-                    : t("ui.moreCount", { count: hidden })}
+                  {kwOpen ? t("ui.showFewer") : t("ui.moreCount", { count: hidden })}
                 </button>
               )}
               <span className="mdc-ret-tally">

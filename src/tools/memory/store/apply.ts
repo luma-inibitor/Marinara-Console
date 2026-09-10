@@ -45,7 +45,10 @@ export async function applyDecided() {
   // just-skipped id to accept.
   await preflightNow();
   const pf = preflight.get();
-  if (pf?.error) { applying.set(false); return; }
+  if (pf?.error) {
+    applying.set(false);
+    return;
+  }
   const dropsByDraft = new Map<string, Row[]>();
   for (const row of rows.get()) {
     if (decisions.get().get(row.key) !== "drop") continue;
@@ -54,9 +57,13 @@ export async function applyDecided() {
     list.push(row);
   }
   const keeps = keepsByDraft();
-  if (!dropsByDraft.size && !keeps.size) { applying.set(false); return; }
+  if (!dropsByDraft.size && !keeps.size) {
+    applying.set(false);
+    return;
+  }
 
-  let applied = 0, dropped = 0;
+  let applied = 0,
+    dropped = 0;
   const failures = new Map<string, { title: string; fix: string; msg: string; n: number }>();
   const fail = (msg: string) => {
     const k = classify(msg);
@@ -76,7 +83,10 @@ export async function applyDecided() {
     const drops = dropsByDraft.get(draftId) ?? [];
     if (drops.length) {
       try {
-        const res = await skipMutations(draftId, drops.map((r) => r.mutation.id));
+        const res = await skipMutations(
+          draftId,
+          drops.map((r) => r.mutation.id),
+        );
         for (const id of res.mutationIds ?? []) {
           const key = `${draftId}:${id}`;
           markApplied(key, "skipped");
@@ -97,8 +107,7 @@ export async function applyDecided() {
     // Preflight may auto-include a dependency the user explicitly dropped;
     // those ids were just deleted by the skip above — never send them.
     const dropIds = new Set(drops.map((r) => r.mutation.id));
-    const ids = (draftPf?.readyMutationIds ?? keepRows.map((r) => r.mutation.id))
-      .filter((id) => !dropIds.has(id));
+    const ids = (draftPf?.readyMutationIds ?? keepRows.map((r) => r.mutation.id)).filter((id) => !dropIds.has(id));
     if (!ids.length) continue;
     try {
       const body: { mutationIds: string[]; editedMutations?: Mutation[] } = { mutationIds: ids };

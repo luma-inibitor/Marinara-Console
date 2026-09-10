@@ -26,7 +26,10 @@ beforeEach(() => {
 });
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-const filesStylelintReturned = (...files) => (f) => new Set(files).has(f);
+const filesStylelintReturned =
+  (...files) =>
+  (f) =>
+    new Set(files).has(f);
 
 describe("an entry whose file has been deleted", () => {
   it("is reported as vanished even though no run can open it", () => {

@@ -25,28 +25,42 @@ interface Surface {
 
 const SURFACES: Surface[] = [
   {
-    name: "facet sheet", project: "phone", screen: screen("memory-review"),
+    name: "facet sheet",
+    project: "phone",
+    screen: screen("memory-review"),
     open: (page) => page.getByRole("button", { name: "Filter", exact: true }).click(),
-    sel: ".sheet.filter-sheet", dismiss: ROUTES,
+    sel: ".sheet.filter-sheet",
+    dismiss: ROUTES,
   },
   // Group and sort open the same sheet; either opener could lose its wiring.
   {
-    name: "view sheet from group", project: "phone", screen: screen("memory-review"),
+    name: "view sheet from group",
+    project: "phone",
+    screen: screen("memory-review"),
     open: (page) => page.getByRole("button", { name: "Group by", exact: true }).click(),
-    sel: ".sheet.view-sheet", dismiss: ROUTES,
+    sel: ".sheet.view-sheet",
+    dismiss: ROUTES,
   },
   {
-    name: "view sheet from sort", project: "phone", screen: screen("memory-review"),
+    name: "view sheet from sort",
+    project: "phone",
+    screen: screen("memory-review"),
     open: (page) => page.getByRole("button", { name: "Sort by", exact: true }).click(),
-    sel: ".sheet.view-sheet", dismiss: ROUTES,
+    sel: ".sheet.view-sheet",
+    dismiss: ROUTES,
   },
   {
-    name: "dock sheet", project: "phone", screen: screen("memory-review"),
+    name: "dock sheet",
+    project: "phone",
+    screen: screen("memory-review"),
     open: (page) => page.getByRole("button", { name: "What Apply will send" }).click(),
-    sel: ".sheet.dock-sheet", dismiss: ROUTES,
+    sel: ".sheet.dock-sheet",
+    dismiss: ROUTES,
   },
   {
-    name: "note peek", project: "desktop", screen: screen("memory-vault"),
+    name: "note peek",
+    project: "desktop",
+    screen: screen("memory-vault"),
     open: async (page) => {
       await page.locator(".row-summary").first().click();
       // No pause between the two clicks: .notelink exists only inside a record,
@@ -54,13 +68,17 @@ const SURFACES: Surface[] = [
       // record to have arrived.
       await page.locator(".notelink").first().click();
     },
-    sel: ".sheet.peek-sheet", dismiss: ROUTES,
+    sel: ".sheet.peek-sheet",
+    dismiss: ROUTES,
   },
   {
     // Full-screen, with no scrim to tap.
-    name: "tag panel", project: "phone", screen: screen("lorebook-audit"),
+    name: "tag panel",
+    project: "phone",
+    screen: screen("lorebook-audit"),
     open: (page) => page.getByRole("button", { name: "Tags", exact: true }).click(),
-    sel: ".tagpanel", dismiss: ["escape", "back"],
+    sel: ".tagpanel",
+    dismiss: ["escape", "back"],
   },
 ];
 

@@ -53,7 +53,11 @@ it("writes no sibling where the encoding comes out bigger than the file", () => 
   const noise = Buffer.alloc(4096);
   let x = 0x9e3779b9;
   for (let i = 0; i < noise.length; i++) {
-    x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0;
+    x ^= x << 13;
+    x >>>= 0;
+    x ^= x >>> 17;
+    x ^= x << 5;
+    x >>>= 0;
     noise[i] = x & 0xff;
   }
   const abs = write("assets/noise.json", noise);

@@ -6,7 +6,11 @@ import { fuzzyFilter } from "./fuzzy";
 import { t } from "../copy";
 import "./SearchDisclosure.css";
 
-export interface DisclosureOption { id: string; name: string; hint?: string }
+export interface DisclosureOption {
+  id: string;
+  name: string;
+  hint?: string;
+}
 
 /** Choose one value from a searchable list, in a panel anchored to its own
  *  trigger. The trigger shows the current value, so the control reads as part
@@ -36,8 +40,12 @@ export function SearchDisclosure(props: {
 
   useEffect(() => {
     if (!open) return;
-    const away = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    const away = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
     document.addEventListener("mousedown", away);
     document.addEventListener("keydown", esc);
     return () => {
@@ -48,7 +56,10 @@ export function SearchDisclosure(props: {
 
   const shown = fuzzyFilter(props.options, q, (o) => o.name);
   const I = props.icon;
-  const pick = (id: string) => { props.onPick(id); setOpen(false); };
+  const pick = (id: string) => {
+    props.onPick(id);
+    setOpen(false);
+  };
 
   return (
     <div className="disclosure" ref={ref}>
@@ -57,7 +68,10 @@ export function SearchDisclosure(props: {
         className="disclosure-trigger hit"
         aria-expanded={open}
         aria-label={`${props.label}: ${props.value}`}
-        onClick={() => { setOpen(!open); setQ(""); }}
+        onClick={() => {
+          setOpen(!open);
+          setQ("");
+        }}
       >
         <I size={14} stroke={1.75} />
         <span className="disclosure-value">{props.value}</span>
@@ -65,15 +79,27 @@ export function SearchDisclosure(props: {
       </button>
       {open && (
         <div className="disclosure-pop" role="dialog" aria-label={props.label}>
-          <SearchBar className="disclosure-search" label={t("ui.search.what", { what: props.label.toLowerCase() })}
-            value={q} onInput={setQ} />
+          <SearchBar
+            className="disclosure-search"
+            label={t("ui.search.what", { what: props.label.toLowerCase() })}
+            value={q}
+            onInput={setQ}
+          />
           <div className="disclosure-list">
-            <button type="button" className={`disclosure-opt hit ${props.current === "" ? "is-on" : ""}`}
-              onClick={() => pick("")}>{props.allLabel}</button>
+            <button
+              type="button"
+              className={`disclosure-opt hit ${props.current === "" ? "is-on" : ""}`}
+              onClick={() => pick("")}
+            >
+              {props.allLabel}
+            </button>
             {shown.map((o) => (
-              <button key={o.id} type="button"
+              <button
+                key={o.id}
+                type="button"
                 className={`disclosure-opt hit ${props.current === o.id ? "is-on" : ""}`}
-                onClick={() => pick(o.id)}>
+                onClick={() => pick(o.id)}
+              >
                 <span className="disclosure-optname">{o.name}</span>
                 {o.hint && <span className="disclosure-opthint t-data">{o.hint}</span>}
               </button>

@@ -44,11 +44,7 @@ const PREFIX = "ui.longTermMemory.";
 
 type Meta = `_${string}`;
 
-type ConsoleEntries = typeof shellCopy &
-  typeof uiCopy &
-  typeof memoryCopy &
-  typeof lorebooksCopy &
-  typeof presetsCopy;
+type ConsoleEntries = typeof shellCopy & typeof uiCopy & typeof memoryCopy & typeof lorebooksCopy & typeof presetsCopy;
 
 /** Console keys, minus the `_`-prefixed metadata. */
 type ConsoleKey = Exclude<Extract<keyof ConsoleEntries, string>, Meta>;
@@ -65,11 +61,7 @@ type ProductKey = Strip<VendoredKey>;
  * Requires BOTH halves — `memoryvault.openAMemoryForDetailsOrAddOne` ends in
  * "One" and is not a plural.
  */
-type PluralBase<K extends string> = K extends `${infer B}One`
-  ? `${B}Other` extends ProductKey
-    ? B
-    : never
-  : never;
+type PluralBase<K extends string> = K extends `${infer B}One` ? (`${B}Other` extends ProductKey ? B : never) : never;
 
 /** Every key `t()` can resolve. Exported so a component taking a subject noun
  *  takes a key, not a string: a bad subject is then a compile error. */

@@ -8,9 +8,7 @@ import { fetchBooks, fetchEntries, entryTokens, type Lorebook } from "./data";
 // A failed fetch must NOT render as zeros: "0 / 1,000 tokens" is indistinguishable
 // from an empty book, so a book 43% over budget reads as comfortably under it.
 // Loading, failed, and genuinely-empty are three different things here.
-type BookStats =
-  | { state: "ok"; n: number; constant: number; sum: number }
-  | { state: "failed"; message: string };
+type BookStats = { state: "ok"; n: number; constant: number; sum: number } | { state: "failed"; message: string };
 
 export function Picker() {
   const [books, setBooks] = useState<Lorebook[] | null>(null);
@@ -18,38 +16,68 @@ export function Picker() {
   const [error, setError] = useState<unknown>(null);
 
   const loadStats = (id: string) => {
-    setStats((s) => { const n = { ...s }; delete n[id]; return n; });   // back to loading
+    setStats((s) => {
+      const n = { ...s };
+      delete n[id];
+      return n;
+    }); // back to loading
     fetchEntries(id)
-      .then((entries) => setStats((s) => ({
-        ...s,
-        [id]: {
-          state: "ok",
-          n: entries.length,
-          constant: entries.filter((e) => e.constant && e.enabled).length,
-          sum: entries.reduce((a, e) => a + entryTokens(e), 0),
-        },
-      })))
+      .then((entries) =>
+        setStats((s) => ({
+          ...s,
+          [id]: {
+            state: "ok",
+            n: entries.length,
+            constant: entries.filter((e) => e.constant && e.enabled).length,
+            sum: entries.reduce((a, e) => a + entryTokens(e), 0),
+          },
+        })),
+      )
       .catch((e: Error) => setStats((s) => ({ ...s, [id]: { state: "failed", message: e.message } })));
   };
 
   useEffect(() => {
     let alive = true;
     fetchBooks()
-      .then((list) => { if (!alive) return; setBooks(list); for (const b of list) loadStats(b.id); })
-      .catch((e: unknown) => { if (alive) setError(e); });
-    return () => { alive = false; };
+      .then((list) => {
+        if (!alive) return;
+        setBooks(list);
+        for (const b of list) loadStats(b.id);
+      })
+      .catch((e: unknown) => {
+        if (alive) setError(e);
+      });
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  const retry = () => { setError(null); setBooks(null); loadAll(setBooks, setError, loadStats); };
+  const retry = () => {
+    setError(null);
+    setBooks(null);
+    loadAll(setBooks, setError, loadStats);
+  };
 
-  if (error) return <div className="screen"><ErrorState error={error} onRetry={retry} /></div>;
-  if (!books) return <div className="screen"><Loading what="lorebooks.title" onRetry={retry} /></div>;
+  if (error)
+    return (
+      <div className="screen">
+        <ErrorState error={error} onRetry={retry} />
+      </div>
+    );
+  if (!books)
+    return (
+      <div className="screen">
+        <Loading what="lorebooks.title" onRetry={retry} />
+      </div>
+    );
 
   return (
     <div className="screen">
       <div className="screen-head">
         <h1 className="screen-title">{t("lorebooks.title")}</h1>
-        <span className="meta"><span>{t("lorebooks.bookCount", { count: books.length })}</span></span>
+        <span className="meta">
+          <span>{t("lorebooks.bookCount", { count: books.length })}</span>
+        </span>
       </div>
       {books.length === 0 && <ListEmpty kind="first-run" what="lorebooks.title" />}
       {books.map((b) => {
@@ -65,16 +93,27 @@ export function Picker() {
               // Say the number is missing, and let the user get it back without
               // reloading the whole screen. Never invent a value.
               <div className="meta">
-                <span className="is-flag" title={failed.message}>{t("lorebooks.picker.statsUnavailable")}</span>
+                <span className="is-flag" title={failed.message}>
+                  {t("lorebooks.picker.statsUnavailable")}
+                </span>
                 <span
                   role="button"
                   tabIndex={0}
                   className="linkish"
-                  onClick={(ev) => { ev.stopPropagation(); loadStats(b.id); }}
-                  onKeyDown={(ev) => {
-                    if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.stopPropagation(); loadStats(b.id); }
+                  onClick={(ev) => {
+                    ev.stopPropagation();
+                    loadStats(b.id);
                   }}
-                >{t("lorebooks.retry")}</span>
+                  onKeyDown={(ev) => {
+                    if (ev.key === "Enter" || ev.key === " ") {
+                      ev.preventDefault();
+                      ev.stopPropagation();
+                      loadStats(b.id);
+                    }
+                  }}
+                >
+                  {t("lorebooks.retry")}
+                </span>
                 {!b.enabled && <span style={{ color: "var(--danger)" }}>{t("lorebooks.picker.bookDisabled")}</span>}
               </div>
             ) : (
@@ -85,13 +124,18 @@ export function Picker() {
                   <b className="t-num" style={over ? { color: "var(--flag)" } : undefined}>
                     {ok ? ok.sum.toLocaleString() : "—"}
                   </b>
-                  {" / "}{b.tokenBudget.toLocaleString()} {t("ui.editor.tokensEst")}
+                  {" / "}
+                  {b.tokenBudget.toLocaleString()} {t("ui.editor.tokensEst")}
                 </span>
                 {!b.enabled && <span style={{ color: "var(--danger)" }}>{t("lorebooks.picker.bookDisabled")}</span>}
               </div>
             )}
             {/* no bar until there is a real number to draw — a 0% bar is a claim */}
-            {ok && <div className="bar"><i className={over ? "is-over" : ""} style={{ width: `${pct}%` }} /></div>}
+            {ok && (
+              <div className="bar">
+                <i className={over ? "is-over" : ""} style={{ width: `${pct}%` }} />
+              </div>
+            )}
           </button>
         );
       })}
@@ -105,6 +149,9 @@ function loadAll(
   loadStats: (id: string) => void,
 ) {
   fetchBooks()
-    .then((list) => { setBooks(list); for (const b of list) loadStats(b.id); })
+    .then((list) => {
+      setBooks(list);
+      for (const b of list) loadStats(b.id);
+    })
     .catch((e: unknown) => setError(e));
 }

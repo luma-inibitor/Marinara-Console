@@ -62,16 +62,30 @@ export const POS_COMPACT = byPosition((name) => `lorebooks.pos.${name}.compact`)
 // key (scripts/copycatalog.mjs), so the full table borrows the compact label there
 // rather than registering a second entry with identical text.
 export const POS_FULL = byPosition((name) =>
-  name === "outlet" ? "lorebooks.pos.outlet.compact" : `lorebooks.pos.${name}.full`);
+  name === "outlet" ? "lorebooks.pos.outlet.compact" : `lorebooks.pos.${name}.full`,
+);
 
 export const ADVANCED_FIELDS: Array<[string, unknown]> = [
-  ["selectiveLogic", "and"], ["probability", null], ["scanDepth", null],
-  ["matchWholeWords", false], ["caseSensitive", false], ["useRegex", false],
-  ["sticky", null], ["cooldown", null], ["delay", null], ["ephemeral", null],
-  ["group", ""], ["groupWeight", null], ["locked", false],
-  ["preventRecursion", false], ["excludeRecursion", false], ["delayUntilRecursion", false],
-  ["excludeFromVectorization", false], ["role", "system"],
-  ["characterFilterMode", "any"], ["characterTagFilterMode", "any"],
+  ["selectiveLogic", "and"],
+  ["probability", null],
+  ["scanDepth", null],
+  ["matchWholeWords", false],
+  ["caseSensitive", false],
+  ["useRegex", false],
+  ["sticky", null],
+  ["cooldown", null],
+  ["delay", null],
+  ["ephemeral", null],
+  ["group", ""],
+  ["groupWeight", null],
+  ["locked", false],
+  ["preventRecursion", false],
+  ["excludeRecursion", false],
+  ["delayUntilRecursion", false],
+  ["excludeFromVectorization", false],
+  ["role", "system"],
+  ["characterFilterMode", "any"],
+  ["characterTagFilterMode", "any"],
   ["generationTriggerFilterMode", "any"],
 ];
 
@@ -86,7 +100,11 @@ export function percentile(values: number[], p: number): number {
   return s[Math.min(s.length - 1, Math.floor(s.length * p))];
 }
 
-export interface Evaluation { fires: boolean; hits: string[]; tested: boolean; }
+export interface Evaluation {
+  fires: boolean;
+  hits: string[];
+  tested: boolean;
+}
 
 /** Would this entry activate on `text`? Uses the vendored engine matcher. */
 export function evaluate(e: Entry, text: string): Evaluation {
@@ -96,22 +114,30 @@ export function evaluate(e: Entry, text: string): Evaluation {
   const opts = { useRegex: !!e.useRegex, matchWholeWords: !!e.matchWholeWords, caseSensitive: !!e.caseSensitive };
   const { matched, matchedKeys } = testPrimaryKeys(e.keys ?? [], text, opts);
   if (!matched) return { fires: false, hits: [], tested: true };
-  const ok = !e.selective
-    || testSecondaryKeys(e.secondaryKeys ?? [], text, e.selectiveLogic ?? "and", opts);
+  const ok = !e.selective || testSecondaryKeys(e.secondaryKeys ?? [], text, e.selectiveLogic ?? "and", opts);
   return { fires: ok, hits: matchedKeys, tested: true };
 }
 
 export function matchesQuery(e: Entry, q: string): boolean {
   const s = q.trim().toLowerCase();
   if (!s) return true;
-  return e.name.toLowerCase().includes(s)
-    || e.content.toLowerCase().includes(s)
-    || e.description.toLowerCase().includes(s)
-    || e.keys.some((k) => k.toLowerCase().includes(s))
-    || (e.tag ?? "").toLowerCase().includes(s);
+  return (
+    e.name.toLowerCase().includes(s) ||
+    e.content.toLowerCase().includes(s) ||
+    e.description.toLowerCase().includes(s) ||
+    e.keys.some((k) => k.toLowerCase().includes(s)) ||
+    (e.tag ?? "").toLowerCase().includes(s)
+  );
 }
 
-interface TagStat { tag: string; n: number; tokens: number; constant: number; disabled: number; ids: string[]; }
+interface TagStat {
+  tag: string;
+  n: number;
+  tokens: number;
+  constant: number;
+  disabled: number;
+  ids: string[];
+}
 
 /** Sentinel bucket for entries with no tag. The leading space keeps it sorting
  *  and comparing distinctly from any tag a user could type; compare against
@@ -123,7 +149,9 @@ export function tagStats(entries: Entry[]): TagStat[] {
   for (const e of entries) {
     const key = (e.tag ?? "").trim() || UNTAGGED;
     const s = m.get(key) ?? { tag: key, n: 0, tokens: 0, constant: 0, disabled: 0, ids: [] };
-    s.n++; s.tokens += entryTokens(e); s.ids.push(e.id);
+    s.n++;
+    s.tokens += entryTokens(e);
+    s.ids.push(e.id);
     if (e.constant) s.constant++;
     if (!e.enabled) s.disabled++;
     m.set(key, s);

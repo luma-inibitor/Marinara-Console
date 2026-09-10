@@ -13,7 +13,8 @@ import { expect, test } from "./harness";
 for (const screen of SCREENS) {
   test(screen.name, async ({ page }) => {
     await openScreen(page, screen);
-    await expect(page.locator(screen.row), `${screen.name} lists the corpus`)
-      .toHaveCount(screen.rows, { timeout: 10_000 });
+    await expect(page.locator(screen.row), `${screen.name} lists the corpus`).toHaveCount(screen.rows, {
+      timeout: 10_000,
+    });
   });
 }

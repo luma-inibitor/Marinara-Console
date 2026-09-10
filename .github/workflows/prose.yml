@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-      checks: write  # reviewdog creates the check run the annotations hang on.
+      checks: write # reviewdog creates the check run the annotations hang on.
 
     steps:
       - name: Checkout

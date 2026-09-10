@@ -15,7 +15,13 @@ import { type Row } from "../model/review";
 import { decisions, edited } from "./decisions";
 import { keepsByDraft, rows } from "./review";
 
-export const preflight = createStore<{ ready: number; blockedN: number; auto: number; perDraft: Array<{ draftId: string; pf: PreflightResponse }>; error?: string } | null>(null);
+export const preflight = createStore<{
+  ready: number;
+  blockedN: number;
+  auto: number;
+  perDraft: Array<{ draftId: string; pf: PreflightResponse }>;
+  error?: string;
+} | null>(null);
 export const preflightPending = createStore(false);
 
 /** row key -> preflight outcome, for row badges and dock enumeration. */
@@ -78,7 +84,9 @@ async function runPreflight() {
       ),
     );
     if (seq !== preflightSeq) return;
-    let ready = 0, blockedN = 0, auto = 0;
+    let ready = 0,
+      blockedN = 0,
+      auto = 0;
     for (const { pf } of results) {
       ready += pf.readyMutationIds.length;
       blockedN += pf.blockedMutationIds.length;

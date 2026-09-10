@@ -30,6 +30,9 @@ export const checks = [
   // config because they need node globals and a laxer strictness.
   "typecheck",
   "typecheck:scripts",
+  // Formatting. Cheapest gate here and the one a change trips most often, so
+  // it reports before the slower tools. `npm run format` fixes every finding.
+  "format:check",
   // Lint
   "lint",
   // Layers: imports point downward, and no component owns a fetch

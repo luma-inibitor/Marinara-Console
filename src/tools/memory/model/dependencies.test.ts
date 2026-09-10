@@ -51,31 +51,25 @@ describe("droppedDependencies", () => {
   it("raises nothing when the create is kept and the dependent is dropped", () => {
     const dec = ledger(["d1:m1", "keep"], ["d1:m2", "drop"]);
 
-    expect(droppedDependencies(
-      [create("d1", "m1", "new-note"), row("d1", "m2", "new-note")],
-      dec,
-      NO_NOTES,
-    )).toEqual([]);
+    expect(droppedDependencies([create("d1", "m1", "new-note"), row("d1", "m2", "new-note")], dec, NO_NOTES)).toEqual(
+      [],
+    );
   });
 
   it("raises nothing when the dependent is dropped alongside the create", () => {
     const dec = ledger(["d1:m1", "drop"], ["d1:m2", "drop"]);
 
-    expect(droppedDependencies(
-      [create("d1", "m1", "new-note"), row("d1", "m2", "new-note")],
-      dec,
-      NO_NOTES,
-    )).toEqual([]);
+    expect(droppedDependencies([create("d1", "m1", "new-note"), row("d1", "m2", "new-note")], dec, NO_NOTES)).toEqual(
+      [],
+    );
   });
 
   it("raises nothing when no create was dropped at all", () => {
     const dec = ledger(["d1:m1", "keep"], ["d1:m2", "keep"]);
 
-    expect(droppedDependencies(
-      [create("d1", "m1", "new-note"), row("d1", "m2", "new-note")],
-      dec,
-      NO_NOTES,
-    )).toEqual([]);
+    expect(droppedDependencies([create("d1", "m1", "new-note"), row("d1", "m2", "new-note")], dec, NO_NOTES)).toEqual(
+      [],
+    );
   });
 
   it("leaves an undecided dependent alone", () => {
@@ -83,11 +77,9 @@ describe("droppedDependencies", () => {
     // create resolving.
     const dec = ledger(["d1:m1", "drop"]);
 
-    expect(droppedDependencies(
-      [create("d1", "m1", "new-note"), row("d1", "m2", "new-note")],
-      dec,
-      NO_NOTES,
-    )).toEqual([]);
+    expect(droppedDependencies([create("d1", "m1", "new-note"), row("d1", "m2", "new-note")], dec, NO_NOTES)).toEqual(
+      [],
+    );
   });
 
   it("warns on a kept add_link whose link target's create was dropped", () => {
@@ -106,11 +98,13 @@ describe("droppedDependencies", () => {
   it("ignores an add_link carrying no link", () => {
     const dec = ledger(["d1:m1", "drop"], ["d1:m2", "keep"]);
 
-    expect(droppedDependencies(
-      [create("d1", "m1", "new-note"), row("d1", "m2", "old-note", { kind: "add_link" })],
-      dec,
-      NO_NOTES,
-    )).toEqual([]);
+    expect(
+      droppedDependencies(
+        [create("d1", "m1", "new-note"), row("d1", "m2", "old-note", { kind: "add_link" })],
+        dec,
+        NO_NOTES,
+      ),
+    ).toEqual([]);
   });
 
   it("warns once for a claim whose target and link target are both dropped creates", () => {
@@ -131,11 +125,7 @@ describe("droppedDependencies", () => {
     const notes = new Map<string, Note>([["new-note", makeNote({ id: "new-note" })]]);
 
     // The create was redundant, so dropping it breaks nothing.
-    expect(droppedDependencies(
-      [create("d1", "m1", "new-note"), row("d1", "m2", "new-note")],
-      dec,
-      notes,
-    )).toEqual([]);
+    expect(droppedDependencies([create("d1", "m1", "new-note"), row("d1", "m2", "new-note")], dec, notes)).toEqual([]);
   });
 
   it("never pairs a kept claim with a dropped create in another draft", () => {
@@ -144,11 +134,9 @@ describe("droppedDependencies", () => {
     // Apply sends both drafts in the same batch.
     const dec = ledger(["d1:m1", "drop"], ["d2:m2", "keep"]);
 
-    expect(droppedDependencies(
-      [create("d1", "m1", "new-note"), row("d2", "m2", "new-note")],
-      dec,
-      NO_NOTES,
-    )).toEqual([]);
+    expect(droppedDependencies([create("d1", "m1", "new-note"), row("d2", "m2", "new-note")], dec, NO_NOTES)).toEqual(
+      [],
+    );
   });
 
   it("does not warn about a kept create that shares the dropped create's target", () => {
@@ -156,11 +144,9 @@ describe("droppedDependencies", () => {
 
     // create_note rows are skipped as dependents: a create does not need the
     // note to exist first.
-    expect(droppedDependencies(
-      [create("d1", "m1", "new-note"), create("d1", "m2", "new-note")],
-      dec,
-      NO_NOTES,
-    )).toEqual([]);
+    expect(
+      droppedDependencies([create("d1", "m1", "new-note"), create("d1", "m2", "new-note")], dec, NO_NOTES),
+    ).toEqual([]);
   });
 
   it("collects one warning per kept dependent across drafts", () => {
@@ -169,10 +155,7 @@ describe("droppedDependencies", () => {
     const keptA2 = row("d1", "m3", "new-a");
     const droppedB = create("d2", "m4", "new-b");
     const keptB = row("d2", "m5", "new-b");
-    const dec = ledger(
-      ["d1:m1", "drop"], ["d1:m2", "keep"], ["d1:m3", "keep"],
-      ["d2:m4", "drop"], ["d2:m5", "keep"],
-    );
+    const dec = ledger(["d1:m1", "drop"], ["d1:m2", "keep"], ["d1:m3", "keep"], ["d2:m4", "drop"], ["d2:m5", "keep"]);
 
     expect(droppedDependencies([droppedA, keptA1, keptA2, droppedB, keptB], dec, NO_NOTES)).toEqual([
       { kept: keptA1, dropped: droppedA },

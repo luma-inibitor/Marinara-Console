@@ -45,7 +45,13 @@ export interface BlockedDraft {
   mutationCount: number;
 }
 
-export interface Rejection { sourceNoteId: string; sourceTitle: string; reason: string; message?: string; snippet?: string }
+export interface Rejection {
+  sourceNoteId: string;
+  sourceTitle: string;
+  reason: string;
+  message?: string;
+  snippet?: string;
+}
 
 /** The section text a section-writing mutation carries, from whichever of the
  *  two fields holds it. Both are optional on the wire and neither is narrowed
@@ -114,7 +120,13 @@ export function flattenReview(data: ReviewResponse, sourceNotes: Map<string, Not
         blockedDraftIds.add(d.draft.id);
       }
       for (const r of d.candidateRejections ?? []) {
-        rejections.push({ sourceNoteId: source.sourceNoteId, sourceTitle, reason: r.reason, message: r.message, snippet: r.snippet });
+        rejections.push({
+          sourceNoteId: source.sourceNoteId,
+          sourceTitle,
+          reason: r.reason,
+          message: r.message,
+          snippet: r.snippet,
+        });
       }
     }
     for (const target of source.targets) {

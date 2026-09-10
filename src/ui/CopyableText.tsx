@@ -30,9 +30,7 @@ export function CopyableText(props: { value: string; label?: string; className?:
         aria-label={done ? t("ui.copy.copied") : t("ui.copy.value", { what: props.label ?? props.value })}
         onClick={copy}
       >
-        {done
-          ? <Copied size={13} stroke={2} aria-hidden />
-          : <Copy size={13} stroke={1.75} aria-hidden />}
+        {done ? <Copied size={13} stroke={2} aria-hidden /> : <Copy size={13} stroke={1.75} aria-hidden />}
       </button>
     </span>
   );

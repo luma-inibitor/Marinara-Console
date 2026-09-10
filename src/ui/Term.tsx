@@ -30,9 +30,17 @@ export function Term(props: {
       className={`term ${props.chip ? "term-chip" : ""} ${open ? "tip-open" : ""}`}
       tabIndex={props.tabIndex ?? 0}
       data-tip={props.tip}
-      onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+      onClick={(e) => {
+        e.stopPropagation();
+        setOpen(!open);
+      }}
       onBlur={() => setOpen(false)}
-      onKeyDown={(e) => { if (e.key === "Escape" && open) { e.stopPropagation(); setOpen(false); } }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && open) {
+          e.stopPropagation();
+          setOpen(false);
+        }
+      }}
     >
       {props.children}
     </span>

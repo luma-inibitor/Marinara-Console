@@ -31,17 +31,28 @@ export function useHotkeys() {
         gArmed = false;
         clearTimeout(gTimer);
         const target = G_TARGETS[ev.key.toLowerCase()];
-        if (target) { ev.preventDefault(); navigate(target); }
+        if (target) {
+          ev.preventDefault();
+          navigate(target);
+        }
         return;
       }
       if (ev.key === "g") {
         gArmed = true;
         clearTimeout(gTimer);
-        gTimer = setTimeout(() => { gArmed = false; }, 1200);
+        gTimer = setTimeout(() => {
+          gArmed = false;
+        }, 1200);
         return;
       }
-      if (ev.key === "?") { ev.preventDefault(); cheatOpen.update((v) => !v); return; }
-      if (ev.key === "Escape" && cheatOpen.get()) { cheatOpen.set(false); }
+      if (ev.key === "?") {
+        ev.preventDefault();
+        cheatOpen.update((v) => !v);
+        return;
+      }
+      if (ev.key === "Escape" && cheatOpen.get()) {
+        cheatOpen.set(false);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -70,9 +81,19 @@ export function CheatSheet() {
   const open = useStore(cheatOpen);
   if (!open) return null;
   return (
-    <div className="palette-backdrop" onClick={() => { cheatOpen.set(false); }}>
-      <div className="palette cheat" role="dialog" aria-modal="true" aria-label={t("shell.hotkeys.title")}
-        onClick={(ev) => ev.stopPropagation()}>
+    <div
+      className="palette-backdrop"
+      onClick={() => {
+        cheatOpen.set(false);
+      }}
+    >
+      <div
+        className="palette cheat"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("shell.hotkeys.title")}
+        onClick={(ev) => ev.stopPropagation()}
+      >
         <div className="cheat-head t-label">{t("shell.hotkeys.title")}</div>
         <div className="cheat-body">
           {SHORTCUTS.map(([keys, what]) => (
