@@ -10,12 +10,12 @@
 - **`design/MEMORY-SCHEMA.md`** is the note shape: the eight types, which fields
   are universal, which ones a type restricts, and what a section carries beyond
   its text. Check it before designing around a field.
-- **Read `design/design.md` before writing or changing any UI.** It's
+- **Read `design/DESIGN.md` before writing or changing any UI.** It's
   authoritative on tokens, patterns, owner preferences, and decision rules.
   Update it in the same change when a session decision contradicts it.
 - **A normative rule needs an owner citation.** Don't add, change or remove a
   must, an always, a never, a threshold, a numeric constant or a token
-  restriction in `design/design.md` without a citation. Quote what Luma asked
+  restriction in `design/DESIGN.md` without a citation. Quote what Luma asked
   for, or link the `[Luma]` entry in `BACKLOG.md` that carries it. The framework
   this one replaces accumulated a great many rules nobody asked for, written in
   the same authoritative voice as the real decisions. By the end the two were
@@ -52,7 +52,7 @@
   computation *before* merging them, and assert catalog keys rather than English
   so a copy rewording can't break a test.
 - Shared UI goes in `src/ui/`, and a new component carries no stylesheet. See
-  `design/design.md` §5. Prove a refactor renders identically before you claim
+  `design/DESIGN.md` §5. Prove a refactor renders identically before you claim
   it: `node scripts/domsnap.mjs before` then `... after --diff`.
 - Engine logic (keyword matching, token estimates) is vendored, never reimplemented.
 - The engine repo lives at `~/Documents/code/luma/Marinara-Engine`. UI copy should reuse its en.json vocabulary where a concept exists upstream. There is a decoy `~/code/Marinara-Engine` holding game assets only. It has a `packages/` directory, so its emptiness of engine source isn't obvious. The capability source is under `packages/server/data/capability-packages/versions/long-term-memory/`.

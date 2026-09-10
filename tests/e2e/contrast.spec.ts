@@ -1,4 +1,4 @@
-// Every screen's ink clears the design/design.md §2 floors, at four viewports.
+// Every screen's ink clears the design/DESIGN.md §2 floors, at four viewports.
 //
 // axe's color-contrast rule measures element text. It does not look at
 // `::before`, `::after` or `::placeholder`, so that ink is measured here. It

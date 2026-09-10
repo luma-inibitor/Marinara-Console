@@ -6,8 +6,8 @@ reviewers can catch regressions and repeat offenses.
 Each item carries: the invariant, how a reviewer checks it, and the feedback
 it came from. Corrections belong in this file, not in reviewers' heads.
 
-`design.md` is canon. This file is the owner-feedback ledger in enforceable
-form. Items that prove durable graduate into `design.md` §3 (interaction), and
+`DESIGN.md` is canon. This file is the owner-feedback ledger in enforceable
+form. Items that prove durable graduate into `DESIGN.md` §3 (interaction), and
 this file then references them rather than restating them.
 
 ## Layout and slot discipline

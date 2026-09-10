@@ -51,7 +51,7 @@ are a single control, not competing targets.
 Held to the `RECORDED` list in that file, so a new undersized target fails while
 those recorded ones pass — 47 elements across 16 signatures today.
 
-The 44px floor is under review (`design.md` §3). Measured at a 35px floor it
+The 44px floor is under review (`DESIGN.md` §3). Measured at a 35px floor it
 would fall to 34 elements across 10 signatures. That number costs out the
 decision. Nobody made the call yet, so 44px stands.
 

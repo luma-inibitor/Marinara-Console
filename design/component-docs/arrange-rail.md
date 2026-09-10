@@ -5,7 +5,7 @@ The surrounding sheets live in `src/tools/memory/review/`.
 
 One row: filter as glyph + active count, then group and sort as glyph + value
 sharing the leftover width. Active filters sit in a removable-chip track beneath
-it (`design.md` §3).
+it (`DESIGN.md` §3).
 
 The phone's console header carries nothing else. The title, generation line and
 decision meter were three rows of chrome over the first claim, and the meter's

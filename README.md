@@ -6,7 +6,7 @@ A standalone management console for [Marinara Engine](https://github.com/luma-in
 power-user tools for lorebooks, presets, and the long-term-memory agent, designed
 dense-first for desktop and mobile.
 
-**Read [`design/design.md`](design/design.md) before you touch any UI.** It holds
+**Read [`design/DESIGN.md`](design/DESIGN.md) before you touch any UI.** It holds
 the visual language, the interaction rules, and the component catalog.
 The definition of done is the browser suite, `tests/e2e/README.md`. The research
 behind it lives at `design/research/`, which sits outside version control, so a
@@ -51,7 +51,7 @@ vale sync          # fetch the Microsoft package into .vale/styles (gitignored)
 npm run prose
 ```
 
-`BACKLOG.md` and `design/design.md` stay exempt for now. Every rule stays on
+`BACKLOG.md` stays exempt for now. Every rule stays on
 repo-wide. Put a word in the project vocabulary when a rule
 fires on it but it means something specific here. Vale skips the vocabulary in
 every check.
@@ -82,7 +82,7 @@ and a fenced example fixes the cause rather than the symptom.
 | `server.mjs` | Static server and proxy, built on `sirv` and `http-proxy-middleware`. Strips `embedding` vectors from entry payloads (~85% of bytes), serves `dist/` at `/` and the design mockups at `/mockups/`, preferring the `.br` or `.gz` sibling `scripts/precompress.mjs` wrote where the request accepts it. For the memory tool it rotates a long-term-memory restore point before each run's first write (`.backups/`), stores review decisions (`.state/`), and forwards `MARINARA_ADMIN_SECRET` for engines off loopback |
 | `src/` | the console: Vite + Preact + TS, hash routing, tokens-based CSS |
 | `tests/e2e/` | the browser suite: the definition of done, written up in `tests/e2e/README.md` — screens, contrast, tap targets, sideways scroll, overlays, keyboard, screen captures. It drives the built bundle at four viewports and answers every request from a fixture corpus |
-| `design/` | design.md, tokens rationale, vendored UI research |
+| `design/` | DESIGN.md, tokens rationale, vendored UI research |
 | `scripts/precompress.mjs` | Part of `npm run build`, not a check: writes a `.br` and a `.gz` beside each compressible file in `dist/` for the server to send. `npm run precompress` runs it alone |
 | `.vale.ini` | prose lint config: Microsoft style, exemptions in the vocabulary rather than rule switches |
 | `.prettierrc.json` | formatter config. One setting, `printWidth`. `.prettierignore` names what Prettier stays out of and why: CSS belongs to stylelint, Markdown to Vale, and the vendored engine sources to the engine |

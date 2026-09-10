@@ -1,4 +1,4 @@
-// Fullscreen text editor — component catalog (design.md §4). Live char/token counts
+// Fullscreen text editor — component catalog (DESIGN.md §4). Live char/token counts
 // with delta, wrap toggle, markdown symbol row. Generic: callers supply the
 // title/subtitle and receive the final value on Done.
 //

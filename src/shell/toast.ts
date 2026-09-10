@@ -4,7 +4,7 @@
 // The queue is not presentation, and the split is what lets a store enqueue a
 // toast without pointing upward at the screen that draws it (ARCHITECTURE.md §1).
 //
-// Undo over confirm (design.md §3): a toast with an action carries the undo. It
+// Undo over confirm (DESIGN.md §3): a toast with an action carries the undo. It
 // comes in two shapes — the write is still pending in `onExpire` and Undo
 // cancels it, or the write already landed and Undo reverses it — and both are
 // undoable. `isUndoable` is the one place that decides, because the deadline

@@ -2,7 +2,7 @@
 
 These files hold component-specific design decisions lifted out of
 `design/DESIGN.md` (lines 211–361) on the retirement of that document in favour
-of the short `design/design.md`. The owner reviewed every passage here line by
+of the short `design/DESIGN.md`. The owner reviewed every passage here line by
 line and confirmed it correct. The re-flow rewrote nothing and added,
 generalised, or resolved no rule.
 

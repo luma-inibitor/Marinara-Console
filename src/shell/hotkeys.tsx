@@ -1,4 +1,4 @@
-// Global keyboard layer (design.md §3): Cmd/Ctrl-K palette, `g` navigation
+// Global keyboard layer (DESIGN.md §3): Cmd/Ctrl-K palette, `g` navigation
 // sequences, `?` cheat sheet. Single-key bindings are suppressed while typing.
 import { useEffect } from "react";
 import { createStore, useStore } from "../lib/store";

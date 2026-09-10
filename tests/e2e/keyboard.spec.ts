@@ -1,4 +1,4 @@
-// The three keyboard routes design.md §3 offers: the command palette, the `g`
+// The three keyboard routes DESIGN.md §3 offers: the command palette, the `g`
 // jump sequences, and j/k down a list.
 
 import type { Page } from "@playwright/test";

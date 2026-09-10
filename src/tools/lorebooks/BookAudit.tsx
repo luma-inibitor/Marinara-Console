@@ -1,6 +1,6 @@
 // The audit screen: console header (Find/Test probe, budget meter, sort chips),
 // audit rows, bulk select, tag panel, and the entry editor — inline accordion on
-// mobile, master-detail side panel on desktop (design.md §4).
+// mobile, master-detail side panel on desktop (DESIGN.md §4).
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { navigate } from "../../shell/router";
