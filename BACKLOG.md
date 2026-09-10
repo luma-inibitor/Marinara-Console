@@ -415,8 +415,31 @@ Luma is separately deciding whether to lower the primary floor from 44px, so the
 
 ### Decided, do not revisit without a reason
 
+- **[Luma] Duplicate proposals: status quo for now.** `restates` and
+  `duplicateOf` stay per-row chips. Revisit cluster actions after the primitives
+  land. Detection is already built in `model/derived.ts`.
+- **[Luma] Rejected proposals means the extraction rejections display, not a
+  trail of dropped claims.** Add a dismiss action and the "would have targeted:
+  note (n)" rollup to the read-only display in `Review.tsx`. This is UI work
+  only. A durable trail of claims the reviewer dropped would need the engine to
+  support un-skipping, which it doesn't.
+- **[Luma] Section-count pressure is one shared component.** Vault renders a
+  meter bar and Review renders a words-only sentence today, both reading the
+  same computation from `model/pressure.ts`. One component replaces both.
+- **[Luma] One Arrange rail at every width.** `[Filter] [Group by] [Sort by]`
+  with a sort-direction toggle, and active filters in a removable-chip track
+  beneath it. Desktop uses the same component as the phone rather than its own
+  chip rail.
+- **[Luma] URL schema ships in two stages.** First `#/memory/review/:draftId/:mutationId`
+  for a single claim, mirroring the vault pattern, because vault → related
+  claims depends on it. Facet state in the URL comes later, and needs
+  query-string support that `shell/router.ts` doesn't have.
+- **[Luma] TanStack Query is on deck.** An earlier entry here claimed it was
+  rejected. Nothing cited an owner decision for that claim, and Luma's own list
+  asks for it.
+
 - **Keep `domsnap`.** Measured against Playwright's aria snapshot and screenshots on the real PR #21 commits: domsnap caught the class change, aria reported identical, and aria and screenshots each flaked twice in six runs on an unchanged commit. Text-immunity is load-bearing, since 87–95% of aria lines carry copy we reword constantly.
-- **Keep the router, the store, toasts, fuzzy search, the JSON viewer, and date handling.** TanStack Query specifically rejected: the data here is one shared map with cross-derivation, so it would sit beside the stores rather than replace them.
+- **Keep the router, toasts, the JSON viewer, and date handling.** No owner citation backs the rest of what this entry used to claim.
 - **Prettier owns `.ts`, `.tsx`, `.mjs` and the config files — not CSS, not
   Markdown.** This reverses the earlier "no Prettier", whose stated reason —
   that it reflows the hand-formatted rationale blocks — did not survive
