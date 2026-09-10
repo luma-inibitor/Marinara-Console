@@ -9,23 +9,22 @@ it doesn't go in this file.
 
 A standalone management console for Marinara Engine (proxied via `server.mjs`),
 hosting power-user tools: lorebook editor, preset browser/editor,
-long-term-memory agent UI, and whatever comes next. Audience of one: an expert
-user who lives in the tool. Density is respect. Every needless click is a
-repeated tax.
+long-term-memory agent UI, and whatever comes next. The audience is one expert
+user who lives in the tool. Make the interface dense, and cut needless clicks,
+because each one is a cost this user pays again on every visit.
 
 **Stack:** Vite + React + TypeScript, a hand-rolled store (`src/lib/store`), and
 Tailwind v4 whose theme comes from `tokens.css`. Utilities style the components.
 The co-located stylesheets still in the tree are legacy, and the work rewrites
 them as it reaches them. There is no CSS-in-JS. Hash routing (`#/tool/id`) for
 deep links without server routes. Engine logic (keyword matching, token
-estimation) is vendored from upstream, never reimplemented — fidelity to the
-engine beats elegance.
+estimation) is vendored from upstream, never reimplemented. Prefer fidelity to
+the engine over elegance.
 
 ## 2. Visual language
 
-Hairline borders. Data is the ornament: computed numbers (percentile flags,
-budget meters, live counts) do the visual work that decoration does in consumer
-apps.
+Borders are hairline. Computed numbers (percentile flags, budget meters, live
+counts) do the visual work that decoration does in consumer apps.
 
 ### Type — three faces, strict roles
 
@@ -43,9 +42,9 @@ Never set data in the prose face. Never set prose in mono.
   Content Accessibility Guidelines 1.4.1).
 - **Categorical object-type hues:** long-lived object taxonomies get one hue
   each, used consistently on every chip/dot that names the type, always paired
-  with the type name in text. They're a third axis — never reuse the status
-  hues or `--accent`, and keep them lower in chroma than both (they're
-  identity, not state).
+  with the type name in text. These hues are a third axis: never reuse the
+  status hues or `--accent`, and keep the object-type hues lower in chroma than
+  both, because they carry identity rather than state.
 
 ### Contrast
 
@@ -54,11 +53,11 @@ exists but serves only decorative or ≥12px non-essential text.
 
 ### Space & motion
 
-4px base grid, religiously. Dense paddings (4, 8, 12), radii 6–10px, hairlines.
-Density modes via `data-density` on `<html>`: `comfortable` (default) and
-`compact` (row paddings −4px). Motion 120–200ms, transform/opacity only,
-purposeful (orientation, causality, continuity) — respect
-`prefers-reduced-motion`.
+Everything sits on a 4px base grid. Paddings are dense (4, 8, 12), radii are
+6–10px, borders are hairline. Density modes via `data-density` on `<html>`:
+`comfortable` (default) and `compact` (row paddings −4px). Motion is 120–200ms,
+transform and opacity only, serving orientation, causality, or continuity.
+Respect `prefers-reduced-motion`.
 
 ## 3. Interaction
 
@@ -67,15 +66,15 @@ purposeful (orientation, causality, continuity) — respect
 - ~11 rows per phone screen collapsed. Titles truncate to one line.
 - One primary tap target per row. Primary controls ≥44px. Secondary chips may
   be smaller (≥24px) but spaced (≥8px) with padded hit areas. **Open: the 44px
-  floor is under review and may come down.** Design and build to 44px until
-  Luma says otherwise — don't treat this note as licence to go smaller.
+  floor is under review and may come down.** Design and build to 44px until the
+  owner says otherwise — don't treat this note as licence to go smaller.
 - Virtualize lists only at 500+ items. Below that, render every row.
 
 ### Accordions
 
-Accordions with **data-bearing collapsed headers** (counts, token totals,
-status — closed ≠ invisible). **Multi-expand is the default**. One-at-a-time
-only where focus demands it (for example, phone editing of long forms).
+Collapsed accordion headers carry data (counts, token totals, status).
+**Multi-expand is the default**. Use one-at-a-time only where focus demands it
+(for example, phone editing of long forms).
 
 ### Editing and saving
 
@@ -86,7 +85,7 @@ only where focus demands it (for example, phone editing of long forms).
 - Content the user authors (lorebook entries etc.) is markdown. Editors are
   plain textareas with char/token counts and a markdown symbol row — no rich
   editing.
-- Numbers shown come from real data, engine-faithful.
+- Every number shown comes from real data and matches the engine.
 
 ### Copy
 
@@ -107,20 +106,23 @@ only where focus demands it (for example, phone editing of long forms).
 
 - `j/k` or arrows move list focus (roving tabindex — one tab stop per
   composite). `Enter`/`o` opens. `Escape` closes/back.
-- Visible focus ring (≥3:1) always. Focus returns to trigger on close.
+- Always show a visible focus ring (≥3:1). Focus returns to the trigger on
+  close.
 
 ### Latency
 
-- ≤100ms for taps/toggles/filters/inline edits — no indicator at all.
+- Taps, toggles, filters, and inline edits respond within 100ms, with no
+  indicator at all.
 - Optimistic UI for predictable low-risk mutations (toggles, status, tag) with
-  rollback + toast on failure. Network is confirmation, not permission.
-- No spinner under ~300ms (delay any indicator ~100ms so it never flashes).
+  rollback + toast on failure.
+- Show no indicator under ~300ms, and delay any indicator by ~100ms so it never
+  flashes.
 
 ### Input modalities
 
-Hover is an enhancement, never the only path. Everything reachable by click,
-key, and tap. No hover-dependent actions. Long-press for context menus with a
-visible alternative.
+Treat hover as an enhancement. Everything must be reachable by click, key, and
+tap, and no action may depend on hover. Long-press opens context menus, and
+every long-press has a visible alternative.
 
 ### Decision rules
 
@@ -137,11 +139,13 @@ visible alternative.
 
 ## 4. Component catalog
 
-Implemented once in `src/ui/`, reused everywhere. Use the pattern that already
-exists when a screen needs one. Add a new one here in the same change.
+Implement each component once in `src/ui/` and reuse it everywhere. Use the
+component that already exists when a screen needs one. Add a new component to
+this catalog in the same change.
 
 - **Audit row** — status rail · wrapping title · mono meta line · numeric right
-  gutter · one tap target. The workhorse list unit (proven in the lorebook tool).
+  gutter · one tap target. This is the standard list unit, proven in the
+  lorebook tool.
 - **Accordion** — data-bearing summary header, chevron, multi-expand, state
   persists across navigation. Badge errors on collapsed headers, and expand
   automatically on error.
@@ -156,7 +160,8 @@ exists when a screen needs one. Add a new one here in the same change.
 - **Stepper** — ± for numerics on touch, direct input on desktop.
 - **Chip editor** — keys/tags: add, delete, highlight-on-match.
 - **Save pill** — autosave state per record.
-- **Toast** — transient confirmation + undo carrier. Never sole home of errors.
+- **Toast** — transient confirmation + undo carrier. Never the only place an
+  error appears.
 - **Fullscreen text editor** — near-fullscreen textarea, live char/token counts
   with delta, wrap toggle, markdown symbol row.
 - **Tag/distribution panel** — group stats with bars, per-group Show/Select.
@@ -167,7 +172,7 @@ exists when a screen needs one. Add a new one here in the same change.
   everything decided, so a review resumes across days and devices. Undo stack
   over the ledger.
 
-Two conventions that sit alongside the inventory:
+Two conventions sit alongside the catalog:
 
 - **Styling** — Tailwind v4 (`@tailwindcss/vite`), theme generated from
   `tokens.css`, utilities in the JSX. The remaining hand-written stylesheets are
@@ -182,14 +187,14 @@ Two conventions that sit alongside the inventory:
 
 Shared components live in `src/ui/`, one folder-level. Anything used by more
 than one screen belongs there. Anything used by one screen belongs beside that
-screen. New components carry no stylesheet — `Button.tsx` is the reference.
+screen. A new component carries no stylesheet, as `Button.tsx` does.
 
 The co-located stylesheets still in the tree (`Chip.tsx` + `Chip.css`) are
 legacy. The one case where a screen kept beside its tool co-locates the same way
 is legacy too, because it's a *family* rather than a single component.
-`src/tools/memory/detail/` is four components and four stylesheets. The rule
-they answer to is the same one: deleting the folder deletes its rules. A tool's
-one-off screens still belong in that tool's global sheet
+`src/tools/memory/detail/` is four components and four stylesheets. They answer
+to the same rule: deleting the folder deletes its rules. A tool's one-off
+screens still belong in that tool's global stylesheet
 (`src/styles/memory.css`). The split is worth it only when the alternative is a
 200-line unrelated block in a 600-line file.
 
@@ -198,15 +203,14 @@ one-off screens still belong in that tool's global sheet
 **Tailwind utilities in the JSX style the components.** `tokens.css` generates
 the theme (`src/styles/theme.css` bridges every token to a Tailwind name), so
 `bg-accent`, `text-dim`, `min-h-tap`, `rounded-m` and `text-label` are the same
-values the hand-written rules used. There is one palette and one spacing scale,
-whichever syntax reaches for them.
+values the hand-written stylesheets used. There is one palette and one spacing
+scale, whichever syntax reads them.
 
 **Hand-written CSS is legacy.** Most components still carry a co-located
-stylesheet. That's history, not a pattern to copy. Nothing new should add one.
-**A stylesheet you are already editing should be rewritten as utilities while
-you are in there**, in the same change, at whatever granularity the work
-touches. A file nobody is touching can stay as it is. This is a migration that
-follows the work, not a sweep to schedule.
+stylesheet. Nothing new should add one. **A stylesheet you are already editing
+should be rewritten as utilities while you are in there**, in the same change,
+at whatever granularity the work touches. A file nobody is touching can stay as
+it is. The migration follows the work rather than running as a scheduled sweep.
 
 What survives the move, because utilities can't hold it:
 
