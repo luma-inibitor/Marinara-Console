@@ -2,7 +2,7 @@
 
 A dark-only instrument panel for power users. Dense-first, data-as-ornament: no
 decorative shadows, no gradients, hairline borders. Every component here is
-already styled — your job is the layout glue around them.
+already styled. Your job is the layout glue around them.
 
 ## No wrapper, no provider
 
@@ -18,8 +18,8 @@ import "./styles.css";           // tokens + fonts + component CSS, one closure
 
 Two optional attributes on `<html>` change global rendering:
 
-- `data-theme="dark"` — the only theme that exists today. Light is a token swap
-  that hasn't been done; don't design for it.
+- `data-theme="dark"` — the only theme that exists today. Don't design for
+  light.
 - `data-density="compact"` — tightens row padding and drops `--fs-title` by 1px.
   Default is comfortable.
 
@@ -69,7 +69,7 @@ its box.
 
 ## Where the truth is
 
-Read these before styling anything — they beat this summary:
+Read these before styling anything. They beat this summary:
 
 - `_ds/<folder>/styles.css` and its `@import` closure (`fonts/fonts.css`,
   `_ds_bundle.css`) — every token definition and every component rule
@@ -78,12 +78,12 @@ Read these before styling anything — they beat this summary:
 
 ## Composition
 
-Components take content as props and children rather than being configured by
-variant strings. `EmptyState` is the base that `ErrorState`, `NotFound` and
-`ListEmpty` compose — prefer the named one when it fits, because each fixes the
-icon and tone you would otherwise have to get right yourself.
+Components take content as props and children rather than variant strings.
+`EmptyState` is the base that `ErrorState`, `NotFound` and `ListEmpty` compose.
+Prefer the named one when it fits: each fixes the icon and tone you would
+otherwise have to get right yourself.
 
-`IconButton` requires a `label` — it's the accessible name, not decoration.
+`IconButton` requires a `label`. It's the accessible name, not decoration.
 
 ```jsx
 <div style={{ display: "grid", gap: "var(--s3)", padding: "var(--s4)",
@@ -114,5 +114,5 @@ icon and tone you would otherwise have to get right yourself.
 never be the one that gets cut. Let it wrap.
 
 **One primary tap target per row**, at least `--tap` (44px). Secondary controls
-may be smaller but need ≥8px spacing and a padded hit area — that's what `.hit`
+may be smaller but need ≥8px spacing and a padded hit area. That's what `.hit`
 is for.

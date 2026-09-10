@@ -6,8 +6,8 @@ A standalone management console for [Marinara Engine](https://github.com/luma-in
 power-user tools for lorebooks, presets, and the long-term-memory agent, designed
 dense-first for desktop and mobile.
 
-**Before you touch any UI, read [`design/design.md`](design/design.md).** It holds
-the design spec: visual language, interaction rules, and the component catalog.
+**Read [`design/design.md`](design/design.md) before you touch any UI.** It holds
+the visual language, the interaction rules, and the component catalog.
 The definition of done is the browser suite, `tests/e2e/README.md`. The research
 behind it lives at `design/research/`, which sits outside version control, so a
 clone won't have it.
@@ -52,8 +52,9 @@ npm run prose
 ```
 
 `BACKLOG.md` and `design/design.md` stay exempt for now. Every rule stays on
-repo-wide. When a rule fires on a word that means something specific here, put
-the word in the project vocabulary, which Vale skips in every check.
+repo-wide. Put a word in the project vocabulary when a rule
+fires on it but it means something specific here. Vale skips the vocabulary in
+every check.
 
 `.vale/styles/Luma/` holds hand-written rules, which `vale sync` leaves alone.
 One comes from `ASD-STE100`, the Simplified Technical English standard, and

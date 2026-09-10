@@ -1,4 +1,4 @@
-# Marinara Console — Architecture
+# Architecture
 
 **Status: draft, under active revision.** `design.md` decides how things look. This file decides where things live and what may import what. The Open questions section at the end lists what this file doesn't yet decide. Closing one of those questions means moving its answer into the body and deleting the question.
 
