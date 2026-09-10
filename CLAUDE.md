@@ -44,6 +44,18 @@
   sits in `check:static` and fails the build. It doesn't touch CSS or
   Markdown, which belong to stylelint and Vale — see `.prettierignore`, which
   gives a reason for every entry.
+- **Write plainly. Don't decorate.** Technical prose here is consistent,
+  concise and simple to read. Three habits to avoid:
+  - **Sentence fragments used for emphasis.** Write "Use this only when the
+    other two don't work, and write the reason in a code comment", not "Last
+    resort, and the reason goes in the code."
+  - **A new phrase for something you already named.** Use the same word every
+    time. A document that calls one thing a rule, a policy and a contract makes
+    the reader check whether all three are the same thing.
+  - **A clause that carries rhythm rather than meaning.** `Not in color, not in
+    absence` reads well and says less than `colour alone isn't enough`. Cut it.
+  Delete first when you revise a draft. Rewriting a sentence to satisfy a rule
+  usually keeps the ornament and hides it.
 - Run `npm run prosecheck` after you edit a `.md` file. It runs Vale over the
   Markdown you changed. It reports only what lands on lines you added, so the
   backlog in the rest of the docs stays out of your way. It exits non-zero on an

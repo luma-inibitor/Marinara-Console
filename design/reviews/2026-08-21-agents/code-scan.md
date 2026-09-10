@@ -45,7 +45,7 @@
 
 - **[low] [dead-code]** — `facets.ts:14` defines a private `tokensOf` identical to the exported one in `src/shell/api.ts:20`. *Fix: import it.*
 
-- **On the explicit question: `dedupeLines` is live** — `derived.ts` → `Vault.tsx:13`, `:228-234`, behind the per-section "Dedupe lines" chip (`Vault.tsx:262`). Not dead.
+- **On the explicit question: `dedupeLines` is live** — `derived.ts` → `Vault.tsx:13`, `:228-234`, behind the per-section "Dedupe lines" chip (`Vault.tsx:262`).
 
 ## Inconsistencies and copy
 

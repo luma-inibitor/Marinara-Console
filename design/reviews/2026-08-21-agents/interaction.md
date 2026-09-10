@@ -52,7 +52,7 @@ code-read-only notes.
 
 - **[low] [usability]** Sort and group changes preserve the cursor key but never scroll it into view. Switching risk→confidence left the focused row ~300px off the top of the viewport (`inView: -294.5`), so the next `j` acts from an off-screen anchor. Fix: `scrollIntoView` the cursor row after a group or sort change.
 
-- **[low] [usability]** A saved edit is invisible in the list row's text. The row keeps rendering the original claim text with only a `the edited change` tag, because `ClaimRow` uses `r.text` and never `edited`. Dropping an edited claim also still counts it in the dock's `1 edited`, though the drop discards the edit, with no warning at either point. Fix: render the edited text in the row, perhaps as strike-and-replace. Also exclude dropped rows from the edited count, or warn when a drop discards an edit.
+- **[low] [usability]** A saved edit is invisible in the list row's text. The row keeps rendering the original claim text with only a `the edited change` tag, because `ClaimRow` uses `r.text` and never `edited`. Dropping an edited claim also still counts it in the dock's `1 edited`, though the drop discards the edit, with no warning at either point. Fix: render the edited text in the row, perhaps as strike-and-replace. Exclude dropped rows from the edited count too, or warn when a drop discards an edit.
 
 - **[low] [missing-interaction]** The desktop detail pane can't close and goes stale. Escape is mobile-only, and when filters empty the list, the pane keeps showing a claim that's no longer in view with no "filtered out" indication. Fix: let Escape clear `detailKey` on desktop too, and show a note when the open claim falls outside the current slice.
 

@@ -23,5 +23,5 @@ component, and this directory should go away.
 | `scope.md` | scope, documented as `src/tools/memory/scope.ts` |
 | `MemoryDetail.md` | `src/tools/memory/detail/` |
 
-Not carried over from that range: the **Styling** bullet (DESIGN.md line 279),
-which lives elsewhere.
+The **Styling** bullet (DESIGN.md line 279) wasn't carried over from that range.
+It lives elsewhere.

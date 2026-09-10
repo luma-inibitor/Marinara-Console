@@ -27,7 +27,7 @@ a conflict branch, a state line, a cancel button, and a save button.
 They're different in one copy key only.
 `entries.tsx` uses `lorebooks.entry.conflictBody`. `PresetsTool.tsx` uses `presets.section.conflictBody`.
 The comment on the presets version already says "mirrors the lorebook drawer's."
-Thus a person found the duplicate and wrote it down. That person didn't remove it.
+Nobody removed it.
 
 The copy became worse during the duplication.
 `PresetsTool.tsx:743-753` holds three literal strings: `"Saving…"`, `"No changes"`, and `"Save changes"`.
@@ -62,7 +62,7 @@ Most of that list is complete.
 `SearchDisclosure`, `ModePill`, `ListGroup`, `RawJson`, and `CopyableText`.
 (`FacetDrawer` and `Picker` moved into `src/tools/memory/review/` since then.)
 `SectionRow` gives the "memory detail section" item.
-`ListGroup` gives the group heading. But each row below the heading stays in its tool.
+`ListGroup` gives the group heading, but each row below the heading stays in its tool.
 
 Two items on that list are open.
 The first item is the list row.
@@ -70,9 +70,8 @@ The second item is the memory detail view for each type:
 character, relationship, timeline event, thread, world, and tone.
 `MemoryDetail.tsx` sends each type through one path.
 It calls `sectionViews(n)` at line 46 and shows a `TypeIcon` in the heading.
-Thus the work for each type didn't start.
-That second item is a design question before it's a component question.
-Thus the order at the end of this document doesn't include it.
+That second item is a design question before it's a component question,
+so the order at the end of this document doesn't include it.
 
 **Action.** The four rows have sufficient common structure:
 a first cell, a body with a title and a data line, and a last cell with a number.
@@ -95,12 +94,12 @@ Do one screen for each pull request. Don't do the four screens together.
 `src/tools/memory/Vault.tsx:196-216` builds its rows from seven classes:
 `row`, `row-summary`, `rail-cell`, `mid`, `nm`, `metaline`, and `num`.
 `src/styles/lorebooks.css` holds each of the seven.
-Neither a memory stylesheet nor `src/ui/` holds them.
+They live in neither a memory stylesheet nor `src/ui/`.
 
-Thus a change to the lorebook stylesheet breaks the memory vault.
+A change to the lorebook stylesheet breaks the memory vault.
 No check finds this fault.
-`deadcss.mjs` examines the full repository together.
-Thus a class with use in one place counts as a live class in each place.
+`deadcss.mjs` examines the full repository together,
+so a class with use in one place counts as a live class in each place.
 
 This is the cost of the global stylesheets in item 5.
 Item 2 corrects this fault. `ListRow` gives the Vault its own classes.
@@ -123,7 +122,7 @@ Each of the four calls `.replaceAll("_", " ")` for the text.
 - `src/tools/memory/Vault.tsx:297` uses `<Tag className="type-…">`.
 - `src/tools/memory/Vault.tsx:152` uses `<span className="tdot type-…">` with the text next to it.
 
-Thus one data item has four forms. Each place repeats the colour token connection.
+Each place repeats the colour token connection.
 
 **Action.** Build `TypeBadge` in `src/tools/memory/components/`, next to `StatusPill`.
 Give it a variant property with three values: dot, chip, and tag.
@@ -149,8 +148,8 @@ Ten places call this function:
 - `model/relations.ts:30`
 - `model/facets.ts:101`
 
-Each place changes a machine value into English for a person.
-Thus each place makes copy. The `src/copy/` system never sees this copy.
+Each place changes a machine value into English for a person,
+and the `src/copy/` system never sees that copy.
 
 The risk is clear.
 A change to a type name upstream changes the text at ten places.
@@ -179,10 +178,10 @@ These three screens build an `<input>` element instead:
 
 The palette is a possible exception.
 A command palette field has different focus behaviour and different keyboard behaviour.
-Thus treat the palette as a separate decision. Don't change it with the other two.
+Treat the palette as a separate decision. Don't change it with the other two.
 
-The match rules behind the fields are also different.
-But the correction there is a library decision: uFuzzy for names and MiniSearch for text.
+The match rules behind the fields are also different, but the correction there is
+a library decision: uFuzzy for names and MiniSearch for text.
 `BACKLOG.md` holds that work. It's not a component change.
 
 ---
@@ -199,7 +198,7 @@ Twenty-four files obey the rule. Three files don't. The three files are large:
 - `src/styles/lorebooks.css` has 264 lines.
 
 `src/main.tsx:7-13` loads each of the three globally.
-Thus nothing limits them. Nothing prevents their growth.
+Nothing limits them or prevents their growth.
 Item 3 is the first fault from this condition. It won't be the last fault.
 
 **Action.** Add a check that the three global files can only decrease in size.
@@ -207,10 +206,10 @@ This stops the growth during the migration. It costs much less than the migratio
 Do this first.
 
 **A second fault in this group.**
-`.toaster` belongs to the shell.
-But its position rules are in `src/styles/lorebooks.css:252-256` and `src/styles/presets.css:255-256`.
+`.toaster` belongs to the shell, but its position rules are in
+`src/styles/lorebooks.css:252-256` and `src/styles/presets.css:255-256`.
 Each file has its own `@media (min-width: 900px)` rule.
-Thus the removal of one tool moves the toaster.
+Removing one tool moves the toaster.
 Those rules belong next to `src/shell/Toaster.tsx`.
 
 ---
@@ -260,7 +259,7 @@ carries a `/** @public */` tag at `src/ui/ListGroup.tsx:12`, and knip reads that
 that the export is deliberate. `DisclosureOption` appears in the props of `SearchDisclosure`, which
 other files import. knip counts an exported type as used when a used export names it in a signature.
 The second reason is a rule rather than a fact about this one type. Every exported type of that
-shape is invisible to knip, the ones written after today included. So settle these two by reading
+shape is invisible to knip, the ones written after today included. Settle these two by reading
 the call sites. No check will raise them for you.
 
 The two mechanisms also differ in who may grant the exemption and in how visible the grant is.
@@ -272,7 +271,7 @@ Nothing lists the exported types that a signature hides.
 
 **Caution 2. Don't un-export `SheetHead`.**
 `.design-sync/previews/SheetHead.tsx:2` imports it as `from "marinara-console"`, a bare specifier
-that resolves through the design-sync harness rather than through this tree. So every barrel line
+that resolves through the design-sync harness rather than through this tree, so every barrel line
 looks orphaned from inside `src/`. `knip.json` maps that specifier to `src/ui/index.ts`, so a
 configured run counts the previews as consumers and says nothing about the line at
 `src/ui/index.ts:29`. A run without that mapping reports the line, and that report is wrong.
@@ -290,8 +289,8 @@ domain + violating: 34 of 202 — the ones props alone cannot move
 
 The 34 domain functions are the limit on each item in this document.
 Each of the 34 reads a store, the model, or the endpoint layer directly.
-It doesn't get that data through a property.
-Thus no property change lets two screens share such a function.
+It doesn't get that data through a property,
+so no property change lets two screens share such a function.
 
 Twenty-two of the 34 are in three files:
 
@@ -299,14 +298,14 @@ Twenty-two of the 34 are in three files:
 - `src/tools/memory/Review.tsx` has 6.
 - `src/tools/memory/Vault.tsx` has 5.
 
-Thus a component effort must start in those three files.
+A component effort must start in those three files.
 
 The one `violating` function is `Palette` at `src/shell/palette.tsx:85`.
 
 `scripts/components.mjs` has 505 lines. No npm script calls it.
 Only text in `design/` names it.
 The tool is useful. This section is its output.
-Thus add it to `package.json`. Don't delete it.
+Add it to `package.json`. Don't delete it.
 `docs/todo/tooling-migration.md` holds that work.
 
 ---
