@@ -64,7 +64,8 @@ export.
 A warn missing from this list is new.
 
 - **`[FONT_MISSING]` for `Archivo`, `JetBrains Mono` and `Source Sans 3`** (the
-  bare, non-Variable names). Not a real miss. `tokens.css` declares stacks like
+  bare, non-Variable names). These aren't real misses. `tokens.css` declares
+  stacks like
   `"Archivo Variable", "Archivo", system-ui, sans-serif` — the *Variable* faces
   ship (16 `@font-face` rules via `cfg.extraFonts` pointing at the
   `@fontsource-variable/*` packages), and the bare names are deliberate

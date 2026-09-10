@@ -185,8 +185,8 @@ than one screen belongs there. Anything used by one screen belongs beside that
 screen. New components carry no stylesheet — `Button.tsx` is the reference.
 
 The co-located stylesheets still in the tree (`Chip.tsx` + `Chip.css`) are
-legacy. So is the one case where a screen kept beside its tool co-locates the
-same way, because it's a *family* rather than a single component.
+legacy. The one case where a screen kept beside its tool co-locates the same way
+is legacy too, because it's a *family* rather than a single component.
 `src/tools/memory/detail/` is four components and four stylesheets. The rule
 they answer to is the same one: deleting the folder deletes its rules. A tool's
 one-off screens still belong in that tool's global sheet

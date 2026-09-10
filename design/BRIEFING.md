@@ -61,8 +61,8 @@ Built and shipped on `feat/component-refactor`:
 | Note peek | Layered read-only view of any memory, reachable from a link |
 | `src/ui/` | 22 shared components, each with a co-located stylesheet |
 
-**Not built:** Activity, undo, branch scope (the engine exposes no `/branches`
-route and chats carry no branch field), index-health repair.
+Activity, undo, branch scope (the engine exposes no `/branches` route and chats
+carry no branch field) and index-health repair **aren't built**.
 
 ## 4. The design system this must live inside
 
@@ -77,7 +77,7 @@ Full detail in `DESIGN.md`. The parts that constrain new work:
   Color is never the only carrier of meaning.
 - **Two semantic breakpoints.** 720px (below it everything stacks) and 900px
   (beyond it a list and its detail sit side by side).
-- **Reading measure `--measure: 68ch`** on prose. Not on identifiers or
+- **Reading measure `--measure: 68ch`** on prose, not on identifiers or
   key/value rows — wrapping `source_character_2cdcc172e8fe3cd6` serves nobody.
 - **The browser suite enforces the contrast and tap-target floors**, not
   judgment. Body and data text ≥4.5:1. Primary targets ≥44px.
@@ -203,7 +203,7 @@ structure by design. Don't parse them out of the prose.
 
 ## 9. How work gets checked
 
-Not optional, and not judgment calls:
+None of these are optional, and none are judgment calls:
 
 | Command | Checks |
 |---|---|
