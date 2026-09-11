@@ -20,7 +20,7 @@ component, and this directory should go away.
 | `icons.md` | `src/tools/memory/icons.tsx` |
 | `ClaimDetail.md` | `src/tools/memory/ClaimDetail.tsx` |
 | `glossary.md` | `src/tools/memory/glossary.tsx` |
-| `scope.md` | scope, documented as `src/tools/memory/scope.ts` |
+| `scope.md` | scope: `src/tools/memory/model/scope.ts`, `src/tools/memory/store/scope.ts` and `src/tools/memory/ScopeBar.tsx` |
 | `MemoryDetail.md` | `src/tools/memory/detail/` |
 
 The **Styling** bullet (DESIGN.md line 279) wasn't carried over from that range.
