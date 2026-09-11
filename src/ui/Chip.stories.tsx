@@ -17,7 +17,6 @@ export const Pressed: Story = { args: { pressed: true } };
 
 export const Unpressed: Story = { args: { pressed: false } };
 
-/** The flag hue, reserved for filters over computed outliers. */
 export const Flag: Story = { args: { flag: true, pressed: true, children: "outliers" } };
 
 export const Disabled: Story = { args: { disabled: true } };

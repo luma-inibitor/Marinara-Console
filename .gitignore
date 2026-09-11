@@ -38,5 +38,4 @@ design/research/
 playwright-report/
 test-results/
 
-# Storybook build output.
 storybook-static/

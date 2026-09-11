@@ -41,15 +41,13 @@ function Overlay(props: { label: string; onClose: () => void; children: ReactNod
   // of the entry, and re-registering on render would push history entries.
   const close = useRef(props.onClose);
   close.current = props.onClose;
-  // Read during render, not in the effect: SheetHead's autoFocus is a child
-  // effect and has already moved focus by the time the parent effect runs.
+  // Captured during render, before SheetHead's autoFocus effect moves focus.
   const opener = useRef<HTMLElement | null>(null);
   if (opener.current === null) opener.current = document.activeElement as HTMLElement | null;
   useEffect(() => openOverlay(() => close.current(), opener.current), []);
 
   return (
     <div className="peek-scrim" onClick={closeTopOverlay}>
-      {/* A div, not an aside: role="dialog" is not allowed on `aside` (axe aria-allowed-role). */}
       <div
         className={props.surface}
         role="dialog"

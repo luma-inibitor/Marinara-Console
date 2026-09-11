@@ -4,8 +4,6 @@ import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "./Button";
 import { Sheet, SheetHead } from "./Sheet";
 
-/** Renders the trigger too, because a sheet closes back to it. Declared outside
- *  the story so its state survives a re-render. */
 function SheetDemo(props: { autoFocus?: boolean }) {
   const [open, setOpen] = useState(false);
   return (
@@ -27,8 +25,6 @@ function SheetDemo(props: { autoFocus?: boolean }) {
   );
 }
 
-// `component` is the wrapper because a Sheet cannot render alone: its `onClose`
-// has to clear the state that mounts it.
 const meta = {
   title: "UI/Sheet",
   component: SheetDemo,
@@ -49,7 +45,6 @@ export const Open: Story = {
   },
 };
 
-/** The last step guards the effect ordering Sheet.tsx works around. */
 export const FocusContract: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);

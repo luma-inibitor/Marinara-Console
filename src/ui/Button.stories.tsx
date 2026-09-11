@@ -26,17 +26,13 @@ export const Focus: Story = { args: { variant: "primary", autoFocus: true } };
 
 export const Pressed: Story = { args: { variant: "secondary", pressed: true, children: "Filters" } };
 
-/** The control keeps its place in the tab order and a screen reader can reach
- *  the reason. */
 export const DisabledWithReason: Story = {
   args: { disabled: true, disabledReason: "Nothing has changed since you opened this." },
 };
 
-/** Native `:disabled`, so the button leaves the tab order. */
 export const DisabledNative: Story = { args: { disabled: true } };
 
-/** The spinner waits a second, so this shows the inert-but-unspun phase first
- *  and the spinner after. */
+// The spinner appears after a second.
 export const Pending: Story = { args: { variant: "primary", pending: true } };
 
 export const WithIcon: Story = {

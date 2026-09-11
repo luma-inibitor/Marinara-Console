@@ -89,9 +89,6 @@ function install() {
  *  standing history entry rather than push a second one nothing owns. */
 export function openOverlay(close: () => void, restoreFocus?: HTMLElement | null): () => void {
   install();
-  // A caller that autofocuses inside itself has to pass the opener: React runs
-  // child effects first, so by now activeElement is inside the overlay and
-  // would unmount with it.
   const entry: Entry = {
     close,
     restoreFocus: restoreFocus !== undefined ? restoreFocus : (document.activeElement as HTMLElement | null),
