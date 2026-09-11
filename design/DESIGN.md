@@ -1,4 +1,9 @@
-# Marinara console design rules
+<!-- vale Microsoft.Headings = NO -->
+<!-- "Console" is half the product name. Headings rejects any capitalised
+     word after the first and its exception list has no entry for it, so the
+     rule is off for this heading only, as it is in README.md. -->
+# Marinara Console design rules
+<!-- vale Microsoft.Headings = YES -->
 
 The owner confirmed every rule below in a line-by-line review of the previous
 framework document. Nothing here comes from inference, generalization, or
@@ -53,11 +58,15 @@ exists but serves only decorative or ≥12px non-essential text.
 
 ### Space & motion
 
-Everything sits on a 4px base grid. Paddings are dense (4, 8, 12), radii are
+<!-- vale Microsoft.DateOrder = NO -->
+<!-- The rule reads the padding steps 4/8/12 as a date. Off for this
+     paragraph only. -->
+Everything sits on a 4px base grid. Paddings are dense (4/8/12), radii are
 6–10px, borders are hairline. Density modes via `data-density` on `<html>`:
 `comfortable` (default) and `compact` (row paddings −4px). Motion is 120–200ms,
 transform and opacity only, serving orientation, causality, or continuity.
 Respect `prefers-reduced-motion`.
+<!-- vale Microsoft.DateOrder = YES -->
 
 ## 3. Interaction
 

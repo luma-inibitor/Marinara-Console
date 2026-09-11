@@ -119,7 +119,7 @@ GitLab Pajamas, and GitHub Primer.
 | `yes` / `no` / `n/a` rather than a checkbox | Spectrum, whose per-component data uses `n/a` often |
 | The three ways to disable a control | Pajamas, which ranks them preferred, default and last resort |
 | Stating in text why a control is disabled | The `disabledReason` prop in Cloudscape, and the split Primer draws between inactive and disabled |
-| Contrast ratios | Spectrum and Carbon, both citing Web Content Accessibility Guidelines (WCAG) 1.4.3 and 1.4.11 |
+| Contrast ratios | Spectrum and Carbon, both citing WCAG 1.4.3 and 1.4.11 |
 | Never using colour as the only way to convey information | Spectrum, citing WCAG 1.4.1 |
 | Both themes, and no state defined only in a media query | The four-theme rule in Spectrum, and the colour-modes criterion in Primer |
 | Using tokens rather than hardcoded values | Primer, from its alpha criteria |
