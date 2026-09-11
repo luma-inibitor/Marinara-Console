@@ -180,10 +180,8 @@
   position: sticky; top: calc(var(--console-h, 0px) - 1px); z-index: 5;
   background: var(--surface-2); border-top: var(--hairline); border-bottom: var(--hairline);
   box-shadow: 0 -3px 0 0 var(--canvas); /* seam guard */
-  /* The sticky header is a stacking context, so the open header must be lifted
-     to the popover's layer. Scrim and popover share this number. The
-     overlay stack owns the menu's dismissal, not its paint order, so the lift
-     stays needed. */
+  /* The sticky header is a stacking context, so the open header is lifted to
+     the layer the scrim and popover share. */
   --z-gmenu: 45; }
 .mem-ghead.is-new { box-shadow: inset 3px 0 0 var(--ok), 0 -3px 0 0 var(--canvas); }
 .mem-ghead > .ti { grid-column: 2; place-self: start center;

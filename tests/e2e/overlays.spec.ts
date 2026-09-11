@@ -20,7 +20,7 @@ interface Surface {
   screen: Screen;
   open: (page: Page) => Promise<void>;
   sel: string;
-  /** The element a scrim tap lands on, where it is not the shared one. */
+  /** Scrim to tap when it is not `.peek-scrim`. */
   scrim?: string;
   dismiss: readonly Route[];
 }
@@ -118,9 +118,6 @@ for (const surface of SURFACES) {
   }
 }
 
-// The menu follows the WAI-ARIA menu pattern rather than the dialog one: no
-// focus trap, and Escape returns focus to the button. The stack is what does
-// the returning, so this fails for anything dismissing itself locally.
 test("group menu returns focus to its button on Escape", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "phone", "drawn by the phone layout");
   await openScreen(page, screen("memory-review"));
@@ -134,9 +131,9 @@ test("group menu returns focus to its button on Escape", async ({ page }, testIn
   await expect(kebab).toBeFocused();
 });
 
-// The one sequence that puts two overlays in play: the menu dismisses and the
-// peek opens. Their history entries have to land in that order, so the final
-// back proves there is exactly one entry left to spend.
+// Closing the menu and opening the peek is the one sequence with two overlays
+// in flight; a misordered pair leaves an orphan history entry for the final
+// back to spend.
 test("opening a note from the group menu leaves one history entry", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "phone", "drawn by the phone layout");
   await openScreen(page, screen("memory-review"));

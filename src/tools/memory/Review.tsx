@@ -872,20 +872,15 @@ function GroupBlock(props: {
 function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: boolean; openLabel: string }) {
   const [open, setOpen] = useState(false);
   const g = props.group;
-  // Registers with the stack directly rather than through <Sheet>, which is a
-  // scrimmed dialog where this is a popover anchored to its button. The stack
-  // owns Escape at capture phase, so a menu holding its own bubble-phase
-  // listener never sees Escape while any other surface is open.
+  // Not a <Sheet>: this is a popover anchored to its button, not a scrimmed dialog.
   useEffect(() => {
     if (!open) return;
     return openOverlay(() => setOpen(false));
   }, [open]);
 
-  // An item's action waits for the menu to be gone before it runs. Both items
-  // dismiss the menu, and one of them opens the peek, which registers an
-  // overlay of its own; running it straight away would push that overlay's
-  // history entry while this one's removal was still in flight, and the two
-  // would land out of order.
+  // The action runs once the menu has closed: opening the peek pushes its own
+  // overlay, and pushing it while this one's history rewind is still in flight
+  // lands the two entries out of order.
   const pending = useRef<(() => void) | null>(null);
   useEffect(() => {
     if (open) return;
