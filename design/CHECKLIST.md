@@ -107,11 +107,11 @@ purpose. The expensive mistake is building the wrong thing, not misaligning it.
 - [ ] **Run the mechanical checks**: `npm run check`, and `npx playwright test`
       for app code (contrast, tap targets, sideways scroll, overlay dismissal,
       keyboard).
-- [ ] **Read every comment the diff adds**, and delete the ones that fail
-      `DESIGN.md` §5: rationale, narrative about the bug, restating the
-      declaration below, or a rejected alternative. Keep a file
-      header, a section divider, the derivation of a magic number, and a real
-      gotcha. `git diff | grep -E '^\+.*(//|/\*)'` lists them.
+- [ ] **Read every comment the diff adds**, and delete a comment that restates
+      the code below it, narrates the change, labels an obvious section, or
+      explains a framework. What survives is a reason a reader can't get from
+      the code, in one plain sentence.
+      `git diff | grep -E '^\+.*(//|/\*)'` lists them.
       *(Six PRs in one session were sent back for this.)*
 - [ ] **Ask what Luma will catch in five seconds.** It's almost always one of:
       a repeated number, a truncated name, a wrapped button, a coined word, or
