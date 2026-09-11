@@ -1,9 +1,8 @@
 # Scope
 
-**Documents:** scope, given in the original as `src/tools/memory/scope.ts`. In
-the tree today the scope code sits in `src/tools/memory/model/scope.ts` and
-`src/tools/memory/store/scope.ts`. The surface control is
-`src/tools/memory/ScopeBar.tsx`.
+**Documents:** scope. The scope code sits in
+`src/tools/memory/model/scope.ts` and `src/tools/memory/store/scope.ts`. The
+surface control is `src/tools/memory/ScopeBar.tsx`.
 
 Character › chat. Chosen once over the views, applied by every view. Three
 rules, because a filter that hides records has to be trustworthy:

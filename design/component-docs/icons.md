@@ -1,7 +1,6 @@
 # Icon vocabulary
 
-**Documents:** `src/tools/memory/icons.tsx` (`@tabler/icons-preact` in the
-original text, though the package installed today is `@tabler/icons-react`). The
+**Documents:** `src/tools/memory/icons.tsx` (`@tabler/icons-react`). The
 shared set lives in `src/ui/icons.tsx`.
 
 Icons form reserved silhouette families: the decision family = decision states,

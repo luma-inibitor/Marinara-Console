@@ -6,7 +6,7 @@
 # Exact casing on purpose, so Vale.Terms flags "vite" -> "Vite".
 proper = """
 Archivo JSDoc Luma Mira MiniSearch Playwright Preact Radix Rolldown Tabler
-Valibot Vite Vitest
+Valibot Vite Vitest WCAG
 """
 
 # Words a Microsoft rule wants swapped, which mean something specific here.
