@@ -81,12 +81,22 @@ function different(files, write) {
 
 /**
  * Vale findings on the lines this branch added, via `prosecheck --json`.
- * Returns [] when Vale is missing: an absent optional binary is not a reason
- * to stop someone committing.
+ * Returns [] when Vale cannot run: a broken or absent optional binary is not a
+ * reason to stop someone committing. It is said out loud, because a hook that
+ * quietly stops linting prose is how a branch of unlinted Markdown lands.
  *
  * @returns {{file: string, line: number, col: number, rule: string, severity: string, message: string}[]}
  */
 function proseFindings() {
+  /**
+   * @param {string} detail
+   * @returns {[]}
+   */
+  const unlinted = (detail) => {
+    console.error(`pre-commit: prosecheck could not run, so the staged Markdown is unlinted.\n${detail.trim()}`);
+    return [];
+  };
+
   let out;
   try {
     out = execFileSync(process.execPath, [join(ROOT, "scripts", "prosecheck.mjs"), "--json"], {
@@ -95,16 +105,15 @@ function proseFindings() {
       stdio: ["pipe", "pipe", "pipe"],
     });
   } catch (e) {
-    // prosecheck exits 1 whenever an added line carries an error-level
-    // finding, and prints its report regardless. A run that produced no JSON
-    // at all is Vale missing or broken, which is not the author's problem.
-    if (e.stdout == null || !e.stdout.trim()) return [];
+    // prosecheck exits 1 whenever an added line carries an error-level finding,
+    // and prints its report regardless; it exits 2 when Vale itself failed.
+    if (e.status !== 1) return unlinted(e.stderr || e.message);
     out = e.stdout;
   }
   try {
     return JSON.parse(out);
   } catch {
-    return [];
+    return unlinted(out);
   }
 }
 
