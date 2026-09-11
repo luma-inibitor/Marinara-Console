@@ -20,7 +20,6 @@ interface Surface {
   screen: Screen;
   open: (page: Page) => Promise<void>;
   sel: string;
-  /** Scrim to tap when it is not `.peek-scrim`. */
   scrim?: string;
   dismiss: readonly Route[];
 }
@@ -131,9 +130,6 @@ test("group menu returns focus to its button on Escape", async ({ page }, testIn
   await expect(kebab).toBeFocused();
 });
 
-// Closing the menu and opening the peek is the one sequence with two overlays
-// in flight; a misordered pair leaves an orphan history entry for the final
-// back to spend.
 test("opening a note from the group menu leaves one history entry", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "phone", "drawn by the phone layout");
   await openScreen(page, screen("memory-review"));

@@ -872,15 +872,12 @@ function GroupBlock(props: {
 function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: boolean; openLabel: string }) {
   const [open, setOpen] = useState(false);
   const g = props.group;
-  // Not a <Sheet>: this is a popover anchored to its button, not a scrimmed dialog.
   useEffect(() => {
     if (!open) return;
     return openOverlay(() => setOpen(false));
   }, [open]);
 
-  // The action runs once the menu has closed: opening the peek pushes its own
-  // overlay, and pushing it while this one's history rewind is still in flight
-  // lands the two entries out of order.
+  // The action waits for the menu's history rewind so its own overlay lands after it.
   const pending = useRef<(() => void) | null>(null);
   useEffect(() => {
     if (open) return;
