@@ -166,3 +166,6 @@ WCAG
 [Tt]argetId(s|es|d|ed|ing|'s)?
 [Tt]imeline_event(s|es|d|ed|ing|'s)?
 [Uu]seState(s|es|d|ed|ing|'s)?
+
+# Multi-word terms (either casing, no inflection).
+[Bb]last radius

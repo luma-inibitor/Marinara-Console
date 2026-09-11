@@ -48,6 +48,13 @@ add_link create_note node_modules npm savedAt sendBeacon sessionStorage
 targetId timeline_event useState
 """
 
+# Multi-word terms Luma marked green, which a Microsoft rule wants swapped.
+# Split on whitespace like the rest would break them in half, so they are
+# listed one per entry and take no inflection.
+phrases = [
+    "blast radius",
+]
+
 INFLECT = r"(s|es|d|ed|ing|'s)?"
 
 
@@ -74,5 +81,8 @@ for heading, words, expand in (
     out += ["", f"# {heading}"]
     suffix = "" if words is proper else INFLECT
     out += [expand(w) + suffix for w in sorted(set(words.split()))]
+
+out += ["", "# Multi-word terms (either casing, no inflection)."]
+out += [either_case(p) for p in sorted(set(phrases))]
 
 print("\n".join(out))
