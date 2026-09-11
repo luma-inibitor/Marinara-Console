@@ -872,46 +872,55 @@ function GroupBlock(props: {
 function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: boolean; openLabel: string }) {
   const [open, setOpen] = useState(false);
   const g = props.group;
+  // Registers with the stack directly rather than through <Sheet>, which is a
+  // scrimmed dialog where this is a popover anchored to its button. The stack
+  // owns Escape at capture phase, so a menu holding its own bubble-phase
+  // listener never sees Escape while any other surface is open.
   useEffect(() => {
     if (!open) return;
-    const esc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("keydown", esc);
-    return () => document.removeEventListener("keydown", esc);
+    return openOverlay(() => setOpen(false));
   }, [open]);
+
+  // An item's action waits for the menu to be gone before it runs. Both items
+  // dismiss the menu, and one of them opens the peek, which registers an
+  // overlay of its own; running it straight away would push that overlay's
+  // history entry while this one's removal was still in flight, and the two
+  // would land out of order.
+  const pending = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    if (open) return;
+    const action = pending.current;
+    pending.current = null;
+    action?.();
+  }, [open]);
+  const choose = (action: () => void) => {
+    pending.current = action;
+    closeTopOverlay();
+  };
   return (
     <span className="gmenu-wrap">
       <button
         className="gib gmenu"
         aria-label={t("memoryvault.moreActionsForValue1", { value1: g.label })}
+        aria-haspopup="menu"
         aria-expanded={open}
-        onClick={() => setOpen(!open)}
+        onClick={() => (open ? closeTopOverlay() : setOpen(true))}
       >
         <More size={16} stroke={1.75} aria-hidden />
       </button>
       {open && (
         <>
-          <span className="gmenu-scrim" onClick={() => setOpen(false)} />
+          <span className="gmenu-scrim" onClick={closeTopOverlay} />
           <div className="gmenu-pop" role="menu">
             {!props.isNew && (
-              <button
-                role="menuitem"
-                onClick={() => {
-                  setOpen(false);
-                  peekNote(g.id);
-                }}
-              >
+              <button role="menuitem" onClick={() => choose(() => peekNote(g.id))}>
                 {props.openLabel}
               </button>
             )}
             {(props.kept > 0 || props.dropped > 0) && (
               <button
                 role="menuitem"
-                onClick={() => {
-                  setOpen(false);
-                  bulkDecide(g.rows, null, `${t("memory.review.reset")} ${g.label}`);
-                }}
+                onClick={() => choose(() => bulkDecide(g.rows, null, `${t("memory.review.reset")} ${g.label}`))}
               >
                 {t("memory.review.clearDecisions", { count: props.kept + props.dropped })}
               </button>

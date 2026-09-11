@@ -20,6 +20,8 @@ interface Surface {
   screen: Screen;
   open: (page: Page) => Promise<void>;
   sel: string;
+  /** The element a scrim tap lands on, where it is not the shared one. */
+  scrim?: string;
   dismiss: readonly Route[];
 }
 
@@ -72,6 +74,15 @@ const SURFACES: Surface[] = [
     dismiss: ROUTES,
   },
   {
+    name: "group menu",
+    project: "phone",
+    screen: screen("memory-review"),
+    open: (page) => page.locator("button.gmenu").first().click(),
+    sel: ".gmenu-pop",
+    scrim: ".gmenu-scrim",
+    dismiss: ROUTES,
+  },
+  {
     // Full-screen, with no scrim to tap.
     name: "tag panel",
     project: "phone",
@@ -82,8 +93,8 @@ const SURFACES: Surface[] = [
   },
 ];
 
-async function dismiss(page: Page, route: Route): Promise<void> {
-  if (route === "scrim") await page.locator(".peek-scrim").click({ position: { x: 5, y: 5 } });
+async function dismiss(page: Page, route: Route, scrim = ".peek-scrim"): Promise<void> {
+  if (route === "scrim") await page.locator(scrim).click({ position: { x: 5, y: 5 } });
   else if (route === "escape") await page.keyboard.press("Escape");
   else await page.goBack();
 }
@@ -99,10 +110,47 @@ for (const surface of SURFACES) {
       // Read after opening, not before: reaching a record is itself a
       // navigation, and the peek opens over the record rather than the list.
       const base = new URL(page.url()).hash;
-      await dismiss(page, route);
+      await dismiss(page, route, surface.scrim);
 
       await expect(page.locator(surface.sel), "still open").toHaveCount(0);
       expect(new URL(page.url()).hash, "dismissal left the screen").toBe(base);
     });
   }
 }
+
+// The menu follows the WAI-ARIA menu pattern rather than the dialog one: no
+// focus trap, and Escape returns focus to the button. The stack is what does
+// the returning, so this fails for anything dismissing itself locally.
+test("group menu returns focus to its button on Escape", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "phone", "drawn by the phone layout");
+  await openScreen(page, screen("memory-review"));
+  const kebab = page.locator("button.gmenu").first();
+  await kebab.click();
+  await expect(page.locator(".gmenu-pop")).toBeVisible();
+
+  await page.keyboard.press("Escape");
+
+  await expect(page.locator(".gmenu-pop")).toHaveCount(0);
+  await expect(kebab).toBeFocused();
+});
+
+// The one sequence that puts two overlays in play: the menu dismisses and the
+// peek opens. Their history entries have to land in that order, so the final
+// back proves there is exactly one entry left to spend.
+test("opening a note from the group menu leaves one history entry", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "phone", "drawn by the phone layout");
+  await openScreen(page, screen("memory-review"));
+  const base = new URL(page.url()).hash;
+  await page.locator("button.gmenu").first().click();
+  await page.getByRole("menuitem", { name: /^Open / }).click();
+
+  await expect(page.locator(".sheet.peek-sheet")).toBeVisible();
+  await expect(page.locator(".gmenu-pop")).toHaveCount(0);
+
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".sheet.peek-sheet")).toHaveCount(0);
+  expect(new URL(page.url()).hash, "dismissal left the screen").toBe(base);
+
+  await page.goBack();
+  expect(new URL(page.url()).hash, "an orphan entry swallowed the back").not.toBe(base);
+});
