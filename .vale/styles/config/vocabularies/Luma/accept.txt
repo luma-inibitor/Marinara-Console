@@ -79,6 +79,7 @@ WCAG
 [Kk]eypress(s|es|d|ed|ing|'s)?
 [Kk]nip(s|es|d|ed|ing|'s)?
 [Ll]gtm(s|es|d|ed|ing|'s)?
+[Ll]ookbehind(s|es|d|ed|ing|'s)?
 [Ll]oopback(s|es|d|ed|ing|'s)?
 [Ll]orebook(s|es|d|ed|ing|'s)?
 [Mm]etaline(s|es|d|ed|ing|'s)?

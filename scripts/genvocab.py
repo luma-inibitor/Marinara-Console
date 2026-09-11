@@ -24,7 +24,7 @@ deadexports destructuring dev devtools discardable discoverability domsnap
 edu ellipsised eslint
 enum esc exceedance expander fullscreen greppable greyscale grouphead hardcode
 hoc hotspot impactful implementer inline jsdom keydown keypress knip lgtm
-jscpd loopback lorebook metaline middleware misaligning mockup nullable
+jscpd lookbehind loopback lorebook metaline middleware misaligning mockup nullable
 numerics onboarding
 oxlint padding param pressable proxied proxying refetch reflow reimplement repo
 revisitable roleplay rollup savebar scrollable scrollbar sirv skimmable

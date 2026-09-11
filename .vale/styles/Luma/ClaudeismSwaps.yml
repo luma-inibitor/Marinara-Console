@@ -1,0 +1,21 @@
+# Banned phrasings that have a replacement Luma marked green, so the alert can
+# name it. Everything Luma banned without naming a preferred term stays in
+# `Claudeisms.yml`, which has no replacement to offer.
+#
+# Only unambiguous pairs belong here. The annotated list interleaves red and
+# green in topic clusters, and adjacency alone is not a mapping: `seam` sits
+# next to `provenance` and they do not mean the same thing, so `seam` is a
+# plain ban.
+extends: substitution
+message: "Use '%s' instead of '%s'."
+link: https://docs.vale.sh/checks/substitution
+level: error
+ignorecase: true
+swap:
+  # Luma marked `byte-identical` green directly against these two.
+  'byte[ -]for[ -]byte(?:\s+identical)?': byte-identical
+
+  # The whole gate family, `owner-gated` and `approval-gated` included.
+  # `boundary` is the green noun; `fails closed` is the green verb phrase when
+  # the sentence is about what happens when the check does not pass.
+  '(?:\w+-)?gat(?:e|es|ed|ing)(?:\s+on)?': boundary

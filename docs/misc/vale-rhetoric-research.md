@@ -164,6 +164,9 @@ preview.
 
 ## On adopting the packages
 
+> Superseded in part on 2026-09-11. The `ai-tells` measured below is not the
+> package `vale sync` resolves today. See "Correction, 2026-09-11" at the end.
+
 All four sync cleanly (`Microsoft`, `ai-tells`, `write-good`, `proselint`).
 Together they put **680 alerts** on `README.md`, `DESIGN.md` and `BACKLOG.md`.
 Three rules are 72% of that, five are 81%:
@@ -251,7 +254,57 @@ carrying.
 
 Not in this branch, in order of value per unit of noise:
 
-1. Add `ai-tells` with the five loud rules disabled — it's the largest single
-   gain available and none of it needs writing.
+1. ~~Add `ai-tells` with the five loud rules disabled.~~ Superseded; the
+   package under that name no longer holds those rules. Two of its patterns
+   are vendored into `Luma/Antithesis.yml` instead.
 2. `GivenNew`, once the script strips markdown blocks.
 3. Isocolon, if the Tengo word-count comparison proves cheap.
+
+## Correction, 2026-09-11
+
+Two numbers in this note no longer hold, and one recommendation no longer works.
+
+**The corpus is clean.** The standing backlog of about 1,750 is gone. Measured
+on Vale 3.18.0 against the config as it stood before the ban rules landed, `npm
+run prose` reported 0 alerts across 251 files. The `DESIGN.md` and `README.md`
+rewrites cleared it. `Microsoft.Dashes` is still the right switch to leave off:
+turning it back on measures 302 errors, against the 298 recorded above.
+
+**`ai-tells` is not the package this note measured.** The Vale registry entry
+is `AiTells`, and it resolves to `krishnasunkam/vale-ai-tells`: 17 rules, none
+of them named above. `EmDashUsage`, `SemicolonUsage`, `ContrastiveFormulas`,
+`MicDrop`, `VerbTricolon`, `HedgingPhrases`, `Metacommentary`, `ExplainerLeads`,
+`CataphoricForecasting`, `RhetoricalSelfAnswer`, `StackedAnaphora` and
+`ParallelStaccato` are all absent, and the registry lists no
+`ai-tells-experimental`. Whatever this note measured, `vale sync` does not fetch
+it. Every alert count in the packages section above is therefore unverifiable,
+the "111 rules" included.
+
+Measured whole against this corpus, the package the registry does resolve costs
+491 alerts, 426 of them errors:
+
+| Rule | Alerts | Level |
+| --- | --- | --- |
+| `Dash` | 341 | error |
+| `SectionCode` | 52 | error |
+| `Adverb` | 42 | suggestion |
+| `FilePath` | 24 | error |
+| `EpigramContrast` | 15 | suggestion |
+| `LinkText` | 7 | suggestion |
+| `NeverTag` | 6 | error |
+| `CodeToken` | 3 | error |
+| `AbstractTriad` | 1 | suggestion |
+
+Four of the five error-level rules contradict a convention this repo settled on
+purpose. `Dash` bans the em dash outright, which is what `Luma.EmDashClause`
+exists to avoid. `SectionCode` reports `§5`, which `CLAUDE.md` writes itself.
+`FilePath` reports a path in prose, which the README layout table is built from.
+`CodeToken` reports `MARINARA_ADMIN_SECRET` and `TAP_PRIMARY`. `Adverb` overlaps
+`Luma.Adverbs` and adds `just`, `currently`, `clearly` and `quickly`.
+
+The registry also points at `releases/latest/download`, so the package is
+unpinned. `.vale.ini` pins Microsoft to a versioned URL for that reason.
+
+So the package was not adopted. `EpigramContrast` and `NegParallel` were the two
+patterns worth having, and both are vendored into `Luma/Antithesis.yml` with
+attribution, because Luma banned the same two constructions independently.

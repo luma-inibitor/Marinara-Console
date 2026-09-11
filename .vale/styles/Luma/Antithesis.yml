@@ -1,0 +1,25 @@
+# The two antithesis constructions Luma banned: `not X, but Y` and `X, not Y`.
+#
+# Both patterns are adapted from the `AiTells` package, where they are
+# `NegParallel` and `EpigramContrast`. They are vendored rather than depended
+# on: that package pins nothing (the registry points at
+# `releases/latest/download`), and its four error-level rules ban em-dashes,
+# section marks, file paths in prose and CONSTANT_NAMES, all of which this repo
+# writes on purpose. Measured cost of adopting it whole was 491 alerts.
+#
+# `X, not Y` is anchored on a copula. An unanchored `,\s+not\b` takes every
+# ordinary parenthetical with it.
+extends: existence
+message: "Antithesis '%s'. State the positive claim once."
+link: https://docs.vale.sh/checks/existence
+level: error
+ignorecase: true
+raw:
+  # X, not Y
+  - '\b(?:is|are|was|were|reads?\s+as|stays?|remains?|becomes?)\s+'
+  - '(?:a\s+|an\s+|the\s+)?[\w’''-]+(?:\s+[\w’''-]+){0,2}'
+  - ',\s+not\s+(?:a\s+|an\s+|the\s+)?[\w’''-]+'
+  # not X, but Y
+  - '|\bnot\s+(?:just|only|merely|simply)\b[^.!?]{0,80}\b(?:but|it[''’]?s)\b'
+  - "|\\bit(?:['’]s| is)\\s+not\\b[^.!?]{0,60},\\s*it(?:['’]s| is)\\b"
+  - '|\bisn[''’]?t\s+(?:just|only)\b[^.!?]{0,60}\bit[''’]?s\b'

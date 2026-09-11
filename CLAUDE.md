@@ -54,6 +54,9 @@
     the reader check whether all three are the same thing.
   - **A clause that carries rhythm rather than meaning.** `Not in color, not in
     absence` reads well and says less than `colour alone isn't enough`. Cut it.
+  - **A term Luma banned.** `Luma.Claudeisms`, `Luma.ClaudeismSwaps` and
+    `Luma.Antithesis` hold the list, and `prosecheck` stops on one. README.md
+    names the green terms to reach for instead.
   Delete first when you revise a draft. Rewriting a sentence to satisfy a rule
   usually keeps the ornament and hides it.
 - Run `npm run prosecheck` after you edit a `.md` file. It runs Vale over the

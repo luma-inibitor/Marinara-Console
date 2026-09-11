@@ -1,0 +1,65 @@
+# Phrasings Luma banned outright. Source: the annotated Claudeism lists, red
+# spans, 2026-09-11. Terms with a preferred replacement live in
+# `ClaudeismSwaps.yml`; the two antithesis constructions live in
+# `Antithesis.yml`. `genuinely` is not repeated here because `Adverbs.yml`
+# already carries it.
+#
+# `shape` is guarded rather than banned: Luma marked `response shape` green, so
+# the lookbehind keeps that one phrase quiet. Lookbehind works because a
+# non-`script` check runs on a backtracking engine, not RE2 - see
+# `docs/misc/vale-rhetoric-research.md`.
+#
+# `bearer` is guarded for the same reason in reverse: a bearer token is the
+# ordinary security term and is not the flourish Luma flagged.
+extends: existence
+message: "'%s' is a banned phrasing."
+link: https://docs.vale.sh/checks/existence
+level: error
+ignorecase: true
+tokens:
+  # Structure metaphors.
+  - load-bearing
+  - seams?
+  - spine
+  - wedged?
+  - "(?<!response )shapes?"
+  - '\w+-shaped'
+
+  # Redundant-safeguard idioms.
+  - "belt[- ]and[- ]suspenders"
+  - "belt[- ]and[- ]braces"
+  - freeze the binding
+  - frozen binding
+
+  # Wiring metaphors.
+  - wiring
+  - wired
+  - wire up
+  - wire through
+  - "plumb(?:ed)? through"
+  - "threaded end[- ]to[- ]end"
+  - "wired through end[- ]to[- ]end"
+  - fully wired
+
+  # Self-congratulating hedges.
+  - honest
+  - durable path forward
+  - "that(?:['’]s| is) not nothing"
+  - "you(?:['’]re| are) absolutely right"
+  - "you(?:['’]re| are) right to push back"
+  - reaches the same place
+
+  # `hard X` as an intensifier. Curated nouns, not a bare `hard \w+`, which
+  # would take "hard to read" and "hard drive" with it.
+  - "hard (?:gates?|boundar(?:y|ies)|constraints?|stops?|limits?|requirements?|rules?|failures?|cutoffs?|blockers?|dependenc(?:y|ies)|guarantees?|invariants?|floor|ceiling)"
+
+  # Verbs Luma called out by frequency.
+  - carries
+  - survives
+  - 'bearer(?!\s+(?:tokens?|auth|authentication|credentials?))'
+
+  # Phrases from the annotated transcripts.
+  - integer slack
+  - apply that slack
+  - grading equivalence
+  - absorbed twice

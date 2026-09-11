@@ -51,10 +51,12 @@ vale sync          # fetch the Microsoft package into .vale/styles (gitignored)
 npm run prose
 ```
 
-`BACKLOG.md` stays exempt for now. Every rule stays on
-repo-wide. Put a word in the project vocabulary when a rule
-fires on it but it means something specific here. Vale skips the vocabulary in
-every check.
+`BACKLOG.md` stays exempt, and so does `docs/misc/vale-rhetoric-research.md`,
+which quotes the constructions the rules catch. `Microsoft.Dashes` is off,
+because the docs use spaced em dashes on purpose: switching it back on measures
+302 errors. Every other rule runs repo-wide. Put a word in the project
+vocabulary when a rule fires on it but it means something specific here. Vale
+skips the vocabulary in every check.
 
 `.vale/styles/Luma/` holds hand-written rules, which `vale sync` leaves alone.
 One comes from `ASD-STE100`, the Simplified Technical English standard, and
@@ -64,6 +66,32 @@ on part-of-speech tags rather than on spelling, so `has a value` stays quiet.
 One caveat matters here. The vocabulary doesn't apply to that rule, because Vale
 skips vocabulary terms for every check except `sequence`. To exempt a word from
 it, edit the rule.
+
+Three more rules hold the phrasings Luma banned in the annotated lists of
+2026-09-11. `Claudeisms` holds the terms with no replacement, `ClaudeismSwaps`
+holds the ones Luma paired with a preferred term, and `Antithesis` holds the two
+constructions the lists name. Each one reports at error level, so `prosecheck`
+and the pre-commit hook both stop for it. Both read only the lines a branch
+adds, so the 102 findings already in the docs stay where they're until someone
+edits those lines.
+
+Two terms report alone and stay quiet inside a longer phrase: `response shape`
+and `bearer token`. A lookbehind in the rule does that. The project vocabulary
+can't, because it would exempt the short form as well.
+
+The terms Luma marked green stay available, and a replacement should come from
+them where one fits:
+
+`boundary`, `canonical`, `authoritative`, `source of truth`, `drift`, `land`,
+`provenance`, `lineage`, `response shape`, `blast radius`, `fail closed`,
+`byte-identical`.
+
+Every case sits in `.vale/fixtures/rhetoric.txt` as a hit followed by the
+control that has to stay quiet:
+
+```sh
+vale --no-global --ext=.md < .vale/fixtures/rhetoric.txt
+```
 
 Vocabulary lives in `scripts/genvocab.py`, which expands plain word lists into the
 patterns Vale wants. Add the word there, re-run the script, commit both files:

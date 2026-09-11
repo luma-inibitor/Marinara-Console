@@ -29,3 +29,51 @@ LeftBranching.
 Although the cache is warm, the first request still misses.
 
 The first request still misses, although the cache is warm.
+
+Claudeisms.
+
+The check is load-bearing here.
+
+The cut leaves no seam between the two halves.
+
+The shape of the problem changed.
+
+The response shape holds across versions.
+
+We kept a belt-and-suspenders guard.
+
+The value is wired through to the panel.
+
+One honest caveat about the result.
+
+That row carries its own status.
+
+A stale key survives the refresh.
+
+The bearer of the claim decides.
+
+The token is a bearer token from the proxy.
+
+This is a hard boundary for the queue.
+
+The queue has a clear boundary.
+
+It is hard to read at that size.
+
+ClaudeismSwaps.
+
+The output is byte for byte the same.
+
+The output is byte-identical.
+
+Apply is gated on owner approval.
+
+The run is approval-gated.
+
+Antithesis.
+
+The panel is a control, not a decoration.
+
+It is not just slow, but wrong.
+
+The panel is a control.
