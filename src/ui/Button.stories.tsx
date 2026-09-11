@@ -26,14 +26,13 @@ export const Focus: Story = { args: { variant: "primary", autoFocus: true } };
 
 export const Pressed: Story = { args: { variant: "secondary", pressed: true, children: "Filters" } };
 
-/** With a reason, so the control keeps its place in the tab order and a screen
- *  reader can reach the reason. This is the form the checklist prefers. */
+/** The control keeps its place in the tab order and a screen reader can reach
+ *  the reason. */
 export const DisabledWithReason: Story = {
   args: { disabled: true, disabledReason: "Nothing has changed since you opened this." },
 };
 
-/** Without a reason, so `:disabled` is honest and the button leaves the tab
- *  order entirely. The checklist calls this the last resort. */
+/** Native `:disabled`, so the button leaves the tab order. */
 export const DisabledNative: Story = { args: { disabled: true } };
 
 /** The spinner waits a second, so this shows the inert-but-unspun phase first

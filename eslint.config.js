@@ -114,10 +114,9 @@ export default [
     rules: { "i18next/no-literal-string": "off", "no-restricted-syntax": "off" },
   },
   {
-    // Stories, for the same reason as the fixtures above: their strings reach
-    // no reader, so routing them through t() would put entries in the catalog
-    // that no screen renders — the defect copycatalog.mjs exists to catch.
-    // `.storybook/**` is here for editors; `npm run lint` reads src and scripts.
+    // Story strings reach no reader, so routing them through t() would add
+    // catalog entries no screen renders, which copycatalog.mjs would then flag.
+    // `.storybook/**` is listed for editors; `npm run lint` reads src and scripts.
     files: ["src/**/*.stories.tsx", ".storybook/**/*.ts", ".storybook/**/*.tsx"],
     rules: { "i18next/no-literal-string": "off", "no-restricted-syntax": "off" },
   },

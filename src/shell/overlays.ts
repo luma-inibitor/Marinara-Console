@@ -2,7 +2,7 @@
 // restore for every layered surface (sheets, the note peek, stacked detail
 // screens). Each open pushes a history entry, so the Android back gesture
 // closes the topmost overlay instead of leaving the console, and Escape works
-// no matter where focus sits (DESIGN §3).
+// no matter where focus sits.
 //
 // Contract: open an overlay by flipping its signal AND calling
 // `openOverlay(close)`; close it ONLY via `closeTopOverlay()` (or the user's
@@ -89,10 +89,9 @@ function install() {
  *  standing history entry rather than push a second one nothing owns. */
 export function openOverlay(close: () => void, restoreFocus?: HTMLElement | null): () => void {
   install();
-  // A caller that autofocuses something inside itself has to pass the opener,
-  // because React runs a child's effect before its parent's: by the time this
-  // runs, focus has moved inside the overlay and activeElement would record an
-  // element that unmounts with it.
+  // A caller that autofocuses inside itself has to pass the opener: React runs
+  // child effects first, so by now activeElement is inside the overlay and
+  // would unmount with it.
   const entry: Entry = {
     close,
     restoreFocus: restoreFocus !== undefined ? restoreFocus : (document.activeElement as HTMLElement | null),

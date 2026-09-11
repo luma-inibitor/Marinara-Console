@@ -4,9 +4,8 @@ import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "./Button";
 import { Sheet, SheetHead } from "./Sheet";
 
-/** A sheet is opened by something and closes back to it, so the story renders
- *  the trigger as well as the surface. Declared outside the story so it is an
- *  ordinary component and its state survives a re-render. */
+/** Renders the trigger too, because a sheet closes back to it. Declared outside
+ *  the story so its state survives a re-render. */
 function SheetDemo(props: { autoFocus?: boolean }) {
   const [open, setOpen] = useState(false);
   return (
@@ -28,9 +27,8 @@ function SheetDemo(props: { autoFocus?: boolean }) {
   );
 }
 
-// `component` names the wrapper rather than `Sheet`, because a Sheet cannot
-// render on its own: it takes an `onClose` that has to clear the state that
-// mounts it, so the thing with a default state is the pair.
+// `component` is the wrapper because a Sheet cannot render alone: its `onClose`
+// has to clear the state that mounts it.
 const meta = {
   title: "UI/Sheet",
   component: SheetDemo,
@@ -51,9 +49,7 @@ export const Open: Story = {
   },
 };
 
-/** The focus contract from component-checklist.md §5, asserted in the order the
- *  checklist writes it. The third step guards the effect ordering Sheet.tsx
- *  works around. */
+/** The last step guards the effect ordering Sheet.tsx works around. */
 export const FocusContract: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);

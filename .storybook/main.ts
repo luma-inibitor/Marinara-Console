@@ -6,10 +6,9 @@ const config: StorybookConfig = {
   framework: { name: "@storybook/react-vite", options: {} },
   core: { disableTelemetry: true },
   typescript: {
-    // react-docgen-typescript reads the compiler API as `import * as ts from
-    // "typescript"`, and typescript@7 exports only `version` from the package
-    // root, so every call into it gets undefined. eslint.config.js records the
-    // same gotcha for typescript-eslint.
+    // react-docgen-typescript does `import * as ts from "typescript"`, and
+    // typescript@7 exports only `version` from the package root, so every call
+    // into it gets undefined (eslint.config.js has the same gotcha).
     reactDocgen: "react-docgen",
   },
 };

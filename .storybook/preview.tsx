@@ -13,8 +13,8 @@ import "../src/styles/lorebooks.css";
 import "../src/styles/presets.css";
 import "../src/styles/memory.css";
 
-/** DESIGN.md §2: density is an attribute on `<html>`, so a story cannot opt
- *  into it and a decorator has to write the root attribute the app writes. */
+/** Density is an attribute on `<html>`, which a story cannot reach, so the
+ *  decorator writes it. */
 const withDensity: Decorator = (Story, context) => {
   const density = context.globals.density as string;
   useEffect(() => {
@@ -51,7 +51,7 @@ const preview: Preview = {
       test: "error",
       options: {
         rules: {
-          // Off in axe by default; component-checklist.md §4 requires it.
+          // Off in axe by default.
           "target-size": { enabled: true },
         },
       },
@@ -60,20 +60,17 @@ const preview: Preview = {
       config: {
         checks: [
           {
-            // component-checklist.md §2. These are axe's own defaults; naming
-            // them keeps the floor in the repo rather than in a dependency.
+            // axe's own defaults, restated so the floor lives in the repo.
             id: "color-contrast",
             options: { contrastRatio: { normal: { expected: 4.5 }, large: { expected: 3 } } },
           },
           {
-            // §4's absolute floor. axe holds one size, so the 44px primary
-            // floor is not expressible here: tap-targets.spec.ts grades primary
-            // against secondary by clearance and owns that half.
+            // axe holds one size, so the 44px primary floor is not expressible
+            // here; tests/e2e/tap-targets.spec.ts owns that half.
             id: "target-size",
             options: { minSize: 24 },
           },
           {
-            // §4's clearance: a secondary control may be small if it is spaced.
             id: "target-offset",
             options: { minOffset: 8 },
           },

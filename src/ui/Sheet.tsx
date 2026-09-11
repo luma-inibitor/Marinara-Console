@@ -6,7 +6,7 @@ import { Close, ICON_SIZE } from "./icons";
 import "./Sheet.css";
 
 /** A layered surface: a bottom sheet on a phone, a right-hand panel on a wide
- *  screen. The mobile projection of a panel or popover (DESIGN.md §3).
+ *  screen. The mobile projection of a panel or popover.
  *
  *  Sheet registers itself with the overlay stack on mount, so its opener only
  *  has to flip a signal and Escape and the Android back gesture reach it
@@ -41,16 +41,15 @@ function Overlay(props: { label: string; onClose: () => void; children: ReactNod
   // of the entry, and re-registering on render would push history entries.
   const close = useRef(props.onClose);
   close.current = props.onClose;
-  // Read during the first render, not in the effect below: SheetHead's autoFocus
-  // is a child effect and has already moved focus by then.
+  // Read during render, not in the effect: SheetHead's autoFocus is a child
+  // effect and has already moved focus by the time the parent effect runs.
   const opener = useRef<HTMLElement | null>(null);
   if (opener.current === null) opener.current = document.activeElement as HTMLElement | null;
   useEffect(() => openOverlay(() => close.current(), opener.current), []);
 
   return (
     <div className="peek-scrim" onClick={closeTopOverlay}>
-      {/* A div, not an aside: ARIA in HTML does not allow role="dialog" on
-          `aside`, and axe grades it (aria-allowed-role). */}
+      {/* A div, not an aside: role="dialog" is not allowed on `aside` (axe aria-allowed-role). */}
       <div
         className={props.surface}
         role="dialog"
