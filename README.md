@@ -47,9 +47,14 @@ run prose` reports on the whole repo.
 
 ```sh
 brew install vale
-vale sync          # fetch the Microsoft package into .vale/styles (gitignored)
 npm run prose
 ```
+
+`.vale/styles/` holds the downloaded Microsoft package and isn't version
+controlled, so a fresh clone or worktree starts without it. `npm run prosecheck`
+runs `vale sync` itself when it finds the package missing, and stops with a
+message naming the problem when Vale can't run at all. `npm run prose` and a
+bare `vale` need `vale sync` by hand the first time.
 
 `BACKLOG.md` stays exempt for now. Every rule stays on
 repo-wide. Put a word in the project vocabulary when a rule
