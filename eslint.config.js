@@ -114,6 +114,20 @@ export default [
     rules: { "i18next/no-literal-string": "off", "no-restricted-syntax": "off" },
   },
   {
+    // Stories, for the same reason as the fixtures above: a story is a
+    // specimen, not a screen. Its strings are a story title, a role name a
+    // query matches on, and sample copy chosen to show a component at a
+    // realistic width. None of them reaches a reader, so routing them through
+    // t() would put entries in the catalog that no screen renders — which is
+    // the defect copycatalog.mjs exists to catch. The exemption is these two
+    // rules over these files only; every other rule still applies.
+    //
+    // `.storybook/**` is listed for the day `npm run lint` widens past
+    // `src scripts`. It matches nothing today.
+    files: ["src/**/*.stories.tsx", ".storybook/**/*.ts", ".storybook/**/*.tsx"],
+    rules: { "i18next/no-literal-string": "off", "no-restricted-syntax": "off" },
+  },
+  {
     // The transport layer is where a fetch belongs.
     files: ["src/shell/**"],
     rules: { "no-restricted-globals": "off" },
