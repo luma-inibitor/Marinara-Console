@@ -41,7 +41,12 @@ function Overlay(props: { label: string; onClose: () => void; children: ReactNod
   // of the entry, and re-registering on render would push history entries.
   const close = useRef(props.onClose);
   close.current = props.onClose;
-  useEffect(() => openOverlay(() => close.current()), []);
+  // Read during the first render, not in the effect below. SheetHead's autoFocus
+  // is a child effect, so it runs first and would otherwise be what the stack
+  // records as the element to restore to.
+  const opener = useRef<HTMLElement | null>(null);
+  if (opener.current === null) opener.current = document.activeElement as HTMLElement | null;
+  useEffect(() => openOverlay(() => close.current(), opener.current), []);
 
   return (
     <div className="peek-scrim" onClick={closeTopOverlay}>

@@ -61,15 +61,14 @@ export const Open: Story = {
  *  checklist writes it: focus moves into the surface on open, Escape closes it,
  *  focus returns to the trigger.
  *
- *  The third assertion FAILS today, and is left failing on purpose. React runs
- *  a child's effect before its parent's, so `SheetHead`'s autoFocus effect has
- *  already moved focus to the close button by the time `Overlay`'s effect calls
- *  `openOverlay`. The stack therefore records the close button as the element
- *  to restore to, and that element unmounts with the sheet — `isConnected` is
- *  false in `settle()`, no restore runs, and focus falls to `<body>`. A sheet
- *  with no `autoFocus` restores correctly, which is what pins the cause.
- *
- *  Fixing it belongs to src/shell/overlays.ts or src/ui/Sheet.tsx, not here. */
+ *  The third assertion used to fail. React runs a child's effect before its
+ *  parent's, so `SheetHead`'s autoFocus effect had already moved focus to the
+ *  close button by the time `Overlay`'s effect called `openOverlay`, and the
+ *  stack recorded that button as the element to restore to. The button unmounts
+ *  with the sheet, so `settle()` found `isConnected` false, no restore ran, and
+ *  focus fell to `<body>`. `Overlay` now reads the opener during its first
+ *  render and passes it to `openOverlay`, which is why this story guards the
+ *  ordering rather than documenting a known defect. */
 export const FocusContract: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);

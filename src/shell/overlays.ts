@@ -87,9 +87,16 @@ function install() {
  *  the resulting popstate harmless: `settle()` sees the entry is already gone.
  *  The rewind itself waits a tick, so a remount in the same tick can adopt the
  *  standing history entry rather than push a second one nothing owns. */
-export function openOverlay(close: () => void): () => void {
+export function openOverlay(close: () => void, restoreFocus?: HTMLElement | null): () => void {
   install();
-  const entry: Entry = { close, restoreFocus: document.activeElement as HTMLElement | null };
+  // A caller that autofocuses something inside itself has to pass the opener,
+  // because React runs a child's effect before its parent's: by the time this
+  // runs, focus has already moved inside the overlay and reading activeElement
+  // here would record an element that unmounts with it.
+  const entry: Entry = {
+    close,
+    restoreFocus: restoreFocus !== undefined ? restoreFocus : (document.activeElement as HTMLElement | null),
+  };
 
   if (deferredRewind !== null) {
     // A disposer ran a moment ago and its entry is still standing: this is the
