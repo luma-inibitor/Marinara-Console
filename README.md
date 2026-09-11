@@ -35,9 +35,17 @@ MC_PROXY_TARGET=http://127.0.0.1:7874 MC_DEV_PORT=5174 npm run dev
 
 ## Prose
 
-[Vale](https://vale.sh) checks the Markdown docs. It reads the Microsoft style
-plus a small local style in `.vale/styles/Luma/`. Treat it as advisory: `npm run
-check` doesn't run it, and the CI job never blocks a merge.
+[Vale](https://vale.sh) checks the Markdown docs. Its configuration comes from
+the Luma package in
+[`luma-inibitor/vale-styles`](https://github.com/luma-inibitor/vale-styles), which
+`imagegen` pulls too. The package pins the Google and Microsoft styles. It also
+carries the hand-written `Luma` rules, the `Code` rules for comments, and a
+shared vocabulary. `.vale.ini` here names the package version, this repo's
+vocabulary and the files exempt from linting. Change a rule in the package repo
+rather than here.
+
+Treat Vale as advisory: `npm run check` doesn't run it, and the CI job never
+blocks a merge.
 
 CI annotates only the lines a pull request touches, which keeps it useful while
 the rest of the docs still carry a large backlog. `npm run prosecheck` does the
@@ -50,31 +58,31 @@ brew install vale
 npm run prose
 ```
 
-`.vale/styles/` holds the downloaded Microsoft package and isn't version
-controlled, so a fresh clone or worktree starts without it. `npm run prosecheck`
-runs `vale sync` itself when it finds the package missing, and stops with a
-message naming the problem when Vale can't run at all. `npm run prose` and a
-bare `vale` need `vale sync` by hand the first time.
+`.vale/styles/` holds the downloaded Luma package and the Google and Microsoft
+packages it pins. It isn't version controlled, so a fresh clone or worktree
+starts without it. `npm run prosecheck` runs `vale sync` itself when it finds
+the package missing, and stops with a message naming the problem when Vale can't
+run at all. `npm run prose` and a bare `vale` need `vale sync` by hand the first
+time.
 
-`BACKLOG.md` stays exempt for now. Every rule stays on
-repo-wide. Put a word in the project vocabulary when a rule
-fires on it but it means something specific here. Vale skips the vocabulary in
-every check.
+Run `vale sync` again whenever `.vale.ini` names a new package version.
 
-`.vale/styles/Luma/` holds hand-written rules, which `vale sync` leaves alone.
-One comes from `ASD-STE100`, the Simplified Technical English standard, and
-catches the perfect tenses, which neither Google nor Microsoft check. It matches
-on part-of-speech tags rather than on spelling, so `has a value` stays quiet.
+`BACKLOG.md` stays exempt for now. An empty `BasedOnStyles` isn't enough to
+exempt a file. The package sets a severity on `Google.Parens`, `Google.Passive`
+and `Microsoft.Passive`, and a severity turns its rule on for every Markdown
+file. Each exempt section switches those three off by name.
 
-One caveat matters here. The vocabulary doesn't apply to that rule, because Vale
-skips vocabulary terms for every check except `sequence`. To exempt a word from
-it, edit the rule.
+Put a word in the project vocabulary when a rule fires on it but it means
+something specific here. Vale skips the vocabulary in every check except
+`sequence`, and `Luma.PerfectTense` is a sequence check. To exempt a word from
+that rule, edit the rule in the package repo.
 
 Vocabulary lives in `scripts/genvocab.py`, which expands plain word lists into the
-patterns Vale wants. Add the word there, re-run the script, commit both files:
+patterns Vale wants. Add the word there, re-run the script, commit both files. A
+word both repos need belongs in the package's shared list instead.
 
 ```sh
-python3 scripts/genvocab.py > .vale/styles/config/vocabularies/Luma/accept.txt
+python3 scripts/genvocab.py > .vale/styles/config/vocabularies/Marinara/accept.txt
 ```
 
 Prefer a code span or a fence over a vocabulary entry. Vale already skips both,
@@ -89,7 +97,7 @@ and a fenced example fixes the cause rather than the symptom.
 | `tests/e2e/` | the browser suite: the definition of done, written up in `tests/e2e/README.md` — screens, contrast, tap targets, sideways scroll, overlays, keyboard, screen captures. It drives the built bundle at four viewports and answers every request from a fixture corpus |
 | `design/` | DESIGN.md, tokens rationale, vendored UI research |
 | `scripts/precompress.mjs` | Part of `npm run build`, not a check: writes a `.br` and a `.gz` beside each compressible file in `dist/` for the server to send. `npm run precompress` runs it alone |
-| `.vale.ini` | prose lint config: Microsoft style, exemptions in the vocabulary rather than rule switches |
+| `.vale.ini` | prose lint config: the package version, this repo's vocabulary and its exempt files. The rules live in the Luma package |
 | `.prettierrc.json` | formatter config. One setting, `printWidth`. `.prettierignore` names what Prettier stays out of and why: CSS belongs to stylelint, Markdown to Vale, and the vendored engine sources to the engine |
 | `.githooks/` | the pre-commit hook, installed by `npm run prepare` through `core.hooksPath`. It formats staged code and holds a commit whose staged Markdown carries any Vale finding |
 | `scripts/` | the executable checks that run without a test runner: `components` (inventory of what returns markup, and what each one couples to), `copycatalog`, `layercheck`, `deadcss`, `typescale`, `specificity`, `pkgcheck`, `prosecheck`, `domsnap`. `domsnap` drives a real browser and takes its harness from `lib/browser.mjs` |

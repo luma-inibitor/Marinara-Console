@@ -1,8 +1,8 @@
 # What Vale can and can't detect
 
-Research note behind the rhetoric rules in `.vale/styles/Luma/`. Every claim
+Research note behind the rhetoric rules in the Luma package, `luma-inibitor/vale-styles`. Every claim
 below was tested against Vale 3.18.0, the version the CI job pins. The paired
-hit and control fixtures are in `.vale/fixtures/rhetoric.txt`.
+hit and control fixtures are in `fixtures/rhetoric.txt` in that repo.
 
 Six rules came out of this; three were kept. `EmDashClause`, `LeftBranching`
 and `Polysyndeton` are precise enough to leave on. `Chiasmus`, `Epistrophe` and
@@ -40,7 +40,7 @@ The four extension points that carry the work:
 
 ## Verdict by item
 
-Legend: **built** = shipped in `.vale/styles/Luma`; **dropped** = written and
+Legend: **built** = shipped in the Luma package; **dropped** = written and
 measured, then cut for noise; **exists** = an off-the-shelf
 package already does it; **feasible** = mechanism proven, rule not written;
 **no** = not reachable this way.

@@ -1,11 +1,14 @@
 """Expand these word lists into the regexes Vale's accept.txt wants.
 
-    python3 scripts/genvocab.py > .vale/styles/config/vocabularies/Luma/accept.txt
+    python3 scripts/genvocab.py > .vale/styles/config/vocabularies/Marinara/accept.txt
+
+Words both repos need live in the shared vocabulary of the Luma package,
+luma-inibitor/vale-styles, and stay out of these lists.
 """
 
 # Exact casing on purpose, so Vale.Terms flags "vite" -> "Vite".
 proper = """
-Archivo JSDoc Luma Mira MiniSearch Playwright Preact Radix Rolldown Tabler
+Archivo JSDoc Mira MiniSearch Playwright Preact Radix Rolldown Tabler
 Valibot Vite Vitest WCAG
 """
 
@@ -19,21 +22,21 @@ common = """
 affordance agent attr autoadvance autoapplied autoapply autoinclude
 brotli bundler
 autosave backlink boolean charset chiprail clearable compat
-config copycheck debounce dedup dedupe deduplicate deps destructure
+copycheck debounce dedup dedupe deduplicate deps destructure
 deadexports destructuring dev devtools discardable discoverability domsnap
 edu ellipsised eslint
-enum esc exceedance expander fullscreen greppable greyscale grouphead hardcode
+enum esc exceedance expander fullscreen greppable greyscale grouphead
 hoc hotspot impactful implementer inline jsdom keydown keypress knip lgtm
 jscpd loopback lorebook metaline middleware misaligning mockup nullable
 numerics onboarding
-oxlint padding param pressable proxied proxying refetch reflow reimplement repo
+oxlint padding param pressable proxied proxying refetch reflow reimplement
 revisitable roleplay rollup savebar scrollable scrollbar sirv skimmable
 snake_case stylelint subline syncpack
 substate tabbable tabindex teleport tokenizer togglable tooltip tri triaged
 typescale uFuzzy unauthored
 unawaited unclipped undecide undeciding undrawn unenumerable unlayered unmocked
-unformatted unmount unrendered unscoped unstaged unstyled untraced unwired
-upstream vendored viewport virtualize wireframe worktree
+unformatted unmount unrendered unscoped unstyled untraced unwired
+viewport virtualize wireframe
 """
 
 # Tokens that also turn up fully capitalised in prose: DOM tags, file types,
