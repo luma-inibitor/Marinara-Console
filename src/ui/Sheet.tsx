@@ -49,7 +49,9 @@ function Overlay(props: { label: string; onClose: () => void; children: ReactNod
 
   return (
     <div className="peek-scrim" onClick={closeTopOverlay}>
-      <aside
+      {/* A div, not an aside: ARIA in HTML does not allow role="dialog" on
+          `aside`, and axe grades it (aria-allowed-role). */}
+      <div
         className={props.surface}
         role="dialog"
         aria-modal="true"
@@ -57,7 +59,7 @@ function Overlay(props: { label: string; onClose: () => void; children: ReactNod
         onClick={(e) => e.stopPropagation()}
       >
         {props.children}
-      </aside>
+      </div>
     </div>
   );
 }
