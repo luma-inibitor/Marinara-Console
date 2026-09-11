@@ -91,8 +91,8 @@ export function openOverlay(close: () => void, restoreFocus?: HTMLElement | null
   install();
   // A caller that autofocuses something inside itself has to pass the opener,
   // because React runs a child's effect before its parent's: by the time this
-  // runs, focus has already moved inside the overlay and reading activeElement
-  // here would record an element that unmounts with it.
+  // runs, focus has moved inside the overlay and activeElement would record an
+  // element that unmounts with it.
   const entry: Entry = {
     close,
     restoreFocus: restoreFocus !== undefined ? restoreFocus : (document.activeElement as HTMLElement | null),

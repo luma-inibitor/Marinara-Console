@@ -137,8 +137,8 @@ jobs:
           retention-days: 7
 
   # Stories run as tests in a real browser, so this needs Chromium the way the
-  # Playwright job does. Separate from `test` for the same reason: that job is
-  # the node suite and stays fast.
+  # Playwright job does, and stays out of `test` so that job keeps to the fast
+  # node suite.
   storybook:
     name: Storybook tests
     runs-on: ubuntu-latest

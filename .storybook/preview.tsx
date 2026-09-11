@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import type { Decorator, Preview } from "@storybook/react-vite";
 
-// The same stylesheets src/main.tsx loads, in the same order, so a story
-// renders against the real tokens rather than against a subset of them.
+// The same stylesheets src/main.tsx loads, in the same order.
 import "@fontsource-variable/archivo/wdth.css";
 import "@fontsource-variable/jetbrains-mono";
 import "@fontsource-variable/source-sans-3";
@@ -14,9 +13,8 @@ import "../src/styles/lorebooks.css";
 import "../src/styles/presets.css";
 import "../src/styles/memory.css";
 
-/** DESIGN.md §2: density is an attribute on `<html>`, so a component cannot
- *  opt into it and a story cannot either. The decorator writes the root
- *  attribute the app writes, and restores whatever was there on the way out. */
+/** DESIGN.md §2: density is an attribute on `<html>`, so a story cannot opt
+ *  into it and a decorator has to write the root attribute the app writes. */
 const withDensity: Decorator = (Story, context) => {
   const density = context.globals.density as string;
   useEffect(() => {
@@ -50,20 +48,16 @@ const preview: Preview = {
   },
   parameters: {
     a11y: {
-      // A violation fails the run. The point of the addon is to be a gate for
-      // the components no screen mounts, and a warning gates nothing.
       test: "error",
       options: {
         rules: {
-          // Off in axe by default. component-checklist.md §4 makes it a
-          // requirement, and tests/e2e/tap-targets.spec.ts already measures the
-          // same thing over the eight screens.
+          // Off in axe by default; component-checklist.md §4 requires it.
           "target-size": { enabled: true },
         },
       },
+      // Per-rule thresholds are check options, which axe takes through
+      // configure() rather than through run().
       config: {
-        // Per-rule thresholds are check options, which axe takes through
-        // configure() rather than through run().
         checks: [
           {
             // component-checklist.md §2. These are axe's own defaults; naming

@@ -4,10 +4,9 @@ import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "./Button";
 import { Sheet, SheetHead } from "./Sheet";
 
-/** A sheet has no standalone form: it is opened by something and it closes back
- *  to that something, so the story renders the trigger as well as the surface.
- *  Declared outside the story so it is an ordinary component and its state
- *  survives a re-render. */
+/** A sheet is opened by something and closes back to it, so the story renders
+ *  the trigger as well as the surface. Declared outside the story so it is an
+ *  ordinary component and its state survives a re-render. */
 function SheetDemo(props: { autoFocus?: boolean }) {
   const [open, setOpen] = useState(false);
   return (
@@ -29,11 +28,6 @@ function SheetDemo(props: { autoFocus?: boolean }) {
   );
 }
 
-// An overlay, so the harness has to survive a surface that opens over the
-// story rather than sitting in it. This is also where a play function earns
-// its place: component-checklist.md §5's focus contract is three assertions
-// about what happens between two renders, which no static check can reach.
-//
 // `component` names the wrapper rather than `Sheet`, because a Sheet cannot
 // render on its own: it takes an `onClose` that has to clear the state that
 // mounts it, so the thing with a default state is the pair.
@@ -58,17 +52,8 @@ export const Open: Story = {
 };
 
 /** The focus contract from component-checklist.md §5, asserted in the order the
- *  checklist writes it: focus moves into the surface on open, Escape closes it,
- *  focus returns to the trigger.
- *
- *  The third assertion used to fail. React runs a child's effect before its
- *  parent's, so `SheetHead`'s autoFocus effect had already moved focus to the
- *  close button by the time `Overlay`'s effect called `openOverlay`, and the
- *  stack recorded that button as the element to restore to. The button unmounts
- *  with the sheet, so `settle()` found `isConnected` false, no restore ran, and
- *  focus fell to `<body>`. `Overlay` now reads the opener during its first
- *  render and passes it to `openOverlay`, which is why this story guards the
- *  ordering rather than documenting a known defect. */
+ *  checklist writes it. The third step guards the effect ordering Sheet.tsx
+ *  works around. */
 export const FocusContract: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
