@@ -73,10 +73,35 @@ function hide(surface: HTMLElement): HTMLElement[] {
   return held;
 }
 
+const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
+const DISABLED = ":disabled";
+const INERT = "[inert]";
+const DIALOG = "[role=dialog]";
+
+/** The surface's tab stops, in document order. */
+export function focusable(surface: HTMLElement): HTMLElement[] {
+  const found: HTMLElement[] = [];
+  for (const el of surface.querySelectorAll<HTMLElement>(FOCUSABLE)) {
+    if (el.matches(DISABLED) || el.closest(INERT) || !el.getClientRects().length) continue;
+    found.push(el);
+  }
+  return found;
+}
+
+/** Puts focus on the surface's first tab stop, or on its dialog when it has none. */
+export function enterSurface(surface: HTMLElement): void {
+  const first = focusable(surface)[0];
+  if (first) {
+    first.focus();
+    return;
+  }
+  const host = surface.querySelector<HTMLElement>(DIALOG) ?? surface;
+  if (!host.hasAttribute("tabindex")) host.tabIndex = -1;
+  host.focus();
+}
+
 /** Seals the page behind a fixed surface and returns the release. */
 export function sealBackground(surface: HTMLElement): () => void {
-  // An in-page surface shares the scroll it would freeze.
-  if (getComputedStyle(surface).position !== "fixed") return () => {};
   const hidden = hide(surface);
   const held = freeze(surface);
   let released = false;
