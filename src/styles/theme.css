@@ -81,6 +81,8 @@
   --spacing-6: var(--s6);
   --spacing-tap: var(--tap);
   --spacing-tap-2: var(--tap-2);
+  --spacing-row-x: var(--row-pad-x);
+  --spacing-row-y: var(--row-pad-y);
 
   /* shape */
   --radius-s: var(--r-s);

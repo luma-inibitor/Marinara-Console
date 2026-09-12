@@ -17,6 +17,9 @@ export { ListEmpty } from "./ListEmpty";
 export { NotFound } from "./NotFound";
 export { Loading } from "./Loading";
 export { ListGroup } from "./ListGroup";
+export { List, ListItem } from "./ListItem";
+/** @public */
+export type { ListItemProps } from "./ListItem";
 export { Meter } from "./Meter";
 /** @public */
 export type { MeterProps, MeterSegment } from "./Meter";
