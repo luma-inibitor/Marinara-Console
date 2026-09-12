@@ -14,8 +14,8 @@ export interface Screen {
   /** The element that proves the screen ASSEMBLED, not merely that it mounted.
    *  A screen that rendered its error state still has an `#app` with children. */
   ready: string;
-  /** The repeating list row. Screens differ — `.row`, `.mem-row`, `.srow` — so
-   *  a single union selector would miss rows or count nested ones twice. */
+  /** The repeating list row. Screens differ — `.row`, `li`, `.srow` — so a
+   *  single union selector would miss rows or count nested ones twice. */
   row: string;
   /** Exactly how many rows the corpus puts on this screen. An exact count, not
    *  a floor, because most of these numbers are a rule rather than a total: the
@@ -31,7 +31,7 @@ export const SCREENS: Screen[] = [
   { name: "lorebook-audit", path: `/#/lorebooks/${BOOK_ID}`, ready: ".row", row: ".row", rows: 12 },
   { name: "presets", path: "/#/presets", ready: ".preset-card", row: ".preset-card", rows: 3 },
   { name: "preset-editor", path: `/#/presets/${PRESET_ID}`, ready: ".row", row: ".row", rows: 11 },
-  { name: "memory-review", path: "/#/memory/review", ready: ".mem-rows", row: ".mem-row", rows: REVIEW_ROWS },
+  { name: "memory-review", path: "/#/memory/review", ready: ".mem-rows", row: ".mem-rows li", rows: REVIEW_ROWS },
   { name: "memory-vault", path: "/#/memory/vault", ready: ".mem-rows", row: ".mem-rows li", rows: 9 },
   { name: "memory-detail", path: `/#/memory/vault/${NOTE_ID}`, ready: ".mdc-row", row: ".mdc-row-wrap", rows: 4 },
   { name: "memory-sources", path: "/#/memory/sources", ready: ".mem-rows", row: ".srow", rows: 10 },

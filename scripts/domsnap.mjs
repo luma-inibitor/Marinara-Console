@@ -60,7 +60,7 @@ const SURFACES = [
     hash: "#/memory/review",
     vps: [D],
     sel: ".claim-detail",
-    open: (p) => p.locator(".mem-mid").first().click(),
+    open: (p) => p.locator(".mem-rows [data-row]").first().click(),
   },
   {
     name: "review-facets",

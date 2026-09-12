@@ -173,20 +173,20 @@
 .memory-tool .console { box-shadow: 0 -3px 0 0 var(--canvas); }
 
 /* ── group headers: the same grid, a different rendering ── */
-.mem-ghead { display: grid; grid-template-columns: 40px 24px minmax(0, 1fr);
-  align-items: start;
+.mem-ghead { display: grid; grid-template-columns: var(--tap) 24px minmax(0, 1fr);
+  align-items: start; padding-left: var(--row-pad-x);
   position: sticky; top: calc(var(--console-h, 0px) - 1px); z-index: 5;
   background: var(--surface-2); border-top: var(--hairline); border-bottom: var(--hairline);
   box-shadow: 0 -3px 0 0 var(--canvas); /* seam guard */
   --z-gmenu: 45; }
 .mem-ghead.is-new { box-shadow: inset 3px 0 0 var(--ok), 0 -3px 0 0 var(--canvas); }
 .mem-ghead > .ti { grid-column: 2; place-self: start center;
-  margin-top: 12.5px; /* centers the 15px icon in the 40px first line */ }
-.mem-ghead .gexp { grid-column: 1; min-height: 40px; align-self: start; }
+  margin-top: 14.5px; /* centers the 15px icon in the 44px first line */ }
+.mem-ghead .gexp { grid-column: 1; min-height: var(--tap); align-self: start; }
 /* nowrap keeps the header one row tall at every width. */
-.ghead-body { grid-column: 3; min-width: 0; min-height: 40px;
+.ghead-body { grid-column: 3; min-width: 0; min-height: var(--tap);
   display: flex; align-items: center; flex-wrap: nowrap; gap: var(--s2);
-  padding: 5px var(--s3) 5px 0; }
+  padding: 5px var(--s3) 5px var(--row-pad-x); }
 /* <MiddleTruncate> owns the eliding. Without min-width: 0 the title cannot
    shrink and nothing elides. */
 .ghead-body .gn { flex: 1 1 auto; min-width: 0; color: var(--text); }
