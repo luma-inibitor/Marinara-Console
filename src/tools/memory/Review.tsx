@@ -41,7 +41,7 @@ import { applyDecided, applying, applyProgress, lastFailures } from "./store/app
 import { pressure } from "./store/pressure";
 import { SECTION_CAP as CAP } from "./model/caps";
 import { capPercent } from "./model/pressure";
-import { openOverlay, closeTopOverlay } from "../../shell/overlays";
+import { openOverlay, closeTopOverlay, useCloseThen } from "../../shell/overlays";
 import {
   Flag,
   AllClear,
@@ -877,18 +877,7 @@ function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: 
     return openOverlay(() => setOpen(false));
   }, [open]);
 
-  // The action waits for the menu's history rewind so its own overlay lands after it.
-  const pending = useRef<(() => void) | null>(null);
-  useEffect(() => {
-    if (open) return;
-    const action = pending.current;
-    pending.current = null;
-    action?.();
-  }, [open]);
-  const choose = (action: () => void) => {
-    pending.current = action;
-    closeTopOverlay();
-  };
+  const choose = useCloseThen(open);
   return (
     <span className="gmenu-wrap">
       <button

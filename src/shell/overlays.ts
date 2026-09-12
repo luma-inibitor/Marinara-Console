@@ -15,6 +15,7 @@
 // handler and the history stack, and src/ui must be able to reach it without
 // importing out of a tool.
 
+import { useCallback, useEffect, useRef } from "react";
 import { enterSurface, focusable, sealBackground } from "./background";
 
 interface Entry {
@@ -165,4 +166,19 @@ export function openOverlay(close: () => void, options: OverlayOptions = {}): ()
  *  history so back/Escape bookkeeping stays consistent. */
 export function closeTopOverlay() {
   if (stack.length) history.back();
+}
+
+/** Closes the top overlay and runs the action once its history rewind has landed. */
+export function useCloseThen(open: boolean): (action: () => void) => void {
+  const pending = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    if (open) return;
+    const action = pending.current;
+    pending.current = null;
+    action?.();
+  }, [open]);
+  return useCallback((action: () => void) => {
+    pending.current = action;
+    closeTopOverlay();
+  }, []);
 }
