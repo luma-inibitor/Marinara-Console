@@ -1,22 +1,11 @@
 #!/usr/bin/env node
-// Prose check: run Vale over the Markdown this branch changed, and report only
-// the alerts on lines this branch added. Mirrors what the Prose CI job
-// annotates, so a clean run here means a clean annotation there.
-//
-//   node scripts/prosecheck.mjs            # branch vs its merge base with main
-//   node scripts/prosecheck.mjs --all      # every alert in the changed files
-//   node scripts/prosecheck.mjs --json     # machine-readable report
-//   node scripts/prosecheck.mjs --base X   # diff against X instead of main
-//
-// Exit codes: 0 no error-level alert on an added line · 1 at least one · 2 Vale
-// could not run, which must never read as a clean report.
+// Runs Vale over the Markdown this branch changed and reports the alerts on added lines.
 
 import { execFileSync, spawnSync } from "node:child_process";
 
 const argv = process.argv.slice(2);
 const JSON_MODE = argv.includes("--json");
 const ALL = argv.includes("--all");
-// indexOf returns -1 when the flag is absent, and argv[0] is the next flag.
 const baseAt = argv.indexOf("--base");
 const BASE = baseAt === -1 ? null : argv[baseAt + 1] || null;
 
@@ -54,18 +43,7 @@ function vale(...args) {
 }
 
 /**
- * Vale's report for `files`, as `{ file: alert[] }`.
- *
- * Vale exits 0 with a clean report, 1 when it has alerts to show, and anything
- * else on a runtime error it describes on stderr with nothing on stdout. That
- * last case was reaching the parse as an empty string and reading as a clean
- * report, which is how a whole branch of Markdown passed unlinted.
- *
- * .vale/styles holds downloaded packages and is not version controlled, so a
- * fresh clone or worktree has none until `vale sync` runs. Syncing here rather
- * than in `npm run prepare` puts it at the moment the styles are needed: a
- * worktree gets its own empty styles directory without a second `npm install`,
- * and an install that reaches for the network is an install that fails offline.
+ * Vale exits 0 when clean, 1 with alerts, and 2 on a runtime error.
  *
  * @param {string[]} files
  * @returns {Record<string, { Line: number, Span: number[], Check: string, Severity: string, Message: string }[]>}
@@ -73,6 +51,7 @@ function vale(...args) {
 function report(files) {
   let r = vale("--output=JSON", ...files);
   if (r.status > 1 && r.stderr.includes("StylesPath")) {
+    // Syncing here rather than in `npm run prepare` keeps `npm install` working offline.
     console.error("prosecheck: styles missing from .vale/styles, running `vale sync`");
     const sync = vale("sync");
     if (sync.status !== 0) {
@@ -105,7 +84,6 @@ function mergeBase() {
   throw new Error("no main or origin/main to diff against; pass --base <ref>");
 }
 
-// Added line numbers per file, straight from the unified diff hunk headers.
 function addedLines(base) {
   const diff = git("diff", "--unified=0", base, "--", "*.md");
   const files = new Map();
