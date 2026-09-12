@@ -874,44 +874,45 @@ function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: 
   const g = props.group;
   useEffect(() => {
     if (!open) return;
-    const esc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("keydown", esc);
-    return () => document.removeEventListener("keydown", esc);
+    return openOverlay(() => setOpen(false));
   }, [open]);
+
+  // The action waits for the menu's history rewind so its own overlay lands after it.
+  const pending = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    if (open) return;
+    const action = pending.current;
+    pending.current = null;
+    action?.();
+  }, [open]);
+  const choose = (action: () => void) => {
+    pending.current = action;
+    closeTopOverlay();
+  };
   return (
     <span className="gmenu-wrap">
       <button
         className="gib gmenu"
         aria-label={t("memoryvault.moreActionsForValue1", { value1: g.label })}
+        aria-haspopup="menu"
         aria-expanded={open}
-        onClick={() => setOpen(!open)}
+        onClick={() => (open ? closeTopOverlay() : setOpen(true))}
       >
         <More size={16} stroke={1.75} aria-hidden />
       </button>
       {open && (
         <>
-          <span className="gmenu-scrim" onClick={() => setOpen(false)} />
+          <span className="gmenu-scrim" onClick={closeTopOverlay} />
           <div className="gmenu-pop" role="menu">
             {!props.isNew && (
-              <button
-                role="menuitem"
-                onClick={() => {
-                  setOpen(false);
-                  peekNote(g.id);
-                }}
-              >
+              <button role="menuitem" onClick={() => choose(() => peekNote(g.id))}>
                 {props.openLabel}
               </button>
             )}
             {(props.kept > 0 || props.dropped > 0) && (
               <button
                 role="menuitem"
-                onClick={() => {
-                  setOpen(false);
-                  bulkDecide(g.rows, null, `${t("memory.review.reset")} ${g.label}`);
-                }}
+                onClick={() => choose(() => bulkDecide(g.rows, null, `${t("memory.review.reset")} ${g.label}`))}
               >
                 {t("memory.review.clearDecisions", { count: props.kept + props.dropped })}
               </button>
