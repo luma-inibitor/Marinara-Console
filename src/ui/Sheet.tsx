@@ -44,10 +44,12 @@ function Overlay(props: { label: string; onClose: () => void; children: ReactNod
   // Captured during render, before SheetHead's autoFocus effect moves focus.
   const opener = useRef<HTMLElement | null>(null);
   if (opener.current === null) opener.current = document.activeElement as HTMLElement | null;
-  useEffect(() => openOverlay(() => close.current(), opener.current), []);
+  // Sealing from the scrim keeps the scrim itself out of the background.
+  const scrim = useRef<HTMLDivElement>(null);
+  useEffect(() => openOverlay(() => close.current(), { restoreFocus: opener.current, surface: scrim.current }), []);
 
   return (
-    <div className="peek-scrim" onClick={closeTopOverlay}>
+    <div className="peek-scrim" ref={scrim} onClick={closeTopOverlay}>
       <div
         className={props.surface}
         role="dialog"
