@@ -57,8 +57,6 @@
 .reex-note { margin-top: 6px; font-size: 12px; }
 
 /* ══ decision meter ══ */
-.mbar .m-keep { background: var(--ok); opacity: 0.75; }
-.mbar .m-drop { background: var(--danger); opacity: 0.6; }
 .is-keep { color: var(--ok); }
 .is-drop { color: var(--danger); }
 /* Scoped to .mval: .is-keep/.is-drop are also plain inline text elsewhere
@@ -201,13 +199,6 @@
 .gcap { flex: 0 0 auto; }
 .gcap[data-sev="warn"] { color: var(--warn); }
 .gcap[data-sev="danger"] { color: var(--danger); }
-.tbar-w { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; }
-.tbar { width: 48px; height: 5px; border-radius: 3px; background: var(--surface-3);
-  overflow: hidden; display: inline-flex; }
-.tbar i { display: block; height: 100%; }
-.tbar .tk { background: var(--ok); }
-.tbar .td { background: var(--danger); }
-.tbar-n { font-size: 11px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 .ghead-acts { display: inline-flex; gap: var(--s2); }
 .gib { width: 34px; min-height: 28px; display: inline-flex; align-items: center;
   justify-content: center; background: none; border: var(--hairline);
@@ -289,12 +280,6 @@
 .dock-counts b { display: inline-flex; align-items: center; gap: 4px; }
 .dock-counts .of { font-weight: 400; }
 .dock-tally .mem-save { flex: none; }
-/* The meter, as the dock's bottom edge. It spans the dock's full width, so it
-   escapes the padding the rows sit inside. */
-.dock-bar { flex: 1 1 100%; display: flex; height: 4px; margin: var(--s2) calc(-1 * var(--s3)) 0;
-  background: var(--surface-3); }
-.dock-bar .m-keep { background: var(--ok); }
-.dock-bar .m-drop { background: var(--danger); }
 
 /* ══ detail ══ */
 .claim-detail { padding: var(--panel-pad); }
@@ -411,11 +396,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 
 /* ══ vault ══ */
 .vault-summary { grid-template-columns: 32px minmax(0, 1fr) 58px; }
-.pbar { display: block; height: 4px; margin-top: 5px; border-radius: 2px;
-  background: var(--surface-2); overflow: hidden; }
-.pbar i { display: block; height: 100%; background: var(--accent); }
-.pbar .is-near, .pbar i.is-near { background: var(--flag); }
-.pbar .is-over, .pbar i.is-over { background: var(--danger); }
 /* ── status segmented control ── */
 .segset { display: inline-flex; border: var(--hairline); border-radius: var(--r-m); overflow: hidden; }
 .seg { min-height: 38px; padding: 0 var(--s3); color: var(--text-dim);
