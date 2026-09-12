@@ -1,5 +1,4 @@
-// Every layered surface dismisses every way it offers, and leaves the reader on
-// the screen they were reading.
+// Every layered surface dismisses cleanly and seals the page behind it.
 //
 // Gotcha: the import confirm is absent. It appears only above
 // CONFIRM_THRESHOLD sources and the corpus has fewer.
@@ -21,6 +20,8 @@ interface Surface {
   open: (page: Page) => Promise<void>;
   sel: string;
   scrim?: string;
+  /** Sits in the page it opens from, so the page behind it is not sealed. */
+  anchored?: boolean;
   dismiss: readonly Route[];
 }
 
@@ -79,6 +80,7 @@ const SURFACES: Surface[] = [
     open: (page) => page.locator("button.gmenu").first().click(),
     sel: ".gmenu-pop",
     scrim: ".gmenu-scrim",
+    anchored: true,
     dismiss: ROUTES,
   },
   {
@@ -98,7 +100,45 @@ async function dismiss(page: Page, route: Route, scrim = ".peek-scrim"): Promise
   else await page.goBack();
 }
 
+async function background(page: Page, sel: string) {
+  return page.evaluate((selector) => {
+    const surface = document.querySelector(selector);
+    let scrollable = false;
+    for (let el = surface?.parentElement ?? null; el; el = el.parentElement) {
+      const overflow = getComputedStyle(el).overflowY;
+      if (overflow === "auto" || overflow === "scroll") scrollable = true;
+    }
+    return {
+      scrollable,
+      railInert: document.querySelector(".rail")?.matches("[inert]") ?? false,
+      focusInside: !!document.activeElement?.closest(selector),
+    };
+  }, sel);
+}
+
 for (const surface of SURFACES) {
+  test(`${surface.name} seals the page behind it`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== surface.project, `drawn by the ${surface.project} layout`);
+    test.skip(surface.anchored === true, "an anchored popover shares the page it sits in");
+    await openScreen(page, surface.screen);
+    await surface.open(page);
+    await expect(page.locator(surface.sel)).toBeVisible();
+
+    const sealed = await background(page, surface.sel);
+    expect(sealed.scrollable, "the page behind the surface still scrolls").toBe(false);
+    expect(sealed.railInert, "the nav rail behind the surface is not inert").toBe(true);
+
+    await page.keyboard.press("Tab");
+    const tabbed = await background(page, surface.sel);
+    expect(tabbed.focusInside, "Tab left the surface").toBe(true);
+
+    await dismiss(page, "escape");
+    await expect(page.locator(surface.sel)).toHaveCount(0);
+
+    const released = await background(page, surface.sel);
+    expect(released.railInert, "the nav rail stayed inert after dismissal").toBe(false);
+  });
+
   for (const route of surface.dismiss) {
     test(`${surface.name} dismisses on ${route}`, async ({ page }, testInfo) => {
       test.skip(testInfo.project.name !== surface.project, `drawn by the ${surface.project} layout`);
@@ -146,4 +186,22 @@ test("opening a note from the group menu leaves one history entry", async ({ pag
 
   await page.goBack();
   expect(new URL(page.url()).hash, "an orphan entry swallowed the back").not.toBe(base);
+});
+
+// The palette is not in the overlay stack and calls `sealBackground` itself.
+test("the command palette seals the page behind it", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "the other three projects emulate touch");
+  await openScreen(page, screen("memory-review"));
+  await page.keyboard.press("ControlOrMeta+k");
+  await expect(page.locator(".palette")).toBeVisible();
+
+  const sealed = await background(page, ".palette");
+  expect(sealed.railInert, "the nav rail behind the palette is not inert").toBe(true);
+
+  await page.keyboard.press("Tab");
+  expect((await background(page, ".palette")).focusInside, "Tab left the palette").toBe(true);
+
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".palette")).toHaveCount(0);
+  expect((await background(page, ".palette")).railInert, "the nav rail stayed inert").toBe(false);
 });
