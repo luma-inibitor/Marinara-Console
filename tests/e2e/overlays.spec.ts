@@ -64,7 +64,7 @@ const SURFACES: Surface[] = [
     project: "desktop",
     screen: screen("memory-vault"),
     open: async (page) => {
-      await page.locator(".row-summary").first().click();
+      await page.locator(".mem-rows [data-row]").first().click();
       // No pause between the two clicks: .notelink exists only inside a record,
       // never in the list, so waiting for it to be clickable IS waiting for the
       // record to have arrived.
