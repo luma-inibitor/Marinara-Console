@@ -28,6 +28,11 @@
 
 /* The viewport clamp keeps a trigger near the right edge from opening a panel
    that runs off screen. */
+.disclosure-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+}
 .disclosure-pop {
   position: absolute;
   z-index: 60;

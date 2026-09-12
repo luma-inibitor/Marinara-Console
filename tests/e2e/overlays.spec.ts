@@ -110,6 +110,26 @@ const SURFACES: Surface[] = [
     scrim: ".palette-backdrop",
     dismiss: ROUTES,
   },
+  {
+    name: "character picker",
+    project: "phone",
+    screen: screen("memory-review"),
+    open: (page) => page.getByRole("button", { name: /^Character: / }).click(),
+    sel: ".disclosure-pop",
+    scrim: ".disclosure-scrim",
+    anchored: true,
+    dismiss: ROUTES,
+  },
+  {
+    name: "chat picker",
+    project: "phone",
+    screen: screen("memory-review"),
+    open: (page) => page.getByRole("button", { name: /^Chat: / }).click(),
+    sel: ".disclosure-pop",
+    scrim: ".disclosure-scrim",
+    anchored: true,
+    dismiss: ROUTES,
+  },
 ];
 
 async function dismiss(page: Page, route: Route, scrim = ".peek-scrim"): Promise<void> {
@@ -218,4 +238,16 @@ test("Escape closes the palette opened over a sheet, not the sheet", async ({ pa
 
   await expect(page.locator(".palette")).toHaveCount(0);
   await expect(page.locator(".sheet.filter-sheet")).toBeVisible();
+});
+
+test("a picked scope closes the picker and returns focus to its trigger", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "phone", "drawn by the phone layout");
+  await openScreen(page, screen("memory-review"));
+  const base = new URL(page.url()).hash;
+  await page.getByRole("button", { name: /^Character: / }).click();
+  await page.locator(".disclosure-opt").nth(1).click();
+
+  await expect(page.locator(".disclosure-pop")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Character: / })).toBeFocused();
+  expect(new URL(page.url()).hash, "the pick left the screen").toBe(base);
 });

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown } from "./icons";
 import type { Icon } from "./icons";
 import { SearchBar } from "./SearchBar";
 import { fuzzyFilter } from "./fuzzy";
 import { t } from "../copy";
+import { openOverlay, closeTopOverlay } from "../shell/overlays";
 import "./SearchDisclosure.css";
 
 export interface DisclosureOption {
@@ -36,47 +37,40 @@ export function SearchDisclosure(props: {
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
-    const away = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const esc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", away);
-    document.addEventListener("keydown", esc);
-    return () => {
-      document.removeEventListener("mousedown", away);
-      document.removeEventListener("keydown", esc);
-    };
+    return openOverlay(() => setOpen(false));
   }, [open]);
 
   const shown = fuzzyFilter(props.options, q, (o) => o.name);
   const I = props.icon;
   const pick = (id: string) => {
     props.onPick(id);
-    setOpen(false);
+    closeTopOverlay();
   };
 
   return (
-    <div className="disclosure" ref={ref}>
+    <div className="disclosure">
       <button
         type="button"
         className="disclosure-trigger hit"
         aria-expanded={open}
         aria-label={`${props.label}: ${props.value}`}
         onClick={() => {
-          setOpen(!open);
+          if (open) {
+            closeTopOverlay();
+            return;
+          }
           setQ("");
+          setOpen(true);
         }}
       >
         <I size={14} stroke={1.75} />
         <span className="disclosure-value">{props.value}</span>
         <ChevronDown size={13} stroke={1.75} aria-hidden />
       </button>
+      {open && <span className="disclosure-scrim" onClick={closeTopOverlay} />}
       {open && (
         <div className="disclosure-pop" role="dialog" aria-label={props.label}>
           <SearchBar
