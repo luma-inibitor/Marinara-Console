@@ -5,6 +5,7 @@ import { createStore, useStore } from "../lib/store";
 import { navigate } from "./router";
 import { paletteOpen } from "./palette";
 import { sealBackground } from "./background";
+import { closeTopOverlay } from "./overlays";
 import { t } from "../copy";
 
 const cheatOpen = createStore(false);
@@ -23,7 +24,8 @@ export function useHotkeys() {
       // Cmd/Ctrl-K works everywhere, including inputs
       if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "k") {
         ev.preventDefault();
-        paletteOpen.update((v) => !v);
+        if (paletteOpen.get()) closeTopOverlay();
+        else paletteOpen.set(true);
         return;
       }
       if (isTyping(ev.target) || ev.metaKey || ev.ctrlKey || ev.altKey) return;
