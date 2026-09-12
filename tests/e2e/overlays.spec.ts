@@ -101,6 +101,15 @@ const SURFACES: Surface[] = [
     scrim: ".palette-backdrop",
     dismiss: ROUTES,
   },
+  {
+    name: "cheat sheet",
+    project: "desktop",
+    screen: screen("memory-review"),
+    open: (page) => page.keyboard.press("?"),
+    sel: ".palette.cheat",
+    scrim: ".palette-backdrop",
+    dismiss: ROUTES,
+  },
 ];
 
 async function dismiss(page: Page, route: Route, scrim = ".peek-scrim"): Promise<void> {
