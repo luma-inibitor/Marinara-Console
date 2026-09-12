@@ -6,7 +6,7 @@ import { Close, ICON_SIZE } from "./icons";
 import "./Sheet.css";
 
 /** A layered surface: a bottom sheet on a phone, a right-hand panel on a wide
- *  screen. The mobile projection of a panel or popover (DESIGN.md §3).
+ *  screen. The mobile projection of a panel or popover.
  *
  *  Sheet registers itself with the overlay stack on mount, so its opener only
  *  has to flip a signal and Escape and the Android back gesture reach it
@@ -41,11 +41,14 @@ function Overlay(props: { label: string; onClose: () => void; children: ReactNod
   // of the entry, and re-registering on render would push history entries.
   const close = useRef(props.onClose);
   close.current = props.onClose;
-  useEffect(() => openOverlay(() => close.current()), []);
+  // Captured during render, before SheetHead's autoFocus effect moves focus.
+  const opener = useRef<HTMLElement | null>(null);
+  if (opener.current === null) opener.current = document.activeElement as HTMLElement | null;
+  useEffect(() => openOverlay(() => close.current(), opener.current), []);
 
   return (
     <div className="peek-scrim" onClick={closeTopOverlay}>
-      <aside
+      <div
         className={props.surface}
         role="dialog"
         aria-modal="true"
@@ -53,7 +56,7 @@ function Overlay(props: { label: string; onClose: () => void; children: ReactNod
         onClick={(e) => e.stopPropagation()}
       >
         {props.children}
-      </aside>
+      </div>
     </div>
   );
 }

@@ -37,3 +37,5 @@ design/research/
 # videos a failing run keeps. Regenerable, and the CI job uploads them.
 playwright-report/
 test-results/
+
+storybook-static/

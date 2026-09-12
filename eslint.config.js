@@ -114,6 +114,11 @@ export default [
     rules: { "i18next/no-literal-string": "off", "no-restricted-syntax": "off" },
   },
   {
+    // Story strings reach no reader.
+    files: ["src/**/*.stories.tsx", ".storybook/**/*.ts", ".storybook/**/*.tsx"],
+    rules: { "i18next/no-literal-string": "off", "no-restricted-syntax": "off" },
+  },
+  {
     // The transport layer is where a fetch belongs.
     files: ["src/shell/**"],
     rules: { "no-restricted-globals": "off" },
