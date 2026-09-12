@@ -28,6 +28,7 @@ export function FullscreenText(props: {
   const [confirming, setConfirming] = useState(false);
   const startTokens = useMemo(() => tokensOf(props.initial), [props.initial]);
   const restoreTo = useRef<HTMLElement | null>(null);
+  const root = useRef<HTMLDivElement>(null);
 
   const ch = value.length,
     tk = tokensOf(value);
@@ -90,21 +91,24 @@ export function FullscreenText(props: {
     let alive = true;
     let dispose: (() => void) | null = null;
     const register = () => {
-      dispose = openOverlay(() => {
-        dispose = null; // the stack already removed this entry before closing us
-        if (!live.current.dirty) {
-          props.onCancel();
-          return;
-        }
-        setConfirming(true);
-        // Staying open spends the entry, so the editor needs a fresh one or the
-        // next back escapes to the list. Re-register off a microtask: the
-        // stack's hashchange teardown drains synchronously, and pushing back
-        // into that drain would loop forever.
-        queueMicrotask(() => {
-          if (alive && !dispose) register();
-        });
-      });
+      dispose = openOverlay(
+        () => {
+          dispose = null; // the stack already removed this entry before closing us
+          if (!live.current.dirty) {
+            props.onCancel();
+            return;
+          }
+          setConfirming(true);
+          // Staying open spends the entry, so the editor needs a fresh one or the
+          // next back escapes to the list. Re-register off a microtask: the
+          // stack's hashchange teardown drains synchronously, and pushing back
+          // into that drain would loop forever.
+          queueMicrotask(() => {
+            if (alive && !dispose) register();
+          });
+        },
+        { surface: root.current },
+      );
     };
     register();
     return () => {
@@ -133,7 +137,7 @@ export function FullscreenText(props: {
   };
 
   return (
-    <div className="fseditor" role="dialog" aria-modal="true" aria-label={props.title}>
+    <div className="fseditor" ref={root} role="dialog" aria-modal="true" aria-label={props.title}>
       <div className="fs-head">
         <div className="fs-title-wrap">
           <div className="t-label">{props.title}</div>

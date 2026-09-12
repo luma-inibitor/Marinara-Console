@@ -15,9 +15,19 @@
 // handler and the history stack, and src/ui must be able to reach it without
 // importing out of a tool.
 
+import { sealBackground } from "./background";
+
 interface Entry {
   close: () => void;
   restoreFocus: HTMLElement | null;
+  release: () => void;
+}
+
+export interface OverlayOptions {
+  /** Refocused on close, defaulting to whatever was focused at open. */
+  restoreFocus?: HTMLElement | null;
+  /** The fixed surface whose background is sealed while it stands. */
+  surface?: HTMLElement | null;
 }
 
 const stack: Entry[] = [];
@@ -54,6 +64,8 @@ function settle() {
   // trusted — a push that races an in-flight rewind leaves the state behind.
   const entry = stack.pop();
   if (!entry) return; // not ours: an ordinary route navigation
+  // Released first so the opener can take focus back.
+  entry.release();
   entry.close();
   if (entry.restoreFocus?.isConnected) entry.restoreFocus.focus();
 }
@@ -62,10 +74,13 @@ function install() {
   if (installed) return;
   installed = true;
   window.addEventListener("popstate", settle);
-  // Tab/tool navigation replaces the view; orphaned overlay entries become
-  // inert (settle() finds stack already empty).
+  // Tab/tool navigation replaces the view, so open overlays are dropped here.
   window.addEventListener("hashchange", () => {
-    while (stack.length) stack.pop()!.close();
+    while (stack.length) {
+      const entry = stack.pop()!;
+      entry.release();
+      entry.close();
+    }
   });
   document.addEventListener(
     "keydown",
@@ -87,11 +102,13 @@ function install() {
  *  the resulting popstate harmless: `settle()` sees the entry is already gone.
  *  The rewind itself waits a tick, so a remount in the same tick can adopt the
  *  standing history entry rather than push a second one nothing owns. */
-export function openOverlay(close: () => void, restoreFocus?: HTMLElement | null): () => void {
+export function openOverlay(close: () => void, options: OverlayOptions = {}): () => void {
   install();
+  const { restoreFocus, surface } = options;
   const entry: Entry = {
     close,
     restoreFocus: restoreFocus !== undefined ? restoreFocus : (document.activeElement as HTMLElement | null),
+    release: surface ? sealBackground(surface) : () => {},
   };
 
   if (deferredRewind !== null) {
@@ -108,6 +125,7 @@ export function openOverlay(close: () => void, restoreFocus?: HTMLElement | null
     const i = stack.indexOf(entry);
     if (i === -1) return;
     stack.splice(i, 1);
+    entry.release();
     if (deferredRewind !== null) return; // already rewinding for this entry
     deferredRewind = setTimeout(() => {
       deferredRewind = null;

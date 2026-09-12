@@ -1,7 +1,7 @@
 // The audit screen: console header (Find/Test probe, budget meter, sort chips),
 // audit rows, bulk select, tag panel, and the entry editor — inline accordion on
 // mobile, master-detail side panel on desktop (DESIGN.md §4).
-import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode, Ref } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { navigate } from "../../shell/router";
 import { openOverlay, closeTopOverlay } from "../../shell/overlays";
@@ -76,6 +76,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
   const [full, setFull] = useState<FullscreenCtx | null>(null);
 
   const listRef = useRef<HTMLDivElement>(null);
+  const tagPanel = useRef<HTMLDivElement>(null);
 
   // deep link from the palette: focus + reveal a specific entry once loaded
   useEffect(() => {
@@ -299,7 +300,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
   // lorebook, which on a phone is the only dismissal gesture there is.
   useEffect(() => {
     if (!showTags) return;
-    return openOverlay(() => setShowTags(false));
+    return openOverlay(() => setShowTags(false), { surface: tagPanel.current });
   }, [showTags]);
 
   // ── keyboard: j/k roving focus, Enter opens, Escape backs out ──
@@ -634,6 +635,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
 
       {showTags && (
         <TagOverlay
+          ref={tagPanel}
           entries={entries}
           onClose={closeTopOverlay}
           onShow={(tag) => {
@@ -754,6 +756,7 @@ function Row(props: {
 
 // ── tag distribution overlay ──
 function TagOverlay(props: {
+  ref: Ref<HTMLDivElement>;
   entries: Entry[];
   onClose: () => void;
   onShow: (tag: string) => void;
@@ -762,7 +765,7 @@ function TagOverlay(props: {
   const stats = tagStats(props.entries);
   const max = Math.max(...stats.map((s) => s.n), 1);
   return (
-    <div className="tagpanel">
+    <div className="tagpanel" ref={props.ref}>
       <div className="hrow">
         <Button
           iconOnly

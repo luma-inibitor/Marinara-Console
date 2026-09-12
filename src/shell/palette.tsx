@@ -2,6 +2,7 @@
 // entries, and actions; searches a local cache, refreshed on open.
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { createStore, useStore } from "../lib/store";
+import { sealBackground } from "./background";
 import { navigate } from "./router";
 import { api } from "./api";
 import { t } from "../copy";
@@ -108,7 +109,15 @@ export function Palette() {
   const [items, setItems] = useState<Item[]>(BASE);
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const backdrop = useRef<HTMLDivElement>(null);
   const open = useStore(paletteOpen);
+
+  // Outside the overlay stack, so it seals the background itself.
+  useEffect(() => {
+    const el = backdrop.current;
+    if (!open || !el) return;
+    return sealBackground(el);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -153,17 +162,21 @@ export function Palette() {
     } else if (ev.key === "Enter" && results[active]) {
       ev.preventDefault();
       run(results[active]);
-    } else if (ev.key === "Escape") {
-      ev.preventDefault();
-      paletteOpen.set(false);
     }
   };
 
   let lastGroup = "";
   return (
     <div
+      ref={backdrop}
       className="palette-backdrop"
       onClick={() => {
+        paletteOpen.set(false);
+      }}
+      // Escape lives on the backdrop so it also works from a focused result.
+      onKeyDown={(ev) => {
+        if (ev.key !== "Escape") return;
+        ev.preventDefault();
         paletteOpen.set(false);
       }}
     >

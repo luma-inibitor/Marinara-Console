@@ -1,9 +1,10 @@
 // Global keyboard layer (DESIGN.md §3): Cmd/Ctrl-K palette, `g` navigation
 // sequences, `?` cheat sheet. Single-key bindings are suppressed while typing.
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createStore, useStore } from "../lib/store";
 import { navigate } from "./router";
 import { paletteOpen } from "./palette";
+import { sealBackground } from "./background";
 import { t } from "../copy";
 
 const cheatOpen = createStore(false);
@@ -79,9 +80,19 @@ const SHORTCUTS: Array<[string, string]> = [
 
 export function CheatSheet() {
   const open = useStore(cheatOpen);
+  const backdrop = useRef<HTMLDivElement>(null);
+
+  // Outside the overlay stack, so it seals the background itself.
+  useEffect(() => {
+    const el = backdrop.current;
+    if (!open || !el) return;
+    return sealBackground(el);
+  }, [open]);
+
   if (!open) return null;
   return (
     <div
+      ref={backdrop}
       className="palette-backdrop"
       onClick={() => {
         cheatOpen.set(false);
