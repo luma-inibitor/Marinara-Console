@@ -1,13 +1,13 @@
-import type { FocusEvent, ReactNode } from "react";
+import type { CSSProperties, FocusEvent, ReactNode } from "react";
 import { useEffect, useId, useState } from "react";
 import { cn, cva, type VariantProps } from "./cn";
 import { ICON_SIZE, Working } from "./icons";
 
 const button = cva(
   [
-    "relative inline-flex items-center justify-center rounded-md border",
+    "relative inline-flex items-center rounded-md border",
     "font-label font-semibold [font-variation-settings:'wdth'_110]",
-    "text-center transition-colors [transition-duration:var(--t-fast)]",
+    "transition-colors [transition-duration:var(--t-fast)]",
     "focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none",
     "disabled:cursor-default disabled:opacity-45",
     "aria-busy:cursor-default aria-disabled:cursor-default aria-disabled:opacity-45",
@@ -18,6 +18,7 @@ const button = cva(
       tone: { neutral: "", danger: "", ok: "" },
       size: { md: "min-h-tap gap-2", sm: "min-h-tap-2 gap-[6px]", xs: "min-h-6 gap-1" },
       shape: { label: "", icon: "" },
+      align: { center: "justify-center text-center", start: "justify-start text-left" },
       labelCase: { upper: "t-label", sentence: "tracking-normal" },
       pressed: { true: "", false: "" },
       inert: { true: "", false: "" },
@@ -66,6 +67,7 @@ const button = cva(
       tone: "neutral",
       size: "md",
       shape: "label",
+      align: "center",
       labelCase: "upper",
       pressed: false,
       inert: false,
@@ -101,16 +103,21 @@ type Common = {
   expanded?: boolean;
   haspopup?: boolean | "menu" | "listbox" | "tree" | "grid" | "dialog";
   fullWidth?: boolean;
+  /** Where the content sits when the box is wider than it: a row reads from the left. */
+  align?: NonNullable<Styles["align"]>;
   onClick?: () => void;
   className?: string;
+  /** For a value only the caller can compute, such as a tree row's indent. */
+  style?: CSSProperties;
   autoFocus?: boolean;
   /** -1 takes it out of the tab order, for a button inside a roving composite. */
   tabIndex?: number;
 };
 
 export type ButtonProps = Common &
+  /** `label` names the control when its visible text is not its name. */
   (
-    | { iconOnly?: false; children: ReactNode; label?: never }
+    | { iconOnly?: false; children: ReactNode; label?: string }
     | { iconOnly: true; label: string; icon: ReactNode; children?: never }
   );
 
@@ -135,8 +142,10 @@ export function Button(props: ButtonProps) {
     expanded,
     haspopup,
     fullWidth,
+    align,
     onClick,
     className,
+    style,
     autoFocus,
     tabIndex,
     label,
@@ -169,6 +178,7 @@ export function Button(props: ButtonProps) {
       pressed,
       inert,
       fullWidth,
+      align,
     }),
     className,
   );
@@ -192,6 +202,7 @@ export function Button(props: ButtonProps) {
 
   const shared = {
     className: cls,
+    style,
     "aria-label": label,
     "aria-busy": pending || undefined,
     "aria-pressed": pressed,

@@ -28,6 +28,21 @@ export const ExtraSmall: Story = {
   args: { size: "xs", iconOnly: true, variant: "ghost", label: "Copy value", icon: <Copy size={ICON_SIZE.sm} /> },
 };
 export const SentenceCase: Story = { args: { labelCase: "sentence" } };
+/** A full-width row that reads from the left, indented by the caller, named apart from its visible text. */
+export const Row: Story = {
+  parameters: { layout: "padded" },
+  args: {
+    variant: "ghost",
+    size: "xs",
+    labelCase: "sentence",
+    fullWidth: true,
+    align: "start",
+    label: "Expand root (3)",
+    style: { paddingLeft: 12 },
+    expanded: false,
+    children: "root: {",
+  },
+};
 
 export const Focus: Story = { args: { variant: "primary", autoFocus: true } };
 
