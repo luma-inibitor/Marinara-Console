@@ -1,9 +1,15 @@
-import "./SectionKey.css";
+import { cn } from "./cn";
 
-/** The `§key` that addresses one section of a memory.
- *
- *  The `§` belongs to the renderer, not the caller — a caller that concatenated
- *  its own would drift. Keys are arbitrary, so none is privileged. */
+/** The `§key` that addresses one section of a memory; the `§` belongs to the renderer. */
 export function SectionKey(props: { k: string; className?: string }) {
-  return <span className={`skey${props.className ? ` ${props.className}` : ""}`}>§{props.k}</span>;
+  return (
+    <span
+      className={cn(
+        "skey font-data text-data-s tracking-normal text-ink normal-case [font-variant-ligatures:none]",
+        props.className,
+      )}
+    >
+      §{props.k}
+    </span>
+  );
 }

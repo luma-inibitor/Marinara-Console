@@ -97,7 +97,7 @@ const BUTTON_SELECTOR = {
 };
 
 // The classes the e2e suite and the legacy stylesheets reach by name.
-const HOOK_CLASSES = ["hit", "sheet", "peek-scrim", "chip", "tag", "ar"];
+const HOOK_CLASSES = ["hit", "sheet", "peek-scrim", "chip", "tag", "ar", "skey"];
 
 // A button that is not a Button, each for its own shape.
 const BUTTON_OK = [
@@ -165,7 +165,6 @@ const TODO_STRING = [
   "src/ui/EmptyState.tsx",
   "src/ui/FullscreenText.tsx",
   "src/ui/SaveBar.tsx",
-  "src/ui/SectionKey.tsx",
   "src/ui/Term.tsx",
 ];
 
