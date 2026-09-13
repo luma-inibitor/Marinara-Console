@@ -135,7 +135,7 @@ export const TermInside: Story = {
 
     await step("tap · the term opens its tip", async () => {
       await userEvent.click(within(dialog).getByText("kind"));
-      await waitFor(() => expect(within(dialog).getByText("kind")).toHaveClass("tip-open"));
+      await waitFor(() => expect(within(dialog).getByText("kind")).toHaveAttribute("data-open", "true"));
     });
 
     await step("Escape · the sheet closes over the open tip", async () => {

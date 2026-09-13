@@ -126,3 +126,28 @@
   font-variant-numeric: tabular-nums;
   font-family: var(--font-data);
 }
+
+/* Term's tooltip, a ::after the element shows on hover, focus or tap. */
+@utility term-tip {
+  &:hover::after,
+  &:focus-visible::after,
+  &[data-open]::after {
+    content: attr(data-tip);
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 70;
+    width: max-content;
+    max-width: 260px;
+    padding: 6px 9px;
+    border: 1px solid var(--edge-strong);
+    border-radius: var(--r-s);
+    background: var(--surface-3);
+    color: var(--text);
+    font-family: var(--font-prose);
+    font-size: var(--fs-data-s);
+    line-height: 1.45;
+    white-space: normal;
+    box-shadow: var(--shadow-pop);
+  }
+}
