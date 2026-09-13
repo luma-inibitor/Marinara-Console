@@ -1,15 +1,11 @@
-import "./MiddleTruncate.css";
+import { cn } from "./cn";
 
-/** How many trailing characters the head gives up before the tail gives up any. */
+/** How many trailing characters the tail keeps. */
 const TAIL = 24;
 /** How far back the split may travel to land on a word start. */
 const SNAP = 12;
 
-/** `[head, tail]` — the last `tail` characters, pulled back to the start of
- *  whatever word that lands inside, with everything before them as the head.
- *  Counted in graphemes, so a split never lands inside an emoji or a letter and
- *  its combining marks. A title no longer than the tail has no middle to give up
- *  and keeps all of it in the head, where it end-truncates like any list title. */
+/** `[head, tail]`, split in graphemes so a cut never lands inside one. */
 export function splitTitle(text: string, tail = TAIL): [string, string] {
   const units = [...new Intl.Segmenter().segment(text)].map((s) => s.segment);
   if (units.length <= tail) return [text, ""];
@@ -22,37 +18,17 @@ export function splitTitle(text: string, tail = TAIL): [string, string] {
   return [units.slice(0, cut).join(""), units.slice(cut).join("")];
 }
 
-/** A one-line title that gives up its MIDDLE rather than its end.
- *
- *  Titles here share long prefixes — every lorebook entry from one book begins
- *  `Lorebook - Ashgate — Harbour Canon:` — so end-truncation deletes the only
- *  part that tells them apart. The head takes the ellipsis first; once the head
- *  is gone the tail sheds from its own start, so the last characters survive at
- *  any width. Nothing is measured: the shrink is the flex algorithm's, which is
- *  why a wide script costs width rather than breaking the split.
- *
- *  Splitting the string across two boxes is what costs the title its text: a
- *  selection spanning two block boxes copies them on separate lines, and a box
- *  squeezed to nothing drops out of the selection altogether. So the unbroken
- *  string is carried by a third, clipped span — the only one a selection or a
- *  screen reader can reach — and the two visible ones are inert.
- *
- *  `className` is for a host that owns the title's BOX — how it sits in its
- *  flex line, what color and face it takes. */
+/** A one-line title that elides its middle, so the tail survives at any width. */
 export function MiddleTruncate(props: { text: string; tail?: number; className?: string }) {
-  const cls = `mtrunc${props.className ? ` ${props.className}` : ""}`;
   const [head, tail] = splitTitle(props.text, props.tail);
   return (
-    <span className={cls} title={props.text}>
-      <span className="mtrunc-whole">{props.text}</span>
-      <span className="mtrunc-head" aria-hidden>
+    <span className={cn("relative flex min-w-0 items-baseline", props.className)} title={props.text}>
+      <span className="absolute size-px min-w-0 truncate [clip-path:inset(50%)]">{props.text}</span>
+      <span className="max-w-max min-w-0 shrink grow basis-0 truncate select-none" aria-hidden>
         {head}
       </span>
-      {/* bdi: the tail's box is laid out right-to-left so its ellipsis lands at
-          the start, and the isolate keeps the text itself in its own reading
-          order inside that box. */}
       {tail && (
-        <span className="mtrunc-tail" aria-hidden>
+        <span className="min-w-0 flex-initial truncate select-none [direction:rtl]" aria-hidden>
           <bdi>{tail}</bdi>
         </span>
       )}

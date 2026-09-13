@@ -21,9 +21,5 @@
   "src/styles/presets.css": [
     "Expected selector \".fs-confirm-acts .dbtn\" to come before selector \".savebar .dbtn:disabled\"",
     "Expected selector \".fs-confirm-box .t-label\" to come before selector \".savebar.has-conflict .t-label\""
-  ],
-  "src/ui/JsonView.css": [
-    "Expected selector \".jn\" to come before selector \".jsonview-tree > .jgroup > .jn:first-child\"",
-    "Expected selector \".jtoggle\" to come before selector \".jn-head:hover .jtoggle\""
   ]
 }
