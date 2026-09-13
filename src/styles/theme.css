@@ -84,6 +84,13 @@
   --spacing-row-x: var(--row-pad-x);
   --spacing-row-y: var(--row-pad-y);
 
+  /* motion */
+  --animate-progress: progress 1.4s ease-in-out infinite;
+  @keyframes progress {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(300%); }
+  }
+
   /* shape */
   --radius-s: var(--r-s);
   --radius-m: var(--r-m);

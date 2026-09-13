@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { EmptyState } from "./EmptyState";
 import { t, type Key } from "../copy";
-import "./Loading.css";
 
 /** A view that has not arrived yet.
  *
@@ -48,9 +47,9 @@ export function Loading(props: { what?: Key; label?: string; onRetry?: () => voi
   }
 
   return (
-    <p className="loadingstate t-prose">
+    <p className="loadingstate t-prose m-0 px-4 py-6 text-center text-dim">
       {line}
-      {phase === "slow" && <span className="loading-slow"> {t("ui.loading.slow")}</span>}
+      {phase === "slow" && <span className="text-faint"> {t("ui.loading.slow")}</span>}
     </p>
   );
 }

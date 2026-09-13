@@ -69,6 +69,7 @@ import {
   Modal,
   ModePill,
   MODES,
+  Progress,
   SearchBar,
   fuzzyFilter,
 } from "../../ui";
@@ -660,9 +661,11 @@ function JobDock({
           {t("memory.stop")}
         </button>
       </div>
-      <span className="jbar">
-        <i style={{ width: `${Math.round((job.done / Math.max(1, job.total)) * 100)}%` }} />
-      </span>
+      <Progress
+        label={t("sourcesworkspace.savingAndExtracting", { count: job.total })}
+        value={job.done}
+        max={job.total}
+      />
       <p className="jobnote t-data dim">
         <Info size={12} stroke={1.75} aria-hidden />
         <span>{t("memory.sources.stopNote")}</span>
