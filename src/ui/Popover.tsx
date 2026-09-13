@@ -2,6 +2,7 @@ import type { KeyboardEventHandler, ReactNode, RefObject } from "react";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { closeTopOverlay, openOverlay } from "../shell/overlays";
+import { cn } from "./cn";
 
 export type Side = "bottom" | "top";
 export type Align = "start" | "end";
@@ -122,7 +123,7 @@ export function Popover(props: PopoverProps) {
         aria-modal={role === "dialog" ? "true" : undefined}
         aria-label={props.label}
         tabIndex={initialFocus === "surface" ? -1 : undefined}
-        className={`${SURFACE} ${props.className ?? ""}`}
+        className={cn(SURFACE, props.className)}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={props.onKeyDown}
       >

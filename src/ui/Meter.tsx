@@ -1,4 +1,5 @@
 /** A fraction of a maximum, drawn as a track with a fill. */
+import { cn } from "./cn";
 
 type MeterTone = "accent" | "ok" | "warn" | "danger" | "flag";
 
@@ -68,7 +69,7 @@ export function Meter(props: MeterProps) {
       {segments.map((s, i) => (
         <span
           key={i}
-          className={`block h-full shrink-0 ${FILL[s.tone]}`}
+          className={cn("block h-full shrink-0", FILL[s.tone])}
           style={{ width: `${percent(s.value, max)}%` }}
         />
       ))}

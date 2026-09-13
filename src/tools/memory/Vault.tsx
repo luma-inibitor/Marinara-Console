@@ -272,7 +272,7 @@ export function Vault(props: { noteId?: string }) {
 
 function Sep() {
   return (
-    <i className="mx-1 not-italic text-edge-strong" aria-hidden="true">
+    <i className="mx-1 text-edge-strong not-italic" aria-hidden="true">
       ·
     </i>
   );

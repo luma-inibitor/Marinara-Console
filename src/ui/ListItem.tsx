@@ -1,4 +1,5 @@
 import type { FocusEventHandler, KeyboardEventHandler, ReactNode, Ref } from "react";
+import { cn } from "./cn";
 
 /** The rows' container. `role="list"` restates what Preflight's `list-style:
  *  none` makes Safari forget. */
@@ -80,7 +81,7 @@ export function ListItem(props: ListItemProps) {
         <span className={TITLE}>{title}</span>
         {secondary && <span className={SECONDARY}>{secondary}</span>}
       </span>
-      {trailing && <span className={`${SIDE} gap-2`}>{trailing}</span>}
+      {trailing && <span className={cn(SIDE, "gap-2")}>{trailing}</span>}
     </>
   );
 
@@ -105,10 +106,10 @@ export function ListItem(props: ListItemProps) {
   );
 
   return (
-    <li className={[ROW, selected && SELECTED_ROW, className].filter(Boolean).join(" ")}>
-      {leading && <span className={`${SIDE} min-w-6 justify-center pl-row-x`}>{leading}</span>}
+    <li className={cn(ROW, selected && SELECTED_ROW, className)}>
+      {leading && <span className={cn(SIDE, "min-w-6 justify-center pl-row-x")}>{leading}</span>}
       {primary}
-      {action && <span className={`${SIDE} gap-2 pr-row-x`}>{action}</span>}
+      {action && <span className={cn(SIDE, "gap-2 pr-row-x")}>{action}</span>}
     </li>
   );
 }

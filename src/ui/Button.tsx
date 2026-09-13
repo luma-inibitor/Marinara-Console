@@ -8,9 +8,9 @@ const button = cva(
     "relative inline-flex items-center justify-center rounded-m border",
     "font-label font-semibold [font-variation-settings:'wdth'_110]",
     "text-center transition-colors [transition-duration:var(--t-fast)]",
-    "focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]",
+    "focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none",
     "disabled:cursor-default disabled:opacity-45",
-    "aria-disabled:cursor-default aria-disabled:opacity-45 aria-busy:cursor-default",
+    "aria-busy:cursor-default aria-disabled:cursor-default aria-disabled:opacity-45",
   ],
   {
     variants: {
@@ -18,7 +18,7 @@ const button = cva(
       tone: { neutral: "", danger: "", ok: "" },
       size: { md: "min-h-tap gap-2", sm: "min-h-tap-2 gap-[6px]" },
       shape: { label: "", icon: "" },
-      labelCase: { upper: "uppercase tracking-[0.09em]", sentence: "tracking-normal" },
+      labelCase: { upper: "tracking-[0.09em] uppercase", sentence: "tracking-normal" },
       pressed: { true: "", false: "" },
       inert: { true: "", false: "" },
       fullWidth: { true: "w-full" },

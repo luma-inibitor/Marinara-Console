@@ -2,6 +2,7 @@ import type { ComponentPropsWithRef, ReactNode } from "react";
 import { createContext, useContext, useId } from "react";
 import { t } from "../copy";
 import { Failure, ICON_SIZE } from "./icons";
+import { cn } from "./cn";
 
 /** A label, one control, and the hint and error that belong to it. */
 
@@ -61,13 +62,13 @@ export function Field(props: FieldProps) {
         {optional && <span className={MARK}>{t("ui.field.optional")}</span>}
       </label>
       {hint && (
-        <p id={hintId} className={`${NOTE} text-dim`}>
+        <p id={hintId} className={cn(NOTE, "text-dim")}>
           {hint}
         </p>
       )}
       <FieldContext.Provider value={wiring}>{children}</FieldContext.Provider>
       {error && (
-        <p id={errorId} className={`${NOTE} flex items-center gap-1 text-danger`}>
+        <p id={errorId} className={cn(NOTE, "flex items-center gap-1 text-danger")}>
           <Failure size={ICON_SIZE.sm} stroke={2} aria-hidden />
           <span>{error}</span>
         </p>

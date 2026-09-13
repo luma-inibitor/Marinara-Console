@@ -972,7 +972,7 @@ function ClaimRow(props: {
             </span>
           )}
           <span
-            className={`t-prose min-w-0 flex-1 truncate text-prose font-normal leading-snug ${d === "drop" ? "line-through decoration-danger/55 opacity-50" : ""}`}
+            className={`t-prose min-w-0 flex-1 truncate text-prose leading-snug font-normal ${d === "drop" ? "line-through decoration-danger/55 opacity-50" : ""}`}
           >
             {r.text}
           </span>
