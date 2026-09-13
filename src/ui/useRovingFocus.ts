@@ -39,83 +39,58 @@ export function useRovingFocus(input: RovingOpts) {
   const latest = useRef(input);
   latest.current = input;
 
-  return useMemo(() => {
-    /** True when the event is not the list's to handle. */
-    const ignore = (ev: KeyLike): boolean => {
-      const opts = latest.current;
-      // A shortcut is a shortcut. Cmd-K opens the palette; it must not also
-      // walk the cursor.
-      if (ev.metaKey || ev.ctrlKey || ev.altKey) return true;
+  return useMemo(() => rovingFocus(latest), []);
+}
 
-      const el = ev.target as HTMLElement | null;
+/** Exported for tests that run without React. */
+export function rovingFocus(latest: { readonly current: RovingOpts }) {
+  const ignore = (ev: KeyLike): boolean => {
+    const opts = latest.current;
+    // A modified key is an app shortcut.
+    if (ev.metaKey || ev.ctrlKey || ev.altKey) return true;
+
+    const el = ev.target as HTMLElement | null;
+    if (!el) return false;
+    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT") return true;
+    if (el.isContentEditable) return true;
+
+    // A button outside the rows owns its own Space and Enter.
+    if (opts.rowSelector && opts.navKeys) {
+      const button = el.closest("button");
+      if (button && !button.closest(opts.rowSelector) && !opts.navKeys.includes(ev.key)) return true;
+    }
+    return false;
+  };
+
+  /** Deferring unconditionally put focus a frame behind every keypress. */
+  const reveal = (key: string) => {
+    const opts = latest.current;
+    opts.onFocus(key);
+    const land = () => {
+      const el = opts.listRef.current?.querySelector(`[data-row="${CSS.escape(key)}"]`) as HTMLElement | null;
       if (!el) return false;
-      // Someone typing has the keyboard, whatever the letter means to the list.
-      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT") return true;
-      if (el.isContentEditable) return true;
-
-      // A focused button outside the rows (a chip, a header control) owns its
-      // own Space and Enter. Buttons inside a row are part of the list
-      // composite, so the triage keys keep working after tapping a row.
-      if (opts.rowSelector && opts.navKeys) {
-        const button = el.closest("button");
-        if (button && !button.closest(opts.rowSelector) && !opts.navKeys.includes(ev.key)) return true;
-      }
-      return false;
+      el.scrollIntoView({ block: "nearest" });
+      el.focus?.({ preventScroll: true });
+      return true;
     };
+    if (!land()) requestAnimationFrame(land);
+  };
 
-    /** Put the cursor on a key, bring it into view, and hand it DOM focus when
-     *  the row can take it.
-     *
-     *  Both matter, and which one does the work depends on the list. The
-     *  lorebook audit's rows are buttons, so focus moves and the browser scrolls
-     *  for us; the review queue's rows are divs, so focus() is a no-op and the
-     *  explicit scroll is what keeps the cursor on screen. Doing both means the
-     *  hook does not need to know which kind of list it is driving.
-     *
-     *  Synchronous when the row is already in the DOM, deferred only when it is
-     *  not. The deferral exists because the row may not be rendered until the
-     *  state change this call just made has flushed. Deferring unconditionally
-     *  put focus a frame behind every keypress. */
-    const reveal = (key: string) => {
-      const opts = latest.current;
-      opts.onFocus(key);
-      const land = () => {
-        const el = opts.listRef.current?.querySelector(`[data-row="${CSS.escape(key)}"]`) as HTMLElement | null;
-        if (!el) return false;
-        el.scrollIntoView({ block: "nearest" });
-        el.focus?.({ preventScroll: true });
-        return true;
-      };
-      if (!land()) requestAnimationFrame(land);
-    };
+  /** Wrapping past an end reads as a jump to somewhere else. */
+  const move = (delta: number) => {
+    const opts = latest.current;
+    if (!opts.keys.length) return;
+    const i = opts.current ? opts.keys.indexOf(opts.current) : -1;
+    const next =
+      i === -1 ? (delta > 0 ? 0 : opts.keys.length - 1) : Math.max(0, Math.min(opts.keys.length - 1, i + delta));
+    reveal(opts.keys[next]!);
+  };
 
-    /** Step the cursor. From nowhere, a step down starts at the top and a step
-     *  up starts at the bottom; from an end, it stays put rather than wrapping —
-     *  wrapping past the last row reads as a jump to somewhere else. */
-    const move = (delta: number) => {
-      const opts = latest.current;
-      if (!opts.keys.length) return;
-      const i = opts.current ? opts.keys.indexOf(opts.current) : -1;
-      const next =
-        i === -1 ? (delta > 0 ? 0 : opts.keys.length - 1) : Math.max(0, Math.min(opts.keys.length - 1, i + delta));
-      reveal(opts.keys[next]!);
-    };
+  /** A list with no cursor stays reachable by Tab through its first row. */
+  const tabbable = (key: string): boolean => {
+    const opts = latest.current;
+    return key === (opts.current ?? opts.keys[0] ?? null);
+  };
 
-    /** Roving tabindex: exactly one item in the composite is in the tab order.
-     *
-     *  Without this a list is as many tab stops as it has controls — the review
-     *  queue measured 279, three per row across 42 rows, so reaching the apply
-     *  dock by keyboard cost 279 presses. The composite pattern is one stop to
-     *  enter, arrows to move within, one stop to leave.
-     *
-     *  The cursor row holds the stop; with no cursor it falls to the first row,
-     *  so the list is always enterable. Never nothing — a composite with no
-     *  tabbable item is a composite you cannot reach at all. */
-    const tabbable = (key: string): boolean => {
-      const opts = latest.current;
-      return key === (opts.current ?? opts.keys[0] ?? null);
-    };
-
-    return { ignore, move, reveal, tabbable };
-  }, []);
+  return { ignore, move, reveal, tabbable };
 }
