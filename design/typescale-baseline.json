@@ -87,9 +87,6 @@
   "src/ui/Chip.css": [
     ".chip, .tag → 9.5px"
   ],
-  "src/ui/Edu.css": [
-    ".edu → 12px"
-  ],
   "src/ui/EmptyState.css": [
     ".es-body → 12.5px",
     ".es-title → 14px"
