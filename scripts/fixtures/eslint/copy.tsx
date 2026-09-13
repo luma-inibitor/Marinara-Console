@@ -7,7 +7,7 @@ export const Untraced = () => (
   <div>
     <span>ZORPLE</span>
     <span>zorpleAll</span>
-    <button title="zorpleAll" />
+    <span title="zorpleAll" />
   </div>
 );
 
@@ -15,6 +15,6 @@ export const Traced = () => (
   <div>
     <span>{t("memory.collapse")}</span>
     <span>{t("memory.collapse")}</span>
-    <button title={t("memory.collapse")} />
+    <span title={t("memory.collapse")} />
   </div>
 );

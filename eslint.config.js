@@ -66,8 +66,108 @@ const CLASS_SELECTORS = [
   },
 ];
 
+const BUTTON_SELECTOR = {
+  selector: 'JSXOpeningElement[name.name="button"]',
+  message: "Use <Button> from src/ui/Button.tsx",
+};
+
 // The classes the e2e suite and the legacy stylesheets reach by name.
 const HOOK_CLASSES = ["hit"];
+
+// A button that is not a Button, each for its own shape.
+const BUTTON_OK = [
+  "src/ui/Chip.tsx", // a pressable tag
+  "src/ui/ListGroup.tsx", // the group header's disclosure
+  "src/ui/ListItem.tsx", // the row's primary target
+  "src/ui/Menu.tsx", // a menu item
+  "src/ui/ModePill.tsx", // a segment of a toggle group
+  "src/ui/SearchDisclosure.tsx", // the disclosure and its options
+];
+
+// TODO 120 hand-rolled buttons in 28 files. Remove a file here once it renders Button.
+const TODO_BUTTON = [
+  "src/shell/App.tsx",
+  "src/shell/Toaster.tsx",
+  "src/shell/connection.tsx",
+  "src/shell/palette.tsx",
+  "src/tools/lorebooks/BookAudit.tsx",
+  "src/tools/lorebooks/Picker.tsx",
+  "src/tools/lorebooks/entries.tsx",
+  "src/tools/memory/ClaimDetail.tsx",
+  "src/tools/memory/MemoryTool.tsx",
+  "src/tools/memory/Review.tsx",
+  "src/tools/memory/Sources.tsx",
+  "src/tools/memory/Vault.tsx",
+  "src/tools/memory/components/NoteRef.tsx",
+  "src/tools/memory/detail/MemoryDetail.tsx",
+  "src/tools/memory/detail/RetrievalCard.tsx",
+  "src/tools/memory/detail/SectionRow.tsx",
+  "src/tools/memory/review/FilterSheet.tsx",
+  "src/tools/memory/review/ViewSheet.tsx",
+  "src/tools/presets/PresetsTool.tsx",
+  "src/ui/CopyableText.tsx",
+  "src/ui/ErrorState.tsx",
+  "src/ui/FullscreenText.tsx",
+  "src/ui/JsonView.tsx",
+  "src/ui/ListEmpty.tsx",
+  "src/ui/Loading.tsx",
+  "src/ui/NotFound.tsx",
+  "src/ui/SaveBar.tsx",
+  "src/ui/Sheet.tsx",
+];
+
+// TODO 73 template literals in 26 files. Remove a file here once it composes with cn().
+const TODO_STRING = [
+  "src/shell/App.tsx",
+  "src/shell/Toaster.tsx",
+  "src/shell/palette.tsx",
+  "src/tools/lorebooks/BookAudit.tsx",
+  "src/tools/lorebooks/entries.tsx",
+  "src/tools/memory/ClaimDetail.tsx",
+  "src/tools/memory/Review.tsx",
+  "src/tools/memory/Sources.tsx",
+  "src/tools/memory/Vault.tsx",
+  "src/tools/memory/components/StatusPill.tsx",
+  "src/tools/memory/detail/MemoryDetail.tsx",
+  "src/tools/memory/detail/RetrievalCard.tsx",
+  "src/tools/memory/detail/SectionRow.tsx",
+  "src/tools/memory/icons.tsx",
+  "src/tools/memory/review/DockSheet.tsx",
+  "src/tools/memory/review/FilterSheet.tsx",
+  "src/tools/memory/review/ViewSheet.tsx",
+  "src/tools/presets/PresetsTool.tsx",
+  "src/ui/Chip.tsx",
+  "src/ui/CopyableText.tsx",
+  "src/ui/EmptyState.tsx",
+  "src/ui/FullscreenText.tsx",
+  "src/ui/ModePill.tsx",
+  "src/ui/SaveBar.tsx",
+  "src/ui/SectionKey.tsx",
+  "src/ui/Term.tsx",
+];
+
+// One override per combination, since a later override replaces the whole rule.
+function restricted() {
+  const noButton = new Set([...BUTTON_OK, ...TODO_BUTTON]);
+  const noString = new Set(TODO_STRING);
+  const all = [...new Set([...noButton, ...noString])];
+  const rule = (files, keep) => ({ files, rules: { "no-restricted-syntax": ["error", ...keep] } });
+  return [
+    rule(["src/ui/Button.tsx"], [...COPY_SELECTORS, ...CLASS_SELECTORS]),
+    rule(
+      all.filter((f) => noString.has(f) && noButton.has(f)),
+      COPY_SELECTORS,
+    ),
+    rule(
+      all.filter((f) => noString.has(f) && !noButton.has(f)),
+      [...COPY_SELECTORS, BUTTON_SELECTOR],
+    ),
+    rule(
+      all.filter((f) => !noString.has(f) && noButton.has(f)),
+      [...COPY_SELECTORS, ...CLASS_SELECTORS],
+    ),
+  ];
+}
 
 export default [
   {
@@ -112,7 +212,7 @@ export default [
           },
         },
       ],
-      "no-restricted-syntax": ["error", ...COPY_SELECTORS, ...CLASS_SELECTORS],
+      "no-restricted-syntax": ["error", ...COPY_SELECTORS, ...CLASS_SELECTORS, BUTTON_SELECTOR],
       "better-tailwindcss/no-conflicting-classes": "error",
       "better-tailwindcss/no-duplicate-classes": "error",
       "better-tailwindcss/no-unknown-classes": ["error", { ignore: HOOK_CLASSES }],
@@ -132,7 +232,9 @@ export default [
   },
   {
     files: ["src/tools/lorebooks/data.ts", "src/tools/presets/data.ts"],
-    rules: { "no-restricted-syntax": ["error", ...COPY_SELECTORS, ...CLASS_SELECTORS, COPY_TABLE_SELECTOR] },
+    rules: {
+      "no-restricted-syntax": ["error", ...COPY_SELECTORS, ...CLASS_SELECTORS, BUTTON_SELECTOR, COPY_TABLE_SELECTOR],
+    },
   },
   {
     // TODO 1254 classes from the legacy stylesheets in 40 files. Remove a file here once it is utilities.
@@ -180,38 +282,7 @@ export default [
     ],
     rules: { "better-tailwindcss/no-unknown-classes": "off" },
   },
-  {
-    // TODO 73 template literals in 26 files. Remove a file here once it composes with cn().
-    files: [
-      "src/shell/App.tsx",
-      "src/shell/Toaster.tsx",
-      "src/shell/palette.tsx",
-      "src/tools/lorebooks/BookAudit.tsx",
-      "src/tools/lorebooks/entries.tsx",
-      "src/tools/memory/ClaimDetail.tsx",
-      "src/tools/memory/Review.tsx",
-      "src/tools/memory/Sources.tsx",
-      "src/tools/memory/Vault.tsx",
-      "src/tools/memory/components/StatusPill.tsx",
-      "src/tools/memory/detail/MemoryDetail.tsx",
-      "src/tools/memory/detail/RetrievalCard.tsx",
-      "src/tools/memory/detail/SectionRow.tsx",
-      "src/tools/memory/icons.tsx",
-      "src/tools/memory/review/DockSheet.tsx",
-      "src/tools/memory/review/FilterSheet.tsx",
-      "src/tools/memory/review/ViewSheet.tsx",
-      "src/tools/presets/PresetsTool.tsx",
-      "src/ui/Chip.tsx",
-      "src/ui/CopyableText.tsx",
-      "src/ui/EmptyState.tsx",
-      "src/ui/FullscreenText.tsx",
-      "src/ui/ModePill.tsx",
-      "src/ui/SaveBar.tsx",
-      "src/ui/SectionKey.tsx",
-      "src/ui/Term.tsx",
-    ],
-    rules: { "no-restricted-syntax": ["error", ...COPY_SELECTORS] },
-  },
+  ...restricted(),
   {
     // Fixtures.
     files: ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/test/**"],
