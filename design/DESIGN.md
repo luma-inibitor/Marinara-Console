@@ -187,6 +187,10 @@ this catalog in the same change.
   or checkbox items. A radio choice closes the menu, a checkbox toggle keeps it
   open, and the current choice carries a check glyph and `aria-checked`. The
   review queue's group and sort controls use it.
+- **Facet drawer** — a Sheet holding multi-select facets that apply on each
+  toggle. Each facet is a `fieldset` with its tally in the legend, each
+  value a pressed-state button with its count as text, and the head carries
+  the active count and Clear. The review queue's filter sheet uses it.
 - **Tag/distribution panel** — group stats with bars, per-group Show/Select.
 - **Decision rail** — tri-state per-row judgment (undecided / keep / drop) on
   the status rail, cycled by tap or set by single keys, advancing automatically.

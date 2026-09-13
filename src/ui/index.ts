@@ -13,6 +13,9 @@ export { DetailSection } from "./DetailSection";
 export { Edu } from "./Edu";
 export { EmptyState } from "./EmptyState";
 export { ErrorState } from "./ErrorState";
+export { FacetDrawer, FacetGroup, FacetTally, FacetToggle, facetSelected } from "./FacetDrawer";
+/** @public */
+export type { FacetGroupModel, FacetValue } from "./FacetDrawer";
 export { Field, Input, Textarea } from "./Field";
 /** @public */
 export { Select } from "./Field";

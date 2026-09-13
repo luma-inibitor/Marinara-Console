@@ -88,7 +88,19 @@
     "note": "The filter drawer's heading and its sheet's accessible name. The catalog has no occurrence of 'facet' in any key or value: it filters by named dimension (status, mode, scope) and has no word for the set of dimensions itself."
   },
   "ui.facets.clear": {
-    "use": "activityview.clear"
+    "use": "sourceoperation.clearAll",
+    "note": "Was activityview.clear, 'Clear'. The drawer's control drops every chosen value across every facet at once, and the catalog's own 'Clear all' says that where a bare 'Clear' could read as one facet."
+  },
+  "ui.facets.activeCount": {
+    "text": "{{count}} active",
+    "note": "How many facet values are currently narrowing the list, shown in the facet drawer's head. The catalog's extractionprompttemplates.activeTemplate marks one template as in force; this counts selections, which upstream has no multi-select facet to count."
+  },
+  "ui.facets.noneActive": {
+    "text": "none active",
+    "note": "The same slot when nothing is selected. A separate string rather than \"0 active\" because a zero count reads as a measurement and this is the absence of one."
+  },
+  "ui.facets.done": {
+    "use": "memoryvault.done"
   },
 
   "ui.sheet.close": {
