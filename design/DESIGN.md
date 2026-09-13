@@ -178,7 +178,7 @@ this catalog in the same change.
   unknown.
 - **Popover** — an anchored surface over a sealed page. It renders into a
   portal, registers with the overlay stack, flips to the other side of its
-  trigger at the viewport edge, and closes on outside click, Escape and back.
+  trigger at the viewport edge, and closes on outside click, Escape, and back.
   The scope pickers use it.
 - **Menu** — a Popover holding a list of actions. Focus lands on the first
   item, arrows move between items, and an item's action runs once the menu has
