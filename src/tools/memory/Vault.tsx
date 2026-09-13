@@ -36,6 +36,7 @@ import {
   EmptyState,
   ErrorState,
   Loading,
+  Meter,
   SearchBar,
   Tag,
   fuzzyScore,
@@ -296,12 +297,14 @@ function NoteRow(props: { note: Note; isOpen: boolean; onOpen: () => void }) {
             )}
           </span>
           {p >= 0.5 && (
-            <span className="pbar">
-              <i
-                className={p >= 1 ? "is-over" : p >= 0.8 ? "is-near" : ""}
-                style={{ width: `${Math.min(p * 100, 100)}%` }}
-              />
-            </span>
+            <Meter
+              label={t("memory.review.capPct", { pct: Math.round(p * 100) })}
+              value={p}
+              max={1}
+              near={0.8}
+              over={1}
+              className="mt-1"
+            />
           )}
         </span>
         <span className="num">
@@ -463,9 +466,14 @@ function NoteEditor(props: { note: Note; onClose: () => void }) {
               </>
             }
             meter={
-              <span className="pbar">
-                <i className={pct >= 95 ? "is-over" : pct >= 75 ? "is-near" : ""} style={{ width: `${pct}%` }} />
-              </span>
+              <Meter
+                label={t("memory.review.capPct", { pct })}
+                value={value.length}
+                max={SECTION_CAP}
+                near={0.75}
+                over={0.95}
+                className="mt-1"
+              />
             }
           >
             {/* onInput reads the value out before calling the updater: React runs

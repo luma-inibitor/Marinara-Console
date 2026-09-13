@@ -88,6 +88,8 @@ import {
   ErrorState,
   ListGroup,
   Loading,
+  Meter,
+  type MeterSegment,
   MiddleTruncate,
   useIsDesktop,
   useRovingFocus,
@@ -334,13 +336,15 @@ export function Review() {
                 </div>
               )}
 
-              {/* decision meter: tally as data, one line */}
               <div className="meter">
                 <span className="t-label t-label-s">{t("memory.review.decided")}</span>
-                <span className="mbar">
-                  <span className="m-keep" style={{ width: `${total ? (c.keep / total) * 100 : 0}%` }} />
-                  <span className="m-drop" style={{ width: `${total ? (c.drop / total) * 100 : 0}%` }} />
-                </span>
+                <Meter
+                  label={t("memory.review.decidedOf", { done: c.keep + c.drop, total })}
+                  max={total}
+                  segments={tallySegments(c)}
+                  size="md"
+                  className="flex-1"
+                />
                 <span className="t-data mval">
                   <b className="is-keep">
                     <DecisionIcon d="keep" size={12} />
@@ -501,6 +505,11 @@ function openFacetSheet() {
   }
   facetSheetOpen.set(true);
 }
+
+const tallySegments = (c: { keep: number; drop: number }): MeterSegment[] => [
+  { value: c.keep, tone: "ok" },
+  { value: c.drop, tone: "danger" },
+];
 
 /** Called from render, so the map is a parameter: reading the store here would
  *  not subscribe the caller and the count would stop tracking the filters. */
@@ -808,15 +817,14 @@ function GroupBlock(props: {
             {chars > 0 && <span className="ghead-agg t-data">+{chars.toLocaleString()}</span>}
             <span className="ghead-ctl">
               <GroupPressure groupId={g.id} isTarget={isTarget} />
-              <span
-                className="tbar-w"
-                aria-label={t("memory.review.decidedOf", { done: kept + dropped, total: g.rows.length })}
-              >
-                <span className="tbar">
-                  <i className="tk" style={{ width: `${(kept / g.rows.length) * 100}%` }} />
-                  <i className="td" style={{ width: `${(dropped / g.rows.length) * 100}%` }} />
-                </span>
-                <span className="tbar-n t-data">
+              <span className="inline-flex shrink-0 items-center gap-2">
+                <Meter
+                  label={t("memory.review.decidedOf", { done: kept + dropped, total: g.rows.length })}
+                  max={g.rows.length}
+                  segments={tallySegments({ keep: kept, drop: dropped })}
+                  className="w-tap"
+                />
+                <span className="font-data text-data-s text-dim tabular-nums">
                   {kept + dropped}/{g.rows.length}
                 </span>
               </span>
@@ -1404,14 +1412,7 @@ function ApplyDock() {
           </button>
         )}
 
-        {/* The meter the header used to carry, as the dock's own bottom edge:
-          the same keep/drop proportion, stated once now instead of twice. */}
-        {!desktop && (
-          <span className="dock-bar" aria-hidden="true">
-            <span className="m-keep" style={{ width: `${total ? (c.keep / total) * 100 : 0}%` }} />
-            <span className="m-drop" style={{ width: `${total ? (c.drop / total) * 100 : 0}%` }} />
-          </span>
-        )}
+        {!desktop && <Meter max={total} segments={tallySegments(c)} className="mt-2 basis-full" />}
       </div>
     </>
   );
