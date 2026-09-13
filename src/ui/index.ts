@@ -29,6 +29,9 @@ export { Meter } from "./Meter";
 /** @public */
 export type { MeterProps, MeterSegment } from "./Meter";
 export { MiddleTruncate } from "./MiddleTruncate";
+export { Menu } from "./Menu";
+/** @public */
+export type { MenuItem } from "./Menu";
 export { MODES, ModePill } from "./ModePill";
 /** @public */
 export { Popover } from "./Popover";

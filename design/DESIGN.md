@@ -180,6 +180,9 @@ this catalog in the same change.
   portal, registers with the overlay stack, flips to the other side of its
   trigger at the viewport edge, and closes on outside click, Escape and back.
   The scope pickers use it.
+- **Menu** — a Popover holding a list of actions. Focus lands on the first
+  item, arrows move between items, and an item's action runs once the menu has
+  closed. The review queue's group menu uses it.
 - **Tag/distribution panel** — group stats with bars, per-group Show/Select.
 - **Decision rail** — tri-state per-row judgment (undecided / keep / drop) on
   the status rail, cycled by tap or set by single keys, advancing automatically.
