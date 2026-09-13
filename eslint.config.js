@@ -97,7 +97,18 @@ const BUTTON_SELECTOR = {
 };
 
 // The classes the e2e suite and the legacy stylesheets reach by name.
-const HOOK_CLASSES = ["hit", "sheet", "peek-scrim", "chip", "tag", "ar", "skey", "^peek-sheet$", "^type-", "filter-sheet"];
+const HOOK_CLASSES = [
+  "hit",
+  "sheet",
+  "peek-scrim",
+  "chip",
+  "tag",
+  "ar",
+  "skey",
+  "^peek-sheet$",
+  "^type-",
+  "filter-sheet",
+];
 
 // A button that is not a Button, each for its own shape.
 const BUTTON_OK = [
@@ -112,7 +123,7 @@ const BUTTON_OK = [
   "src/tools/memory/detail/RetrievalCard.tsx", // the keyword rail, a clamped run of pills
 ];
 
-// TODO 110 hand-rolled buttons in 24 files. Remove a file here once it renders Button.
+// TODO 101 hand-rolled buttons in 23 files. Remove a file here once it renders Button.
 const TODO_BUTTON = [
   "src/shell/App.tsx",
   "src/shell/Toaster.tsx",
@@ -127,7 +138,6 @@ const TODO_BUTTON = [
   "src/tools/memory/Sources.tsx",
   "src/tools/memory/Vault.tsx",
   "src/tools/memory/components/NoteRef.tsx",
-  "src/tools/memory/review/FilterSheet.tsx",
   "src/tools/presets/PresetsTool.tsx",
   "src/ui/CopyableText.tsx",
   "src/ui/ErrorState.tsx",
@@ -140,7 +150,7 @@ const TODO_BUTTON = [
   "src/ui/Sheet.tsx",
 ];
 
-// TODO 66 template literals and space joins in 18 files. Remove a file here once it composes with cn().
+// TODO 59 template literals and space joins in 17 files. Remove a file here once it composes with cn().
 const TODO_STRING = [
   "src/shell/App.tsx",
   "src/shell/Toaster.tsx",
@@ -154,7 +164,6 @@ const TODO_STRING = [
   "src/tools/memory/components/StatusPill.tsx",
   "src/tools/memory/icons.tsx",
   "src/tools/memory/review/DockSheet.tsx",
-  "src/tools/memory/review/FilterSheet.tsx",
   "src/tools/presets/PresetsTool.tsx",
   "src/ui/CopyableText.tsx",
   "src/ui/EmptyState.tsx",
@@ -268,7 +277,7 @@ export default [
     },
   },
   {
-    // TODO 806 classes from the legacy stylesheets in 31 files. Remove a file here once it is utilities.
+    // TODO 752 classes from the legacy stylesheets in 30 files. Remove a file here once it is utilities.
     files: [
       "src/shell/App.tsx",
       "src/shell/Toaster.tsx",
@@ -287,7 +296,6 @@ export default [
       "src/tools/memory/components/StatusPill.tsx",
       "src/tools/memory/icons.tsx",
       "src/tools/memory/review/DockSheet.tsx",
-      "src/tools/memory/review/FilterSheet.tsx",
       "src/tools/presets/PresetsTool.tsx",
       "src/ui/CopyableText.tsx",
       "src/ui/EmptyState.tsx",

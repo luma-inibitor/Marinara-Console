@@ -65,7 +65,7 @@ import {
   buildGroups,
   type Group,
 } from "./model/facets";
-import { FilterSheet, type SheetFacet } from "./review/FilterSheet";
+import { FilterSheet } from "./review/FilterSheet";
 import { DockSheet } from "./review/DockSheet";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./components/NoteRef";
@@ -89,6 +89,7 @@ import {
   Progress,
   useIsDesktop,
   useRovingFocus,
+  type FacetGroupModel,
 } from "../../ui";
 import { useStore } from "../../lib/store";
 
@@ -582,6 +583,16 @@ function sourceFacetLabel(title: string): string {
   return i > 0 ? t.slice(i + 1).trim() : t;
 }
 
+/** The store values the facet rules need, read here so the caller subscribes. */
+function useFacetContext() {
+  return {
+    pressure: useStore(pressure),
+    notesById: useStore(notesById),
+    decisions: useStore(decisions),
+    edited: useStore(edited),
+  };
+}
+
 /** Builds the filter sheet's model from the stores and hands it over. The
  *  sheet is presentation; every count here is computed against the live rows,
  *  and a store read inside the sheet would not subscribe it. */
@@ -589,11 +600,7 @@ function FacetSheet() {
   const open = useStore(facetSheetOpen);
   const allRows = useStore(rows);
   const active = useStore(activeFacets);
-  const sectionPressure = useStore(pressure);
-  const notes = useStore(notesById);
-  const dec = useStore(decisions);
-  const editedMuts = useStore(edited);
-  const ctx = { pressure: sectionPressure, notesById: notes, decisions: dec, edited: editedMuts };
+  const ctx = useFacetContext();
   if (!open) return null;
   const counts = facetCounts(allRows, active, ctx);
   // A selected value must stay listed even at count 0, or the selection
@@ -604,7 +611,7 @@ function FacetSheet() {
     for (const v of set) if (!m.has(v)) m.set(v, 0);
   }
 
-  const facets = new Map<string, SheetFacet>();
+  const facets = new Map<string, FacetGroupModel>();
   for (const f of FACETS) {
     const values = [...(counts.get(f.id) ?? new Map()).entries()]
       .sort((a, b) => b[1] - a[1])
@@ -621,7 +628,7 @@ function FacetSheet() {
         count,
         on: active.get(f.id)?.has(value) ?? false,
       }));
-    facets.set(f.id, { id: f.id, label: f.label, values, selected: values.filter((v) => v.on).length });
+    facets.set(f.id, { id: f.id, label: f.label, values });
   }
 
   const shown = applyFilters(allRows, active, ctx);
