@@ -3,9 +3,11 @@ name: Check
 on:
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
+  merge_group:
 
+# A merge_group event carries no pull request, so its runs key on the ref.
 concurrency:
-  group: check-${{ github.event.pull_request.number }}
+  group: check-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:

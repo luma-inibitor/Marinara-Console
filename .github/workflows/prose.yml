@@ -4,9 +4,11 @@ name: Prose
 on:
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
+  merge_group:
 
+# A merge_group event carries no pull request, so its runs key on the ref.
 concurrency:
-  group: prose-${{ github.event.pull_request.number }}
+  group: prose-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -30,11 +32,13 @@ jobs:
           version: "3.18.0"
 
           # Not github-pr-annotations: GitHub caps a step at 10 annotations
-          # and drops the rest silently.
-          reporter: github-pr-check
+          # and drops the rest silently. A merge_group run has no pull request
+          # to annotate, so it reports a plain check run under the same name.
+          reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
 
-          # Only lines the pull request touches; the corpus has a backlog.
-          filter_mode: added
+          # Only lines the pull request touches; the corpus has a backlog. A
+          # merge_group run has no pull request diff, so it takes the corpus.
+          filter_mode: ${{ github.event_name == 'pull_request' && 'added' || 'nofilter' }}
 
           # Advisory: never blocks a merge.
           fail_on_error: false
