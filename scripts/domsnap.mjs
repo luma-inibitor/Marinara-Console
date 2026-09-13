@@ -60,7 +60,7 @@ const SURFACES = [
     hash: "#/memory/review",
     vps: [D],
     sel: ".claim-detail",
-    open: (p) => p.locator(".mem-mid").first().click(),
+    open: (p) => p.locator(".mem-rows [data-row]").first().click(),
   },
   {
     name: "review-facets",
@@ -91,7 +91,7 @@ const SURFACES = [
     vps: [D],
     sel: ".sheet",
     open: async (p) => {
-      await p.locator(".row-summary").first().click();
+      await p.locator(".mem-rows [data-row]").first().click();
       // .notelink exists only inside a record, so waiting for it to be
       // clickable is waiting for the record to have arrived.
       await p.locator(".notelink").first().click();

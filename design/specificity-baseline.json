@@ -7,13 +7,10 @@
   "src/styles/memory.css": [
     "Expected selector \".action-sec\" to come before selector \".health-banner .action-sec\"",
     "Expected selector \".chead svg\" to come before selector \".dock-counts > svg:last-child\"",
-    "Expected selector \".claim-text\" to come before selector \"[data-d=\"drop\"] .claim-text\"",
     "Expected selector \".dsec p\" to come before selector \".mem-card details p\"",
     "Expected selector \".edu svg\" to come before selector \".dock-counts > svg:last-child\"",
     "Expected selector \".gn\" to come before selector \".ghead-body .gn\"",
     "Expected selector \".jobnote svg\" to come before selector \".dock-counts > svg:last-child\"",
-    "Expected selector \".mem-summary\" to come before selector \".mem-row.is-open .mem-summary\"",
-    "Expected selector \".mem-summary:hover\" to come before selector \".mem-row.is-open .mem-summary\"",
     "Expected selector \".mem-tab svg\" to come before selector \".dock-counts > svg:last-child\"",
     "Expected selector \".pendrow > svg\" to come before selector \".dock-counts > svg:last-child\"",
     "Expected selector \".reshead2 > svg\" to come before selector \".dock-counts > svg:last-child\"",

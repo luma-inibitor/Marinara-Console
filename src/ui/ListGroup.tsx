@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { t } from "../copy";
 import { ChevronDown, ChevronRight } from "./icons";
-import "./ListGroup.css";
 
 /** The collapse control for a group of rows.
  *
@@ -24,7 +23,9 @@ export function CollapseButton(props: {
   return (
     <button
       type="button"
-      className={`gexp hit ${props.className ?? ""}`}
+      className={["gexp hit flex items-center justify-center text-dim hover:text-ink", props.className]
+        .filter(Boolean)
+        .join(" ")}
       aria-expanded={!props.collapsed}
       aria-label={t(props.collapsed ? "ui.group.expand" : "ui.group.collapse", {
         label: props.label,

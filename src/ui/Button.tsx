@@ -53,6 +53,8 @@ type Common = {
   onClick?: () => void;
   className?: string;
   autoFocus?: boolean;
+  /** -1 takes it out of the tab order, for a button inside a roving composite. */
+  tabIndex?: number;
 };
 
 export type ButtonProps = Common &
@@ -153,6 +155,7 @@ export function Button(props: ButtonProps) {
     onClick,
     className,
     autoFocus,
+    tabIndex,
     label,
   } = props;
   const iconOnly = props.iconOnly === true;
@@ -237,6 +240,7 @@ export function Button(props: ButtonProps) {
       {...shared}
       type="button"
       autoFocus={autoFocus}
+      tabIndex={tabIndex}
       disabled={inert && !softDisabled}
       aria-disabled={softDisabled || undefined}
       onClick={() => {

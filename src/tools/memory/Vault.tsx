@@ -35,6 +35,8 @@ import {
   DetailSection,
   EmptyState,
   ErrorState,
+  List,
+  ListItem,
   Loading,
   Meter,
   SearchBar,
@@ -246,9 +248,13 @@ export function Vault(props: { noteId?: string }) {
             ) : (
               <EmptyState title={t("memoryvault.noSavedMemoriesYetImportASourceOrCreate")} />
             ))}
-          {visible.map((n) => (
-            <NoteRow key={n.id} note={n} isOpen={openId === n.id} onOpen={() => openDetail(n.id)} />
-          ))}
+          {visible.length > 0 && (
+            <List>
+              {visible.map((n) => (
+                <NoteRow key={n.id} note={n} isOpen={openId === n.id} onOpen={() => openDetail(n.id)} />
+              ))}
+            </List>
+          )}
         </main>
       </div>
       {desktop && (
@@ -261,41 +267,42 @@ export function Vault(props: { noteId?: string }) {
   );
 }
 
+function Sep() {
+  return (
+    <i className="mx-1 not-italic text-edge-strong" aria-hidden="true">
+      ·
+    </i>
+  );
+}
+
 function NoteRow(props: { note: Note; isOpen: boolean; onOpen: () => void }) {
   const n = props.note;
   const p = pressureOf(n);
   const chars = Object.values(n.sections ?? {}).reduce((sum, s) => sum + (s.text?.length ?? 0), 0);
   return (
-    <div className={`row ${props.isOpen ? "is-open" : ""}`}>
-      <button className="row-summary vault-summary" onClick={props.onOpen}>
-        <span className="rail-cell">
-          <span className={`tdot type-${n.type}`} aria-hidden="true" />
-        </span>
-        <span className="mid">
-          <span className="nm">{n.title ?? n.id}</span>
-          <span className="metaline t-data">
-            <span className={`chip-min type-${n.type}`}>{n.type.replaceAll("_", " ")}</span>
-            {n.status !== "active" && (
-              <>
-                <i className="sep" data-contrast-exempt>
-                  ·
-                </i>
-                {n.status}
-              </>
-            )}
-            <i className="sep" data-contrast-exempt>
-              ·
-            </i>
-            <span className="dim">{(n.modes ?? []).join(" ")}</span>
-            {p >= 0.8 && (
-              <>
-                <i className="sep" data-contrast-exempt>
-                  ·
-                </i>
-                <span className="fl">{p >= 1 ? t("memory.overLimit") : t("memory.nearLimit")}</span>
-              </>
-            )}
-          </span>
+    <ListItem
+      rowKey={n.id}
+      selected={props.isOpen}
+      onActivate={props.onOpen}
+      leading={<span className={`tdot type-${n.type}`} aria-hidden="true" />}
+      title={n.title ?? n.id}
+      secondary={
+        <>
+          <span className={`chip-min type-${n.type}`}>{n.type.replaceAll("_", " ")}</span>
+          {n.status !== "active" && (
+            <>
+              <Sep />
+              {n.status}
+            </>
+          )}
+          <Sep />
+          {(n.modes ?? []).join(" ")}
+          {p >= 0.8 && (
+            <>
+              <Sep />
+              <span className="fl">{p >= 1 ? t("memory.overLimit") : t("memory.nearLimit")}</span>
+            </>
+          )}
           {p >= 0.5 && (
             <Meter
               label={t("memory.review.capPct", { pct: Math.round(p * 100) })}
@@ -306,13 +313,17 @@ function NoteRow(props: { note: Note; isOpen: boolean; onOpen: () => void }) {
               className="mt-1"
             />
           )}
+        </>
+      }
+      trailing={
+        <span className="text-right">
+          <b className={`t-num block text-prose leading-none ${p >= 0.8 ? "text-flag" : ""}`}>
+            {(chars / 1000).toFixed(1)}k
+          </b>
+          <span className="block text-label-s text-dim">{t("ui.editor.charUnit")}</span>
         </span>
-        <span className="num">
-          <span className={`tok ${p >= 0.8 ? "is-hot" : ""}`}>{(chars / 1000).toFixed(1)}k</span>
-          <span className="unit">{t("ui.editor.charUnit")}</span>
-        </span>
-      </button>
-    </div>
+      }
+    />
   );
 }
 

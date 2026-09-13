@@ -86,7 +86,9 @@ import {
   collapsedGroups,
   EmptyState,
   ErrorState,
+  List,
   ListGroup,
+  ListItem,
   Loading,
   Meter,
   type MeterSegment,
@@ -165,7 +167,7 @@ export function Review() {
     listRef,
     keys: visibleKeys,
     current: cursorKey,
-    rowSelector: ".mem-row",
+    rowSelector: "li",
     navKeys: NAV_KEYS,
     onFocus: (key) => {
       cursor.set(key);
@@ -862,15 +864,17 @@ function GroupBlock(props: {
         </>
       }
     >
-      {g.rows.map((r) => (
-        <ClaimRow
-          key={r.key}
-          row={r}
-          showTarget={props.showTarget}
-          onActivate={props.onActivate}
-          tabbable={props.tabbable(r.key)}
-        />
-      ))}
+      <List>
+        {g.rows.map((r) => (
+          <ClaimRow
+            key={r.key}
+            row={r}
+            showTarget={props.showTarget}
+            onActivate={props.onActivate}
+            tabbable={props.tabbable(r.key)}
+          />
+        ))}
+      </List>
     </ListGroup>
   );
 }
@@ -921,10 +925,8 @@ function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: 
   );
 }
 
-// Row: status icon that cycles on tap · fixed op-icon slot · one-line claim ·
-// quiet flags chip (worst severity tints it) · contribution chars. No secondary
-// line, no per-row confidence — the enums live in the detail card, their
-// exceptions live in the flags.
+const WASH = { keep: "bg-ok-wash", drop: "bg-danger-wash", undecided: "" } as const;
+
 function ClaimRow(props: {
   row: Row;
   showTarget: boolean;
@@ -938,7 +940,6 @@ function ClaimRow(props: {
   const pfState = useStore(preflightRowState);
   const isAuto = pfState.auto.has(r.key) && d !== "keep";
   const blockedMsg = d === "keep" ? pfState.blockedRows.get(r.key) : undefined;
-  const isFocused = useStore(cursor) === r.key;
   const isOpen = useStore(detailKey) === r.key;
   const sectionPressure = useStore(pressure);
   const notes = useStore(notesById);
@@ -946,32 +947,33 @@ function ClaimRow(props: {
   const sev = worstSeverity(flags);
   const chars = contributionChars(r);
   const isNew = r.mutation.kind === "create_note";
-  // Roving tabindex: only the cursor row is in the tab order (src/ui/useRovingFocus).
   const tab = props.tabbable ? 0 : -1;
   return (
-    <div
-      className={`mem-row ${isOpen ? "is-open" : ""} ${isFocused ? "is-focused" : ""}`}
-      data-row={r.key}
-      data-d={d ?? "undecided"}
-    >
-      <div className="mem-summary">
-        <button
-          className="mem-dec hit"
-          tabIndex={tab}
-          aria-label={t("memory.review.decisionCycle", { decision: d ?? t("memory.undecided") })}
-          onClick={(e) => {
-            e.stopPropagation();
-            cycleDecision(r);
-          }}
-        >
-          <DecisionIcon d={d} />
-        </button>
-        <span className="kslot">
-          <Term tip={OP_TIP[r.mutation.kind]} tabIndex={tab}>
-            <OpIcon kind={r.mutation.kind} />
-          </Term>
-        </span>
-        <button className="mem-mid" tabIndex={tab} onClick={() => props.onActivate(r.key)}>
+    <ListItem
+      rowKey={r.key}
+      tabIndex={tab}
+      selected={isOpen}
+      className={WASH[d ?? "undecided"]}
+      onActivate={() => props.onActivate(r.key)}
+      leading={
+        <>
+          <Button
+            iconOnly
+            variant="ghost"
+            tabIndex={tab}
+            label={t("memory.review.decisionCycle", { decision: d ?? t("memory.undecided") })}
+            icon={<DecisionIcon d={d} />}
+            onClick={() => cycleDecision(r)}
+          />
+          <span className="flex w-6 justify-center">
+            <Term tip={OP_TIP[r.mutation.kind]} tabIndex={tab}>
+              <OpIcon kind={r.mutation.kind} />
+            </Term>
+          </span>
+        </>
+      }
+      title={
+        <span className="flex items-center gap-2">
           {props.showTarget && (
             <span className="a1-tgt t-data">
               <TypeIcon type={r.targetType} size={13} />
@@ -979,30 +981,36 @@ function ClaimRow(props: {
               {r.targetTitle}
             </span>
           )}
-          <span className="claim-text t-prose">{r.text}</span>
-          <span className="row-trail t-data">
-            {editedMuts.has(r.key) && (
-              <Term tip={t("memory.editedTip")}>
-                <EditedMark size={14} stroke={1.75} className="edit-mark" aria-label={t("reviewqueue.editedChange")} />
-              </Term>
-            )}
-            {isAuto && <span className="dep-tag">{t("reviewqueue.dependency")}</span>}
-            {blockedMsg && (
-              <span className="is-drop" title={blockedMsg}>
-                {t("memory.sourcesBlocked")}
-              </span>
-            )}
-            {flags.length > 0 && (
-              <span className="fq" data-sev={sev} title={flags.map((f) => f.label).join(" · ")}>
-                <Flag size={13} stroke={1.75} aria-hidden />
-                {flags.length}
-              </span>
-            )}
-            <span className="chs">{chars > 0 ? `+${chars.toLocaleString()}` : ""}</span>
+          <span
+            className={`t-prose min-w-0 flex-1 truncate text-prose font-normal leading-snug ${d === "drop" ? "line-through decoration-danger/55 opacity-50" : ""}`}
+          >
+            {r.text}
           </span>
-        </button>
-      </div>
-    </div>
+        </span>
+      }
+      trailing={
+        <span className="t-data flex items-center gap-2">
+          {editedMuts.has(r.key) && (
+            <Term tip={t("memory.editedTip")} tabIndex={-1}>
+              <EditedMark size={14} stroke={1.75} className="edit-mark" aria-label={t("reviewqueue.editedChange")} />
+            </Term>
+          )}
+          {isAuto && <span className="dep-tag">{t("reviewqueue.dependency")}</span>}
+          {blockedMsg && (
+            <span className="is-drop" title={blockedMsg}>
+              {t("memory.sourcesBlocked")}
+            </span>
+          )}
+          {flags.length > 0 && (
+            <span className="fq" data-sev={sev} title={flags.map((f) => f.label).join(" · ")}>
+              <Flag size={13} stroke={1.75} aria-hidden />
+              {flags.length}
+            </span>
+          )}
+          <span className="chs">{chars > 0 ? `+${chars.toLocaleString()}` : ""}</span>
+        </span>
+      }
+    />
   );
 }
 
