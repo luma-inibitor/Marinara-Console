@@ -82,7 +82,7 @@ const SURFACES = [
     name: "vault-editor",
     hash: `#/memory/vault/${NOTE}`,
     vps: [D],
-    sel: ".edit-area",
+    sel: ".claim-detail textarea",
     open: (p) => p.locator(".mdc-edit").click(),
   },
   {

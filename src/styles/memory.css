@@ -356,10 +356,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
   border-bottom: var(--hairline); font-size: var(--fs-data); overflow-wrap: anywhere; }
 .kvs .k { color: var(--text-dim); min-width: 92px; flex: 0 0 auto; font-size: var(--fs-data-s); }
 .dsec p { margin: 0; }
-.edit-area { width: 100%; max-width: var(--measure); background: var(--surface-2); border: var(--hairline);
-  border-radius: var(--r-s); color: var(--text); padding: var(--s2);
-  font-size: 13.5px; line-height: 1.4; resize: vertical; }
-.edit-area:focus { outline: none; border-color: var(--accent); }
 .linkline { display: inline-block; margin-right: var(--s2); }
 
 /* ══ stacked detail (mobile) ══ */
@@ -458,9 +454,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .xtext { white-space: pre-wrap; font-size: var(--fs-prose); color: var(--text-dim); }
 .curbar { display: flex; align-items: center; gap: var(--s2); border-top: var(--hairline);
   margin-top: var(--s2); padding-top: var(--s2); flex-wrap: wrap; }
-.editarea { width: 100%; background: var(--surface-1); border: var(--hairline); border-radius: var(--r-s);
-  color: var(--text); padding: var(--s2); font-size: var(--fs-prose); line-height: 1.5; resize: vertical; }
-.editarea:focus { outline: none; border-color: var(--accent); }
 .spend { display: inline-flex; align-items: center; gap: 2px; margin-left: 4px; opacity: 0.9; }
 .dirty { display: inline-flex; align-items: center; gap: 4px; color: var(--ok); }
 .barnote { color: var(--text-dim); }
@@ -524,9 +517,6 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
   border: none; background: none; border-radius: var(--r-s); color: var(--text-faint); }
 .kwx:hover { color: var(--danger); background: var(--danger-wash); }
 .kwadd { display: flex; gap: var(--s2); margin-top: var(--s2); }
-.kwadd input { flex: 1 1 auto; min-width: 0; min-height: 34px; background: var(--surface-1);
-  border: var(--hairline); border-radius: var(--r-s); color: var(--text); padding: 0 var(--s2); }
-.kwadd input:focus { outline: none; border-color: var(--accent); }
 .kwadd .zbtn { min-height: 34px; }
 
 /* ══ SCOPE BAR + NAV ══ */
