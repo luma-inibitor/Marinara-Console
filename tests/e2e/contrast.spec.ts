@@ -18,7 +18,6 @@ import baseline from "../../design/contrast-baseline.json" with { type: "json" }
 // An aria-hidden element needs no entry; the contrast pass skips it.
 const CONTRAST_EXEMPTIONS: [selector: string, reason: string][] = [
   [".sep", "separator glyph between meta fields; punctuation, no information"],
-  [".mdc-sep", "separator glyph between meta fields; punctuation, no information"],
   [".meta > * + *::before", "separator glyph between meta fields; punctuation, no information"],
   ["[data-brand]", "logotype; WCAG 1.4.3 exempts brand wordmarks from contrast"],
 ];

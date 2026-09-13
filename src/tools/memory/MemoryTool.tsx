@@ -132,7 +132,7 @@ export function MemoryTool({ rest }: { rest: string[] }) {
       {peek && (
         <Sheet className="peek-sheet" label={peek.title ?? peek.id} onClose={closePeek}>
           {/* Keyed so a chained peek cannot inherit the last memory's collapse state. */}
-          <MemoryDetail key={peek.id} note={peek} onBack={closePeek} peek />
+          <MemoryDetail key={peek.id} note={peek} onBack={closePeek} peek ground="raised" />
         </Sheet>
       )}
     </div>

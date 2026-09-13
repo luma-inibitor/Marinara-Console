@@ -180,7 +180,12 @@ export function Vault(props: { noteId?: string }) {
         <NoteEditor note={open} onClose={closeDetail} />
       </>
     ) : (
-      <MemoryDetail note={open} onBack={closeDetail} onEdit={() => setEditing(true)} />
+      <MemoryDetail
+        note={open}
+        onBack={closeDetail}
+        onEdit={() => setEditing(true)}
+        ground={desktop ? "raised" : "canvas"}
+      />
     ));
 
   return (

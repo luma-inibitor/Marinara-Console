@@ -180,7 +180,10 @@ src/
       detail/               the memory detail card
         MemoryDetail.tsx
         RetrievalCard.tsx
+        Provenance.tsx
+        Subjects.tsx
         SectionRow.tsx
+        chrome.tsx
         model.ts
       review/               sheets belonging to the review surface
         DockSheet.tsx
