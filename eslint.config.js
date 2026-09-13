@@ -119,6 +119,7 @@ const HOOK_CLASSES = [
   "^peek-sheet$",
   "^type-",
   "filter-sheet",
+  "fseditor",
 ];
 
 // A legacy file carries a disable comment at its top for each rule it still

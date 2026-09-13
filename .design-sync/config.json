@@ -15,7 +15,7 @@
     "EmptyState": "./src/ui/EmptyState.tsx",
     "ErrorState": "./src/ui/ErrorState.tsx",
     "FacetDrawer": "./src/ui/FacetDrawer.tsx",
-    "FullscreenText": null,
+    "FullscreenText": "./src/ui/FullscreenText.tsx",
     "IconButton": "./src/ui/IconButton.tsx",
     "ListEmpty": "./src/ui/ListEmpty.tsx",
     "ListGroup": "./src/ui/ListGroup.tsx",
