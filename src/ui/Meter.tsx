@@ -43,6 +43,9 @@ const FILL: Record<MeterTone, string> = {
 
 const HEIGHT = { sm: "h-1", md: "h-2" } as const;
 
+/** A faint boundary keeps an empty track visible. */
+export const TRACK = "overflow-hidden rounded-full bg-surface-3 inset-ring-1 inset-ring-faint";
+
 export function Meter(props: MeterProps) {
   const { label, max, value = 0, near, over, size = "sm", className } = props;
   const segments = props.segments ?? [{ value, tone: BAND_TONE[band(value, max, near, over)] }];
@@ -60,7 +63,7 @@ export function Meter(props: MeterProps) {
         };
 
   return (
-    <span {...aria} className={cn("flex min-w-0 overflow-hidden rounded-full bg-surface-3", HEIGHT[size], className)}>
+    <span {...aria} className={cn("flex min-w-0", TRACK, HEIGHT[size], className)}>
       {segments.map((s, i) => (
         <span
           key={i}

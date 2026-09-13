@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { percent } from "./Meter";
+import { percent, TRACK } from "./Meter";
 import { cn } from "./cn";
 
 /** Completion of a task, drawn as a track with a fill. */
@@ -21,7 +21,7 @@ export function clamp(value: number, max: number): number {
 
 const HEIGHT = { sm: "h-1", md: "h-2" } as const;
 
-const TRACK = {
+const FORM = {
   block: "block min-w-0 flex-1",
   inline: "inline-block w-tap shrink-0 align-middle",
 } as const;
@@ -48,12 +48,9 @@ export function Progress(props: ProgressProps) {
         };
 
   const track = (
-    <span
-      {...aria}
-      className={cn("overflow-hidden rounded-full bg-surface-3", HEIGHT[size], TRACK[form], text == null && className)}
-    >
+    <span {...aria} className={cn(TRACK, HEIGHT[size], FORM[form], text == null && className)}>
       {now == null ? (
-        <span className="block h-full w-1/3 bg-accent motion-safe:animate-progress motion-reduce:w-full motion-reduce:bg-faint" />
+        <span className="block h-full w-1/3 bg-accent motion-safe:animate-progress motion-reduce:w-full motion-reduce:bg-dim" />
       ) : (
         <span className="block h-full bg-accent" style={{ width: `${percent(now, max)}%` }} />
       )}
