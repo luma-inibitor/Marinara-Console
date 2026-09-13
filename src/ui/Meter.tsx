@@ -60,12 +60,7 @@ export function Meter(props: MeterProps) {
         };
 
   return (
-    <span
-      {...aria}
-      className={["flex min-w-0 overflow-hidden rounded-full bg-surface-3", HEIGHT[size], className]
-        .filter(Boolean)
-        .join(" ")}
-    >
+    <span {...aria} className={cn("flex min-w-0 overflow-hidden rounded-full bg-surface-3", HEIGHT[size], className)}>
       {segments.map((s, i) => (
         <span
           key={i}

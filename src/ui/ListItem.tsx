@@ -88,7 +88,7 @@ export function ListItem(props: ListItemProps) {
   const primary = onActivate ? (
     <button
       type="button"
-      className={[PRIMARY, PRIMARY_BUTTON, selected && "bg-surface-1"].filter(Boolean).join(" ")}
+      className={cn(PRIMARY, PRIMARY_BUTTON, selected && "bg-surface-1")}
       data-row={rowKey}
       tabIndex={tabIndex}
       aria-current={selected || undefined}
@@ -100,7 +100,7 @@ export function ListItem(props: ListItemProps) {
       {body}
     </button>
   ) : (
-    <div className={[PRIMARY, selected && "bg-surface-1"].filter(Boolean).join(" ")} data-row={rowKey}>
+    <div className={cn(PRIMARY, selected && "bg-surface-1")} data-row={rowKey}>
       {body}
     </div>
   );

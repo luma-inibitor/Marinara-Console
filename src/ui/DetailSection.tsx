@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { SectionKey } from "./SectionKey";
+import { cn } from "./cn";
 
 /** One section of a memory, with its heading, an optional meter, and a body. */
 
@@ -15,7 +16,7 @@ export function DetailSection(props: {
   className?: string;
 }) {
   return (
-    <section className={["mt-3", props.className].filter(Boolean).join(" ")}>
+    <section className={cn("mt-3", props.className)}>
       <h4 className={HEAD}>
         <SectionKey k={props.sectionKey} />
         {props.meta}

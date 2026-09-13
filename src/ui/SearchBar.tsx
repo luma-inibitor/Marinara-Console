@@ -1,5 +1,6 @@
 import { ICON_SIZE, Search } from "./icons";
 import { t } from "../copy";
+import { cn } from "./cn";
 
 /** A search field with its magnifier, and a match tally while there is a query. */
 
@@ -25,7 +26,7 @@ export function SearchBar(props: {
 }) {
   const showCount = props.count !== undefined && props.value.trim() !== "";
   return (
-    <label className={[BOX, props.className].filter(Boolean).join(" ")}>
+    <label className={cn(BOX, props.className)}>
       <Search size={ICON_SIZE.md} stroke={1.75} aria-hidden />
       <input
         className={INPUT}

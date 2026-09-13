@@ -22,6 +22,7 @@ function useFieldControl(): Partial<FieldWiring> {
 /** The ids a control is described by, in reading order. */
 export function describedBy(hintId?: string, errorId?: string): string | undefined {
   const ids = [hintId, errorId].filter(Boolean);
+  // eslint-disable-next-line no-restricted-syntax -- an aria-describedby id list
   return ids.length ? ids.join(" ") : undefined;
 }
 
@@ -55,7 +56,7 @@ export function Field(props: FieldProps) {
     "aria-required": required || undefined,
   };
   return (
-    <div className={["flex min-w-0 flex-col gap-1", className].filter(Boolean).join(" ")}>
+    <div className={cn("flex min-w-0 flex-col gap-1", className)}>
       <label htmlFor={id} className={labelHidden ? "sr-only" : LABEL}>
         {label}
         {required && <span className={MARK}>{t("ui.field.required")}</span>}

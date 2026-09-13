@@ -64,6 +64,31 @@ const CLASS_SELECTORS = [
     selector: "CallExpression[callee.name=/^(cn|cva)$/] > TemplateLiteral",
     message: "Compose classes with cn() from src/ui/cn.ts",
   },
+  {
+    selector: 'JSXAttribute[name.name="className"] > JSXExpressionContainer > BinaryExpression[operator="+"]',
+    message: "Compose classes with cn()",
+  },
+  {
+    selector:
+      'JSXAttribute[name.name="className"] > JSXExpressionContainer CallExpression[callee.property.name="join"]',
+    message: "Compose classes with cn()",
+  },
+  {
+    selector: 'CallExpression[callee.property.name="join"][arguments.0.value=" "]',
+    message: "A space-joined string in a component is a class list. Use cn()",
+  },
+  {
+    selector: 'BinaryExpression[operator="+"] > Literal[value=/^ |  $/]',
+    message: "A space-joined string in a component is a class list. Use cn()",
+  },
+  {
+    selector: 'CallExpression[callee.name=/^(cn|cva)$/] > BinaryExpression[operator="+"]',
+    message: "A space-joined string in a component is a class list. Use cn()",
+  },
+  {
+    selector: 'CallExpression[callee.name=/^(cn|cva)$/] CallExpression[callee.property.name="join"]',
+    message: "A space-joined string in a component is a class list. Use cn()",
+  },
 ];
 
 const BUTTON_SELECTOR = {
@@ -116,7 +141,7 @@ const TODO_BUTTON = [
   "src/ui/Sheet.tsx",
 ];
 
-// TODO 73 template literals in 26 files. Remove a file here once it composes with cn().
+// TODO 80 template literals and space joins in 26 files. Remove a file here once it composes with cn().
 const TODO_STRING = [
   "src/shell/App.tsx",
   "src/shell/Toaster.tsx",

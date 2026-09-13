@@ -50,9 +50,11 @@ export function shingles(text: string, size = 4): Set<string> {
     .filter(Boolean);
   const out = new Set<string>();
   if (words.length < size) {
+    // eslint-disable-next-line no-restricted-syntax -- an n-gram of words
     if (words.length) out.add(words.join(" "));
     return out;
   }
+  // eslint-disable-next-line no-restricted-syntax -- an n-gram of words
   for (let i = 0; i <= words.length - size; i++) out.add(words.slice(i, i + size).join(" "));
   return out;
 }

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { percent } from "./Meter";
+import { cn } from "./cn";
 
 /** Completion of a task, drawn as a track with a fill. */
 
@@ -49,9 +50,7 @@ export function Progress(props: ProgressProps) {
   const track = (
     <span
       {...aria}
-      className={["overflow-hidden rounded-full bg-surface-3", HEIGHT[size], TRACK[form], text == null && className]
-        .filter(Boolean)
-        .join(" ")}
+      className={cn("overflow-hidden rounded-full bg-surface-3", HEIGHT[size], TRACK[form], text == null && className)}
     >
       {now == null ? (
         <span className="block h-full w-1/3 bg-accent motion-safe:animate-progress motion-reduce:w-full motion-reduce:bg-faint" />
@@ -63,7 +62,7 @@ export function Progress(props: ProgressProps) {
 
   if (text == null) return track;
   return (
-    <span className={[WRAP[form], "min-w-0 items-center gap-2", className].filter(Boolean).join(" ")}>
+    <span className={cn(WRAP[form], "min-w-0 items-center gap-2", className)}>
       {track}
       <span className="shrink-0 t-data text-data-s text-dim">{text}</span>
     </span>

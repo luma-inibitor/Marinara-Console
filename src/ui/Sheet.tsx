@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { t } from "../copy";
 import { openOverlay, closeTopOverlay } from "../shell/overlays";
 import { Close, ICON_SIZE } from "./icons";
+import { cn } from "./cn";
 
 /** A layered surface, a bottom sheet on a phone and a right-hand panel past the split breakpoint. */
 
@@ -33,12 +34,12 @@ export function Sheet(props: {
   children: ReactNode;
   className?: string;
 }) {
-  return <Overlay {...props} surface={[PANEL, props.className].filter(Boolean).join(" ")} />;
+  return <Overlay {...props} surface={cn(PANEL, props.className)} />;
 }
 
 /** A centred dialog for a question the reviewer has to answer before anything else happens. */
 export function Modal(props: { label: string; onClose: () => void; children: ReactNode; className?: string }) {
-  return <Overlay {...props} surface={[MODAL, props.className].filter(Boolean).join(" ")} />;
+  return <Overlay {...props} surface={cn(MODAL, props.className)} />;
 }
 
 function Overlay(props: { label: string; onClose: () => void; children: ReactNode; surface: string }) {
