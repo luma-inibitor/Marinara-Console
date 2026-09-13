@@ -183,6 +183,10 @@ this catalog in the same change.
 - **Menu** — a Popover holding a list of actions. Focus lands on the first
   item, arrows move between items, and an item's action runs once the menu has
   closed. The review queue's group menu uses it.
+- **Picker**: a chip that shows the current choice and opens a Menu of radio
+  or checkbox items. A radio choice closes the menu, a checkbox toggle keeps it
+  open, and the current choice carries a check glyph and `aria-checked`. The
+  review queue's group and sort controls use it.
 - **Tag/distribution panel** — group stats with bars, per-group Show/Select.
 - **Decision rail** — tri-state per-row judgment (undecided / keep / drop) on
   the status rail, cycled by tap or set by single keys, advancing automatically.

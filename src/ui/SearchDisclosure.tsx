@@ -27,7 +27,7 @@ const OPTION =
  *
  *  Use this when the list can be long and the trigger belongs inline, as in a
  *  scope breadcrumb or a toolbar filter. Use `<Picker>` instead when the list
- *  is short and fixed, or when the trigger lives in a phone's thumb rail.
+ *  is short and fixed.
  *
  *  Focus lands on the popover rather than on the search field, so opening a
  *  picker does not take the keyboard from someone who came to click. */

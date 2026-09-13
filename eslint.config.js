@@ -105,12 +105,13 @@ const BUTTON_OK = [
   "src/ui/ListGroup.tsx", // the group header's disclosure
   "src/ui/ListItem.tsx", // the row's primary target
   "src/ui/Menu.tsx", // a menu item
+  "src/ui/Picker.tsx", // the trigger chip, which anchors its menu
   "src/ui/ModePill.tsx", // a segment of a toggle group
   "src/ui/SearchDisclosure.tsx", // the disclosure and its options
   "src/tools/memory/detail/RetrievalCard.tsx", // the keyword rail, a clamped run of pills
 ];
 
-// TODO 114 hand-rolled buttons in 25 files. Remove a file here once it renders Button.
+// TODO 110 hand-rolled buttons in 24 files. Remove a file here once it renders Button.
 const TODO_BUTTON = [
   "src/shell/App.tsx",
   "src/shell/Toaster.tsx",
@@ -126,7 +127,6 @@ const TODO_BUTTON = [
   "src/tools/memory/Vault.tsx",
   "src/tools/memory/components/NoteRef.tsx",
   "src/tools/memory/review/FilterSheet.tsx",
-  "src/tools/memory/review/ViewSheet.tsx",
   "src/tools/presets/PresetsTool.tsx",
   "src/ui/CopyableText.tsx",
   "src/ui/ErrorState.tsx",
@@ -139,7 +139,7 @@ const TODO_BUTTON = [
   "src/ui/Sheet.tsx",
 ];
 
-// TODO 70 template literals and space joins in 19 files. Remove a file here once it composes with cn().
+// TODO 66 template literals and space joins in 18 files. Remove a file here once it composes with cn().
 const TODO_STRING = [
   "src/shell/App.tsx",
   "src/shell/Toaster.tsx",
@@ -154,7 +154,6 @@ const TODO_STRING = [
   "src/tools/memory/icons.tsx",
   "src/tools/memory/review/DockSheet.tsx",
   "src/tools/memory/review/FilterSheet.tsx",
-  "src/tools/memory/review/ViewSheet.tsx",
   "src/tools/presets/PresetsTool.tsx",
   "src/ui/CopyableText.tsx",
   "src/ui/EmptyState.tsx",
@@ -268,7 +267,7 @@ export default [
     },
   },
   {
-    // TODO 830 classes from the legacy stylesheets in 32 files. Remove a file here once it is utilities.
+    // TODO 806 classes from the legacy stylesheets in 31 files. Remove a file here once it is utilities.
     files: [
       "src/shell/App.tsx",
       "src/shell/Toaster.tsx",
@@ -288,7 +287,6 @@ export default [
       "src/tools/memory/icons.tsx",
       "src/tools/memory/review/DockSheet.tsx",
       "src/tools/memory/review/FilterSheet.tsx",
-      "src/tools/memory/review/ViewSheet.tsx",
       "src/tools/presets/PresetsTool.tsx",
       "src/ui/CopyableText.tsx",
       "src/ui/EmptyState.tsx",

@@ -577,10 +577,6 @@
     "despite": "activityview.phaseApply",
     "note": "The apply button on a phone, where the labelled form does not fit: measured at 390px the dock's counts want 221px and memory.apply.button another 159, against 366px of usable row. The catalog's bare \"Apply\" is the activity log's phase name and carries no count — and the count is the whole point of this button, which states how much a press is about to send. Dropping to the bare verb would leave the blast radius unstated on the one projection where the row is too tight to state it twice."
   },
-  "memory.review.view": {
-    "text": "View",
-    "note": "Title of the sheet holding both arrangement questions — how the queue is divided and how it is ordered. The catalog splits these across memoryvault.sortBy and its own grouping controls and never names the pair, because upstream has no surface that asks both at once."
-  },
   "memory.review.anyFlag": {
     "text": "has quality flags",
     "note": "The filter that keeps every claim carrying at least one quality flag, whichever flag it is. The catalog names individual flags but has no filter over the set, because upstream never computes the set."
@@ -609,10 +605,6 @@
     "one": "{{shown}} of {{total}} claim",
     "other": "{{shown}} of {{total}} claims",
     "note": "The filter sheet's running result, so a selection states its own effect before the sheet is dismissed. memory.review.shownOf is the bare ratio used where the noun is already on screen; here the list is behind a scrim and the noun has to come along."
-  },
-  "memory.review.sortFlipHint": {
-    "text": "Tap the active sort again to flip direction.",
-    "note": "Help line under the sort options, where the same row both selects a sort and reverses it. The catalog has no reversible sort control and so no sentence explaining one."
   },
   "memory.review.refreshQueue": {
     "text": "Refresh queue",

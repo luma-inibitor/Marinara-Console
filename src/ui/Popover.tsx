@@ -23,9 +23,7 @@ export const MARGIN = 8;
 
 const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 
-/** Places the surface against the anchor. It flips to the other side when the
- *  preferred side runs off the viewport and the other side has room, and it
- *  slides along the anchor to stay inside the viewport. */
+/** Flips to the other side when the preferred one lacks room, and slides along the anchor to stay in the viewport. */
 export function place(
   anchor: Box,
   surface: Box,
@@ -48,10 +46,10 @@ export function place(
 
 export interface PopoverProps {
   open: boolean;
-  /** The trigger. The surface sits against it and focus returns to it on close. */
+  /** The trigger, which the surface sits against and focus returns to on close. */
   anchor: RefObject<HTMLElement | null>;
   label: string;
-  /** Clears the state that renders the popover open. Runs on outside click, Escape and back. */
+  /** Clears the state that renders the popover open, on outside click, Escape and back. */
   onClose: () => void;
   side?: Side;
   align?: Align;
@@ -64,17 +62,7 @@ export interface PopoverProps {
   children: ReactNode;
 }
 
-const SURFACE =
-  "absolute top-0 left-0 max-h-[calc(100vh-16px)] max-w-[calc(100vw-16px)] overflow-y-auto rounded-md border border-edge-strong " +
-  "bg-surface-1 shadow-pop outline-none";
-
-/** An anchored surface over a sealed page.
- *
- *  Popover renders into a portal at `document.body` and registers with the
- *  overlay stack, so the page behind it is inert and frozen, focus lands inside
- *  and wraps, and Escape and back close it. The invisible scrim under the
- *  surface takes the outside click, as a sheet's does. A caller renders the
- *  trigger and flips `open`; closing goes through `closeTopOverlay`. */
+/** An anchored surface over a sealed page, portalled to `document.body` and registered with the overlay stack. */
 export function Popover(props: PopoverProps) {
   const { open, anchor, side = "bottom", align = "start", role = "dialog", initialFocus = "first" } = props;
   const close = useRef(props.onClose);
@@ -123,7 +111,10 @@ export function Popover(props: PopoverProps) {
         aria-modal={role === "dialog" ? "true" : undefined}
         aria-label={props.label}
         tabIndex={initialFocus === "surface" ? -1 : undefined}
-        className={cn(SURFACE, props.className)}
+        className={cn(
+          "absolute top-0 left-0 max-h-[calc(100vh-16px)] max-w-[calc(100vw-16px)] overflow-y-auto rounded-md border border-edge-strong bg-surface-1 shadow-pop outline-none",
+          props.className,
+        )}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={props.onKeyDown}
       >

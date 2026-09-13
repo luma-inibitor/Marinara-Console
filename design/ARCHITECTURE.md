@@ -188,7 +188,6 @@ src/
       review/               sheets belonging to the review surface
         DockSheet.tsx
         FilterSheet.tsx
-        ViewSheet.tsx
       MemoryTool.tsx        the tool shell, which mounts the three screens
       Vault.tsx             below. Those three and the tool's own components
       Review.tsx            still sit loose at the tool root

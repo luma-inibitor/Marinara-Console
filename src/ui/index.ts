@@ -33,6 +33,9 @@ export { Menu } from "./Menu";
 /** @public */
 export type { MenuItem } from "./Menu";
 export { MODES, ModePill } from "./ModePill";
+export { Picker } from "./Picker";
+/** @public */
+export type { PickerOption, PickerProps } from "./Picker";
 /** @public */
 export { Popover } from "./Popover";
 /** @public */

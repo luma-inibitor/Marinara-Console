@@ -60,17 +60,9 @@
 .mval .is-keep, .mval .is-drop { display: inline-flex; align-items: center; gap: 2px; }
 .rail-gap { flex: 0 0 auto; width: 1px; align-self: stretch; margin: 4px 2px; background: var(--edge); }
 
-/* ══ arrange rail — the phone's one row of chrome ══
-   Filter is glyph + count (its value is a quantity); group and sort are
-   glyph + word (theirs is a name, and a name has to be read). The two
-   arrangement buttons split the leftover width evenly so the row scans as
-   columns rather than as three differently-sized blobs. */
+/* ══ arrange rail — the phone's one row of chrome ══ */
 .qrail { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s2); }
-/* Full primary height (§2). With the header cut these three are the screen's
-   principal controls, not chips beside a title — and at --tap-2 they sat 6px
-   from the row below, which is under the 8px that makes a small target
-   legitimate at all. Sizing them properly is the fix; spacing them was
-   arguing for the exception. */
+/* Full primary height: at --tap-2 it sat 6px from the row below. */
 .qbtn { display: flex; align-items: center; gap: 5px; min-height: var(--tap);
   padding: 0 8px; background: var(--surface-2); border: 1px solid var(--edge);
   border-radius: var(--r-s); color: var(--text); cursor: pointer;
@@ -84,8 +76,6 @@
 .qbtn-f.is-on { color: var(--accent); }
 .qn { font-size: var(--fs-data-s); font-weight: 700; color: var(--accent);
   font-variant-numeric: tabular-nums; }
-.qv { flex: 1; min-width: 0; font-size: var(--fs-label); text-align: left;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ══ active-filter track ══
    Every active value, removable where it is shown — on a phone the sheet is
