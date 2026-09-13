@@ -9,13 +9,12 @@ import { closeTopOverlay } from "../shell/overlays";
 
 const trigger = cva(
   [
-    "inline-flex items-center gap-1.5 rounded-m border border-edge bg-surface-1",
-    "font-label font-semibold tracking-[0.09em] text-dim uppercase [font-variation-settings:'wdth'_110]",
+    "inline-flex items-center gap-1.5 rounded-md border border-edge bg-surface-1 t-label",
     "transition-colors hover:border-faint hover:text-ink aria-expanded:bg-surface-2 aria-expanded:text-ink",
     "focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none",
   ],
   {
-    variants: { size: { sm: "min-h-tap-2 px-2.5 text-label-s", md: "min-h-tap px-2 text-label" } },
+    variants: { size: { sm: "min-h-tap-2 px-2.5 t-label-s", md: "min-h-tap px-2" } },
     defaultVariants: { size: "sm" },
   },
 );
