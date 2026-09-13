@@ -1,90 +1,218 @@
-import type { KeyboardEvent, MouseEvent } from "react";
 import { t } from "../../../copy";
+import type { NoteSection } from "../api/types";
+import { LinkTarget } from "../components/NoteRef";
+import { Button, Meter, SectionKey } from "../../../ui";
 import { ChevronRight, Flag, ICON_SIZE } from "../../../ui/icons";
-import { SectionKey } from "../../../ui";
-import { sectionMeta, type SectionView } from "./model";
-import "./SectionRow.css";
+import { cn, cva } from "../../../ui/cn";
+import { After, DL, Pair, TARGET, TARGET_LINK, Word, groundBg, raisedHover, type Ground } from "./chrome";
+import { dimensionRows, editStamp, evidenceRef, percentOf, sectionMeta, signed, type SectionView } from "./model";
 
-/** One section of a memory as one row and one tap target.
- *
- *  Every section behaves identically: the chevron expands the body in place,
- *  however long the body is. There is no size threshold and no second surface,
- *  so the glyph has only one thing it can mean.
- *
- *  A long section is made navigable by the row itself: while its body is open
- *  the row sticks under the card's head, so the control that closes it is on
- *  screen the whole way down instead of a hundred lines back up. That is a CSS
- *  behavior, and it costs nothing for a short section — a header with less
- *  body than viewport never reaches its sticky offset.
- *
- *  Section keys are arbitrary suggestions rather than an enum: the row renders
- *  the key it is given, in payload order, with no key privileged over another.
- */
+const SUB = "m-0 t-label t-label-s mt-1";
+
+const delta = cva("", { variants: { trend: { up: "text-ok", down: "text-danger", flat: "text-dim" } } });
+
+function Score({ value }: { value: number }) {
+  const pct = percentOf(value);
+  return (
+    <span className="flex items-center gap-2">
+      <Meter max={100} value={pct} className="w-20" />
+      <span className="tabular-nums">{pct}%</span>
+    </span>
+  );
+}
+
+function Contribution({ c }: { c: NonNullable<NoteSection["contributions"]>[number] }) {
+  const stamp = editStamp(c.updatedAt);
+  return (
+    <li className="flex min-w-0 flex-wrap items-center gap-x-[6px] gap-y-1">
+      <span>{c.owner}</span>
+      {c.sourceNoteId && (
+        <After>
+          <LinkTarget id={c.sourceNoteId} className={TARGET} linkClassName={TARGET_LINK} />
+        </After>
+      )}
+      {stamp && (
+        <After>
+          <span className="text-dim">{stamp}</span>
+        </After>
+      )}
+      {c.confidence != null && (
+        <After>
+          <span className="text-dim tabular-nums">{percentOf(c.confidence)}%</span>
+        </After>
+      )}
+    </li>
+  );
+}
+
+function Evidence({ entry }: { entry: string }) {
+  const ref = evidenceRef(entry);
+  if (!ref) return <li className="border-l-2 border-edge-strong pl-2 font-prose text-data leading-snug">{entry}</li>;
+  return (
+    <li className="flex min-w-0 items-center gap-x-[6px] font-data text-data-s">
+      <span className="shrink-0 text-dim">{ref.kind}</span>
+      {ref.kind === "source_note" ? (
+        <LinkTarget id={ref.id} className={TARGET} linkClassName={TARGET_LINK} />
+      ) : (
+        <span className="[overflow-wrap:anywhere]">{ref.id}</span>
+      )}
+    </li>
+  );
+}
+
+function SectionBody({ view }: { view: SectionView }) {
+  const s = view.section;
+  const updated = editStamp(s.updatedAt);
+  const evidence = s.evidence ?? [];
+  const contributions = s.contributions ?? [];
+  const dimensions = dimensionRows(s.dimensions, s.dimensionChanges);
+  return (
+    <div className="mb-3 ml-6 flex max-w-[var(--measure)] flex-col gap-2">
+      <ul className="m-0 flex list-disc flex-col gap-[7px] pl-4 font-prose text-prose leading-normal marker:text-faint">
+        {view.lines.map((line, i) => (
+          <li key={i}>{line}</li>
+        ))}
+      </ul>
+
+      {(s.importance != null || s.confidence != null || s.salience != null || updated) && (
+        <dl className={DL}>
+          {s.importance != null && <Pair k={<Word>{t("memoryvault.importance")}</Word>}>{s.importance}</Pair>}
+          {s.confidence != null && (
+            <Pair k={<Word>{t("memoryvault.confidence")}</Word>}>
+              <Score value={s.confidence} />
+            </Pair>
+          )}
+          {s.salience != null && (
+            <Pair k={<Word>{t("memoryvault.salience")}</Word>}>
+              <Score value={s.salience} />
+            </Pair>
+          )}
+          {updated && <Pair k={<Word>{t("memoryvault.updated")}</Word>}>{updated}</Pair>}
+        </dl>
+      )}
+
+      {evidence.length > 0 && (
+        <>
+          <h4 className={SUB}>{t("memoryvault.evidence")}</h4>
+          <ul className="m-0 flex list-none flex-col gap-1 p-0 text-dim">
+            {evidence.map((entry, i) => (
+              <Evidence key={i} entry={entry} />
+            ))}
+          </ul>
+        </>
+      )}
+
+      {contributions.length > 0 && (
+        <>
+          <h4 className={SUB}>{t("memory.detail.contributions")}</h4>
+          <ul className="m-0 flex list-none flex-col gap-1 p-0 font-data text-data-s">
+            {contributions.map((c, i) => (
+              <Contribution key={i} c={c} />
+            ))}
+          </ul>
+        </>
+      )}
+
+      {dimensions.length > 0 && (
+        <>
+          <h4 className={SUB}>{t("memory.detail.dimensions")}</h4>
+          <dl className={DL}>
+            {dimensions.map((row) => (
+              <Pair key={row.axis} k={row.axis}>
+                <span className="flex items-center gap-2 tabular-nums">
+                  {row.value != null && (
+                    <>
+                      <Meter max={100} value={row.value} className="w-20" />
+                      <span>{row.value}</span>
+                    </>
+                  )}
+                  {row.delta != null && (
+                    <span className={delta({ trend: row.delta > 0 ? "up" : row.delta < 0 ? "down" : "flat" })}>
+                      {signed(row.delta)}
+                    </span>
+                  )}
+                </span>
+              </Pair>
+            ))}
+          </dl>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** One section as one row. */
 export function SectionRow(props: {
   view: SectionView;
-  /** Effective open state — the parent owns it (collapse-all lives up there). */
   open: boolean;
   flagOpen: boolean;
   onToggle: () => void;
   onFlag: () => void;
+  ground?: Ground;
+  /** The card head's height. */
+  stickyTop?: number;
 }) {
-  const { view, open } = props;
-
-  const activateFlag = (e: MouseEvent | KeyboardEvent) => {
-    // The flag sits inside the row button, so its activation must not also
-    // fire the row's expand.
-    e.stopPropagation();
-    e.preventDefault();
-    props.onFlag();
-  };
+  const { view, open, ground = "canvas", stickyTop = 0 } = props;
+  const importance = view.section.importance;
 
   return (
-    <div className="mdc-row-wrap" data-key={view.key}>
-      <button
-        type="button"
-        className={`mdc-row${open ? " is-open" : ""}`}
-        aria-expanded={open}
-        onClick={props.onToggle}
+    <div data-section={view.key} className="border-b border-edge">
+      <div
+        className={cn("flex items-center gap-2", open && ["sticky z-[3] border-b border-edge", groundBg({ ground })])}
+        style={open ? { top: stickyTop } : undefined}
       >
-        <span className="mdc-row-name-cell">
-          <SectionKey k={view.key} className="mdc-row-name" />
-          {view.flag && (
-            <span className="mdc-row-flag-wrap">
-              {/* A button cannot nest inside a button, so the flag is a span
-                  carrying the button role, with Enter/Space wired by hand. */}
+        <h3 className="m-0 flex min-w-0 flex-1">
+          <Button
+            variant="ghost"
+            labelCase="sentence"
+            fullWidth
+            iconAlign="end"
+            className={cn(
+              "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] px-0 text-left font-normal",
+              raisedHover({ ground }),
+            )}
+            expanded={open}
+            onClick={props.onToggle}
+            icon={
               <span
-                role="button"
-                tabIndex={0}
-                className="mdc-row-flag hit"
-                aria-label={t("memory.detail.flagWhy")}
-                aria-expanded={props.flagOpen}
-                onClick={activateFlag}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") activateFlag(e);
-                }}
+                className={cn(
+                  "flex text-faint transition-transform [transition-duration:var(--t-fast)]",
+                  open && "rotate-90",
+                )}
+                aria-hidden
               >
-                <Flag size={ICON_SIZE.sm} stroke={2} aria-hidden="true" />
+                <ChevronRight size={ICON_SIZE.md} />
               </span>
-              {props.flagOpen && <span className="mdc-row-flag-pop">{view.flag.sentence}</span>}
+            }
+          >
+            <span className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+              <span className="inline-flex min-w-0 flex-wrap items-center gap-x-[6px]">
+                <SectionKey k={view.key} className="[overflow-wrap:anywhere]" />
+                {importance != null && <span className="font-data text-data-s text-dim">{importance}</span>}
+              </span>
+              <span className="t-num text-label whitespace-nowrap text-dim [font-variant-ligatures:none]">
+                {sectionMeta(view)}
+              </span>
             </span>
-          )}
-        </span>
-
-        <span className="mdc-row-meta">{sectionMeta(view)}</span>
-
-        <span className={`mdc-row-glyph${open ? " mdc-row-glyph-open" : ""}`}>
-          <ChevronRight size={ICON_SIZE.md} aria-hidden="true" />
-        </span>
-      </button>
-
-      {/* Body text lives outside the button so it can be selected normally. */}
-      {open && (
-        <div className="mdc-row-body">
-          {view.lines.map((line, i) => (
-            <div key={i}>- {line}</div>
-          ))}
-        </div>
+          </Button>
+        </h3>
+        {view.flag && (
+          <Button
+            iconOnly
+            variant="ghost"
+            size="sm"
+            className="shrink-0"
+            label={t("memory.detail.flagWhy")}
+            expanded={props.flagOpen}
+            onClick={props.onFlag}
+            icon={<Flag className="text-flag" size={ICON_SIZE.sm} stroke={2} aria-hidden />}
+          />
+        )}
+      </div>
+      {view.flag && props.flagOpen && (
+        <p className="m-0 mb-2 ml-6 max-w-[var(--measure)] font-prose text-data leading-snug">{view.flag.sentence}</p>
       )}
+      {open && <SectionBody view={view} />}
     </div>
   );
 }
