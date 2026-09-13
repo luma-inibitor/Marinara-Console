@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronDown } from "./icons";
 import type { Icon } from "./icons";
+import { Popover } from "./Popover";
 import { SearchBar } from "./SearchBar";
 import { fuzzyFilter } from "./fuzzy";
 import { t } from "../copy";
-import { openOverlay, closeTopOverlay } from "../shell/overlays";
-import "./SearchDisclosure.css";
+import { closeTopOverlay } from "../shell/overlays";
 
 export interface DisclosureOption {
   id: string;
@@ -13,16 +13,24 @@ export interface DisclosureOption {
   hint?: string;
 }
 
-/** Choose one value from a searchable list, in a panel anchored to its own
+const TRIGGER =
+  "hit group inline-flex min-h-[32px] max-w-[240px] max-stack:max-w-[44vw] items-center gap-[5px] rounded-s px-2 " +
+  "text-ink hover:bg-surface-2 aria-expanded:bg-surface-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]";
+const VALUE = "min-w-0 truncate border-b border-dotted border-transparent text-prose group-hover:border-faint";
+const OPTION =
+  "flex min-h-tap items-center gap-2 rounded-s px-2 text-left text-prose text-ink hover:bg-surface-2 " +
+  "aria-[current=true]:bg-accent-wash focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]";
+
+/** Choose one value from a searchable list, in a popover anchored to its own
  *  trigger. The trigger shows the current value, so the control reads as part
  *  of a sentence rather than as a button that hides its state.
  *
- *  Use this when the list can be long and the trigger belongs inline — a scope
- *  breadcrumb, a filter in a toolbar. Use `<Picker>` instead when the list is
- *  short and fixed, or when the trigger lives in a phone's thumb rail.
+ *  Use this when the list can be long and the trigger belongs inline, as in a
+ *  scope breadcrumb or a toolbar filter. Use `<Picker>` instead when the list
+ *  is short and fixed, or when the trigger lives in a phone's thumb rail.
  *
- *  The search field never autofocuses: opening a picker should not take the
- *  keyboard from someone who came to click. */
+ *  Focus lands on the popover rather than on the search field, so opening a
+ *  picker does not take the keyboard from someone who came to click. */
 export function SearchDisclosure(props: {
   label: string;
   value: string;
@@ -37,11 +45,7 @@ export function SearchDisclosure(props: {
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
-
-  useEffect(() => {
-    if (!open) return;
-    return openOverlay(() => setOpen(false));
-  }, [open]);
+  const trigger = useRef<HTMLButtonElement>(null);
 
   const shown = fuzzyFilter(props.options, q, (o) => o.name);
   const I = props.icon;
@@ -49,12 +53,15 @@ export function SearchDisclosure(props: {
     props.onPick(id);
     closeTopOverlay();
   };
+  const current = (id: string) => (props.current === id ? "true" : undefined);
 
   return (
-    <div className="disclosure">
+    <>
       <button
+        ref={trigger}
         type="button"
-        className="disclosure-trigger hit"
+        className={TRIGGER}
+        aria-haspopup="dialog"
         aria-expanded={open}
         aria-label={`${props.label}: ${props.value}`}
         onClick={() => {
@@ -66,42 +73,37 @@ export function SearchDisclosure(props: {
           setOpen(true);
         }}
       >
-        <I size={14} stroke={1.75} />
-        <span className="disclosure-value">{props.value}</span>
-        <ChevronDown size={13} stroke={1.75} aria-hidden />
+        <I size={14} stroke={1.75} className="shrink-0 text-dim" />
+        <span className={VALUE}>{props.value}</span>
+        <ChevronDown size={13} stroke={1.75} className="shrink-0 text-dim" aria-hidden />
       </button>
-      {open && <span className="disclosure-scrim" onClick={closeTopOverlay} />}
-      {open && (
-        <div className="disclosure-pop" role="dialog" aria-label={props.label}>
-          <SearchBar
-            className="disclosure-search"
-            label={t("ui.search.what", { what: props.label.toLowerCase() })}
-            value={q}
-            onInput={setQ}
-          />
-          <div className="disclosure-list">
-            <button
-              type="button"
-              className={`disclosure-opt hit ${props.current === "" ? "is-on" : ""}`}
-              onClick={() => pick("")}
-            >
-              {props.allLabel}
+      <Popover
+        open={open}
+        anchor={trigger}
+        label={props.label}
+        initialFocus="surface"
+        className="w-[300px] p-2"
+        onClose={() => setOpen(false)}
+      >
+        <SearchBar
+          className="mb-2"
+          label={t("ui.search.what", { what: props.label.toLowerCase() })}
+          value={q}
+          onInput={setQ}
+        />
+        <div className="flex max-h-[300px] flex-col overflow-y-auto">
+          <button type="button" className={OPTION} aria-current={current("")} onClick={() => pick("")}>
+            {props.allLabel}
+          </button>
+          {shown.map((o) => (
+            <button key={o.id} type="button" className={OPTION} aria-current={current(o.id)} onClick={() => pick(o.id)}>
+              <span className="min-w-0 flex-1 truncate">{o.name}</span>
+              {o.hint && <span className="shrink-0 font-data text-data text-dim">{o.hint}</span>}
             </button>
-            {shown.map((o) => (
-              <button
-                key={o.id}
-                type="button"
-                className={`disclosure-opt hit ${props.current === o.id ? "is-on" : ""}`}
-                onClick={() => pick(o.id)}
-              >
-                <span className="disclosure-optname">{o.name}</span>
-                {o.hint && <span className="disclosure-opthint t-data">{o.hint}</span>}
-              </button>
-            ))}
-            {shown.length === 0 && <p className="disclosure-none t-prose dim">{props.emptyText}</p>}
-          </div>
+          ))}
+          {shown.length === 0 && <p className="m-0 p-2 text-prose text-dim">{props.emptyText}</p>}
         </div>
-      )}
-    </div>
+      </Popover>
+    </>
   );
 }
