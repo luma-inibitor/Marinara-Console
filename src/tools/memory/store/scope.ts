@@ -7,6 +7,7 @@
 // review state: the vault and the sources workspace answer to it too.
 
 import { useEffect, useState } from "react";
+import { readStorage, writeStorage } from "../../../lib/storage";
 import { createStore, useStore } from "../../../lib/store";
 import { fetchChats, type Chat } from "../api/chats";
 import { fetchCharacters } from "../api/characters";
@@ -17,19 +18,19 @@ export type { Chat, Character };
 
 /** Import scope: one value read by every memory screen, tool-level rather than
  *  console-wide. */
-export const scopeChatId = createStore<string>(localStorage.getItem("mc-ltm-chat") ?? "");
-export const scopeCharacterId = createStore<string>(localStorage.getItem("mc-ltm-character") ?? "");
+export const scopeChatId = createStore<string>(readStorage("mc-ltm-chat") ?? "");
+export const scopeCharacterId = createStore<string>(readStorage("mc-ltm-character") ?? "");
 
 export function setScope(id: string) {
   scopeChatId.set(id);
-  localStorage.setItem("mc-ltm-chat", id);
+  writeStorage("mc-ltm-chat", id);
 }
 
 /** Choosing a character narrows the chats below it, so a chat that no longer
  *  belongs to the scope cannot stay selected. */
 export function setScopeCharacter(id: string) {
   scopeCharacterId.set(id);
-  localStorage.setItem("mc-ltm-character", id);
+  writeStorage("mc-ltm-character", id);
   if (id) setScope("");
 }
 

@@ -3,8 +3,10 @@
 // `useScope` is deliberately uncovered — it is a React hook and this suite runs
 // in the node environment with no DOM.
 
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { currentScope, scopeCharacterId, scopeChatId, setScope, setScopeCharacter } from "./scope";
+
+const real = globalThis.localStorage;
 
 /** The stores are module-level singletons seeded from localStorage at import
  *  time, so a test that writes scope leaks into every test after it unless the
@@ -13,6 +15,10 @@ beforeEach(() => {
   scopeChatId.set("");
   scopeCharacterId.set("");
   localStorage.clear();
+});
+
+afterEach(() => {
+  globalThis.localStorage = real;
 });
 
 describe("setScope / setScopeCharacter", () => {
@@ -48,6 +54,17 @@ describe("setScope / setScopeCharacter", () => {
   it("currentScope reads both stores without subscribing", () => {
     setScopeCharacter("char-1");
     setScope("chat-1");
+    expect(currentScope()).toEqual({ characterId: "char-1", chatId: "chat-1" });
+  });
+
+  it("still updates the stores when storage is blocked", () => {
+    globalThis.localStorage = {
+      setItem() {
+        throw new Error("blocked");
+      },
+    } as unknown as Storage;
+    expect(() => setScopeCharacter("char-1")).not.toThrow();
+    expect(() => setScope("chat-1")).not.toThrow();
     expect(currentScope()).toEqual({ characterId: "char-1", chatId: "chat-1" });
   });
 });

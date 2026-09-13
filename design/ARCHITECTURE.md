@@ -118,6 +118,7 @@ The tree as it stands, abbreviated. It omits every `.css` file. It omits every `
 src/
   main.tsx
   lib/                      primitives with no domain knowledge
+    storage.ts              first-party: readStorage, writeStorage
     store.ts                first-party: createStore, derived, useStore
     lorebook-keyword-matching.js   vendored engine code, never edited
     regex-safety.js                vendored engine code, never edited

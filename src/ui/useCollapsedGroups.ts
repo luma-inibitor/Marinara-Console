@@ -1,3 +1,4 @@
+import { readStorage, writeStorage } from "../lib/storage";
 import { createStore, useStore } from "../lib/store";
 
 /** Collapsed-group state for a grouped list.
@@ -11,14 +12,14 @@ import { createStore, useStore } from "../lib/store";
  *  should reset — a queue you are working through is not the same as a
  *  ninety-row inventory you keep folded. */
 export function collapsedGroups(storageKey?: string) {
-  const initial: string[] = storageKey ? safeParse(localStorage.getItem(storageKey)) : [];
+  const initial: string[] = storageKey ? safeParse(readStorage(storageKey)) : [];
   const ids = createStore<Set<string>>(new Set(initial));
 
   function toggle(id: string) {
     const next = new Set(ids.get());
     next.has(id) ? next.delete(id) : next.add(id);
     ids.set(next);
-    if (storageKey) localStorage.setItem(storageKey, JSON.stringify([...next]));
+    if (storageKey) writeStorage(storageKey, JSON.stringify([...next]));
   }
 
   /** The subscribing read, and the only legal one during render. There is

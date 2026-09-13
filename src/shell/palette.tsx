@@ -3,6 +3,7 @@
 // entries, and actions; searches a local cache, refreshed on open.
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { createStore, useStore } from "../lib/store";
+import { writeStorage } from "../lib/storage";
 import { openOverlay, closeTopOverlay, useCloseThen } from "./overlays";
 import { navigate } from "./router";
 import { api } from "./api";
@@ -14,7 +15,7 @@ function toggleDensity() {
   const el = document.documentElement;
   const next = el.dataset.density === "compact" ? "comfortable" : "compact";
   el.dataset.density = next;
-  localStorage.setItem("mc-density", next);
+  writeStorage("mc-density", next);
 }
 
 interface Item {
