@@ -11,6 +11,7 @@
 // type, and reach the id only when nothing else is known.
 
 import type { ReactNode } from "react";
+import { cn } from "../../../ui/cn";
 import { useStore } from "../../../lib/store";
 import { toast } from "../../../shell/toast";
 import { notesById, openPeek } from "../store/notes";
@@ -30,10 +31,10 @@ export async function peekNote(id: string) {
 
 /** A memory's title as a way into it. The click is stopped here because these
  *  sit inside rows that are themselves tap targets. */
-export function NoteRef(props: { id: string; label?: string }) {
+export function NoteRef(props: { id: string; label?: string; className?: string }) {
   return (
     <button
-      className="notelink t-data"
+      className={cn("notelink t-data", props.className)}
       onClick={(e) => {
         e.stopPropagation();
         peekNote(props.id);
@@ -52,20 +53,25 @@ export function NoteRef(props: { id: string; label?: string }) {
  *
  *  `educate` gives the glyph its glossary definition; a surface that already
  *  teaches the type elsewhere on screen leaves it off. `className` replaces the
- *  default box for a host that owns the reference's layout — the retrieval
- *  card's row truncates its title, which `.nref` does not. */
+ *  default box for a host that owns the reference's layout, and `linkClassName`
+ *  reaches the title button inside it. */
 export function MemoryRef(props: {
   id?: string;
   title?: string;
   type?: string;
   educate?: boolean;
   className?: string;
+  linkClassName?: string;
 }) {
   const icon = props.type && <TypeIcon type={props.type} size={14} />;
   return (
     <span className={props.className ?? "nref"}>
       {icon && (props.educate ? <Term tip={TYPE_TIP[props.type!] ?? props.type!}>{icon}</Term> : icon)}
-      {props.id ? <NoteRef id={props.id} label={props.title} /> : <b className="nref-plain">{props.title}</b>}
+      {props.id ? (
+        <NoteRef id={props.id} label={props.title} className={props.linkClassName} />
+      ) : (
+        <b className="nref-plain">{props.title}</b>
+      )}
     </span>
   );
 }
@@ -77,7 +83,13 @@ export function MemoryRef(props: {
  *  queue can still find the target among the batch's own pending creates, and
  *  the detail card would rather show a hueless glyph than none. Left off, the
  *  target degrades to the bare id, still openable. */
-export function LinkTarget(props: { id: string; educate?: boolean; className?: string; unresolved?: ReactNode }) {
+export function LinkTarget(props: {
+  id: string;
+  educate?: boolean;
+  className?: string;
+  linkClassName?: string;
+  unresolved?: ReactNode;
+}) {
   const note = useStore(notesById).get(props.id);
   if (!note) return <>{props.unresolved ?? <NoteRef id={props.id} />}</>;
   return (
@@ -87,6 +99,7 @@ export function LinkTarget(props: { id: string; educate?: boolean; className?: s
       type={note.type}
       educate={props.educate}
       className={props.className}
+      linkClassName={props.linkClassName}
     />
   );
 }
