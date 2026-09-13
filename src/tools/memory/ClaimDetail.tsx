@@ -44,7 +44,7 @@ import { OpIcon, DecisionIcon } from "./icons";
 import { Term, GLOSSARY, OP_TIP } from "./glossary";
 import { flagsOf, riskLabel, FLAG, LOW_CONFIDENCE } from "./model/flags";
 import { lineDiff, splitLines, wordEmphasis } from "./model/diff";
-import { Edu, SectionKey } from "../../ui";
+import { Edu, Field, Input, SectionKey, Textarea } from "../../ui";
 
 // ── small pieces ────────────────────────────────────────────────────
 
@@ -374,16 +374,17 @@ function Preview(props: {
   // not, or one keystroke stages the change's text over the mutation's own.
   const secText = sectionTextOf(m) ?? "";
 
-  const area = (id: string, text: string) => (
-    <textarea
-      className="edit-area t-prose"
-      rows={Math.min(10, Math.max(3, Math.ceil(text.length / 60)))}
-      value={props.drafts[id] ?? text}
-      onInput={(e) => {
-        const v = e.currentTarget.value;
-        props.setDrafts((p) => ({ ...p, [id]: v }));
-      }}
-    />
+  const area = (id: string, key: string, text: string) => (
+    <Field label={<SectionKey k={key} />} labelHidden>
+      <Textarea
+        rows={Math.min(10, Math.max(3, Math.ceil(text.length / 60)))}
+        value={props.drafts[id] ?? text}
+        onInput={(e) => {
+          const v = e.currentTarget.value;
+          props.setDrafts((p) => ({ ...p, [id]: v }));
+        }}
+      />
+    </Field>
   );
 
   // Whole-memory mode: every section of the target, in stored order, with the
@@ -410,7 +411,7 @@ function Preview(props: {
     const tail = storedLines.slice(Math.max(0, storedLines.length - STORED_CONTEXT));
     const addCh = (m.text ?? "").length;
     const addLines = editing
-      ? area("__text", secText)
+      ? area("__text", key, secText)
       : adds.map((l, i) => (
           <Line key={i} mode="add">
             {l}
@@ -506,7 +507,7 @@ function Preview(props: {
                 {l}
               </Line>
             ))}
-            {area("__text", secText)}
+            {area("__text", key, secText)}
           </>
         ) : whole ? (
           wholeSections(key, <DiffLines before={before} after={after} fold={false} />)
@@ -549,7 +550,7 @@ function Preview(props: {
                 <SectionKey k={key} />
               </div>
               {editing ? (
-                area(key, s.text ?? "")
+                area(key, key, s.text ?? "")
               ) : (
                 <>
                   {headLines.map((l, i) => (
@@ -913,19 +914,19 @@ function KeywordEditor({
         ))}
       </div>
       <div className="kwadd">
-        <input
-          className="t-data"
-          value={entry}
-          placeholder={t("memoryvault.addKeyword")}
-          aria-label={t("memoryvault.addKeyword")}
-          onInput={(e) => setEntry(e.currentTarget.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              add();
-            }
-          }}
-        />
+        <Field label={t("memoryvault.addKeyword")} labelHidden className="flex-1">
+          <Input
+            value={entry}
+            placeholder={t("memoryvault.addKeyword")}
+            onInput={(e) => setEntry(e.currentTarget.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                add();
+              }
+            }}
+          />
+        </Field>
         <button className="zbtn hit" onClick={add} disabled={!entry.trim()}>
           <Add size={12} stroke={2} aria-hidden /> {t("memoryvault.addKeyword")}
         </button>

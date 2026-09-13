@@ -35,12 +35,15 @@ import {
   DetailSection,
   EmptyState,
   ErrorState,
+  Field,
   List,
   ListItem,
   Loading,
   Meter,
   SearchBar,
+  SectionKey,
   Tag,
+  Textarea,
   fuzzyScore,
   useIsDesktop,
 } from "../../ui";
@@ -490,15 +493,16 @@ function NoteEditor(props: { note: Note; onClose: () => void }) {
             {/* onInput reads the value out before calling the updater: React runs
                 the updater during a later render, by which point the event has
                 been recycled and currentTarget is null. */}
-            <textarea
-              className="t-prose edit-area"
-              rows={Math.min(14, Math.max(3, Math.ceil(value.length / 60)))}
-              value={value}
-              onInput={(e) => {
-                const text = e.currentTarget.value;
-                setDrafts((prev) => ({ ...prev, [key]: text }));
-              }}
-            />
+            <Field label={<SectionKey k={key} />} labelHidden>
+              <Textarea
+                rows={Math.min(14, Math.max(3, Math.ceil(value.length / 60)))}
+                value={value}
+                onInput={(e) => {
+                  const text = e.currentTarget.value;
+                  setDrafts((prev) => ({ ...prev, [key]: text }));
+                }}
+              />
+            </Field>
           </DetailSection>
         );
       })}

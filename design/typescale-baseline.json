@@ -32,7 +32,6 @@
     ".chs → 11px",
     ".dbtn2 → 11px",
     ".dock-primary → 11px",
-    ".edit-area → 13.5px",
     ".edu → 12px",
     ".failname → 13.5px",
     ".failwhy → 12.5px",
@@ -52,7 +51,6 @@
     ".seccount → 11px",
     ".sw → 10.5px",
     ".tag[class*=\"type-\"] → 10.5px",
-    ".tbar-n → 11px",
     ".zbtn → 10.5px"
   ],
   "src/styles/presets.css": [
