@@ -9,5 +9,7 @@ export default defineConfig({
     // test/ is the HTTP conformance suite for server.mjs.
     include: ["src/**/*.test.ts", "scripts/**/*.test.mjs", "test/**/*.test.mjs"],
     setupFiles: ["src/tools/memory/test/setup.ts"],
+    // cn.test.ts reads theme.css as text, which the default CSS stub would blank.
+    css: { include: [/theme\.css/] },
   },
 });
