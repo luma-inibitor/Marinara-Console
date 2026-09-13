@@ -83,7 +83,7 @@ const SURFACES = [
     hash: `#/memory/vault/${NOTE}`,
     vps: [D],
     sel: ".claim-detail textarea",
-    open: (p) => p.locator(".mdc-edit").click(),
+    open: (p) => p.getByRole("button", { name: "Edit", exact: true }).click(),
   },
   {
     name: "note-peek",

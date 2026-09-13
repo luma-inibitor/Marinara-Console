@@ -30,8 +30,8 @@ export default defineConfig({
   publicDir: false,
   build: {
     outDir: "dist",
-    // 688 is the next whole kB above today's 687.08 kB bundle, so any growth reports.
-    chunkSizeWarningLimit: 688,
+    // 745 is the next whole kB above today's 744.7 kB bundle, so any growth reports.
+    chunkSizeWarningLimit: 745,
     rolldownOptions: {
       onwarn(warning, defaultHandler) {
         if (warning.plugin === advisoryWarningPlugin) {

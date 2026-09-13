@@ -209,13 +209,11 @@ than one screen belongs there. Anything used by one screen belongs beside that
 screen. A new component carries no stylesheet, as `Button.tsx` does.
 
 The move of `src/ui/` is complete: no component there carries its own CSS.
-The one screen kept beside its tool that still co-locates its CSS is legacy,
-because it's a *family* rather than a single component.
-`src/tools/memory/detail/` is four components and four stylesheets. They answer
-to the same rule: deleting the folder deletes its rules. A tool's one-off
-screens still belong in that tool's global stylesheet
-(`src/styles/memory.css`). The split is worth it only when the alternative is a
-200-line unrelated block in a 600-line file.
+A screen kept beside its tool follows the same rule:
+`src/tools/memory/detail/` is a family of components styled with utilities and
+carries no stylesheet. A tool's one-off screens still belong in that tool's
+global stylesheet (`src/styles/memory.css`). The split is worth it only when
+the alternative is a 200-line unrelated block in a 600-line file.
 
 ### Tailwind utilities
 

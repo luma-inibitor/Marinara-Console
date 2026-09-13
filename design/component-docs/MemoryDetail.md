@@ -1,13 +1,14 @@
 # Memory detail card
 
 **Documents:** `src/tools/memory/detail/` (`MemoryDetail.tsx`,
-`RetrievalCard.tsx`, `SectionRow.tsx`)
+`RetrievalCard.tsx`, `Provenance.tsx`, `Subjects.tsx`, `SectionRow.tsx`)
 
 A read-only screen for one stored record. Three rules carry it, and all three are
 load-bearing:
 
-**One bordered surface.** The retrieval block (modes · keywords · links) is the
-only box on the screen, so *boxed means metadata, unboxed means content*. A
+**One bordered surface.** The retrieval block (modes · keywords · scope ·
+links) is the only box on the screen, so *boxed means retrieval, unboxed means
+content*. Provenance and subjects sit under it unboxed, as headed lists. A
 second card — especially around a section body — collapses that distinction and
 was the single biggest failure of the directions that lost.
 
@@ -33,6 +34,6 @@ tried here read as noise.
 Collapse-all is the manifest state, with every section a bare row. A long memory
 therefore needs no separate overflow design, only `defaultCollapsed`.
 
-The flag's popover states cap pressure in words. The meter bar that it once
+The flag's sentence states cap pressure in words, inline under the row. The meter bar that it once
 carried died with the peek and doesn't come back into the row, where it competed
 with content for attention.

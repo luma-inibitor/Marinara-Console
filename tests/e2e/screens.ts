@@ -33,7 +33,13 @@ export const SCREENS: Screen[] = [
   { name: "preset-editor", path: `/#/presets/${PRESET_ID}`, ready: ".row", row: ".row", rows: 11 },
   { name: "memory-review", path: "/#/memory/review", ready: ".mem-rows", row: ".mem-rows li", rows: REVIEW_ROWS },
   { name: "memory-vault", path: "/#/memory/vault", ready: ".mem-rows", row: ".mem-rows li", rows: 9 },
-  { name: "memory-detail", path: `/#/memory/vault/${NOTE_ID}`, ready: ".mdc-row", row: ".mdc-row-wrap", rows: 4 },
+  {
+    name: "memory-detail",
+    path: `/#/memory/vault/${NOTE_ID}`,
+    ready: "[data-section]",
+    row: "[data-section]",
+    rows: 4,
+  },
   { name: "memory-sources", path: "/#/memory/sources", ready: ".mem-rows", row: ".srow", rows: 10 },
 ];
 

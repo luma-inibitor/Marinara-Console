@@ -71,19 +71,6 @@
   "src/tools/memory/components/NoteRef.css": [
     ".notelink → 12px"
   ],
-  "src/tools/memory/detail/MemoryDetail.css": [
-    ".mdc-record → 10.5px",
-    ".mdc-sectally → 10.5px"
-  ],
-  "src/tools/memory/detail/RetrievalCard.css": [
-    ".mdc-ret-rel → 12.5px",
-    ".mdc-ret-tip → 11.5px"
-  ],
-  "src/tools/memory/detail/SectionRow.css": [
-    ".mdc-row-body → 13.5px",
-    ".mdc-row-flag-pop → 11.5px",
-    ".mdc-row-meta → 10.5px"
-  ],
   "src/ui/JsonView.css": [
     ".jn-count → 9.5px",
     ".jsonview → 11px"
