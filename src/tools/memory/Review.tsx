@@ -91,6 +91,7 @@ import {
   Meter,
   type MeterSegment,
   MiddleTruncate,
+  Progress,
   useIsDesktop,
   useRovingFocus,
 } from "../../ui";
@@ -1337,9 +1338,12 @@ function ApplyDock() {
         {(progress || pf?.error) && (
           <div className="dock-info t-data">
             {progress ? (
-              <span className="dim">
-                {t("memory.apply.progressDraft", { done: progress.done, total: progress.total })}
-              </span>
+              <Progress
+                inline
+                value={progress.done}
+                max={progress.total}
+                text={t("memory.apply.progressDraft", { done: progress.done, total: progress.total })}
+              />
             ) : (
               <span className="is-drop">
                 {pf!.error} <Chip onClick={() => void refresh()}>{t("activityview.retry")}</Chip>
