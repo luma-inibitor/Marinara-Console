@@ -1,9 +1,0 @@
-/* Loading placeholder. */
-.loadingstate {
-  padding: var(--s6) var(--s4);
-  margin: 0;
-  text-align: center;
-  color: var(--text-dim);
-}
-
-.loading-slow { color: var(--text-faint, var(--text-dim)); }
