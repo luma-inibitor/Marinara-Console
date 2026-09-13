@@ -176,6 +176,10 @@ this catalog in the same change.
 - **Progress** — a track with a fill for a task the user started, with a
   count beside it when the site states one. Indeterminate while the total is
   unknown.
+- **Popover** — an anchored surface over a sealed page. It renders into a
+  portal, registers with the overlay stack, flips to the other side of its
+  trigger at the viewport edge, and closes on outside click, Escape and back.
+  The scope pickers use it.
 - **Tag/distribution panel** — group stats with bars, per-group Show/Select.
 - **Decision rail** — tri-state per-row judgment (undecided / keep / drop) on
   the status rail, cycled by tap or set by single keys, advancing automatically.

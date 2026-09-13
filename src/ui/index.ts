@@ -30,6 +30,10 @@ export { Meter } from "./Meter";
 export type { MeterProps, MeterSegment } from "./Meter";
 export { MiddleTruncate } from "./MiddleTruncate";
 export { MODES, ModePill } from "./ModePill";
+/** @public */
+export { Popover } from "./Popover";
+/** @public */
+export type { PopoverProps } from "./Popover";
 export { Progress } from "./Progress";
 /** @public */
 export type { ProgressProps } from "./Progress";

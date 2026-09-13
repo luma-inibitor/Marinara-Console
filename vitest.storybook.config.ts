@@ -4,8 +4,7 @@ import { playwright } from "@vitest/browser-playwright";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  // Without the Tailwind plugin the theme and utilities never compile, so a
-  // stylesheet-free component renders unstyled and its positioning is wrong.
+  // The storybook plugin does not load vite.config.ts, so the utilities are generated here.
   plugins: [tailwindcss(), storybookTest({ configDir: ".storybook" })],
   test: {
     name: "storybook",
