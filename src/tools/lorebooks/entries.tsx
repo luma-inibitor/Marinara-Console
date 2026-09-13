@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings, local/no-raw-button -- legacy */
 // Entry editor surfaces: the drawer (sub-accordions, MULTI-EXPAND per DESIGN.md §3)
 // and the fullscreen text editor with live counts.
 //

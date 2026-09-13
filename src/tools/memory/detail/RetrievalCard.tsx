@@ -1,3 +1,4 @@
+/* eslint-disable local/no-raw-button -- the keyword rail, a clamped run of pills */
 import { useId, useState } from "react";
 import { t } from "../../../copy";
 import type { Note } from "../api/types";

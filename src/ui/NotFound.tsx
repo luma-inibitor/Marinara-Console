@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-raw-button -- legacy */
 import { Missing } from "./icons";
 import { navigate } from "../shell/router";
 import { EmptyState } from "./EmptyState";

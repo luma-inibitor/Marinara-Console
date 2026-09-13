@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings, local/no-raw-button -- legacy */
 // Memory Vault — browse and correct what is stored.
 // Source notes are audit records, not memories: excluded by default, behind a
 // toggle. Cap pressure reads as a gradient on the row. Both write controls

@@ -1,3 +1,4 @@
+/* eslint-disable local/no-raw-button -- a menu item */
 import type { KeyboardEvent, ReactNode, RefObject } from "react";
 import { useEffect, useRef } from "react";
 import { useCloseThen } from "../shell/overlays";

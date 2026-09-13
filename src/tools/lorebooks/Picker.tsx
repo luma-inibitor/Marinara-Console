@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-raw-button -- legacy */
 import { Loading, ErrorState, ListEmpty } from "../../ui";
 import { useEffect, useState } from "react";
 import { t } from "../../copy";

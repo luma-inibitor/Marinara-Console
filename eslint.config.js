@@ -7,6 +7,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import i18nDefaults from "eslint-plugin-i18next/lib/options/defaults.js";
 import betterTailwindcss from "eslint-plugin-better-tailwindcss";
 import { getDefaultSelectors } from "eslint-plugin-better-tailwindcss/api/defaults";
+import { builtinRules } from "eslint/use-at-your-own-risk";
 
 // Babel, not typescript-eslint, parses the TypeScript here. typescript@7 — the
 // native compiler — exports only `version` from the package root, so anything
@@ -96,6 +97,16 @@ const BUTTON_SELECTOR = {
   message: "Use <Button> from src/ui/Button.tsx",
 };
 
+// The class and button selectors under names of their own, so a legacy file
+// can disable one without losing the copy selectors. Each is the core
+// no-restricted-syntax rule, which reports whatever selectors it is given.
+const local = {
+  rules: {
+    "no-class-strings": builtinRules.get("no-restricted-syntax"),
+    "no-raw-button": builtinRules.get("no-restricted-syntax"),
+  },
+};
+
 // The classes the e2e suite and the legacy stylesheets reach by name.
 const HOOK_CLASSES = [
   "hit",
@@ -110,88 +121,18 @@ const HOOK_CLASSES = [
   "filter-sheet",
 ];
 
-// A button that is not a Button, each for its own shape.
-const BUTTON_OK = [
-  "src/ui/Chip.tsx", // a pressable tag
-  "src/ui/FacetDrawer.tsx", // a facet value, a toggle with aria-pressed
-  "src/ui/ListGroup.tsx", // the group header's disclosure
-  "src/ui/ListItem.tsx", // the row's primary target
-  "src/ui/Menu.tsx", // a menu item
-  "src/ui/Picker.tsx", // the trigger chip, which anchors its menu
-  "src/ui/ModePill.tsx", // a segment of a toggle group
-  "src/ui/SearchDisclosure.tsx", // the disclosure and its options
-  "src/tools/memory/detail/RetrievalCard.tsx", // the keyword rail, a clamped run of pills
-];
-
-// TODO 95 hand-rolled buttons in 21 files. Remove a file here once it renders Button.
-const TODO_BUTTON = [
-  "src/shell/App.tsx",
-  "src/shell/Toaster.tsx",
-  "src/shell/connection.tsx",
-  "src/shell/palette.tsx",
-  "src/tools/lorebooks/BookAudit.tsx",
-  "src/tools/lorebooks/Picker.tsx",
-  "src/tools/lorebooks/entries.tsx",
-  "src/tools/memory/ClaimDetail.tsx",
-  "src/tools/memory/MemoryTool.tsx",
-  "src/tools/memory/Review.tsx",
-  "src/tools/memory/Sources.tsx",
-  "src/tools/memory/Vault.tsx",
-  "src/tools/memory/components/NoteRef.tsx",
-  "src/tools/presets/PresetsTool.tsx",
-  "src/ui/ErrorState.tsx",
-  "src/ui/FullscreenText.tsx",
-  "src/ui/ListEmpty.tsx",
-  "src/ui/Loading.tsx",
-  "src/ui/NotFound.tsx",
-  "src/ui/SaveBar.tsx",
-  "src/ui/Sheet.tsx",
-];
-
-// TODO 58 template literals and space joins in 16 files. Remove a file here once it composes with cn().
-const TODO_STRING = [
-  "src/shell/App.tsx",
-  "src/shell/Toaster.tsx",
-  "src/shell/palette.tsx",
-  "src/tools/lorebooks/BookAudit.tsx",
-  "src/tools/lorebooks/entries.tsx",
-  "src/tools/memory/ClaimDetail.tsx",
-  "src/tools/memory/Review.tsx",
-  "src/tools/memory/Sources.tsx",
-  "src/tools/memory/Vault.tsx",
-  "src/tools/memory/components/StatusPill.tsx",
-  "src/tools/memory/icons.tsx",
-  "src/tools/memory/review/DockSheet.tsx",
-  "src/tools/presets/PresetsTool.tsx",
-  "src/ui/EmptyState.tsx",
-  "src/ui/FullscreenText.tsx",
-  "src/ui/SaveBar.tsx",
-];
-
-// One override per combination, since a later override replaces the whole rule.
-function restricted() {
-  const noButton = new Set([...BUTTON_OK, ...TODO_BUTTON]);
-  const noString = new Set(TODO_STRING);
-  const all = [...new Set([...noButton, ...noString])];
-  const rule = (files, keep) => ({ files, rules: { "no-restricted-syntax": ["error", ...keep] } });
-  return [
-    rule(["src/ui/Button.tsx"], [...COPY_SELECTORS, ...CLASS_SELECTORS]),
-    rule(
-      all.filter((f) => noString.has(f) && noButton.has(f)),
-      COPY_SELECTORS,
-    ),
-    rule(
-      all.filter((f) => noString.has(f) && !noButton.has(f)),
-      [...COPY_SELECTORS, BUTTON_SELECTOR],
-    ),
-    rule(
-      all.filter((f) => !noString.has(f) && noButton.has(f)),
-      [...COPY_SELECTORS, ...CLASS_SELECTORS],
-    ),
-  ];
-}
+// A legacy file carries a disable comment at its top for each rule it still
+// breaks, with the description "legacy". scripts/ratchet.mjs counts those
+// against design/ratchet-baseline.json, and reportUnusedDisableDirectives
+// fails a comment the file has stopped needing. Retiring a file is an edit
+// to that file alone.
 
 export default [
+  {
+    // A disable comment for a rule the file no longer breaks is an error, so a
+    // legacy comment cannot outlive the code it covers.
+    linterOptions: { reportUnusedDisableDirectives: "error" },
+  },
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],
     languageOptions: {
@@ -205,7 +146,13 @@ export default [
         },
       },
     },
-    plugins: { "react-hooks": reactHooks, import: importPlugin, i18next, "better-tailwindcss": betterTailwindcss },
+    plugins: {
+      "react-hooks": reactHooks,
+      import: importPlugin,
+      i18next,
+      "better-tailwindcss": betterTailwindcss,
+      local,
+    },
     settings: {
       // The defaults cover className, cn() and cva().
       "better-tailwindcss": { entryPoint: "src/styles/theme.css", selectors: getDefaultSelectors() },
@@ -234,7 +181,9 @@ export default [
           },
         },
       ],
-      "no-restricted-syntax": ["error", ...COPY_SELECTORS, ...CLASS_SELECTORS, BUTTON_SELECTOR],
+      "no-restricted-syntax": ["error", ...COPY_SELECTORS],
+      "local/no-class-strings": ["error", ...CLASS_SELECTORS],
+      "local/no-raw-button": ["error", BUTTON_SELECTOR],
       "better-tailwindcss/no-conflicting-classes": "error",
       "better-tailwindcss/no-duplicate-classes": "error",
       "better-tailwindcss/no-unknown-classes": ["error", { ignore: HOOK_CLASSES }],
@@ -270,40 +219,8 @@ export default [
   {
     files: ["src/tools/lorebooks/data.ts", "src/tools/presets/data.ts"],
     rules: {
-      "no-restricted-syntax": ["error", ...COPY_SELECTORS, ...CLASS_SELECTORS, BUTTON_SELECTOR, COPY_TABLE_SELECTOR],
+      "no-restricted-syntax": ["error", ...COPY_SELECTORS, COPY_TABLE_SELECTOR],
     },
-  },
-  {
-    // TODO 711 classes from the legacy stylesheets in 27 files. Remove a file here once it is utilities.
-    files: [
-      "src/shell/App.tsx",
-      "src/shell/Toaster.tsx",
-      "src/shell/hotkeys.tsx",
-      "src/shell/palette.tsx",
-      "src/tools/lorebooks/BookAudit.tsx",
-      "src/tools/lorebooks/Picker.tsx",
-      "src/tools/lorebooks/entries.tsx",
-      "src/tools/memory/ClaimDetail.tsx",
-      "src/tools/memory/MemoryTool.tsx",
-      "src/tools/memory/Review.tsx",
-      "src/tools/memory/ScopeBar.tsx",
-      "src/tools/memory/Sources.tsx",
-      "src/tools/memory/Vault.tsx",
-      "src/tools/memory/components/NoteRef.tsx",
-      "src/tools/memory/components/StatusPill.tsx",
-      "src/tools/memory/icons.tsx",
-      "src/tools/memory/review/DockSheet.tsx",
-      "src/tools/presets/PresetsTool.tsx",
-      "src/ui/EmptyState.tsx",
-      "src/ui/ErrorState.tsx",
-      "src/ui/FullscreenText.tsx",
-      "src/ui/ListEmpty.tsx",
-      "src/ui/ListGroup.tsx",
-      "src/ui/Loading.tsx",
-      "src/ui/NotFound.tsx",
-      "src/ui/SaveBar.tsx",
-    ],
-    rules: { "better-tailwindcss/no-unknown-classes": "off" },
   },
   {
     // A primitive keeps its class lists in ALL-CAPS constants, which the default selectors skip.
@@ -319,16 +236,25 @@ export default [
       },
     },
   },
-  ...restricted(),
   {
     // Fixtures.
     files: ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/test/**"],
-    rules: { "i18next/no-literal-string": "off", "no-restricted-syntax": "off" },
+    rules: {
+      "i18next/no-literal-string": "off",
+      "no-restricted-syntax": "off",
+      "local/no-class-strings": "off",
+      "local/no-raw-button": "off",
+    },
   },
   {
     // Story strings reach no reader, and neither do the fixtures beside them.
     files: ["src/**/*.stories.tsx", "src/**/fixtures.ts", ".storybook/**/*.ts", ".storybook/**/*.tsx"],
-    rules: { "i18next/no-literal-string": "off", "no-restricted-syntax": "off" },
+    rules: {
+      "i18next/no-literal-string": "off",
+      "no-restricted-syntax": "off",
+      "local/no-class-strings": "off",
+      "local/no-raw-button": "off",
+    },
   },
   {
     // The transport layer is where a fetch belongs.

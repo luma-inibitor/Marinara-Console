@@ -1,3 +1,5 @@
+/* eslint-disable local/no-raw-button -- the group header's disclosure */
+/* eslint-disable better-tailwindcss/no-unknown-classes -- legacy */
 import type { ReactNode } from "react";
 import { t } from "../copy";
 import { ChevronDown, ChevronRight } from "./icons";

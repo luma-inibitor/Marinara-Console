@@ -1,3 +1,4 @@
+/* eslint-disable local/no-raw-button -- legacy */
 // Connection state — persistent, not a toast. The link drops routinely (phone
 // over Tailscale, engine in Termux), so this is a normal state, not an edge case.
 //

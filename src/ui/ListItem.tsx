@@ -1,3 +1,4 @@
+/* eslint-disable local/no-raw-button -- the row's primary target */
 import type { FocusEventHandler, KeyboardEventHandler, ReactNode, Ref } from "react";
 import { cn } from "./cn";
 

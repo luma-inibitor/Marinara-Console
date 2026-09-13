@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-raw-button -- legacy */
 // Long-Term Memory tool shell: Review Queue / Memory Vault / Sources, with
 // the package's own navigation vocabulary. Routes: #/memory/review|vault|sources.
 

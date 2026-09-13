@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes -- legacy */
 // Global keyboard layer (DESIGN.md §3): Cmd/Ctrl-K palette, `g` navigation
 // sequences, `?` cheat sheet. Single-key bindings are suppressed while typing.
 import { useEffect, useRef } from "react";

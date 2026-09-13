@@ -1,3 +1,4 @@
+/* eslint-disable local/no-raw-button -- the disclosure and its options */
 import { useRef, useState } from "react";
 import { ChevronDown } from "./icons";
 import type { Icon } from "./icons";

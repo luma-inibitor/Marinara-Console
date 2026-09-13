@@ -33,8 +33,9 @@ export const checks = [
   // Formatting. Cheapest gate here and the one a change trips most often, so
   // it reports before the slower tools. `npm run format` fixes every finding.
   "format:check",
-  // Lint
+  // Lint, then the count of files still under a legacy disable comment
   "lint",
+  "ratchet",
   // Layers: imports point downward, and no component owns a fetch
   "layercheck",
   // Inventory, not a gate: `components` always exits 0.

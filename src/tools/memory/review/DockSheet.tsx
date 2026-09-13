@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings -- legacy */
 // What Apply will send — the sheet behind the dock's tally.
 //
 // The dock can state figures; it has no room to explain them, and it was

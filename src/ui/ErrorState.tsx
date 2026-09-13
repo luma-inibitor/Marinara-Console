@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-raw-button -- legacy */
 import type { ReactNode } from "react";
 import { Failure } from "./icons";
 import { ApiError } from "../shell/api";
