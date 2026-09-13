@@ -1,3 +1,4 @@
+/* eslint-disable local/no-raw-button -- a segment of a toggle group */
 import { cva } from "./cn";
 import { MODE_ICON } from "./icons";
 import { t, joinList } from "../copy";

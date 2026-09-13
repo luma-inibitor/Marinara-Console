@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings -- legacy */
 import type { ReactNode } from "react";
 
 /** The nothing-here state, with an optional icon, a title, an explanation and actions. */

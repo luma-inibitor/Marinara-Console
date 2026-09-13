@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings, local/no-raw-button -- legacy */
 // Prompt preset browser + editor. Order is THE attribute of a prompt preset,
 // so the status rail carries the ordinal.
 import {

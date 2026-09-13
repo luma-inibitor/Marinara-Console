@@ -1,3 +1,4 @@
+/* eslint-disable local/no-raw-button -- the primitive itself */
 import type { CSSProperties, FocusEvent, ReactNode } from "react";
 import { useEffect, useId, useState } from "react";
 import { cn, cva, type VariantProps } from "./cn";

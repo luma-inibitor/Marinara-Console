@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-raw-button -- legacy */
 // How a memory is named when it is not the thing on screen: in a claim
 // headline, in a link row, in the retrieval block. Three rungs of one concept,
 // each built on the one below it:

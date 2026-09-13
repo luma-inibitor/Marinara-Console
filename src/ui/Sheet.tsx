@@ -1,3 +1,4 @@
+/* eslint-disable local/no-raw-button -- legacy */
 import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
 import { t } from "../copy";

@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings, local/no-raw-button -- legacy */
 import { joinList, t } from "../copy";
 import type { Draft } from "../shell/draft";
 

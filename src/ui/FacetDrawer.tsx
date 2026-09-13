@@ -1,3 +1,4 @@
+/* eslint-disable local/no-raw-button -- a facet value, a toggle with aria-pressed */
 import type { ReactNode } from "react";
 import { t } from "../copy";
 import { closeTopOverlay } from "../shell/overlays";

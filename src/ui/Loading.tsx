@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-raw-button -- legacy */
 import { useEffect, useState } from "react";
 import { EmptyState } from "./EmptyState";
 import { t, type Key } from "../copy";

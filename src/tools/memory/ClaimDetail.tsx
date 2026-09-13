@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings, local/no-raw-button -- legacy */
 // One claim, organized around the decision. Zones, in the order a reviewer
 // asks their questions:
 //   1. HEADLINE — one sentence: what this claim does and to which memory.

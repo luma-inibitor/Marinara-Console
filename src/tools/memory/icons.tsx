@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings -- legacy */
 // Memory-domain rendering wrappers over the glyph tables (TYPE_ICON / OP_ICON /
 // DECISION_ICON) in the central registry at src/ui/icons.tsx: the hue span, the
 // default sizes, the aria treatment.

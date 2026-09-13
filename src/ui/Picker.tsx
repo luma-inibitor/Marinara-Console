@@ -1,3 +1,4 @@
+/* eslint-disable local/no-raw-button -- the trigger chip, which anchors its menu */
 import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { cn, cva, type VariantProps } from "./cn";

@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings, local/no-raw-button -- legacy */
 // Fullscreen text editor — component catalog (DESIGN.md §4). Live char/token counts
 // with delta, wrap toggle, markdown symbol row. Generic: callers supply the
 // title/subtitle and receive the final value on Done.

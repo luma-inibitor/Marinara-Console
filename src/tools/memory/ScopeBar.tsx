@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes -- legacy */
 // The scope bar: one value, read by every memory view. Scope sits above the
 // views because it decides what they show.
 //

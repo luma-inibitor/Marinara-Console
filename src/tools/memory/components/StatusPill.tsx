@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings -- legacy */
 import "./StatusPill.css";
 
 /** A memory's lifecycle status, as the engine spells it.

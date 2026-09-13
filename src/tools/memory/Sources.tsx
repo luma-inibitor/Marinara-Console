@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings, local/no-raw-button -- legacy */
 // Sources — browse to import.
 //
 // This screen is browsed to import and never for maintenance, so import is the

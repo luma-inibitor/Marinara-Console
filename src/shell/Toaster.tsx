@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings, local/no-raw-button -- legacy */
 // Owns how the toast queue looks: the stack in the corner and one row per
 // toast. It reads `toast.ts` and never enqueues anything itself.
 import { useEffect, useState } from "react";

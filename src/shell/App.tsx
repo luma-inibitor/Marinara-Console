@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings, local/no-raw-button -- legacy */
 import type { ComponentType } from "react";
 import { route, navigate } from "./router";
 import { useStore } from "../lib/store";

@@ -1,3 +1,4 @@
+/* eslint-disable local/no-raw-button -- a pressable tag */
 import type { ReactNode } from "react";
 import { cn, cva } from "./cn";
 

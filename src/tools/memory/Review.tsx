@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings, local/no-raw-button -- legacy */
 // Review Queue — the curation loop's triage surface.
 //
 // Console header (tally meter, quick chips, facet sheet) · audit rows grouped

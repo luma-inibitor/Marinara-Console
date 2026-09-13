@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-raw-button -- legacy */
 import { FirstRun, NoMatches, AllClear, Remove, Add, ICON_SIZE } from "./icons";
 import { Chip } from "./Chip";
 import { EmptyState } from "./EmptyState";

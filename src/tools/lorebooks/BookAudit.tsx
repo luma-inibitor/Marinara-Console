@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings, local/no-raw-button -- legacy */
 // The audit screen: console header (Find/Test probe, budget meter, sort chips),
 // audit rows, bulk select, tag panel, and the entry editor — inline accordion on
 // mobile, master-detail side panel on desktop (DESIGN.md §4).

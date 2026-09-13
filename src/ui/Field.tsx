@@ -22,7 +22,7 @@ function useFieldControl(): Partial<FieldWiring> {
 /** The ids a control is described by, in reading order. */
 export function describedBy(hintId?: string, errorId?: string): string | undefined {
   const ids = [hintId, errorId].filter(Boolean);
-  // eslint-disable-next-line no-restricted-syntax -- an aria-describedby id list
+  // eslint-disable-next-line local/no-class-strings -- an aria-describedby id list
   return ids.length ? ids.join(" ") : undefined;
 }
 
