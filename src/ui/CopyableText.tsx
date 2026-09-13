@@ -1,15 +1,11 @@
 import { useState } from "react";
-import { Copy, Copied } from "./icons";
+import { Button } from "./Button";
+import { cn } from "./cn";
+import { CopyGlyph } from "./icons";
 import { toast } from "../shell/toast";
 import { t } from "../copy";
-import "./CopyableText.css";
 
-/** A value you are meant to be able to take somewhere else — an id, a hash, a
- *  path. Renders as monospace text with a copy control beside it.
- *
- *  Success is confirmed inline (the icon becomes a tick); the toast is reserved
- *  for failure. Clipboard writes are refused outside a secure context, and
- *  silently doing nothing there would look like a broken button. */
+/** A value meant to be taken somewhere else, as monospace text with a copy control beside it. */
 export function CopyableText(props: { value: string; label?: string; className?: string }) {
   const [done, setDone] = useState(false);
   const copy = async () => {
@@ -22,16 +18,20 @@ export function CopyableText(props: { value: string; label?: string; className?:
     }
   };
   return (
-    <span className={`copyable ${props.className ?? ""}`}>
-      <span className="copyable-v t-data">{props.value}</span>
-      <button
-        type="button"
-        className="copyable-b hit"
-        aria-label={done ? t("ui.copy.copied") : t("ui.copy.value", { what: props.label ?? props.value })}
+    <span className={cn("inline-flex max-w-full min-w-0 items-center gap-[5px]", props.className)}>
+      <span className="min-w-0 t-data wrap-anywhere">{props.value}</span>
+      <Button
+        iconOnly
+        variant="ghost"
+        size="xs"
+        className="shrink-0"
+        label={t("ui.copy.value", { what: props.label ?? props.value })}
+        icon={<CopyGlyph done={done} />}
         onClick={copy}
-      >
-        {done ? <Copied size={13} stroke={2} aria-hidden /> : <Copy size={13} stroke={1.75} aria-hidden />}
-      </button>
+      />
+      <span role="status" className="sr-only">
+        {done ? t("ui.copy.copied") : ""}
+      </span>
     </span>
   );
 }

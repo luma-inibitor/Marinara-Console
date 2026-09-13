@@ -140,7 +140,16 @@ export const NoMatches = IconSearch; // empty state: filtered to nothing
 
 // actions
 export const Copy = IconCopy;
-export const Copied = IconCheck; // transient copy confirmation
+const Copied = IconCheck; // transient copy confirmation
+
+/** The copy control's glyph, which confirms for a moment after a copy. */
+export function CopyGlyph({ done }: { done: boolean }) {
+  return done ? (
+    <Copied size={ICON_SIZE.sm} stroke={2} aria-hidden />
+  ) : (
+    <Copy size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
+  );
+}
 export const Confirm = IconCheck; // commit / checkbox tick
 export const Edit = IconPencil; // the "edit" ACTION
 export const EditedMark = IconWriting; // "edited by you" STATE
