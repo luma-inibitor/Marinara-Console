@@ -1,6 +1,6 @@
-/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-raw-button -- legacy */
 import { Missing } from "./icons";
 import { navigate } from "../shell/router";
+import { Button } from "./Button";
 import { EmptyState } from "./EmptyState";
 import { t, type Key } from "../copy";
 
@@ -24,9 +24,9 @@ export function NotFound(props: { what: Key; id?: string; backTo?: string; backL
         </>
       }
       actions={
-        <button className="dbtn is-primary" onClick={() => navigate(props.backTo ?? "lorebooks")}>
+        <Button variant="primary" onClick={() => navigate(props.backTo ?? "lorebooks")}>
           {props.backLabel ?? t("ui.notfound.back")}
-        </button>
+        </Button>
       }
     />
   );

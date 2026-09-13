@@ -573,7 +573,7 @@ Luma is separately deciding whether to lower the primary floor from 44px, so the
   Adding a border pass needs its own baseline churn; found while rebasing the
   button ladder.
 - **Migrate the remaining button call sites** — `Button` ships with the 10
-  former `IconButton` sites converted; `.dbtn` (23), `.action-sec` (7),
+  former `IconButton` sites converted; `.dbtn` (15), `.action-sec` (7),
   `.dangerbtn`, `.connbar-btn`, `.movebtn`, `.fold-btn`, `.toast-action` and
   the rest of the 63 class combinations are still hand-written.
 
