@@ -84,21 +84,11 @@
     ".mdc-row-flag-pop → 11.5px",
     ".mdc-row-meta → 10.5px"
   ],
-  "src/ui/Chip.css": [
-    ".chip, .tag → 9.5px"
-  ],
   "src/ui/JsonView.css": [
     ".jn-count → 9.5px",
     ".jsonview → 11px"
   ],
   "src/ui/RawJson.css": [
     ".rawjson summary::before → 10px"
-  ],
-  "src/ui/SectionKey.css": [
-    ".skey → 11.5px"
-  ],
-  "src/ui/Term.css": [
-    ".term → 11.5px",
-    ".term:hover::after, .term:focus-visible::after, .term.tip-open::after → 11.5px"
   ]
 }
