@@ -347,6 +347,10 @@ mark.wd { background: color-mix(in srgb, var(--danger) 26%, transparent); color:
 .dsec p { margin: 0; }
 .linkline { display: inline-block; margin-right: var(--s2); }
 
+/* ══ peek ══ */
+/* The card owns the padding and the scrolling, or its head sticks to the sheet. */
+.peek-sheet { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+
 /* ══ stacked detail (mobile) ══ */
 .stack-screen { position: fixed; inset: 0; z-index: 50; background: var(--canvas);
   overflow-y: auto; }
