@@ -4,6 +4,7 @@ import babelParser from "@babel/eslint-parser";
 import i18next from "eslint-plugin-i18next";
 import importPlugin from "eslint-plugin-import";
 import reactHooks from "eslint-plugin-react-hooks";
+import i18nDefaults from "eslint-plugin-i18next/lib/options/defaults.js";
 
 // Babel, not typescript-eslint, parses the TypeScript here. typescript@7 — the
 // native compiler — exports only `version` from the package root, so anything
@@ -72,11 +73,13 @@ export default [
       "import/parsers": { "@babel/eslint-parser": [".ts", ".tsx"] },
     },
     rules: {
-      // Gotcha: `words` replaces the plugin's default excludes rather than extending them.
+      // Gotcha: `words` and `callees` replace the plugin's default excludes rather than extending them.
       "i18next/no-literal-string": [
         "error",
         {
           mode: "all",
+          // A class string inside cn() or cva() reaches no reader.
+          callees: { exclude: [...i18nDefaults.callees.exclude, "cn", "cva"] },
           words: {
             exclude: [
               /^[^\p{L}]+$/u, // no letter anywhere: a number, a separator, a glyph

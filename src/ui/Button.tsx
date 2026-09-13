@@ -1,47 +1,95 @@
-import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
-import { t } from "../copy";
-import { Term } from "./Term";
+import type { FocusEvent, ReactNode } from "react";
+import { useEffect, useId, useState } from "react";
+import { cn, cva, type VariantProps } from "./cn";
 import { ICON_SIZE, Working } from "./icons";
 
-/** The console's one button.
- *
- *  Rank is carried by the box and then by ink brightness — accent fill, then a
- *  bordered box in `--text`, then a bare label in `--text-dim`. `--accent` is
- *  deliberately NOT a rank step: measured against the canvas an accent label is
- *  7.24:1 where `--text` is 15.78:1, so an accent-inked tier ranked above a
- *  neutral one reads as louder, not quieter. Accent stays with the primary fill
- *  and with `pressed`.
- *
- *  `tone` is category, not rank, and composes with every variant — a destructive
- *  action can be the page's primary or a quiet ghost without changing meaning.
- *
- *  Icon-only is a mode of this component, not a separate one, because every prop
- *  here applies to it: an icon button still goes pending, still has to say why it
- *  is unavailable, still reports `pressed` and `expanded`. What it may not do is
- *  go unnamed, so `iconOnly` demands `label` in the type.
- *
- *  Pass `href` to render an anchor instead — a download link that looks like a
- *  button is still a link, and should keep a link's behaviors. */
+const button = cva(
+  [
+    "relative inline-flex items-center justify-center rounded-m border",
+    "font-label font-semibold [font-variation-settings:'wdth'_110]",
+    "text-center transition-colors [transition-duration:var(--t-fast)]",
+    "focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]",
+    "disabled:cursor-default disabled:opacity-45",
+    "aria-disabled:cursor-default aria-disabled:opacity-45 aria-busy:cursor-default",
+  ],
+  {
+    variants: {
+      variant: { primary: "", secondary: "", ghost: "border-transparent" },
+      tone: { neutral: "", danger: "", ok: "" },
+      size: { md: "min-h-tap gap-2", sm: "min-h-tap-2 gap-[6px]" },
+      shape: { label: "", icon: "" },
+      labelCase: { upper: "uppercase tracking-[0.09em]", sentence: "tracking-normal" },
+      pressed: { true: "", false: "" },
+      inert: { true: "", false: "" },
+      fullWidth: { true: "w-full" },
+    },
+    compoundVariants: [
+      { size: "md", shape: "label", className: "px-4" },
+      { size: "sm", shape: "label", className: "px-3" },
+      { size: "md", shape: "icon", className: "w-tap" },
+      { size: "sm", shape: "icon", className: "w-tap-2" },
+      { labelCase: "upper", size: "md", className: "text-label" },
+      { labelCase: "upper", size: "sm", className: "text-label-s" },
+      { labelCase: "sentence", size: "md", className: "text-data" },
+      { labelCase: "sentence", size: "sm", className: "text-data-s" },
+      { pressed: false, variant: "primary", tone: "neutral", className: "border-accent bg-accent text-accent-ink" },
+      { pressed: false, variant: "primary", tone: "danger", className: "border-danger bg-danger text-danger-ink" },
+      { pressed: false, variant: "primary", tone: "ok", className: "border-ok bg-ok text-ok-ink" },
+      { pressed: false, variant: "secondary", tone: "neutral", className: "border-edge-strong text-ink" },
+      {
+        pressed: false,
+        variant: "secondary",
+        tone: "danger",
+        className: "border-[color-mix(in_srgb,var(--danger)_45%,transparent)] text-danger",
+      },
+      {
+        pressed: false,
+        variant: "secondary",
+        tone: "ok",
+        className: "border-[color-mix(in_srgb,var(--ok)_45%,transparent)] text-ok",
+      },
+      { pressed: false, variant: "ghost", tone: "neutral", className: "text-dim" },
+      { pressed: false, variant: "ghost", tone: "danger", className: "text-danger" },
+      { pressed: false, variant: "ghost", tone: "ok", className: "text-ok" },
+      { pressed: true, tone: "neutral", className: "border-accent bg-accent-wash text-accent" },
+      { pressed: true, tone: "danger", className: "border-danger bg-danger-wash text-danger" },
+      { pressed: true, tone: "ok", className: "border-ok bg-ok-wash text-ok" },
+      { pressed: false, inert: false, variant: "primary", className: "hover:brightness-[1.08]" },
+      { pressed: false, inert: false, variant: "secondary", className: "hover:border-faint" },
+      { pressed: false, inert: false, variant: "ghost", className: "hover:text-ink" },
+    ],
+    defaultVariants: {
+      variant: "secondary",
+      tone: "neutral",
+      size: "md",
+      shape: "label",
+      labelCase: "upper",
+      pressed: false,
+      inert: false,
+    },
+  },
+);
 
-type Variant = "primary" | "secondary" | "ghost";
-type Tone = "danger" | "ok";
+const TIP =
+  "invisible absolute top-[calc(100%_+_6px)] left-0 z-70 w-max max-w-[260px] rounded-s border border-edge-strong " +
+  "bg-surface-3 px-[9px] py-[6px] font-prose text-[11.5px] leading-[1.45] whitespace-normal text-ink shadow-pop " +
+  "group-hover:visible group-focus-within:visible";
+
+type Styles = VariantProps<typeof button>;
 
 type Common = {
-  variant?: Variant;
+  variant?: NonNullable<Styles["variant"]>;
   /** Category, not rank. Composes with every variant. */
-  tone?: Tone;
-  size?: "md" | "sm";
-  /** Uppercase is the house label treatment; the source string stays sentence
-   *  case either way, so the accessible name is unaffected. */
-  labelCase?: "upper" | "sentence";
+  tone?: "danger" | "ok";
+  size?: NonNullable<Styles["size"]>;
+  /** The source string stays sentence case, so the accessible name is unaffected. */
+  labelCase?: NonNullable<Styles["labelCase"]>;
   icon?: ReactNode;
   iconAlign?: "start" | "end";
   /** Spinner after a 1s delay, focusable throughout, repeat presses swallowed. */
   pending?: boolean;
   disabled?: boolean;
-  /** Why the action is unavailable. Supplying it keeps the button focusable,
-   *  because a reason nobody can reach is not a reason. */
+  /** Why the action is unavailable, which keeps the control focusable. */
   disabledReason?: string;
   href?: string;
   download?: boolean;
@@ -59,87 +107,19 @@ type Common = {
 
 export type ButtonProps = Common &
   (
-    | { iconOnly?: false; children: ReactNode; label?: string }
+    | { iconOnly?: false; children: ReactNode; label?: never }
     | { iconOnly: true; label: string; icon: ReactNode; children?: never }
   );
 
-/** Spectrum's delay. Some work finishes in 80ms, and a spinner that appears and
- *  vanishes inside a frame reads as a glitch rather than as progress. The button
- *  is already inert during the delay — the wait is hidden, not ignored. */
+/** Spectrum's delay, so work that finishes inside a frame never flashes a spinner. */
 const SPINNER_DELAY_MS = 1000;
-
-// Two rules govern every string below.
-//
-// Tailwind's scanner reads source text, so each is a whole literal. Composing
-// one (`bg-${tone}`) produces a class that is never generated, and the failure
-// is a silently unstyled button rather than an error.
-//
-// And two utilities setting the SAME property must never both be emitted: the
-// winner is their order in the generated sheet, not in this string. Shipping
-// `border border-transparent` in the base and `border-edge-strong` in the skin
-// left every secondary button borderless, because `border-transparent` sorts
-// later. So each property is owned by exactly one lookup below.
-
-const BASE =
-  "relative inline-flex items-center justify-center rounded-m border " +
-  "font-label font-semibold [font-variation-settings:'wdth'_110] " +
-  "text-center transition-colors [transition-duration:var(--t-fast)] " +
-  "focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] " +
-  "disabled:opacity-45 disabled:cursor-default " +
-  "aria-disabled:opacity-45 aria-disabled:cursor-default aria-busy:cursor-default";
-
-// Owns min-height, gap and horizontal padding. Icon-only takes a fixed width
-// and no padding, so it cannot also carry the labelled form's `px-*`.
-const BOX = {
-  "md:label": "min-h-tap gap-2 px-4",
-  "md:icon": "min-h-tap w-tap gap-2",
-  "sm:label": "min-h-tap-2 gap-[6px] px-3",
-  "sm:icon": "min-h-tap-2 w-tap-2 gap-[6px]",
-} as const;
-
-// Owns text-transform, letter-spacing and font-size.
-const TYPE = {
-  "upper:md": "uppercase tracking-[0.09em] text-label",
-  "upper:sm": "uppercase tracking-[0.09em] text-label-s",
-  "sentence:md": "tracking-normal text-data",
-  "sentence:sm": "tracking-normal text-data-s",
-} as const;
-
-// Owns background, border-color and text colour. variant × tone — danger and ok
-// borrow the fill and ink of their hue, and the secondary border is mixed down
-// so a bordered box does not read as a fill.
-const SKIN: Record<string, string> = {
-  "primary:": "bg-accent text-accent-ink border-accent",
-  "secondary:": "border-edge-strong text-ink",
-  "ghost:": "border-transparent text-dim",
-  "primary:danger": "bg-danger text-danger-ink border-danger",
-  "secondary:danger": "text-danger border-[color-mix(in_srgb,var(--danger)_45%,transparent)]",
-  "ghost:danger": "border-transparent text-danger",
-  "primary:ok": "bg-ok text-ok-ink border-ok",
-  "secondary:ok": "text-ok border-[color-mix(in_srgb,var(--ok)_45%,transparent)]",
-  "ghost:ok": "border-transparent text-ok",
-};
-
-// Pressed takes the wash of its hue and overrides the resting skin entirely, so
-// it reads the same whichever variant is underneath it.
-const PRESSED: Record<string, string> = {
-  "": "bg-accent-wash border-accent text-accent",
-  danger: "bg-danger-wash border-danger text-danger",
-  ok: "bg-ok-wash border-ok text-ok",
-};
-
-const HOVER: Record<Variant, string> = {
-  primary: "hover:brightness-[1.08]",
-  secondary: "hover:border-faint",
-  ghost: "hover:text-ink",
-};
 
 export function Button(props: ButtonProps) {
   const {
-    variant = "secondary",
+    variant,
     tone,
     size = "md",
-    labelCase = "upper",
+    labelCase,
     icon,
     iconAlign = "start",
     pending = false,
@@ -159,6 +139,7 @@ export function Button(props: ButtonProps) {
     label,
   } = props;
   const iconOnly = props.iconOnly === true;
+  const tipId = useId();
 
   const [spinning, setSpinning] = useState(false);
   useEffect(() => {
@@ -169,32 +150,31 @@ export function Button(props: ButtonProps) {
     const id = setTimeout(() => setSpinning(true), SPINNER_DELAY_MS);
     return () => clearTimeout(id);
   }, [pending]);
+  const [tipOpen, setTipOpen] = useState(false);
 
   const inert = disabled || pending;
-  // A reason to show means the control has to stay reachable, so it is only
-  // aria-disabled. Without one there is nothing to reach and :disabled is
-  // honest — it drops the button out of the tab order entirely.
   const softDisabled = inert && (pending || disabledReason != null);
+  const withTip = disabled && disabledReason != null;
 
-  const cls = [
-    BASE,
-    BOX[`${size}:${iconOnly ? "icon" : "label"}`],
-    TYPE[`${labelCase}:${size}`],
-    pressed ? PRESSED[tone ?? ""] : SKIN[`${variant}:${tone ?? ""}`],
-    !pressed && !inert && HOVER[variant],
-    fullWidth && "w-full",
+  const cls = cn(
+    button({
+      variant,
+      tone: tone ?? "neutral",
+      size,
+      shape: iconOnly ? "icon" : "label",
+      labelCase,
+      pressed,
+      inert,
+      fullWidth,
+    }),
     className,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  );
 
-  const hide = spinning ? "invisible" : undefined;
+  const hide = spinning ? "opacity-0" : undefined;
   const glyph = icon && <span className={hide}>{icon}</span>;
   const body = (
     <>
       {iconAlign === "start" && glyph}
-      {/* The label keeps its box and loses only its ink, so a row cannot reflow
-          mid-request; the spinner is laid over the space it left. */}
       {!iconOnly && <span className={hide}>{props.children}</span>}
       {iconAlign === "end" && glyph}
       {spinning && (
@@ -202,7 +182,6 @@ export function Button(props: ButtonProps) {
           className="absolute inset-0 m-auto animate-spin motion-reduce:[animation-duration:2400ms]"
           size={size === "sm" ? ICON_SIZE.sm : ICON_SIZE.xl}
           stroke={2}
-          aria-label={t("ui.button.pending")}
         />
       )}
     </>
@@ -215,27 +194,27 @@ export function Button(props: ButtonProps) {
     "aria-pressed": pressed,
     "aria-expanded": expanded,
     "aria-haspopup": haspopup,
-    // A title on a button that already shows its label is read twice; on an
-    // icon-only button it is the only way a pointer user learns the name.
+    "aria-describedby": withTip ? tipId : undefined,
     title: iconOnly ? label : undefined,
   };
 
-  if (href) {
-    return (
-      <a
-        {...shared}
-        href={inert ? undefined : href}
-        download={download}
-        target={target}
-        rel={target === "_blank" ? "noopener noreferrer" : undefined}
-        aria-disabled={inert || undefined}
-      >
-        {body}
-      </a>
-    );
-  }
-
-  const button = (
+  const control = href ? (
+    <a
+      {...shared}
+      href={inert && !softDisabled ? undefined : href}
+      download={download}
+      target={target}
+      rel={target === "_blank" ? "noopener noreferrer" : undefined}
+      tabIndex={tabIndex ?? (softDisabled ? 0 : undefined)}
+      aria-disabled={inert || undefined}
+      onClick={(e) => {
+        if (inert) e.preventDefault();
+        else onClick?.();
+      }}
+    >
+      {body}
+    </a>
+  ) : (
     <button
       {...shared}
       type="button"
@@ -251,13 +230,25 @@ export function Button(props: ButtonProps) {
     </button>
   );
 
-  // -1 keeps the Term out of the tab order: the button inside it is already a
-  // tab stop, and two stops for one control is a trap in miniature.
-  return disabledReason && disabled ? (
-    <Term tip={disabledReason} tabIndex={-1}>
-      {button}
-    </Term>
-  ) : (
-    button
+  if (!withTip) return control;
+  return (
+    <span
+      className="group relative inline-flex"
+      onClick={() => setTipOpen(!tipOpen)}
+      onBlur={(e: FocusEvent<HTMLSpanElement>) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setTipOpen(false);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && tipOpen) {
+          e.stopPropagation();
+          setTipOpen(false);
+        }
+      }}
+    >
+      {control}
+      <span id={tipId} role="tooltip" className={cn(TIP, tipOpen && "visible")}>
+        {disabledReason}
+      </span>
+    </span>
   );
 }
