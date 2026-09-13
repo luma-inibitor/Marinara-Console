@@ -265,5 +265,15 @@
   "ui.showFewer": {
     "text": "show fewer",
     "note": "Refolds a clamped run to its one-line form; the counterpart to ui.moreCount. The catalog has no expandable run and so no word for closing one."
+  },
+
+  "ui.field.required": {
+    "text": "required",
+    "note": "Field's marker beside a label whose control must hold a value before the form saves. The catalog states every requirement as a full sentence about one field (memoryvault.memoryTitleRequired, memoryvault.detailNameRequired) and has no one-word marker to set beside a label."
+  },
+
+  "ui.field.optional": {
+    "text": "optional",
+    "note": "Field's marker beside a label whose control may stay empty. The catalog never marks a field as optional; every field it names is either required in a sentence or left unmarked, so there is no word to reuse."
   }
 }
