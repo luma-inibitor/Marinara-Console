@@ -334,8 +334,8 @@ export default [
     rules: { "i18next/no-literal-string": "off", "no-restricted-syntax": "off" },
   },
   {
-    // Story strings reach no reader.
-    files: ["src/**/*.stories.tsx", ".storybook/**/*.ts", ".storybook/**/*.tsx"],
+    // Story strings reach no reader, and neither do the fixtures beside them.
+    files: ["src/**/*.stories.tsx", "src/**/fixtures.ts", ".storybook/**/*.ts", ".storybook/**/*.tsx"],
     rules: { "i18next/no-literal-string": "off", "no-restricted-syntax": "off" },
   },
   {
