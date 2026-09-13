@@ -123,7 +123,7 @@ const BUTTON_OK = [
   "src/tools/memory/detail/RetrievalCard.tsx", // the keyword rail, a clamped run of pills
 ];
 
-// TODO 101 hand-rolled buttons in 23 files. Remove a file here once it renders Button.
+// TODO 95 hand-rolled buttons in 21 files. Remove a file here once it renders Button.
 const TODO_BUTTON = [
   "src/shell/App.tsx",
   "src/shell/Toaster.tsx",
@@ -141,7 +141,6 @@ const TODO_BUTTON = [
   "src/tools/presets/PresetsTool.tsx",
   "src/ui/ErrorState.tsx",
   "src/ui/FullscreenText.tsx",
-  "src/ui/JsonView.tsx",
   "src/ui/ListEmpty.tsx",
   "src/ui/Loading.tsx",
   "src/ui/NotFound.tsx",
@@ -149,7 +148,7 @@ const TODO_BUTTON = [
   "src/ui/Sheet.tsx",
 ];
 
-// TODO 59 template literals and space joins in 17 files. Remove a file here once it composes with cn().
+// TODO 58 template literals and space joins in 16 files. Remove a file here once it composes with cn().
 const TODO_STRING = [
   "src/shell/App.tsx",
   "src/shell/Toaster.tsx",
@@ -275,7 +274,7 @@ export default [
     },
   },
   {
-    // TODO 752 classes from the legacy stylesheets in 30 files. Remove a file here once it is utilities.
+    // TODO 711 classes from the legacy stylesheets in 27 files. Remove a file here once it is utilities.
     files: [
       "src/shell/App.tsx",
       "src/shell/Toaster.tsx",
@@ -295,15 +294,14 @@ export default [
       "src/tools/memory/icons.tsx",
       "src/tools/memory/review/DockSheet.tsx",
       "src/tools/presets/PresetsTool.tsx",
-          "src/ui/EmptyState.tsx",
+      "src/ui/EmptyState.tsx",
       "src/ui/ErrorState.tsx",
       "src/ui/FullscreenText.tsx",
-      "src/ui/JsonView.tsx",
       "src/ui/ListEmpty.tsx",
       "src/ui/ListGroup.tsx",
       "src/ui/Loading.tsx",
-          "src/ui/NotFound.tsx",
-          "src/ui/SaveBar.tsx",
+      "src/ui/NotFound.tsx",
+      "src/ui/SaveBar.tsx",
     ],
     rules: { "better-tailwindcss/no-unknown-classes": "off" },
   },

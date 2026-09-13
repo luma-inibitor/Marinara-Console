@@ -70,12 +70,5 @@
   ],
   "src/tools/memory/components/NoteRef.css": [
     ".notelink → 12px"
-  ],
-  "src/ui/JsonView.css": [
-    ".jn-count → 9.5px",
-    ".jsonview → 11px"
-  ],
-  "src/ui/RawJson.css": [
-    ".rawjson summary::before → 10px"
   ]
 }
