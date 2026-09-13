@@ -94,9 +94,6 @@
   "src/ui/RawJson.css": [
     ".rawjson summary::before → 10px"
   ],
-  "src/ui/SearchBar.css": [
-    ".searchbar-count → 10px"
-  ],
   "src/ui/SectionKey.css": [
     ".skey → 11.5px"
   ],
