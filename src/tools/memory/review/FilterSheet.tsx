@@ -117,15 +117,15 @@ export function FilterSheet(props: {
                 <span className="fs-any-i">
                   <Flag size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
                 </span>
-                <span className="t-label t-label-s fs-any-l">{t("memory.review.anyFlag")}</span>
+                <span className="fs-any-l t-label t-label-s">{t("memory.review.anyFlag")}</span>
                 <span className="fs-sum t-data">{flags.selected ? selectedSummary(flags) : ""}</span>
                 {/* Claims carrying a flag — what this toggle would keep. The
                     drill-in's number counts FLAGS, not claims; they are two
                     questions and must never resolve to the same figure. */}
-                <span className="t-data fs-n">{m.anyFlagCount}</span>
+                <span className="fs-n t-data">{m.anyFlagCount}</span>
               </button>
               <button type="button" className="fs-drill" onClick={() => setView("flags")}>
-                <span className="t-data fs-n">
+                <span className="fs-n t-data">
                   {flags.selected ? `${flags.selected}/${flags.values.length}` : flags.values.length}
                 </span>
                 <ChevronRight size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
@@ -135,11 +135,11 @@ export function FilterSheet(props: {
             {/* Sources get their own screen because the list is the vault's
                 length — it is the one facet that cannot be a tile grid. */}
             <button type="button" className="fs-row fs-nav" onClick={() => setView("source")}>
-              <span className="t-label t-label-s fs-row-l">{t("reviewqueue.sources")}</span>
+              <span className="fs-row-l t-label t-label-s">{t("reviewqueue.sources")}</span>
               <span className="fs-sum t-data">
                 {sources.selected ? selectedSummary(sources) : t("memory.review.anySource")}
               </span>
-              <span className="t-data fs-n">
+              <span className="fs-n t-data">
                 {sources.selected ? `${sources.selected}/${sources.values.length}` : sources.values.length}
               </span>
               <ChevronRight className="fs-chev" size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
@@ -150,10 +150,10 @@ export function FilterSheet(props: {
             ))}
 
             <button type="button" className="fs-row fs-more" aria-expanded={more} onClick={() => setMore(!more)}>
-              <span className="t-label t-label-s fs-row-l">
+              <span className="fs-row-l t-label t-label-s">
                 {more ? t("memory.review.fewerFilters") : t("memory.review.moreFilters")}
               </span>
-              <span className={`t-data fs-n ${moreSelected(m) ? "is-on" : ""}`}>{moreSelected(m) || TAIL.length}</span>
+              <span className={`fs-n t-data ${moreSelected(m) ? "is-on" : ""}`}>{moreSelected(m) || TAIL.length}</span>
               {more ? (
                 <ChevronDown className="fs-chev" size={ICON_SIZE.sm} stroke={1.75} aria-hidden />
               ) : (
@@ -178,7 +178,7 @@ export function FilterSheet(props: {
       </div>
 
       <div className="fs-foot">
-        <span className="t-data fs-shown">
+        <span className="fs-shown t-data">
           {t("memory.review.shownClaims", { count: m.shown, shown: m.shown, total: m.total })}
         </span>
         <button type="button" className="fs-done t-label t-label-s" onClick={closeTopOverlay}>
@@ -231,8 +231,8 @@ function Check(props: { v: SheetValue; flag?: boolean; icon?: React.ReactNode; o
     >
       <Box on={v.on} flag={props.flag} />
       {props.icon}
-      <span className="t-data fs-check-l">{v.label}</span>
-      <span className="t-data fs-n">{v.count}</span>
+      <span className="fs-check-l t-data">{v.label}</span>
+      <span className="fs-n t-data">{v.count}</span>
     </button>
   );
 }
@@ -246,8 +246,8 @@ function CheckList(props: { facet: SheetFacet; onToggle: (id: string, v: string)
     <>
       {props.heading && (
         <div className="fs-sub">
-          <span className="t-label t-label-s fs-row-l">{f.label}</span>
-          <span className={`t-data fs-n ${f.selected ? "is-on" : ""}`}>
+          <span className="fs-row-l t-label t-label-s">{f.label}</span>
+          <span className={`fs-n t-data ${f.selected ? "is-on" : ""}`}>
             {f.selected ? `${f.selected}/${f.values.length}` : f.values.length}
           </span>
         </div>
@@ -268,8 +268,8 @@ function Tiles(props: { facet: SheetFacet; onToggle: (id: string, v: string) => 
   return (
     <div className="fs-tiles-w">
       <div className="fs-sub">
-        <span className="t-label t-label-s fs-row-l">{f.label}</span>
-        <span className={`t-data fs-n ${f.selected ? "is-on" : ""}`}>
+        <span className="fs-row-l t-label t-label-s">{f.label}</span>
+        <span className={`fs-n t-data ${f.selected ? "is-on" : ""}`}>
           {f.selected ? `${f.selected}/${f.values.length}` : f.values.length}
         </span>
       </div>
@@ -291,8 +291,8 @@ function Tiles(props: { facet: SheetFacet; onToggle: (id: string, v: string) => 
               ) : (
                 <DecisionIcon d={decisionOf(v.value)} size={13} />
               )}
-              <span className="t-data fs-tile-l">{v.label}</span>
-              <span className="t-data fs-n">{v.count}</span>
+              <span className="fs-tile-l t-data">{v.label}</span>
+              <span className="fs-n t-data">{v.count}</span>
             </button>
           );
         })}

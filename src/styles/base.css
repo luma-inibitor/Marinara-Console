@@ -41,24 +41,7 @@
   }
 }
 
-/* ── type utilities — the three faces, pre-styled ── */
-.t-label {
-  font-family: var(--font-label);
-  font-variation-settings: "wdth" 110;
-  font-weight: 600;
-  font-size: var(--fs-label);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-.t-label-s { font-size: var(--fs-label-s); letter-spacing: 0.12em; }
-.t-data {
-  font-family: var(--font-data);
-  font-size: var(--fs-data);
-  font-variant-ligatures: none;
-  font-variant-numeric: tabular-nums;
-}
-.t-num { font-variant-numeric: tabular-nums; font-family: var(--font-data); }
+/* ── type utilities — t-label, t-label-s, t-data and t-num live in theme.css ── */
 /* Restores the prose face inside a label or data context. The resets are load-
    bearing: switching family alone leaves the context's caps, tracking and
    tabular figures in place. Sets neither size nor weight, on purpose. */

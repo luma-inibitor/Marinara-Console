@@ -74,7 +74,7 @@ export function ErrorState(props: {
           {status > 0 && (
             <>
               <br />
-              <span className="t-data dim">{t("ui.error.http", { status })}</span>
+              <span className="dim t-data">{t("ui.error.http", { status })}</span>
             </>
           )}
         </>

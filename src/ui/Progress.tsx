@@ -65,7 +65,7 @@ export function Progress(props: ProgressProps) {
   return (
     <span className={[WRAP[form], "min-w-0 items-center gap-2", className].filter(Boolean).join(" ")}>
       {track}
-      <span className="shrink-0 font-data text-data-s text-dim tabular-nums">{text}</span>
+      <span className="shrink-0 t-data text-data-s text-dim">{text}</span>
     </span>
   );
 }

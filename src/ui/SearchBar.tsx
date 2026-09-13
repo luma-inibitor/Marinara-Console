@@ -11,7 +11,7 @@ const INPUT =
   "min-h-[40px] min-w-0 flex-auto bg-transparent font-prose text-ink outline-none placeholder:text-dim " +
   "focus-visible:shadow-none [&::-webkit-search-cancel-button]:hidden";
 const COUNT =
-  "pointer-events-none shrink-0 rounded-[5px] bg-accent-wash px-[6px] py-1 font-data text-data-s font-bold tabular-nums " +
+  "pointer-events-none shrink-0 rounded-[5px] bg-accent-wash px-[6px] py-1 t-data text-data-s font-bold " +
   "whitespace-nowrap text-accent";
 
 export function SearchBar(props: {

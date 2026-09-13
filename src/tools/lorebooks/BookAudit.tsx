@@ -479,7 +479,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
                 }}
               />
             </span>
-            <span className="t-data mval">
+            <span className="mval t-data">
               <b style={meter.over ? { color: "var(--flag)" } : undefined}>{meter.total.toLocaleString()}</b>
               <span className="of"> / {meter.budget.toLocaleString()}</span>
             </span>
@@ -509,7 +509,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
             </div>
           ) : (
             <div className="chiprail">
-              <span className="t-data selcount">{t("lorebooks.bulk.selected", { count: selected.size })}</span>
+              <span className="selcount t-data">{t("lorebooks.bulk.selected", { count: selected.size })}</span>
               <Chip onClick={() => runBulk({ enabled: true })}>{t("lorebooks.bulk.enable")}</Chip>
               <Chip onClick={() => runBulk({ enabled: false })}>{t("lorebooks.bulk.disable")}</Chip>
               <Chip
@@ -569,7 +569,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
             ? grouped.map(([tag, items]) => (
                 <div key={tag}>
                   <div className="grouphead">
-                    <span className="t-label t-label-s gn">{tag === UNTAGGED ? t("lorebooks.untagged") : tag}</span>
+                    <span className="gn t-label t-label-s">{tag === UNTAGGED ? t("lorebooks.untagged") : tag}</span>
                     <span className="meta">
                       <span>{items.length}</span>
                       <span>{items.reduce((a, e) => a + entryTokens(e), 0).toLocaleString()}t</span>

@@ -98,7 +98,7 @@ export function SearchDisclosure(props: {
           {shown.map((o) => (
             <button key={o.id} type="button" className={OPTION} aria-current={current(o.id)} onClick={() => pick(o.id)}>
               <span className="min-w-0 flex-1 truncate">{o.name}</span>
-              {o.hint && <span className="shrink-0 font-data text-data text-dim">{o.hint}</span>}
+              {o.hint && <span className="shrink-0 t-data text-dim">{o.hint}</span>}
             </button>
           ))}
           {shown.length === 0 && <p className="m-0 p-2 text-prose text-dim">{props.emptyText}</p>}

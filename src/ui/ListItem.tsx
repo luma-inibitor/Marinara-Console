@@ -69,7 +69,7 @@ const PRIMARY_BUTTON =
   "focus-visible:relative focus-visible:z-[1] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] " +
   "aria-disabled:opacity-45 aria-disabled:cursor-default aria-disabled:hover:bg-transparent";
 const TITLE = "block truncate font-label text-title font-semibold leading-tight [font-variation-settings:'wdth'_102]";
-const SECONDARY = "mt-1 block truncate font-data text-data-s text-dim";
+const SECONDARY = "t-data mt-1 block truncate text-data-s text-dim";
 
 export function ListItem(props: ListItemProps) {
   const { title, secondary, leading, trailing, action, onActivate, selected, disabled, rowKey, tabIndex, className } =

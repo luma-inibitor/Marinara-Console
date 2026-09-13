@@ -3,9 +3,7 @@ import { SectionKey } from "./SectionKey";
 
 /** One section of a memory, with its heading, an optional meter, and a body. */
 
-const HEAD =
-  "mb-1 flex items-center gap-2 font-label font-semibold [font-variation-settings:'wdth'_110] " +
-  "uppercase tracking-[0.12em] text-label-s text-dim";
+const HEAD = "t-label t-label-s mb-1 flex items-center gap-2";
 
 export function DetailSection(props: {
   sectionKey: string;

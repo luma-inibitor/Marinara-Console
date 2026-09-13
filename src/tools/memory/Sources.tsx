@@ -275,7 +275,7 @@ export function Sources() {
                 return [
                   <div key={id} className="mem-card is-danger">
                     <b className="t-prose">{label()}</b>
-                    <p className="t-data dim">{err}</p>
+                    <p className="dim t-data">{err}</p>
                   </div>,
                 ];
               if (!inKind.length) return [];
@@ -321,7 +321,7 @@ export function Sources() {
                             {allPicked ? t("activityview.clear") : `Select all ${eligible.length}`}
                           </button>
                         )}
-                        {!bulk && <span className="gact-note t-data dim">{t("memory.sourcesReviewEach")}</span>}
+                        {!bulk && <span className="gact-note dim t-data">{t("memory.sourcesReviewEach")}</span>}
                       </>
                     }
                   >
@@ -475,7 +475,7 @@ function ProducedPanel({ row }: { row: SourceRow }) {
           </div>
         ))}
         {row.derived.length > 3 && !showAll && (
-          <button className="fold-btn t-data hit" onClick={() => setShowAll(true)}>
+          <button className="fold-btn hit t-data" onClick={() => setShowAll(true)}>
             <ChevronRight size={12} stroke={1.75} aria-hidden />{" "}
             {t("memory.sources.moreDerived", { count: row.derived.length - 3 })}
           </button>
@@ -578,7 +578,7 @@ function CuratePanel({ row, onImported }: { row: SourceRow; onImported: () => Pr
         ) : (
           <div className="t-prose xtext">{stored}</div>
         )}
-        <div className="z-foot t-data dim">
+        <div className="z-foot dim t-data">
           {(editing ? draft : stored).length.toLocaleString()} {t("ui.editor.charUnit")}
         </div>
       </div>
@@ -669,7 +669,7 @@ function JobDock({
         value={job.done}
         max={job.total}
       />
-      <p className="jobnote t-data dim">
+      <p className="jobnote dim t-data">
         <Info size={12} stroke={1.75} aria-hidden />
         <span>{t("memory.sources.stopNote")}</span>
       </p>
@@ -773,7 +773,7 @@ function ImportReport({ results, onDismiss }: { results: ImportResult[]; onDismi
 
       {ok.length > 0 && (
         <>
-          <button className="fold-btn t-data hit" aria-expanded={openDetail} onClick={() => setOpenDetail(!openDetail)}>
+          <button className="fold-btn hit t-data" aria-expanded={openDetail} onClick={() => setOpenDetail(!openDetail)}>
             {openDetail ? (
               <ChevronDown size={12} stroke={1.75} aria-hidden />
             ) : (
