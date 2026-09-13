@@ -1,8 +1,0 @@
-.edu {
-  margin: 6px 0 0;
-  font-size: 12px;
-  display: flex;
-  align-items: flex-start;
-  gap: 5px;
-}
-.edu svg { flex: 0 0 auto; margin-top: 2px; }

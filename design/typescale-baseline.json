@@ -87,22 +87,12 @@
   "src/ui/Chip.css": [
     ".chip, .tag → 9.5px"
   ],
-  "src/ui/Edu.css": [
-    ".edu → 12px"
-  ],
-  "src/ui/EmptyState.css": [
-    ".es-body → 12.5px",
-    ".es-title → 14px"
-  ],
   "src/ui/JsonView.css": [
     ".jn-count → 9.5px",
     ".jsonview → 11px"
   ],
   "src/ui/RawJson.css": [
     ".rawjson summary::before → 10px"
-  ],
-  "src/ui/SearchBar.css": [
-    ".searchbar-count → 10px"
   ],
   "src/ui/SectionKey.css": [
     ".skey → 11.5px"

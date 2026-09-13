@@ -1,32 +1,33 @@
 import type { ReactNode } from "react";
-import "./EmptyState.css";
 
-/** The nothing-here state: an optional icon, a title, an optional explanation,
- *  and optional actions. One component for every shade of empty — filtered to
- *  nothing, finished, nothing selected, never had anything.
- *
- *  Waiting and failing are `Loading` and `ErrorState` instead: same shape,
- *  different roles, and §8 splits on role.
- *
- *  `tone` colors the icon only. It never carries meaning alone, so every
- *  toned state still says what happened in the title. */
+/** The nothing-here state, with an optional icon, a title, an explanation and actions. */
+
+type Tone = "ok" | "danger";
+
+// Tone colours the icon only, so every toned state still says what happened in its title.
+const ICON: Record<string, string> = {
+  "": "text-faint",
+  ok: "text-ok",
+  danger: "text-danger",
+};
+
 export function EmptyState(props: {
   icon?: ReactNode;
   title: ReactNode;
   body?: ReactNode;
   actions?: ReactNode;
-  tone?: "ok" | "danger";
+  tone?: Tone;
 }) {
   return (
-    <div className="emptystate">
+    <div className="emptystate px-4 py-5 text-center text-dim">
       {props.icon && (
-        <span className={`es-icon ${props.tone ? `es-${props.tone}` : ""}`} aria-hidden>
+        <span className={`mb-[9px] inline-flex ${ICON[props.tone ?? ""]}`} aria-hidden>
           {props.icon}
         </span>
       )}
-      <div className="es-title">{props.title}</div>
-      {props.body && <p className="es-body t-prose dim">{props.body}</p>}
-      {props.actions && <div className="es-acts">{props.actions}</div>}
+      <div className="mb-[5px] font-label font-[650] text-prose text-ink">{props.title}</div>
+      {props.body && <p className="mx-auto max-w-[52ch] font-prose text-data [&_b]:text-ink">{props.body}</p>}
+      {props.actions && <div className="mt-3 flex flex-wrap justify-center gap-2">{props.actions}</div>}
     </div>
   );
 }

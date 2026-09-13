@@ -1,5 +1,8 @@
 {
   "src/styles/memory.css": [
+    "dsec",
+    "edu",
+    "es-acts",
     "is-danger-act"
   ]
 }
