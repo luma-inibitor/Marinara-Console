@@ -989,6 +989,22 @@
     "use": "longtermmemorydetail.reviewEdit",
     "note": "Opens the vault's editor from the read-only detail card. The catalog's own one-word Edit action."
   },
+  "memory.detail.fingerprint": {
+    "text": "Extraction fingerprint",
+    "note": "Heading over a source note's extractionFingerprint on the detail card. longtermmemorydetail.underTheHoodFingerprintsLabel is \"Fingerprints.\", a lead-in ending in a period for a paragraph of settings help, not a heading over the record's own fields."
+  },
+  "memory.detail.suppressed": {
+    "text": "{{count}} suppressed",
+    "note": "Tally of a memory's suppressedKeywords beside the keyword rail, in the same shape as the addedManually tally next to it. The catalog names the manual list and never the suppressed one."
+  },
+  "memory.detail.contributions": {
+    "text": "Contributions",
+    "note": "Heading over a section's contributions, the per-contributor provenance the engine stores beside the text. memoryvault.provenance names the note-level source; this is the section-level list, and the catalog has no word for it."
+  },
+  "memory.detail.dimensions": {
+    "text": "Dimensions",
+    "note": "Heading over a section's ten relationship axes (trust, respect, and so on) and their deltas. The catalog renders no dimension anywhere."
+  },
   "memory.detail.sectionCount": {
     "one": "{{count}} section",
     "other": "{{count}} sections",
