@@ -97,7 +97,7 @@ const BUTTON_SELECTOR = {
 };
 
 // The classes the e2e suite and the legacy stylesheets reach by name.
-const HOOK_CLASSES = ["hit", "sheet", "peek-scrim"];
+const HOOK_CLASSES = ["hit", "sheet", "peek-scrim", "chip", "tag", "ar", "skey"];
 
 // A button that is not a Button, each for its own shape.
 const BUTTON_OK = [
@@ -141,7 +141,7 @@ const TODO_BUTTON = [
   "src/ui/Sheet.tsx",
 ];
 
-// TODO 80 template literals and space joins in 26 files. Remove a file here once it composes with cn().
+// TODO 75 template literals and space joins in 22 files. Remove a file here once it composes with cn().
 const TODO_STRING = [
   "src/shell/App.tsx",
   "src/shell/Toaster.tsx",
@@ -161,14 +161,10 @@ const TODO_STRING = [
   "src/tools/memory/review/FilterSheet.tsx",
   "src/tools/memory/review/ViewSheet.tsx",
   "src/tools/presets/PresetsTool.tsx",
-  "src/ui/Chip.tsx",
   "src/ui/CopyableText.tsx",
   "src/ui/EmptyState.tsx",
   "src/ui/FullscreenText.tsx",
-  "src/ui/ModePill.tsx",
   "src/ui/SaveBar.tsx",
-  "src/ui/SectionKey.tsx",
-  "src/ui/Term.tsx",
 ];
 
 // One override per combination, since a later override replaces the whole rule.
@@ -277,11 +273,10 @@ export default [
     },
   },
   {
-    // TODO 1254 classes from the legacy stylesheets in 40 files. Remove a file here once it is utilities.
+    // TODO 884 classes from the legacy stylesheets in 35 files. Remove a file here once it is utilities.
     files: [
       "src/shell/App.tsx",
       "src/shell/Toaster.tsx",
-      "src/shell/connection.tsx",
       "src/shell/hotkeys.tsx",
       "src/shell/palette.tsx",
       "src/tools/lorebooks/BookAudit.tsx",
@@ -303,7 +298,6 @@ export default [
       "src/tools/memory/review/FilterSheet.tsx",
       "src/tools/memory/review/ViewSheet.tsx",
       "src/tools/presets/PresetsTool.tsx",
-      "src/ui/Chip.tsx",
       "src/ui/CopyableText.tsx",
       "src/ui/EmptyState.tsx",
       "src/ui/ErrorState.tsx",
@@ -311,14 +305,11 @@ export default [
       "src/ui/JsonView.tsx",
       "src/ui/ListEmpty.tsx",
       "src/ui/ListGroup.tsx",
-      "src/ui/ListItem.stories.tsx",
       "src/ui/Loading.tsx",
       "src/ui/MiddleTruncate.tsx",
-      "src/ui/ModePill.tsx",
       "src/ui/NotFound.tsx",
       "src/ui/RawJson.tsx",
       "src/ui/SaveBar.tsx",
-      "src/ui/Term.tsx",
     ],
     rules: { "better-tailwindcss/no-unknown-classes": "off" },
   },

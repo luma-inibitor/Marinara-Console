@@ -43,8 +43,8 @@ const RECORDED: Record<string, string[]> = {
   "phone/memory-review": ["1× button.notelink.t-data 18px"],
   "tablet/memory-review": ["1× button.notelink.t-data 18px"],
   "desktop/memory-review": ["1× button.notelink.t-data 18px"],
-  "narrow/memory-sources": ["1× a.qchip.qblock 30px", "3× button.mseg.hit 42px"],
-  "phone/memory-sources": ["1× a.qchip.qblock 30px", "2× button.mseg.hit 42px"],
+  "narrow/memory-sources": ["1× a.qchip.qblock 30px"],
+  "phone/memory-sources": ["1× a.qchip.qblock 30px"],
 };
 
 function tally(failing: Undersized[]): string[] {
