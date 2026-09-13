@@ -36,9 +36,42 @@ const CHANGE_KINDS = ["section", "link", "keywords", "status", "subjects"] as co
 const id = v.pipe(v.string(), v.minLength(1));
 const strings = v.array(v.string());
 
+const scores = v.record(v.string(), v.number());
+
+const ContributionSchema = v.looseObject({
+  owner: v.string(),
+  sourceNoteId: v.optional(v.string()),
+  sourceHash: v.optional(v.string()),
+  updatedAt: v.optional(v.string()),
+  confidence: v.optional(v.number()),
+});
+
 export const NoteSectionSchema = v.looseObject({
   text: v.string(),
+  updatedAt: v.optional(v.string()),
   importance: v.optional(v.string()),
+  confidence: v.optional(v.number()),
+  salience: v.optional(v.number()),
+  evidence: v.optional(strings),
+  contributions: v.optional(v.array(ContributionSchema)),
+  dimensions: v.optional(scores),
+  dimensionChanges: v.optional(scores),
+});
+
+const ScopeSchema = v.looseObject({
+  chatId: v.optional(v.string()),
+  chatIds: v.optional(strings),
+  groupId: v.optional(v.string()),
+  groupIds: v.optional(strings),
+  characterIds: v.optional(strings),
+  personaId: v.optional(v.string()),
+  personaIds: v.optional(strings),
+});
+
+const ProvenanceSchema = v.looseObject({
+  kind: v.optional(v.string()),
+  sourceId: v.optional(v.string()),
+  entryId: v.optional(v.string()),
 });
 
 /** Not `string[]`, whatever `types.ts` used to say: the engine sends a scoped
@@ -72,10 +105,22 @@ export const NoteSchema = v.looseObject({
   keywords: v.optional(strings),
   manualKeywords: v.optional(strings),
   suppressedKeywords: v.optional(strings),
-  provenance: v.optional(v.looseObject({ kind: v.optional(v.string()), sourceId: v.optional(v.string()) })),
+  scope: v.optional(ScopeSchema),
+  provenance: v.optional(ProvenanceSchema),
+  extractionFingerprint: v.nullish(
+    v.looseObject({
+      version: v.optional(v.number()),
+      sourceHash: v.optional(v.string()),
+      provenance: v.optional(v.nullable(ProvenanceSchema)),
+      scope: v.optional(ScopeSchema),
+      modes: v.optional(strings),
+      extractionMode: v.optional(v.string()),
+    }),
+  ),
   links: v.array(LinkSchema),
   sections: v.record(v.string(), NoteSectionSchema),
   conflicts: v.optional(v.array(ConflictSchema)),
+  createdAt: v.optional(v.string()),
   updatedAt: v.optional(v.string()),
   version: v.optional(v.number()),
   subjects: v.optional(v.array(SubjectSchema)),

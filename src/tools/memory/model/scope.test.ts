@@ -19,9 +19,8 @@ beforeEach(() => {
 
 const scope = (over: Partial<Scope> = {}): Scope => ({ characterId: "", chatId: "", ...over });
 
-/** `scope` is not a declared field on Note, it rides the wire type's index
- *  signature — so it is built here rather than through a factory argument. */
-const scoped = (noteScope: unknown): Note => makeNote({ scope: noteScope });
+/** The model reads `scope` as unknown, so the malformed values below are cast in. */
+const scoped = (noteScope: unknown): Note => makeNote({ scope: noteScope as Note["scope"] });
 
 describe("isScoped", () => {
   it("is false when nothing is selected", () => {
