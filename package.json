@@ -29,6 +29,7 @@
     "preview": "vite preview",
     "prose": "vale --no-global .",
     "prosecheck": "node scripts/prosecheck.mjs",
+    "ratchet": "node scripts/ratchet.mjs",
     "specificity": "node scripts/specificity.mjs",
     "storybook": "storybook dev -p 6006 --no-open",
     "test": "vitest run",
