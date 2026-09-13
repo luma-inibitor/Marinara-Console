@@ -105,6 +105,7 @@ const BUTTON_OK = [
   "src/ui/ListGroup.tsx", // the group header's disclosure
   "src/ui/ListItem.tsx", // the row's primary target
   "src/ui/Menu.tsx", // a menu item
+  "src/ui/Picker.tsx", // the trigger chip, which anchors its menu
   "src/ui/ModePill.tsx", // a segment of a toggle group
   "src/ui/SearchDisclosure.tsx", // the disclosure and its options
   "src/tools/memory/detail/RetrievalCard.tsx", // the keyword rail, a clamped run of pills

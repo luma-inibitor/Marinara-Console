@@ -1,27 +1,42 @@
 import type { KeyboardEvent, ReactNode, RefObject } from "react";
+import { useEffect, useRef } from "react";
 import { useCloseThen } from "../shell/overlays";
+import { Confirm, ICON_SIZE } from "./icons";
 import { Popover, type Align, type Side } from "./Popover";
 
 export interface MenuItem {
   id: string;
   label: ReactNode;
-  /** Runs after the menu has closed and its history entry has settled. */
+  /** Runs after the menu has closed and its history entry has settled. A checkbox runs it at once and stays open. */
   onSelect: () => void;
+  /** Renders the item as a radio or a checkbox, with `checked` as its state. */
+  check?: "radio" | "checkbox";
+  checked?: boolean;
+  /** Keeps the item reachable and shows why it cannot act. */
+  disabledReason?: string;
+  hint?: ReactNode;
 }
 
 // eslint-disable-next-line better-tailwindcss/no-unknown-classes -- a DOM selector
-const MENUITEM = '[role="menuitem"]';
+const MENUITEM = '[role^="menuitem"]';
 const ITEM =
-  "flex min-h-tap w-full items-center rounded-sm px-3 text-left text-prose text-ink " +
-  "hover:bg-surface-2 focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none";
+  "flex w-full min-h-tap items-center gap-2 rounded-sm px-3 text-left text-prose text-ink " +
+  "hover:bg-surface-2 aria-checked:bg-accent-wash aria-disabled:opacity-45 aria-disabled:cursor-default " +
+  "focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]";
+
+const ROLE = { radio: "menuitemradio", checkbox: "menuitemcheckbox" } as const;
 
 /** The next item for a key, or null when the key is not the menu's. */
-export function step(key: string, at: number, count: number): number | null {
+export function step(key: string, at: number, count: number, back = false): number | null {
+  const next = (at + 1) % count;
+  const prev = at <= 0 ? count - 1 : at - 1;
   switch (key) {
     case "ArrowDown":
-      return (at + 1) % count;
+      return next;
     case "ArrowUp":
-      return at <= 0 ? count - 1 : at - 1;
+      return prev;
+    case "Tab":
+      return back ? prev : next;
     case "Home":
       return 0;
     case "End":
@@ -33,9 +48,9 @@ export function step(key: string, at: number, count: number): number | null {
 
 /** A list of actions in a Popover.
  *
- *  Focus lands on the first item when the menu opens and returns to the
- *  trigger when it closes. Arrows move between items and wrap, Home and End
- *  jump, and Enter or Space runs the item. The trigger carries
+ *  Focus lands on the checked item, or else the first, when the menu opens
+ *  and returns to the trigger when it closes. Arrows and Tab move between
+ *  items and wrap, Home and End jump, and Enter or Space runs the item. The trigger carries
  *  `aria-haspopup="menu"` and `aria-expanded`. */
 export function Menu(props: {
   open: boolean;
@@ -47,12 +62,24 @@ export function Menu(props: {
   align?: Align;
 }) {
   const choose = useCloseThen(props.open);
+  const home = useRef<HTMLButtonElement>(null);
+  const checked = props.items.findIndex((item) => item.checked);
+  const tabbable = checked === -1 ? 0 : checked;
+  useEffect(() => {
+    if (props.open) home.current?.focus();
+  }, [props.open]);
   const onKeyDown = (ev: KeyboardEvent<HTMLDivElement>) => {
+    if (ev.isDefaultPrevented()) return;
     const items = Array.from(ev.currentTarget.querySelectorAll<HTMLElement>(MENUITEM));
-    const next = step(ev.key, items.indexOf(document.activeElement as HTMLElement), items.length);
+    const next = step(ev.key, items.indexOf(document.activeElement as HTMLElement), items.length, ev.shiftKey);
     if (next === null || !items.length) return;
     ev.preventDefault();
     items[next]!.focus();
+  };
+  const run = (item: MenuItem) => {
+    if (item.disabledReason) return;
+    if (item.check === "checkbox") item.onSelect();
+    else choose(item.onSelect);
   };
   return (
     <Popover
@@ -66,16 +93,27 @@ export function Menu(props: {
       className="min-w-[180px] p-1"
       onKeyDown={onKeyDown}
     >
-      {props.items.map((item) => (
+      {props.items.map((item, i) => (
         <button
           key={item.id}
+          ref={i === tabbable ? home : undefined}
           type="button"
-          role="menuitem"
-          tabIndex={-1}
+          role={item.check ? ROLE[item.check] : "menuitem"}
+          aria-checked={item.check ? item.checked === true : undefined}
+          aria-disabled={item.disabledReason ? true : undefined}
+          tabIndex={i === tabbable ? 0 : -1}
           className={ITEM}
-          onClick={() => choose(item.onSelect)}
+          onClick={() => run(item)}
         >
-          {item.label}
+          {item.check && (
+            <span className="flex w-4 shrink-0 justify-center text-accent">
+              {item.checked && <Confirm size={ICON_SIZE.md} stroke={2} aria-hidden />}
+            </span>
+          )}
+          <span className="min-w-0 flex-1 truncate">{item.label}</span>
+          {(item.disabledReason ?? item.hint) && (
+            <span className="shrink-0 font-data text-data-s text-dim">{item.disabledReason ?? item.hint}</span>
+          )}
         </button>
       ))}
     </Popover>
