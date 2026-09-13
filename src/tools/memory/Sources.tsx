@@ -64,6 +64,7 @@ import {
   collapsedGroups,
   Edu,
   EmptyState,
+  Field,
   ListGroup,
   Loading,
   Modal,
@@ -71,6 +72,7 @@ import {
   MODES,
   Progress,
   SearchBar,
+  Textarea,
   fuzzyFilter,
 } from "../../ui";
 import { closeTopOverlay } from "../../shell/overlays";
@@ -566,12 +568,13 @@ function CuratePanel({ row, onImported }: { row: SourceRow; onImported: () => Pr
           )}
         </div>
         {editing ? (
-          <textarea
-            className="editarea t-prose"
-            rows={Math.min(10, Math.max(3, Math.ceil(draft.length / 60)))}
-            value={draft}
-            onInput={(e) => setDraft(e.currentTarget.value)}
-          />
+          <Field label={t("memory.extractionText")} labelHidden>
+            <Textarea
+              rows={Math.min(10, Math.max(3, Math.ceil(draft.length / 60)))}
+              value={draft}
+              onInput={(e) => setDraft(e.currentTarget.value)}
+            />
+          </Field>
         ) : (
           <div className="t-prose xtext">{stored}</div>
         )}
