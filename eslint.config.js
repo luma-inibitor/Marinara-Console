@@ -97,7 +97,7 @@ const BUTTON_SELECTOR = {
 };
 
 // The classes the e2e suite and the legacy stylesheets reach by name.
-const HOOK_CLASSES = ["hit", "sheet", "peek-scrim"];
+const HOOK_CLASSES = ["hit", "sheet", "peek-scrim", "chip", "tag", "ar"];
 
 // A button that is not a Button, each for its own shape.
 const BUTTON_OK = [
@@ -161,7 +161,6 @@ const TODO_STRING = [
   "src/tools/memory/review/FilterSheet.tsx",
   "src/tools/memory/review/ViewSheet.tsx",
   "src/tools/presets/PresetsTool.tsx",
-  "src/ui/Chip.tsx",
   "src/ui/CopyableText.tsx",
   "src/ui/EmptyState.tsx",
   "src/ui/FullscreenText.tsx",
@@ -303,7 +302,6 @@ export default [
       "src/tools/memory/review/FilterSheet.tsx",
       "src/tools/memory/review/ViewSheet.tsx",
       "src/tools/presets/PresetsTool.tsx",
-      "src/ui/Chip.tsx",
       "src/ui/CopyableText.tsx",
       "src/ui/EmptyState.tsx",
       "src/ui/ErrorState.tsx",
