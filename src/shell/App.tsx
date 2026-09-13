@@ -40,7 +40,7 @@ export function App() {
     <div className="shell">
       <nav className="rail" aria-label={t("shell.nav.tools")}>
         {/* eslint-disable i18next/no-literal-string -- the product name is not copy and has no catalog entry. */}
-        <div className="rail-brand t-label-s t-label" data-brand data-contrast-exempt>
+        <div className="rail-brand t-label t-label-s" data-brand data-contrast-exempt>
           Marinara
           <br />
           Console

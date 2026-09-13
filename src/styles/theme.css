@@ -92,11 +92,37 @@
   }
 
   /* shape */
-  --radius-s: var(--r-s);
-  --radius-m: var(--r-m);
-  --radius-l: var(--r-l);
+  --radius-*: initial;
+  --radius-sm: var(--r-s);
+  --radius-md: var(--r-m);
+  --radius-lg: var(--r-l);
 
   /* the two semantic breakpoints (tests/e2e/README.md §1) */
   --breakpoint-stack: 720px;
   --breakpoint-split: 900px;
+}
+
+/* The house text treatments, registered so a later utility can override one property. */
+@utility t-label {
+  font-family: var(--font-label);
+  font-variation-settings: "wdth" 110;
+  font-weight: 600;
+  font-size: var(--fs-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+@utility t-label-s {
+  font-size: var(--fs-label-s);
+  letter-spacing: 0.12em;
+}
+@utility t-data {
+  font-family: var(--font-data);
+  font-size: var(--fs-data);
+  font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums;
+}
+@utility t-num {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-data);
 }

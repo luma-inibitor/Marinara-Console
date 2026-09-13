@@ -4,6 +4,9 @@ import babelParser from "@babel/eslint-parser";
 import i18next from "eslint-plugin-i18next";
 import importPlugin from "eslint-plugin-import";
 import reactHooks from "eslint-plugin-react-hooks";
+import i18nDefaults from "eslint-plugin-i18next/lib/options/defaults.js";
+import betterTailwindcss from "eslint-plugin-better-tailwindcss";
+import { getDefaultSelectors } from "eslint-plugin-better-tailwindcss/api/defaults";
 
 // Babel, not typescript-eslint, parses the TypeScript here. typescript@7 — the
 // native compiler — exports only `version` from the package root, so anything
@@ -51,6 +54,146 @@ const COPY_TABLE_SELECTOR = {
   message: "a label in a copy table must come from t()",
 };
 
+// Two utilities on one property resolve by their order in the generated sheet, not in the string.
+const CLASS_SELECTORS = [
+  {
+    selector: 'JSXAttribute[name.name="className"] > JSXExpressionContainer > TemplateLiteral',
+    message: "Compose classes with cn() from src/ui/cn.ts",
+  },
+  {
+    selector: "CallExpression[callee.name=/^(cn|cva)$/] > TemplateLiteral",
+    message: "Compose classes with cn() from src/ui/cn.ts",
+  },
+  {
+    selector: 'JSXAttribute[name.name="className"] > JSXExpressionContainer > BinaryExpression[operator="+"]',
+    message: "Compose classes with cn()",
+  },
+  {
+    selector:
+      'JSXAttribute[name.name="className"] > JSXExpressionContainer CallExpression[callee.property.name="join"]',
+    message: "Compose classes with cn()",
+  },
+  {
+    selector: 'CallExpression[callee.property.name="join"][arguments.0.value=" "]',
+    message: "A space-joined string in a component is a class list. Use cn()",
+  },
+  {
+    selector: 'BinaryExpression[operator="+"] > Literal[value=/^ |  $/]',
+    message: "A space-joined string in a component is a class list. Use cn()",
+  },
+  {
+    selector: 'CallExpression[callee.name=/^(cn|cva)$/] > BinaryExpression[operator="+"]',
+    message: "A space-joined string in a component is a class list. Use cn()",
+  },
+  {
+    selector: 'CallExpression[callee.name=/^(cn|cva)$/] CallExpression[callee.property.name="join"]',
+    message: "A space-joined string in a component is a class list. Use cn()",
+  },
+];
+
+const BUTTON_SELECTOR = {
+  selector: 'JSXOpeningElement[name.name="button"]',
+  message: "Use <Button> from src/ui/Button.tsx",
+};
+
+// The classes the e2e suite and the legacy stylesheets reach by name.
+const HOOK_CLASSES = ["hit", "sheet", "peek-scrim"];
+
+// A button that is not a Button, each for its own shape.
+const BUTTON_OK = [
+  "src/ui/Chip.tsx", // a pressable tag
+  "src/ui/ListGroup.tsx", // the group header's disclosure
+  "src/ui/ListItem.tsx", // the row's primary target
+  "src/ui/Menu.tsx", // a menu item
+  "src/ui/ModePill.tsx", // a segment of a toggle group
+  "src/ui/SearchDisclosure.tsx", // the disclosure and its options
+];
+
+// TODO 120 hand-rolled buttons in 28 files. Remove a file here once it renders Button.
+const TODO_BUTTON = [
+  "src/shell/App.tsx",
+  "src/shell/Toaster.tsx",
+  "src/shell/connection.tsx",
+  "src/shell/palette.tsx",
+  "src/tools/lorebooks/BookAudit.tsx",
+  "src/tools/lorebooks/Picker.tsx",
+  "src/tools/lorebooks/entries.tsx",
+  "src/tools/memory/ClaimDetail.tsx",
+  "src/tools/memory/MemoryTool.tsx",
+  "src/tools/memory/Review.tsx",
+  "src/tools/memory/Sources.tsx",
+  "src/tools/memory/Vault.tsx",
+  "src/tools/memory/components/NoteRef.tsx",
+  "src/tools/memory/detail/MemoryDetail.tsx",
+  "src/tools/memory/detail/RetrievalCard.tsx",
+  "src/tools/memory/detail/SectionRow.tsx",
+  "src/tools/memory/review/FilterSheet.tsx",
+  "src/tools/memory/review/ViewSheet.tsx",
+  "src/tools/presets/PresetsTool.tsx",
+  "src/ui/CopyableText.tsx",
+  "src/ui/ErrorState.tsx",
+  "src/ui/FullscreenText.tsx",
+  "src/ui/JsonView.tsx",
+  "src/ui/ListEmpty.tsx",
+  "src/ui/Loading.tsx",
+  "src/ui/NotFound.tsx",
+  "src/ui/SaveBar.tsx",
+  "src/ui/Sheet.tsx",
+];
+
+// TODO 80 template literals and space joins in 26 files. Remove a file here once it composes with cn().
+const TODO_STRING = [
+  "src/shell/App.tsx",
+  "src/shell/Toaster.tsx",
+  "src/shell/palette.tsx",
+  "src/tools/lorebooks/BookAudit.tsx",
+  "src/tools/lorebooks/entries.tsx",
+  "src/tools/memory/ClaimDetail.tsx",
+  "src/tools/memory/Review.tsx",
+  "src/tools/memory/Sources.tsx",
+  "src/tools/memory/Vault.tsx",
+  "src/tools/memory/components/StatusPill.tsx",
+  "src/tools/memory/detail/MemoryDetail.tsx",
+  "src/tools/memory/detail/RetrievalCard.tsx",
+  "src/tools/memory/detail/SectionRow.tsx",
+  "src/tools/memory/icons.tsx",
+  "src/tools/memory/review/DockSheet.tsx",
+  "src/tools/memory/review/FilterSheet.tsx",
+  "src/tools/memory/review/ViewSheet.tsx",
+  "src/tools/presets/PresetsTool.tsx",
+  "src/ui/Chip.tsx",
+  "src/ui/CopyableText.tsx",
+  "src/ui/EmptyState.tsx",
+  "src/ui/FullscreenText.tsx",
+  "src/ui/ModePill.tsx",
+  "src/ui/SaveBar.tsx",
+  "src/ui/SectionKey.tsx",
+  "src/ui/Term.tsx",
+];
+
+// One override per combination, since a later override replaces the whole rule.
+function restricted() {
+  const noButton = new Set([...BUTTON_OK, ...TODO_BUTTON]);
+  const noString = new Set(TODO_STRING);
+  const all = [...new Set([...noButton, ...noString])];
+  const rule = (files, keep) => ({ files, rules: { "no-restricted-syntax": ["error", ...keep] } });
+  return [
+    rule(["src/ui/Button.tsx"], [...COPY_SELECTORS, ...CLASS_SELECTORS]),
+    rule(
+      all.filter((f) => noString.has(f) && noButton.has(f)),
+      COPY_SELECTORS,
+    ),
+    rule(
+      all.filter((f) => noString.has(f) && !noButton.has(f)),
+      [...COPY_SELECTORS, BUTTON_SELECTOR],
+    ),
+    rule(
+      all.filter((f) => !noString.has(f) && noButton.has(f)),
+      [...COPY_SELECTORS, ...CLASS_SELECTORS],
+    ),
+  ];
+}
+
 export default [
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],
@@ -65,18 +208,22 @@ export default [
         },
       },
     },
-    plugins: { "react-hooks": reactHooks, import: importPlugin, i18next },
+    plugins: { "react-hooks": reactHooks, import: importPlugin, i18next, "better-tailwindcss": betterTailwindcss },
     settings: {
+      // The defaults cover className, cn() and cva().
+      "better-tailwindcss": { entryPoint: "src/styles/theme.css", selectors: getDefaultSelectors() },
       // Resolution is the node resolver's, over TypeScript extensions.
       "import/resolver": { node: { extensions: [".ts", ".tsx", ".js", ".json"] } },
       "import/parsers": { "@babel/eslint-parser": [".ts", ".tsx"] },
     },
     rules: {
-      // Gotcha: `words` replaces the plugin's default excludes rather than extending them.
+      // Gotcha: `words` and `callees` replace the plugin's default excludes rather than extending them.
       "i18next/no-literal-string": [
         "error",
         {
           mode: "all",
+          // A class string inside cn() or cva() reaches no reader.
+          callees: { exclude: [...i18nDefaults.callees.exclude, "cn", "cva"] },
           words: {
             exclude: [
               /^[^\p{L}]+$/u, // no letter anywhere: a number, a separator, a glyph
@@ -90,7 +237,26 @@ export default [
           },
         },
       ],
-      "no-restricted-syntax": ["error", ...COPY_SELECTORS],
+      "no-restricted-syntax": ["error", ...COPY_SELECTORS, ...CLASS_SELECTORS, BUTTON_SELECTOR],
+      "better-tailwindcss/no-conflicting-classes": "error",
+      "better-tailwindcss/no-duplicate-classes": "error",
+      "better-tailwindcss/no-unknown-classes": ["error", { ignore: HOOK_CLASSES }],
+      "better-tailwindcss/enforce-consistent-class-order": "error",
+      "better-tailwindcss/no-restricted-classes": [
+        "error",
+        {
+          restrict: [
+            {
+              pattern: "^rounded-(s|e|l)$",
+              message: "A side utility, not a house radius. Use rounded-sm, rounded-md or rounded-lg.",
+            },
+            {
+              pattern: "^rounded-\\(--radius-(s|m|l)\\)$",
+              message: "The token is --radius-sm, --radius-md or --radius-lg.",
+            },
+          ],
+        },
+      ],
       "react-hooks/exhaustive-deps": "error",
       "react-hooks/rules-of-hooks": "error",
       // No module may take part in an import cycle.
@@ -106,8 +272,71 @@ export default [
   },
   {
     files: ["src/tools/lorebooks/data.ts", "src/tools/presets/data.ts"],
-    rules: { "no-restricted-syntax": ["error", ...COPY_SELECTORS, COPY_TABLE_SELECTOR] },
+    rules: {
+      "no-restricted-syntax": ["error", ...COPY_SELECTORS, ...CLASS_SELECTORS, BUTTON_SELECTOR, COPY_TABLE_SELECTOR],
+    },
   },
+  {
+    // TODO 1254 classes from the legacy stylesheets in 40 files. Remove a file here once it is utilities.
+    files: [
+      "src/shell/App.tsx",
+      "src/shell/Toaster.tsx",
+      "src/shell/connection.tsx",
+      "src/shell/hotkeys.tsx",
+      "src/shell/palette.tsx",
+      "src/tools/lorebooks/BookAudit.tsx",
+      "src/tools/lorebooks/Picker.tsx",
+      "src/tools/lorebooks/entries.tsx",
+      "src/tools/memory/ClaimDetail.tsx",
+      "src/tools/memory/MemoryTool.tsx",
+      "src/tools/memory/Review.tsx",
+      "src/tools/memory/ScopeBar.tsx",
+      "src/tools/memory/Sources.tsx",
+      "src/tools/memory/Vault.tsx",
+      "src/tools/memory/components/NoteRef.tsx",
+      "src/tools/memory/components/StatusPill.tsx",
+      "src/tools/memory/detail/MemoryDetail.tsx",
+      "src/tools/memory/detail/RetrievalCard.tsx",
+      "src/tools/memory/detail/SectionRow.tsx",
+      "src/tools/memory/icons.tsx",
+      "src/tools/memory/review/DockSheet.tsx",
+      "src/tools/memory/review/FilterSheet.tsx",
+      "src/tools/memory/review/ViewSheet.tsx",
+      "src/tools/presets/PresetsTool.tsx",
+      "src/ui/Chip.tsx",
+      "src/ui/CopyableText.tsx",
+      "src/ui/EmptyState.tsx",
+      "src/ui/ErrorState.tsx",
+      "src/ui/FullscreenText.tsx",
+      "src/ui/JsonView.tsx",
+      "src/ui/ListEmpty.tsx",
+      "src/ui/ListGroup.tsx",
+      "src/ui/ListItem.stories.tsx",
+      "src/ui/Loading.tsx",
+      "src/ui/MiddleTruncate.tsx",
+      "src/ui/ModePill.tsx",
+      "src/ui/NotFound.tsx",
+      "src/ui/RawJson.tsx",
+      "src/ui/SaveBar.tsx",
+      "src/ui/Term.tsx",
+    ],
+    rules: { "better-tailwindcss/no-unknown-classes": "off" },
+  },
+  {
+    // A primitive keeps its class lists in ALL-CAPS constants, which the default selectors skip.
+    files: ["src/ui/**/*.tsx"],
+    ignores: ["src/ui/**/*.stories.tsx"],
+    settings: {
+      "better-tailwindcss": {
+        entryPoint: "src/styles/theme.css",
+        selectors: [
+          ...getDefaultSelectors(),
+          { kind: "variable", name: "^[A-Z][A-Z_0-9]*$", match: [{ type: "strings" }] },
+        ],
+      },
+    },
+  },
+  ...restricted(),
   {
     // Fixtures.
     files: ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/test/**"],

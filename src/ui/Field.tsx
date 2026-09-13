@@ -2,6 +2,7 @@ import type { ComponentPropsWithRef, ReactNode } from "react";
 import { createContext, useContext, useId } from "react";
 import { t } from "../copy";
 import { Failure, ICON_SIZE } from "./icons";
+import { cn } from "./cn";
 
 /** A label, one control, and the hint and error that belong to it. */
 
@@ -21,6 +22,7 @@ function useFieldControl(): Partial<FieldWiring> {
 /** The ids a control is described by, in reading order. */
 export function describedBy(hintId?: string, errorId?: string): string | undefined {
   const ids = [hintId, errorId].filter(Boolean);
+  // eslint-disable-next-line no-restricted-syntax -- an aria-describedby id list
   return ids.length ? ids.join(" ") : undefined;
 }
 
@@ -38,8 +40,8 @@ export type FieldProps = {
 
 const LABEL =
   "inline-flex items-baseline gap-2 font-label font-semibold [font-variation-settings:'wdth'_110] " +
-  "uppercase tracking-[0.12em] text-label-s text-dim";
-const MARK = "font-data font-normal normal-case tracking-normal text-data-s text-dim";
+  "text-label-s tracking-[0.12em] text-dim uppercase";
+const MARK = "t-data text-data-s font-normal tracking-normal text-dim normal-case";
 const NOTE = "m-0 font-prose text-data leading-snug";
 
 export function Field(props: FieldProps) {
@@ -54,20 +56,20 @@ export function Field(props: FieldProps) {
     "aria-required": required || undefined,
   };
   return (
-    <div className={["flex min-w-0 flex-col gap-1", className].filter(Boolean).join(" ")}>
+    <div className={cn("flex min-w-0 flex-col gap-1", className)}>
       <label htmlFor={id} className={labelHidden ? "sr-only" : LABEL}>
         {label}
         {required && <span className={MARK}>{t("ui.field.required")}</span>}
         {optional && <span className={MARK}>{t("ui.field.optional")}</span>}
       </label>
       {hint && (
-        <p id={hintId} className={`${NOTE} text-dim`}>
+        <p id={hintId} className={cn(NOTE, "text-dim")}>
           {hint}
         </p>
       )}
       <FieldContext.Provider value={wiring}>{children}</FieldContext.Provider>
       {error && (
-        <p id={errorId} className={`${NOTE} flex items-center gap-1 text-danger`}>
+        <p id={errorId} className={cn(NOTE, "flex items-center gap-1 text-danger")}>
           <Failure size={ICON_SIZE.sm} stroke={2} aria-hidden />
           <span>{error}</span>
         </p>
@@ -77,10 +79,10 @@ export function Field(props: FieldProps) {
 }
 
 const CONTROL =
-  "w-full min-w-0 rounded-s border border-edge bg-surface-2 text-ink placeholder:text-dim " +
-  "focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] " +
-  "aria-[invalid=true]:border-danger disabled:cursor-default disabled:opacity-45";
-const LINE = `${CONTROL} min-h-tap px-2 font-data text-data`;
+  "w-full min-w-0 rounded-sm border border-edge bg-surface-2 text-ink placeholder:text-dim " +
+  "focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none " +
+  "disabled:cursor-default disabled:opacity-45 aria-[invalid=true]:border-danger";
+const LINE = `${CONTROL} min-h-tap px-2 t-data`;
 const BLOCK = `${CONTROL} max-w-[var(--measure)] resize-y p-2 font-prose text-prose leading-normal`;
 
 function cx(base: string, className?: string) {

@@ -107,7 +107,7 @@ export function MemoryTool({ rest }: { rest: string[] }) {
             </button>
           );
         })}
-        {failed && <span className="mem-status t-data is-drop">{t("longtermmemorydetail.statusUnavailable")}</span>}
+        {failed && <span className="mem-status is-drop t-data">{t("longtermmemorydetail.statusUnavailable")}</span>}
       </nav>
       {(unhealthy || noEmbeddings) && (
         <div className="health-banner">

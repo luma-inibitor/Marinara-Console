@@ -9,7 +9,7 @@ export default {
     "declaration-property-value-no-unknown": true,
     "unit-no-unknown": true,
     // Tailwind 4 declares the palette in @theme; src/styles/theme.css holds it.
-    "at-rule-no-unknown": [true, { ignoreAtRules: ["theme"] }],
+    "at-rule-no-unknown": [true, { ignoreAtRules: ["theme", "utility"] }],
     "media-feature-name-no-unknown": true,
     "selector-pseudo-class-no-unknown": true,
     "selector-pseudo-element-no-unknown": true,

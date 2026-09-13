@@ -42,7 +42,7 @@ export function ViewSheet(props: {
       </SheetHead>
 
       <div className="vs-sec">
-        <span className="t-label t-label-s vs-sec-l">{t("memory.review.groupBy")}</span>
+        <span className="vs-sec-l t-label t-label-s">{t("memory.review.groupBy")}</span>
       </div>
       {props.groupers.map((o) => (
         <button
@@ -53,8 +53,8 @@ export function ViewSheet(props: {
           onClick={() => props.onGroup(o.id)}
         >
           <Dot on={props.group === o.id} />
-          <span className="t-data vs-opt-l">{o.label}</span>
-          {o.count !== undefined && <span className="t-data vs-n">{o.count}</span>}
+          <span className="vs-opt-l t-data">{o.label}</span>
+          {o.count !== undefined && <span className="vs-n t-data">{o.count}</span>}
         </button>
       ))}
 
@@ -62,7 +62,7 @@ export function ViewSheet(props: {
           both, and the filled dot two rows down says which. Three statements
           of one choice was one too many, twice over. */}
       <div className="vs-sec">
-        <span className="t-label t-label-s vs-sec-l">{t("memoryvault.sortBy")}</span>
+        <span className="vs-sec-l t-label t-label-s">{t("memoryvault.sortBy")}</span>
       </div>
       {props.sorters.map((o) => {
         const on = props.sort === o.id;
@@ -75,7 +75,7 @@ export function ViewSheet(props: {
             onClick={() => props.onSort(o.id)}
           >
             <Dot on={on} />
-            <span className="t-data vs-opt-l">{o.label}</span>
+            <span className="vs-opt-l t-data">{o.label}</span>
             {on && (
               <span className="vs-dir">
                 {props.dir === 1 ? (

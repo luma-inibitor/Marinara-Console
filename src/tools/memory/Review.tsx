@@ -301,7 +301,7 @@ export function Review() {
             <>
               <div className="hrow">
                 <h1 className="console-title">{t("reviewqueue.reviewQueue")}</h1>
-                <span className="t-data mem-save">
+                <span className="mem-save t-data">
                   {save === "saving" ? (
                     t("memory.save.autosaving")
                   ) : save === "failed" ? (
@@ -350,7 +350,7 @@ export function Review() {
                   size="md"
                   className="flex-1"
                 />
-                <span className="t-data mval">
+                <span className="mval t-data">
                   <b className="is-keep">
                     <DecisionIcon d="keep" size={12} />
                     {c.keep}
@@ -405,7 +405,7 @@ export function Review() {
 
               {activeFacetCount(active) > 0 && (
                 <div className="chiprail">
-                  <span className="t-data selcount">
+                  <span className="selcount t-data">
                     {t("memory.review.shownOf", { shown: shown.length, total: allRows.length })}
                   </span>
                   <Chip onClick={() => bulkDecide(shown, "keep", t("memory.review.keepShown"))}>
@@ -563,7 +563,7 @@ function ArrangeRail(props: {
           onClick={openFacetSheet}
         >
           <Filter size={ICON_SIZE.lg} stroke={1.75} aria-hidden />
-          {n > 0 && <span className="t-data qn">{n}</span>}
+          {n > 0 && <span className="qn t-data">{n}</span>}
         </button>
         <button
           type="button"
@@ -574,7 +574,7 @@ function ArrangeRail(props: {
           }}
         >
           <GroupBy size={ICON_SIZE.lg} stroke={1.75} aria-hidden />
-          <span className="t-data qv">{GROUPERS[props.group].label}</span>
+          <span className="qv t-data">{GROUPERS[props.group].label}</span>
         </button>
         <button
           type="button"
@@ -585,13 +585,13 @@ function ArrangeRail(props: {
           }}
         >
           <SortGlyph size={ICON_SIZE.lg} stroke={1.75} aria-hidden />
-          <span className="t-data qv">{SORTERS[props.sort].label}</span>
+          <span className="qv t-data">{SORTERS[props.sort].label}</span>
         </button>
       </div>
 
       {n > 0 && (
         <div className="ftrack">
-          <span className="t-data ftrack-n">
+          <span className="ftrack-n t-data">
             {t("memory.review.shownOf", { shown: props.shown, total: props.total })}
           </span>
           {[...props.active.entries()].flatMap(([facetId, set]) =>
@@ -972,14 +972,14 @@ function ClaimRow(props: {
             </span>
           )}
           <span
-            className={`t-prose min-w-0 flex-1 truncate text-prose font-normal leading-snug ${d === "drop" ? "line-through decoration-danger/55 opacity-50" : ""}`}
+            className={`t-prose min-w-0 flex-1 truncate text-prose leading-snug font-normal ${d === "drop" ? "line-through decoration-danger/55 opacity-50" : ""}`}
           >
             {r.text}
           </span>
         </span>
       }
       trailing={
-        <span className="t-data flex items-center gap-2">
+        <span className="flex items-center gap-2 t-data">
           {editedMuts.has(r.key) && (
             <Term tip={t("memory.editedTip")} tabIndex={-1}>
               <EditedMark size={14} stroke={1.75} className="edit-mark" aria-label={t("reviewqueue.editedChange")} />
@@ -1081,7 +1081,7 @@ function Obligations() {
           <p className="t-prose dim">{message}</p>
           <div className="blocked-srcs">
             {items.map((b) => (
-              <span key={b.draftId} className="t-data blocked-src">
+              <span key={b.draftId} className="blocked-src t-data">
                 <NoteRef id={b.sourceNoteId} label={b.sourceTitle} />{" "}
                 <span className="dim">· {t("memory.review.claimCount", { count: b.mutationCount })}</span>
               </span>
@@ -1115,8 +1115,8 @@ function Failures() {
           </div>
           <p className="t-prose dim">{f.fix}</p>
           <details>
-            <summary className="t-data dim">{t("memory.review.rawSummary")}</summary>
-            <p className="t-data dim">{f.msg.slice(0, 400)}</p>
+            <summary className="dim t-data">{t("memory.review.rawSummary")}</summary>
+            <p className="dim t-data">{f.msg.slice(0, 400)}</p>
           </details>
         </div>
       ))}
@@ -1144,7 +1144,7 @@ function Rejections() {
     <div className="mem-rejections">
       <div className="mem-ghead is-plain">
         <span className="gn t-prose">{t("reviewqueue.suggestionsThatWerentSaved")}</span>
-        <span className="t-data dim">{list.length}</span>
+        <span className="dim t-data">{list.length}</span>
       </div>
       {[...byReason.entries()].map(([reason, items]) => (
         <details key={reason} className="mem-card">
@@ -1252,7 +1252,7 @@ function ApplyDock() {
               — hidden by default is fine, hidden and silent is not. */}
             <button
               type="button"
-              className="t-data dock-counts"
+              className="dock-counts t-data"
               aria-label={t("memory.dock.detailTitle")}
               onClick={() => {
                 dockSheetOpen.set(true);
@@ -1279,7 +1279,7 @@ function ApplyDock() {
               )}
               <ChevronUp size={13} stroke={1.75} aria-hidden />
             </button>
-            <span className="t-data mem-save">
+            <span className="mem-save t-data">
               {save === "saving" ? (
                 t("memory.save.autosaving")
               ) : save === "failed" ? (
@@ -1353,7 +1353,7 @@ function ApplyDock() {
         {desktop && (
           <button
             type="button"
-            className="t-data dock-counts"
+            className="dock-counts t-data"
             aria-label={t("memory.dock.detailTitle")}
             onClick={() => {
               dockSheetOpen.set(true);

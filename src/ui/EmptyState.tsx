@@ -25,7 +25,7 @@ export function EmptyState(props: {
           {props.icon}
         </span>
       )}
-      <div className="mb-[5px] font-label font-[650] text-prose text-ink">{props.title}</div>
+      <div className="mb-[5px] font-label text-prose font-[650] text-ink">{props.title}</div>
       {props.body && <p className="mx-auto max-w-[52ch] font-prose text-data [&_b]:text-ink">{props.body}</p>}
       {props.actions && <div className="mt-3 flex flex-wrap justify-center gap-2">{props.actions}</div>}
     </div>

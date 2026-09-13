@@ -1,4 +1,5 @@
 /** A fraction of a maximum, drawn as a track with a fill. */
+import { cn } from "./cn";
 
 type MeterTone = "accent" | "ok" | "warn" | "danger" | "flag";
 
@@ -59,16 +60,11 @@ export function Meter(props: MeterProps) {
         };
 
   return (
-    <span
-      {...aria}
-      className={["flex min-w-0 overflow-hidden rounded-full bg-surface-3", HEIGHT[size], className]
-        .filter(Boolean)
-        .join(" ")}
-    >
+    <span {...aria} className={cn("flex min-w-0 overflow-hidden rounded-full bg-surface-3", HEIGHT[size], className)}>
       {segments.map((s, i) => (
         <span
           key={i}
-          className={`block h-full shrink-0 ${FILL[s.tone]}`}
+          className={cn("block h-full shrink-0", FILL[s.tone])}
           style={{ width: `${percent(s.value, max)}%` }}
         />
       ))}

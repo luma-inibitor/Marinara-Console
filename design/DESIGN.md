@@ -208,9 +208,9 @@ Shared components live in `src/ui/`, one folder-level. Anything used by more
 than one screen belongs there. Anything used by one screen belongs beside that
 screen. A new component carries no stylesheet, as `Button.tsx` does.
 
-The co-located stylesheets still in the tree (`Chip.tsx` + `Chip.css`) are
-legacy. The one case where a screen kept beside its tool co-locates the same way
-is legacy too, because it's a *family* rather than a single component.
+The move of `src/ui/` is complete: no component there carries its own CSS.
+The one screen kept beside its tool that still co-locates its CSS is legacy,
+because it's a *family* rather than a single component.
 `src/tools/memory/detail/` is four components and four stylesheets. They answer
 to the same rule: deleting the folder deletes its rules. A tool's one-off
 screens still belong in that tool's global stylesheet
@@ -224,6 +224,15 @@ the theme (`src/styles/theme.css` bridges every token to a Tailwind name), so
 `bg-accent`, `text-dim`, `min-h-tap`, `rounded-m` and `text-label` are the same
 values the hand-written stylesheets used. There is one palette and one spacing
 scale, whichever syntax reads them.
+
+**Compose classes with `cn()` and variants with `cva`, both from
+`src/ui/cn.ts`.** Two utilities on one property resolve by their order in the
+generated sheet, not in the string. Concatenation can't express an override,
+so `cn()` merges the caller's class last. A template literal in a `className`
+fails lint.
+
+> Owner, 2026-09-13: "yes please do that now. and is there a lint we can
+> enable/install against this"
 
 **Hand-written CSS is legacy.** Most components still carry a co-located
 stylesheet. Nothing new should add one. **A stylesheet you are already editing

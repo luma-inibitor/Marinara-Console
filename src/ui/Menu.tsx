@@ -9,10 +9,11 @@ export interface MenuItem {
   onSelect: () => void;
 }
 
+// eslint-disable-next-line better-tailwindcss/no-unknown-classes -- a DOM selector
 const MENUITEM = '[role="menuitem"]';
 const ITEM =
-  "flex w-full min-h-tap items-center rounded-s px-3 text-left text-prose text-ink " +
-  "hover:bg-surface-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]";
+  "flex min-h-tap w-full items-center rounded-sm px-3 text-left text-prose text-ink " +
+  "hover:bg-surface-2 focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none";
 
 /** The next item for a key, or null when the key is not the menu's. */
 export function step(key: string, at: number, count: number): number | null {

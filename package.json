@@ -66,6 +66,7 @@
     "@vitest/browser": "^4.1.11",
     "@vitest/browser-playwright": "^4.1.11",
     "eslint": "^9.39.5",
+    "eslint-plugin-better-tailwindcss": "^4.7.0",
     "eslint-plugin-i18next": "^6.1.5",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -85,11 +86,14 @@
   "private": true,
   "dependencies": {
     "@tabler/icons-react": "^3.46.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "http-proxy-middleware": "^4.2.0",
     "mrmime": "^2.0.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "sirv": "^3.0.2",
+    "tailwind-merge": "^3.7.0",
     "valibot": "^1.4.2"
   }
 }

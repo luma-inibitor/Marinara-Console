@@ -272,7 +272,7 @@ export function Vault(props: { noteId?: string }) {
 
 function Sep() {
   return (
-    <i className="mx-1 not-italic text-edge-strong" aria-hidden="true">
+    <i className="mx-1 text-edge-strong not-italic" aria-hidden="true">
       ·
     </i>
   );
@@ -320,7 +320,7 @@ function NoteRow(props: { note: Note; isOpen: boolean; onOpen: () => void }) {
       }
       trailing={
         <span className="text-right">
-          <b className={`t-num block text-prose leading-none ${p >= 0.8 ? "text-flag" : ""}`}>
+          <b className={`block t-num text-prose leading-none ${p >= 0.8 ? "text-flag" : ""}`}>
             {(chars / 1000).toFixed(1)}k
           </b>
           <span className="block text-label-s text-dim">{t("ui.editor.charUnit")}</span>

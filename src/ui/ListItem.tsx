@@ -1,4 +1,5 @@
 import type { FocusEventHandler, KeyboardEventHandler, ReactNode, Ref } from "react";
+import { cn } from "./cn";
 
 /** The rows' container. `role="list"` restates what Preflight's `list-style:
  *  none` makes Safari forget. */
@@ -64,11 +65,11 @@ const SELECTED_ROW = "shadow-[inset_3px_0_0_var(--accent)]";
 const SIDE = "flex shrink-0 items-center";
 const PRIMARY = "flex min-h-tap min-w-0 flex-1 items-center gap-2 px-row-x py-row-y text-left";
 const PRIMARY_BUTTON =
-  "hover:bg-surface-1 transition-colors [transition-duration:var(--t-fast)] " +
-  "focus-visible:relative focus-visible:z-[1] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] " +
-  "aria-disabled:opacity-45 aria-disabled:cursor-default aria-disabled:hover:bg-transparent";
-const TITLE = "block truncate font-label text-title font-semibold leading-tight [font-variation-settings:'wdth'_102]";
-const SECONDARY = "mt-1 block truncate font-data text-data-s text-dim";
+  "transition-colors [transition-duration:var(--t-fast)] hover:bg-surface-1 " +
+  "focus-visible:relative focus-visible:z-[1] focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none " +
+  "aria-disabled:cursor-default aria-disabled:opacity-45 aria-disabled:hover:bg-transparent";
+const TITLE = "block truncate font-label text-title leading-tight font-semibold [font-variation-settings:'wdth'_102]";
+const SECONDARY = "mt-1 block truncate t-data text-data-s text-dim";
 
 export function ListItem(props: ListItemProps) {
   const { title, secondary, leading, trailing, action, onActivate, selected, disabled, rowKey, tabIndex, className } =
@@ -80,14 +81,14 @@ export function ListItem(props: ListItemProps) {
         <span className={TITLE}>{title}</span>
         {secondary && <span className={SECONDARY}>{secondary}</span>}
       </span>
-      {trailing && <span className={`${SIDE} gap-2`}>{trailing}</span>}
+      {trailing && <span className={cn(SIDE, "gap-2")}>{trailing}</span>}
     </>
   );
 
   const primary = onActivate ? (
     <button
       type="button"
-      className={[PRIMARY, PRIMARY_BUTTON, selected && "bg-surface-1"].filter(Boolean).join(" ")}
+      className={cn(PRIMARY, PRIMARY_BUTTON, selected && "bg-surface-1")}
       data-row={rowKey}
       tabIndex={tabIndex}
       aria-current={selected || undefined}
@@ -99,16 +100,16 @@ export function ListItem(props: ListItemProps) {
       {body}
     </button>
   ) : (
-    <div className={[PRIMARY, selected && "bg-surface-1"].filter(Boolean).join(" ")} data-row={rowKey}>
+    <div className={cn(PRIMARY, selected && "bg-surface-1")} data-row={rowKey}>
       {body}
     </div>
   );
 
   return (
-    <li className={[ROW, selected && SELECTED_ROW, className].filter(Boolean).join(" ")}>
-      {leading && <span className={`${SIDE} min-w-6 justify-center pl-row-x`}>{leading}</span>}
+    <li className={cn(ROW, selected && SELECTED_ROW, className)}>
+      {leading && <span className={cn(SIDE, "min-w-6 justify-center pl-row-x")}>{leading}</span>}
       {primary}
-      {action && <span className={`${SIDE} gap-2 pr-row-x`}>{action}</span>}
+      {action && <span className={cn(SIDE, "gap-2 pr-row-x")}>{action}</span>}
     </li>
   );
 }

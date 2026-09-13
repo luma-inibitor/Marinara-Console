@@ -29,7 +29,7 @@ export const WithMeta: Story = {
   args: {
     meta: (
       <>
-        <span className="font-data text-data-s text-dim">1,024 / 4,000</span>
+        <span className="t-data text-data-s text-dim">1,024 / 4,000</span>
         <Chip>Dedupe lines</Chip>
       </>
     ),
@@ -38,7 +38,7 @@ export const WithMeta: Story = {
 
 export const WithMeter: Story = {
   args: {
-    meta: <span className="font-data text-data-s text-dim">3,100 / 4,000</span>,
+    meta: <span className="t-data text-data-s text-dim">3,100 / 4,000</span>,
     meter: <Meter label="78% of cap" max={4000} value={3100} near={0.75} over={0.95} className="mt-1" />,
   },
   play: async ({ canvasElement }) => {

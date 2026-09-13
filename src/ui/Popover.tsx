@@ -2,6 +2,7 @@ import type { KeyboardEventHandler, ReactNode, RefObject } from "react";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { closeTopOverlay, openOverlay } from "../shell/overlays";
+import { cn } from "./cn";
 
 export type Side = "bottom" | "top";
 export type Align = "start" | "end";
@@ -64,7 +65,7 @@ export interface PopoverProps {
 }
 
 const SURFACE =
-  "absolute top-0 left-0 max-h-[calc(100vh-16px)] max-w-[calc(100vw-16px)] overflow-y-auto rounded-m border border-edge-strong " +
+  "absolute top-0 left-0 max-h-[calc(100vh-16px)] max-w-[calc(100vw-16px)] overflow-y-auto rounded-md border border-edge-strong " +
   "bg-surface-1 shadow-pop outline-none";
 
 /** An anchored surface over a sealed page.
@@ -122,7 +123,7 @@ export function Popover(props: PopoverProps) {
         aria-modal={role === "dialog" ? "true" : undefined}
         aria-label={props.label}
         tabIndex={initialFocus === "surface" ? -1 : undefined}
-        className={`${SURFACE} ${props.className ?? ""}`}
+        className={cn(SURFACE, props.className)}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={props.onKeyDown}
       >
