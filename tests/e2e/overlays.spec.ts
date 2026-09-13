@@ -20,10 +20,11 @@ interface Surface {
   open: (page: Page) => Promise<void>;
   sel: string;
   scrim?: string;
-  /** Sits in the page it opens from, so the page behind it is not sealed. */
-  anchored?: boolean;
   dismiss: readonly Route[];
 }
+
+/** The invisible scrim under a popover, which takes the outside click. */
+const POPOVER_SCRIM = "[data-popover-scrim]";
 
 const SURFACES: Surface[] = [
   {
@@ -78,9 +79,8 @@ const SURFACES: Surface[] = [
     project: "phone",
     screen: screen("memory-review"),
     open: (page) => page.locator("button.gmenu").first().click(),
-    sel: ".gmenu-pop",
-    scrim: ".gmenu-scrim",
-    anchored: true,
+    sel: '[role="menu"]',
+    scrim: POPOVER_SCRIM,
     dismiss: ROUTES,
   },
   {
@@ -115,9 +115,8 @@ const SURFACES: Surface[] = [
     project: "phone",
     screen: screen("memory-review"),
     open: (page) => page.getByRole("button", { name: /^Character: / }).click(),
-    sel: ".disclosure-pop",
-    scrim: ".disclosure-scrim",
-    anchored: true,
+    sel: '[role="dialog"][aria-label="Character"]',
+    scrim: POPOVER_SCRIM,
     dismiss: ROUTES,
   },
   {
@@ -125,9 +124,8 @@ const SURFACES: Surface[] = [
     project: "phone",
     screen: screen("memory-review"),
     open: (page) => page.getByRole("button", { name: /^Chat: / }).click(),
-    sel: ".disclosure-pop",
-    scrim: ".disclosure-scrim",
-    anchored: true,
+    sel: '[role="dialog"][aria-label="Chat"]',
+    scrim: POPOVER_SCRIM,
     dismiss: ROUTES,
   },
 ];
@@ -148,7 +146,7 @@ async function background(page: Page, sel: string) {
     }
     return {
       scrollable,
-      railInert: document.querySelector(".rail")?.matches("[inert]") ?? false,
+      railInert: document.querySelector(".rail")?.closest("[inert]") != null,
       focusInside: !!document.activeElement?.closest(selector),
     };
   }, sel);
@@ -157,7 +155,6 @@ async function background(page: Page, sel: string) {
 for (const surface of SURFACES) {
   test(`${surface.name} seals the page behind it`, async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== surface.project, `drawn by the ${surface.project} layout`);
-    test.skip(surface.anchored === true, "an anchored popover shares the page it sits in");
     await openScreen(page, surface.screen);
     await surface.open(page);
     await expect(page.locator(surface.sel)).toBeVisible();
@@ -200,11 +197,11 @@ test("group menu returns focus to its button on Escape", async ({ page }, testIn
   await openScreen(page, screen("memory-review"));
   const kebab = page.locator("button.gmenu").first();
   await kebab.click();
-  await expect(page.locator(".gmenu-pop")).toBeVisible();
+  await expect(page.getByRole("menu")).toBeVisible();
 
   await page.keyboard.press("Escape");
 
-  await expect(page.locator(".gmenu-pop")).toHaveCount(0);
+  await expect(page.getByRole("menu")).toHaveCount(0);
   await expect(kebab).toBeFocused();
 });
 
@@ -216,7 +213,7 @@ test("opening a note from the group menu leaves one history entry", async ({ pag
   await page.getByRole("menuitem", { name: /^Open / }).click();
 
   await expect(page.locator(".sheet.peek-sheet")).toBeVisible();
-  await expect(page.locator(".gmenu-pop")).toHaveCount(0);
+  await expect(page.getByRole("menu")).toHaveCount(0);
 
   await page.keyboard.press("Escape");
   await expect(page.locator(".sheet.peek-sheet")).toHaveCount(0);
@@ -245,9 +242,9 @@ test("a picked scope closes the picker and returns focus to its trigger", async 
   await openScreen(page, screen("memory-review"));
   const base = new URL(page.url()).hash;
   await page.getByRole("button", { name: /^Character: / }).click();
-  await page.locator(".disclosure-opt").nth(1).click();
+  await page.getByRole("dialog", { name: "Character" }).getByRole("button").nth(1).click();
 
-  await expect(page.locator(".disclosure-pop")).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Character" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /^Character: / })).toBeFocused();
   expect(new URL(page.url()).hash, "the pick left the screen").toBe(base);
 });

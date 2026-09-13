@@ -29,8 +29,5 @@
   "src/ui/JsonView.css": [
     "Expected selector \".jn\" to come before selector \".jsonview-tree > .jgroup > .jn:first-child\"",
     "Expected selector \".jtoggle\" to come before selector \".jn-head:hover .jtoggle\""
-  ],
-  "src/ui/SearchDisclosure.css": [
-    "Expected selector \".disclosure-value\" to come before selector \".disclosure-trigger .disclosure-value\""
   ]
 }
