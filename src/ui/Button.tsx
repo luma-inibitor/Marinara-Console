@@ -16,7 +16,7 @@ const button = cva(
     variants: {
       variant: { primary: "", secondary: "", ghost: "border-transparent" },
       tone: { neutral: "", danger: "", ok: "" },
-      size: { md: "min-h-tap gap-2", sm: "min-h-tap-2 gap-[6px]" },
+      size: { md: "min-h-tap gap-2", sm: "min-h-tap-2 gap-[6px]", xs: "min-h-6 gap-1" },
       shape: { label: "", icon: "" },
       labelCase: { upper: "t-label", sentence: "tracking-normal" },
       pressed: { true: "", false: "" },
@@ -26,11 +26,15 @@ const button = cva(
     compoundVariants: [
       { size: "md", shape: "label", className: "px-4" },
       { size: "sm", shape: "label", className: "px-3" },
+      { size: "xs", shape: "label", className: "px-2" },
       { size: "md", shape: "icon", className: "w-tap" },
       { size: "sm", shape: "icon", className: "w-tap-2" },
+      { size: "xs", shape: "icon", className: "w-6" },
       { labelCase: "upper", size: "sm", className: "t-label-s" },
+      { labelCase: "upper", size: "xs", className: "t-label-s" },
       { labelCase: "sentence", size: "md", className: "text-data" },
       { labelCase: "sentence", size: "sm", className: "text-data-s" },
+      { labelCase: "sentence", size: "xs", className: "text-data-s" },
       { pressed: false, variant: "primary", tone: "neutral", className: "border-accent bg-accent text-accent-ink" },
       { pressed: false, variant: "primary", tone: "danger", className: "border-danger bg-danger text-danger-ink" },
       { pressed: false, variant: "primary", tone: "ok", className: "border-ok bg-ok text-ok-ink" },
@@ -179,7 +183,7 @@ export function Button(props: ButtonProps) {
       {spinning && (
         <Working
           className="absolute inset-0 m-auto animate-spin motion-reduce:[animation-duration:2400ms]"
-          size={size === "sm" ? ICON_SIZE.sm : ICON_SIZE.xl}
+          size={size === "md" ? ICON_SIZE.xl : ICON_SIZE.sm}
           stroke={2}
         />
       )}

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "./Button";
-import { Confirm, ICON_SIZE, Remove } from "./icons";
+import { Confirm, Copy, ICON_SIZE, Remove } from "./icons";
 
 const meta = {
   title: "UI/Button",
@@ -23,6 +23,10 @@ export const Danger: Story = { args: { variant: "primary", tone: "danger", child
 export const Ok: Story = { args: { variant: "primary", tone: "ok", children: "Accept" } };
 
 export const Small: Story = { args: { size: "sm" } };
+/** 24px, the secondary floor, for a control inside a data block. */
+export const ExtraSmall: Story = {
+  args: { size: "xs", iconOnly: true, variant: "ghost", label: "Copy value", icon: <Copy size={ICON_SIZE.sm} /> },
+};
 export const SentenceCase: Story = { args: { labelCase: "sentence" } };
 
 export const Focus: Story = { args: { variant: "primary", autoFocus: true } };
