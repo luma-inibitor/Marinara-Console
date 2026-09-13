@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "./Button";
 import { Sheet, SheetHead } from "./Sheet";
+import { Term } from "./Term";
 
 function SheetDemo(props: { autoFocus?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -15,6 +16,7 @@ function SheetDemo(props: { autoFocus?: boolean }) {
         <Sheet label="Facets" onClose={() => setOpen(false)}>
           <SheetHead title="Facets" autoFocus={props.autoFocus} />
           <div className="p-3">
+            <Term tip="claim kind · static — a fact that does not change">kind</Term>
             <Button variant="secondary" size="sm">
               Clear
             </Button>
@@ -62,6 +64,59 @@ export const FocusContract: Story = {
     });
 
     await step("closes · focus returns to the trigger", async () => {
+      await waitFor(() => expect(trigger).toHaveFocus());
+    });
+  },
+};
+
+export const FocusWrap: Story = {
+  args: { autoFocus: false },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: /open facets/i }));
+    const dialog = await canvas.findByRole("dialog", { name: "Facets" });
+    const close = within(dialog).getByRole("button", { name: /close/i });
+    const clear = within(dialog).getByRole("button", { name: "Clear" });
+    const term = within(dialog).getByText("kind");
+
+    await step("opens · focus lands on the first control", async () => {
+      await waitFor(() => expect(close).toHaveFocus());
+    });
+
+    await step("Tab · walks the surface", async () => {
+      await userEvent.tab();
+      await waitFor(() => expect(term).toHaveFocus());
+      await userEvent.tab();
+      await waitFor(() => expect(clear).toHaveFocus());
+    });
+
+    await step("Tab from the last control · wraps to the first", async () => {
+      await userEvent.tab();
+      await waitFor(() => expect(close).toHaveFocus());
+    });
+
+    await step("Shift+Tab from the first control · wraps to the last", async () => {
+      await userEvent.tab({ shift: true });
+      await waitFor(() => expect(clear).toHaveFocus());
+    });
+  },
+};
+
+export const TermInside: Story = {
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole("button", { name: /open facets/i });
+    await userEvent.click(trigger);
+    const dialog = await canvas.findByRole("dialog", { name: "Facets" });
+
+    await step("tap · the term opens its tip", async () => {
+      await userEvent.click(within(dialog).getByText("kind"));
+      await waitFor(() => expect(within(dialog).getByText("kind")).toHaveClass("tip-open"));
+    });
+
+    await step("Escape · the sheet closes over the open tip", async () => {
+      await userEvent.keyboard("{Escape}");
+      await waitFor(() => expect(canvas.queryByRole("dialog")).toBeNull());
       await waitFor(() => expect(trigger).toHaveFocus());
     });
   },

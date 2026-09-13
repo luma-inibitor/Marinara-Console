@@ -92,6 +92,44 @@ const SURFACES: Surface[] = [
     sel: ".tagpanel",
     dismiss: ["escape", "back"],
   },
+  {
+    name: "command palette",
+    project: "desktop",
+    screen: screen("memory-review"),
+    open: (page) => page.keyboard.press("ControlOrMeta+k"),
+    sel: ".palette",
+    scrim: ".palette-backdrop",
+    dismiss: ROUTES,
+  },
+  {
+    name: "cheat sheet",
+    project: "desktop",
+    screen: screen("memory-review"),
+    open: (page) => page.keyboard.press("?"),
+    sel: ".palette.cheat",
+    scrim: ".palette-backdrop",
+    dismiss: ROUTES,
+  },
+  {
+    name: "character picker",
+    project: "phone",
+    screen: screen("memory-review"),
+    open: (page) => page.getByRole("button", { name: /^Character: / }).click(),
+    sel: ".disclosure-pop",
+    scrim: ".disclosure-scrim",
+    anchored: true,
+    dismiss: ROUTES,
+  },
+  {
+    name: "chat picker",
+    project: "phone",
+    screen: screen("memory-review"),
+    open: (page) => page.getByRole("button", { name: /^Chat: / }).click(),
+    sel: ".disclosure-pop",
+    scrim: ".disclosure-scrim",
+    anchored: true,
+    dismiss: ROUTES,
+  },
 ];
 
 async function dismiss(page: Page, route: Route, scrim = ".peek-scrim"): Promise<void> {
@@ -188,20 +226,28 @@ test("opening a note from the group menu leaves one history entry", async ({ pag
   expect(new URL(page.url()).hash, "an orphan entry swallowed the back").not.toBe(base);
 });
 
-// The palette is not in the overlay stack and calls `sealBackground` itself.
-test("the command palette seals the page behind it", async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== "desktop", "the other three projects emulate touch");
+test("Escape closes the palette opened over a sheet, not the sheet", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "phone", "drawn by the phone layout");
   await openScreen(page, screen("memory-review"));
+  await page.getByRole("button", { name: "Filter", exact: true }).click();
+  await expect(page.locator(".sheet.filter-sheet")).toBeVisible();
   await page.keyboard.press("ControlOrMeta+k");
   await expect(page.locator(".palette")).toBeVisible();
 
-  const sealed = await background(page, ".palette");
-  expect(sealed.railInert, "the nav rail behind the palette is not inert").toBe(true);
-
-  await page.keyboard.press("Tab");
-  expect((await background(page, ".palette")).focusInside, "Tab left the palette").toBe(true);
-
   await page.keyboard.press("Escape");
+
   await expect(page.locator(".palette")).toHaveCount(0);
-  expect((await background(page, ".palette")).railInert, "the nav rail stayed inert").toBe(false);
+  await expect(page.locator(".sheet.filter-sheet")).toBeVisible();
+});
+
+test("a picked scope closes the picker and returns focus to its trigger", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "phone", "drawn by the phone layout");
+  await openScreen(page, screen("memory-review"));
+  const base = new URL(page.url()).hash;
+  await page.getByRole("button", { name: /^Character: / }).click();
+  await page.locator(".disclosure-opt").nth(1).click();
+
+  await expect(page.locator(".disclosure-pop")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Character: / })).toBeFocused();
+  expect(new URL(page.url()).hash, "the pick left the screen").toBe(base);
 });

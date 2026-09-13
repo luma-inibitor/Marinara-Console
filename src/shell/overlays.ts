@@ -15,11 +15,14 @@
 // handler and the history stack, and src/ui must be able to reach it without
 // importing out of a tool.
 
-import { sealBackground } from "./background";
+import { useCallback, useEffect, useRef } from "react";
+import { enterSurface, focusable, sealBackground } from "./background";
 
 interface Entry {
   close: () => void;
   restoreFocus: HTMLElement | null;
+  /** The sealed surface, which holds focus until it closes. */
+  surface: HTMLElement | null;
   release: () => void;
 }
 
@@ -92,6 +95,26 @@ function install() {
     },
     true,
   );
+  document.addEventListener("keydown", wrap, true);
+}
+
+/** Tab wraps within the sealed surface. */
+function wrap(ev: KeyboardEvent) {
+  if (ev.key !== "Tab") return;
+  const surface = stack.at(-1)?.surface;
+  if (!surface) return;
+  const stops = focusable(surface);
+  if (!stops.length) {
+    ev.preventDefault();
+    enterSurface(surface);
+    return;
+  }
+  const at = stops.indexOf(document.activeElement as HTMLElement);
+  const last = stops.length - 1;
+  const target = ev.shiftKey ? (at <= 0 ? stops[last] : null) : at === -1 || at === last ? stops[0] : null;
+  if (!target) return;
+  ev.preventDefault();
+  target.focus();
 }
 
 /** Returns a disposer that unregisters the entry without running its closer —
@@ -104,12 +127,16 @@ function install() {
  *  standing history entry rather than push a second one nothing owns. */
 export function openOverlay(close: () => void, options: OverlayOptions = {}): () => void {
   install();
-  const { restoreFocus, surface } = options;
+  const { restoreFocus } = options;
+  // An in-page surface shares the scroll it would freeze.
+  const surface = options.surface && getComputedStyle(options.surface).position === "fixed" ? options.surface : null;
   const entry: Entry = {
     close,
     restoreFocus: restoreFocus !== undefined ? restoreFocus : (document.activeElement as HTMLElement | null),
+    surface,
     release: surface ? sealBackground(surface) : () => {},
   };
+  if (surface && !surface.contains(document.activeElement)) enterSurface(surface);
 
   if (deferredRewind !== null) {
     // A disposer ran a moment ago and its entry is still standing: this is the
@@ -139,4 +166,19 @@ export function openOverlay(close: () => void, options: OverlayOptions = {}): ()
  *  history so back/Escape bookkeeping stays consistent. */
 export function closeTopOverlay() {
   if (stack.length) history.back();
+}
+
+/** Closes the top overlay and runs the action once its history rewind has landed. */
+export function useCloseThen(open: boolean): (action: () => void) => void {
+  const pending = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    if (open) return;
+    const action = pending.current;
+    pending.current = null;
+    action?.();
+  }, [open]);
+  return useCallback((action: () => void) => {
+    pending.current = action;
+    closeTopOverlay();
+  }, []);
 }

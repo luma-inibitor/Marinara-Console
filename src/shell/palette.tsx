@@ -2,7 +2,7 @@
 // entries, and actions; searches a local cache, refreshed on open.
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { createStore, useStore } from "../lib/store";
-import { sealBackground } from "./background";
+import { openOverlay, closeTopOverlay, useCloseThen } from "./overlays";
 import { navigate } from "./router";
 import { api } from "./api";
 import { t } from "../copy";
@@ -108,22 +108,20 @@ export function Palette() {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<Item[]>(BASE);
   const [active, setActive] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
   const backdrop = useRef<HTMLDivElement>(null);
   const open = useStore(paletteOpen);
 
-  // Outside the overlay stack, so it seals the background itself.
   useEffect(() => {
-    const el = backdrop.current;
-    if (!open || !el) return;
-    return sealBackground(el);
+    if (!open) return;
+    return openOverlay(() => paletteOpen.set(false), { surface: backdrop.current });
   }, [open]);
+
+  const choose = useCloseThen(open);
 
   useEffect(() => {
     if (!open) return;
     setQuery("");
     setActive(0);
-    inputRef.current?.focus();
     let live = true;
     void loadDataItems().then((data) => {
       if (live) setItems([...BASE, ...data]);
@@ -147,10 +145,7 @@ export function Palette() {
   ) // unqueried: don't dump every entry
     .slice(0, 12);
 
-  const run = (it: Item) => {
-    paletteOpen.set(false);
-    it.run();
-  };
+  const run = (it: Item) => choose(it.run);
 
   const onKey = (ev: KeyboardEvent<HTMLInputElement>) => {
     if (ev.key === "ArrowDown") {
@@ -167,19 +162,7 @@ export function Palette() {
 
   let lastGroup = "";
   return (
-    <div
-      ref={backdrop}
-      className="palette-backdrop"
-      onClick={() => {
-        paletteOpen.set(false);
-      }}
-      // Escape lives on the backdrop so it also works from a focused result.
-      onKeyDown={(ev) => {
-        if (ev.key !== "Escape") return;
-        ev.preventDefault();
-        paletteOpen.set(false);
-      }}
-    >
+    <div ref={backdrop} className="palette-backdrop" onClick={closeTopOverlay}>
       <div
         className="palette"
         role="dialog"
@@ -188,7 +171,6 @@ export function Palette() {
         onClick={(ev) => ev.stopPropagation()}
       >
         <input
-          ref={inputRef}
           className="palette-input t-data"
           placeholder={t("shell.palette.placeholder")}
           aria-label={t("shell.palette.searchLabel")}

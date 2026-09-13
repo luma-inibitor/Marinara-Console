@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { createStore, useStore } from "../lib/store";
 import { navigate } from "./router";
 import { paletteOpen } from "./palette";
-import { sealBackground } from "./background";
+import { openOverlay, closeTopOverlay } from "./overlays";
 import { t } from "../copy";
 
 const cheatOpen = createStore(false);
@@ -23,7 +23,8 @@ export function useHotkeys() {
       // Cmd/Ctrl-K works everywhere, including inputs
       if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "k") {
         ev.preventDefault();
-        paletteOpen.update((v) => !v);
+        if (paletteOpen.get()) closeTopOverlay();
+        else paletteOpen.set(true);
         return;
       }
       if (isTyping(ev.target) || ev.metaKey || ev.ctrlKey || ev.altKey) return;
@@ -48,11 +49,8 @@ export function useHotkeys() {
       }
       if (ev.key === "?") {
         ev.preventDefault();
-        cheatOpen.update((v) => !v);
-        return;
-      }
-      if (ev.key === "Escape" && cheatOpen.get()) {
-        cheatOpen.set(false);
+        if (cheatOpen.get()) closeTopOverlay();
+        else cheatOpen.set(true);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -82,22 +80,14 @@ export function CheatSheet() {
   const open = useStore(cheatOpen);
   const backdrop = useRef<HTMLDivElement>(null);
 
-  // Outside the overlay stack, so it seals the background itself.
   useEffect(() => {
-    const el = backdrop.current;
-    if (!open || !el) return;
-    return sealBackground(el);
+    if (!open) return;
+    return openOverlay(() => cheatOpen.set(false), { surface: backdrop.current });
   }, [open]);
 
   if (!open) return null;
   return (
-    <div
-      ref={backdrop}
-      className="palette-backdrop"
-      onClick={() => {
-        cheatOpen.set(false);
-      }}
-    >
+    <div ref={backdrop} className="palette-backdrop" onClick={closeTopOverlay}>
       <div
         className="palette cheat"
         role="dialog"
