@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "./Button";
-import { Sheet, SheetHead } from "./Sheet";
+import { Modal, Sheet, SheetHead } from "./Sheet";
 import { Term } from "./Term";
 
 function SheetDemo(props: { autoFocus?: boolean }) {
@@ -22,6 +22,30 @@ function SheetDemo(props: { autoFocus?: boolean }) {
             </Button>
           </div>
         </Sheet>
+      )}
+    </div>
+  );
+}
+
+function ModalDemo() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <Button variant="primary" onClick={() => setOpen(true)}>
+        Import 12 sources
+      </Button>
+      {open && (
+        <Modal label="Confirm import" onClose={() => setOpen(false)}>
+          <p className="m-0 mb-3 font-prose text-prose">Import 12 sources? This spends model calls.</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" autoFocus onClick={() => setOpen(false)}>
+              Import
+            </Button>
+          </div>
+        </Modal>
       )}
     </div>
   );
@@ -115,6 +139,26 @@ export const TermInside: Story = {
     });
 
     await step("Escape · the sheet closes over the open tip", async () => {
+      await userEvent.keyboard("{Escape}");
+      await waitFor(() => expect(canvas.queryByRole("dialog")).toBeNull());
+      await waitFor(() => expect(trigger).toHaveFocus());
+    });
+  },
+};
+
+export const ModalOpen: Story = {
+  render: () => <ModalDemo />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole("button", { name: /import 12 sources/i });
+
+    await step("opens · focus lands on the primary", async () => {
+      await userEvent.click(trigger);
+      const dialog = await canvas.findByRole("dialog", { name: "Confirm import" });
+      await waitFor(() => expect(within(dialog).getByRole("button", { name: "Import" })).toHaveFocus());
+    });
+
+    await step("Escape · the modal closes and focus returns", async () => {
       await userEvent.keyboard("{Escape}");
       await waitFor(() => expect(canvas.queryByRole("dialog")).toBeNull());
       await waitFor(() => expect(trigger).toHaveFocus());
