@@ -1,21 +1,24 @@
 import type { ReactNode } from "react";
 import { SectionKey } from "./SectionKey";
-import "./DetailSection.css";
 
-/** One section of a memory — §core, §appearance — with its heading and body.
- *
- *  `meta` is the trailing run — a character count, a control. `meter` is the
- *  fill bar that belongs under the heading when the section has a cap. */
+/** One section of a memory, with its heading, an optional meter, and a body. */
+
+const HEAD =
+  "mb-1 flex items-center gap-2 font-label font-semibold [font-variation-settings:'wdth'_110] " +
+  "uppercase tracking-[0.12em] text-label-s text-dim";
+
 export function DetailSection(props: {
   sectionKey: string;
+  /** The trailing run after the key, a count or a control. */
   meta?: ReactNode;
+  /** The fill bar under the heading when the section has a cap. */
   meter?: ReactNode;
   children: ReactNode;
   className?: string;
 }) {
   return (
-    <section className={`dsec ${props.className ?? ""}`}>
-      <h4 className="dsec-head t-label t-label-s">
+    <section className={["mt-3", props.className].filter(Boolean).join(" ")}>
+      <h4 className={HEAD}>
         <SectionKey k={props.sectionKey} />
         {props.meta}
       </h4>
