@@ -1,5 +1,6 @@
-/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-raw-button -- legacy */
+/* eslint-disable better-tailwindcss/no-unknown-classes -- legacy */
 import { useEffect, useState } from "react";
+import { Button } from "./Button";
 import { EmptyState } from "./EmptyState";
 import { t, type Key } from "../copy";
 
@@ -38,9 +39,9 @@ export function Loading(props: { what?: Key; label?: string; onRetry?: () => voi
         body={t("ui.loading.stalledBody")}
         actions={
           props.onRetry && (
-            <button className="dbtn is-primary" onClick={props.onRetry}>
+            <Button variant="primary" onClick={props.onRetry}>
               {t("ui.error.tryAgain")}
-            </button>
+            </Button>
           )
         }
       />
@@ -50,7 +51,7 @@ export function Loading(props: { what?: Key; label?: string; onRetry?: () => voi
   return (
     <p className="loadingstate t-prose m-0 px-4 py-6 text-center text-dim">
       {line}
-      {phase === "slow" && <span className="text-faint"> {t("ui.loading.slow")}</span>}
+      {phase === "slow" && <span> {t("ui.loading.slow")}</span>}
     </p>
   );
 }
