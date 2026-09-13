@@ -593,14 +593,6 @@
     "text": "Fewer filters",
     "note": "The same disclosure once open. Named for what pressing it does rather than a bare chevron, so the control reads the same way in both states."
   },
-  "memory.review.activeCount": {
-    "text": "{{count}} active",
-    "note": "How many filter values are currently narrowing the queue, shown in the filter sheet's head. The catalog's extractionprompttemplates.activeTemplate marks one template as in force; this counts selections, which upstream has no multi-select facet to count."
-  },
-  "memory.review.noneActive": {
-    "text": "none active",
-    "note": "The same slot when nothing is selected. A separate string rather than \"0 active\" because a zero count reads as a measurement and this is the absence of one."
-  },
   "memory.review.shownClaims": {
     "one": "{{shown}} of {{total}} claim",
     "other": "{{shown}} of {{total}} claims",

@@ -96,7 +96,7 @@ export function FilterSheet(props: {
         }
       >
         <span className="fs-meta t-data">
-          {m.activeCount ? t("memory.review.activeCount", { count: m.activeCount }) : t("memory.review.noneActive")}
+          {m.activeCount ? t("ui.facets.activeCount", { count: m.activeCount }) : t("ui.facets.noneActive")}
         </span>
         {view === "main" && m.activeCount > 0 && (
           <button type="button" className="fs-clear t-label t-label-s" onClick={props.onClear}>

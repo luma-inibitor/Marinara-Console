@@ -97,11 +97,12 @@ const BUTTON_SELECTOR = {
 };
 
 // The classes the e2e suite and the legacy stylesheets reach by name.
-const HOOK_CLASSES = ["hit", "sheet", "peek-scrim", "chip", "tag", "ar", "skey", "^peek-sheet$", "^type-"];
+const HOOK_CLASSES = ["hit", "sheet", "peek-scrim", "chip", "tag", "ar", "skey", "^peek-sheet$", "^type-", "filter-sheet"];
 
 // A button that is not a Button, each for its own shape.
 const BUTTON_OK = [
   "src/ui/Chip.tsx", // a pressable tag
+  "src/ui/FacetDrawer.tsx", // a facet value, a toggle with aria-pressed
   "src/ui/ListGroup.tsx", // the group header's disclosure
   "src/ui/ListItem.tsx", // the row's primary target
   "src/ui/Menu.tsx", // a menu item
