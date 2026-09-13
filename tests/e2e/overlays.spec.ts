@@ -35,21 +35,23 @@ const SURFACES: Surface[] = [
     sel: ".sheet.filter-sheet",
     dismiss: ROUTES,
   },
-  // Group and sort open the same sheet; either opener could lose its wiring.
+  // The phone and desktop rails each draw their own pair of pickers.
   {
-    name: "view sheet from group",
+    name: "group picker",
     project: "phone",
     screen: screen("memory-review"),
-    open: (page) => page.getByRole("button", { name: "Group by", exact: true }).click(),
-    sel: ".sheet.view-sheet",
+    open: (page) => page.getByRole("button", { name: /^Group by: / }).click(),
+    sel: '[role="menu"][aria-label="Group by"]',
+    scrim: POPOVER_SCRIM,
     dismiss: ROUTES,
   },
   {
-    name: "view sheet from sort",
-    project: "phone",
+    name: "sort picker",
+    project: "desktop",
     screen: screen("memory-review"),
-    open: (page) => page.getByRole("button", { name: "Sort by", exact: true }).click(),
-    sel: ".sheet.view-sheet",
+    open: (page) => page.getByRole("button", { name: /^Sort by: / }).click(),
+    sel: '[role="menu"][aria-label="Sort by"]',
+    scrim: POPOVER_SCRIM,
     dismiss: ROUTES,
   },
   {
@@ -246,5 +248,20 @@ test("a picked scope closes the picker and returns focus to its trigger", async 
 
   await expect(page.getByRole("dialog", { name: "Character" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /^Character: / })).toBeFocused();
+  expect(new URL(page.url()).hash, "the pick left the screen").toBe(base);
+});
+
+test("a picked grouping closes the picker and reads on its trigger", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "phone", "drawn by the phone layout");
+  await openScreen(page, screen("memory-review"));
+  const base = new URL(page.url()).hash;
+  await page.getByRole("button", { name: /^Group by: / }).click();
+  const menu = page.getByRole("menu", { name: "Group by" });
+  await expect(menu.getByRole("menuitemradio", { name: /^target memory/ })).toHaveAttribute("aria-checked", "true");
+  await menu.getByRole("menuitemradio", { name: /^nothing/ }).click();
+
+  await expect(menu).toHaveCount(0);
+  const trigger = page.getByRole("button", { name: "Group by: nothing" });
+  await expect(trigger).toBeFocused();
   expect(new URL(page.url()).hash, "the pick left the screen").toBe(base);
 });

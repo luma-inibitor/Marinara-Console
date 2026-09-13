@@ -24,17 +24,7 @@ import {
 import { blocked, loadError, loading, refresh, rejections, review, rows } from "./store/review";
 import { notesById, reextractSource } from "./store/notes";
 import { backupExportUrl } from "./store/backup";
-import {
-  activeFacets,
-  cursor,
-  detailKey,
-  dockSheetOpen,
-  facetSheetOpen,
-  groupBy,
-  sortBy,
-  sortDir,
-  viewSheetOpen,
-} from "./store/view";
+import { activeFacets, cursor, detailKey, dockSheetOpen, facetSheetOpen, groupBy, sortBy, sortDir } from "./store/view";
 import { preflight, preflightPending, preflightRowState } from "./store/preflight";
 import { droppedDependencyWarnings, readyToSend, tally } from "./store/tally";
 import { applyDecided, applying, applyProgress, lastFailures } from "./store/apply";
@@ -76,7 +66,6 @@ import {
   type Group,
 } from "./model/facets";
 import { FilterSheet, type SheetFacet } from "./review/FilterSheet";
-import { ViewSheet } from "./review/ViewSheet";
 import { DockSheet } from "./review/DockSheet";
 import { ClaimDetail } from "./ClaimDetail";
 import { NoteRef, peekNote } from "./components/NoteRef";
@@ -95,6 +84,8 @@ import {
   Meter,
   type MeterSegment,
   MiddleTruncate,
+  Picker,
+  type PickerOption,
   Progress,
   useIsDesktop,
   useRovingFocus,
@@ -374,33 +365,7 @@ export function Review() {
                 <QuickChip facet="flags" value={FLAG.duplicate} label={t("memory.review.chipDupes")} flag />
                 <QuickChip facet="flags" value={FLAG.conflicts} label={t("memoryvault.conflicts")} flag />
                 <span className="rail-gap" />
-                {Object.entries(GROUPERS).map(([id, g]) => (
-                  <Chip
-                    key={id}
-                    pressed={group === id}
-                    onClick={() => {
-                      groupBy.set(id as ReturnType<typeof groupBy.get>);
-                    }}
-                  >
-                    {g.label}
-                  </Chip>
-                ))}
-                <span className="rail-gap" />
-                {Object.entries(SORTERS).map(([id, s]) => (
-                  <Chip
-                    key={id}
-                    pressed={sort === id}
-                    onClick={() => {
-                      if (sortBy.get() === id) sortDir.set(sortDir.get() === 1 ? -1 : 1);
-                      else {
-                        sortBy.set(id as ReturnType<typeof sortBy.get>);
-                        sortDir.set(1);
-                      }
-                    }}
-                  >
-                    {dir === 1 || sort !== id ? "↓" : "↑"} {s.label}
-                  </Chip>
-                ))}
+                <ArrangePickers rows={shown} size="sm" className="shrink-0" />
               </div>
 
               {activeFacetCount(active) > 0 && (
@@ -428,7 +393,7 @@ export function Review() {
               )}
             </>
           ) : (
-            <ArrangeRail active={active} group={group} sort={sort} dir={dir} shown={shown.length} total={total} />
+            <ArrangeRail active={active} rows={shown} total={total} />
           )}
         </header>
 
@@ -497,7 +462,6 @@ export function Review() {
       )}
 
       <FacetSheet />
-      <ViewSheetHost />
       <ApplyDock />
     </div>
   );
@@ -532,26 +496,17 @@ function toggleFacet(facetId: string, value: string) {
   activeFacets.set(next);
 }
 
-/** The phone's one row of chrome: filter, and the two arrangement values.
+/** The phone's one row of chrome: filter, and the two arrangement pickers.
  *
  *  Filter is a glyph and a count because its value is "how narrowed am I",
- *  which a number answers; group and sort are glyph + word because theirs is
- *  a choice among names, and a name has to be read. The two arrangement
- *  buttons share the remaining width so the row scans as columns.
+ *  which a number answers. The two pickers share the remaining width so the
+ *  row scans as columns.
  *
- *  Active filters land in a track under it, each removable where it is shown —
- *  DESIGN.md §3 asks for exactly that, and it is the only path back out of a
- *  filter that a phone has once the sheet is dismissed. */
-function ArrangeRail(props: {
-  active: Map<string, Set<string>>;
-  group: string;
-  sort: string;
-  dir: 1 | -1;
-  shown: number;
-  total: number;
-}) {
+ *  Active filters land in a track under it, each removable where it is shown,
+ *  which is the only path back out of a filter that a phone has once the
+ *  sheet is dismissed. */
+function ArrangeRail(props: { active: Map<string, Set<string>>; rows: Row[]; total: number }) {
   const n = activeFacetCount(props.active);
-  const SortGlyph = props.dir === 1 ? SortDown : SortUp;
   return (
     <>
       <div className="qrail">
@@ -565,34 +520,13 @@ function ArrangeRail(props: {
           <Filter size={ICON_SIZE.lg} stroke={1.75} aria-hidden />
           {n > 0 && <span className="qn t-data">{n}</span>}
         </button>
-        <button
-          type="button"
-          className={`qbtn ${props.group === "none" ? "" : "is-on"}`}
-          aria-label={t("memory.review.groupBy")}
-          onClick={() => {
-            viewSheetOpen.set(true);
-          }}
-        >
-          <GroupBy size={ICON_SIZE.lg} stroke={1.75} aria-hidden />
-          <span className="qv t-data">{GROUPERS[props.group].label}</span>
-        </button>
-        <button
-          type="button"
-          className="qbtn"
-          aria-label={t("memoryvault.sortBy")}
-          onClick={() => {
-            viewSheetOpen.set(true);
-          }}
-        >
-          <SortGlyph size={ICON_SIZE.lg} stroke={1.75} aria-hidden />
-          <span className="qv t-data">{SORTERS[props.sort].label}</span>
-        </button>
+        <ArrangePickers rows={props.rows} size="md" className="min-w-0 flex-1" />
       </div>
 
       {n > 0 && (
         <div className="ftrack">
           <span className="ftrack-n t-data">
-            {t("memory.review.shownOf", { shown: props.shown, total: props.total })}
+            {t("memory.review.shownOf", { shown: props.rows.length, total: props.total })}
           </span>
           {[...props.active.entries()].flatMap(([facetId, set]) =>
             [...set].map((value) => (
@@ -728,52 +662,56 @@ function toggleAnyFlag() {
   activeFacets.set(next);
 }
 
-function ViewSheetHost() {
-  const open = useStore(viewSheetOpen);
+/** Group and sort, each a picker that shows its value. Choosing the current
+ *  sort again flips its direction. */
+function ArrangePickers(props: { rows: Row[]; size: "sm" | "md"; className?: string }) {
   const group = useStore(groupBy);
   const sort = useStore(sortBy);
   const dir = useStore(sortDir);
-  const allRows = useStore(rows);
-  const active = useStore(activeFacets);
-  const sectionPressure = useStore(pressure);
-  const notes = useStore(notesById);
-  const dec = useStore(decisions);
-  const editedMuts = useStore(edited);
-  if (!open) return null;
-  const shown = applyFilters(allRows, active, {
-    pressure: sectionPressure,
-    notesById: notes,
-    decisions: dec,
-    edited: editedMuts,
-  });
-  return (
-    <ViewSheet
-      groupers={Object.entries(GROUPERS).map(([id, g]) => ({
+  const groupers = useMemo<PickerOption[]>(
+    () =>
+      Object.entries(GROUPERS).map(([id, g]) => ({
         id,
         label: g.label,
-        // How many lanes this grouper would produce over what is actually
-        // shown — a fact about the choice, so it is measured, not guessed.
-        // "nothing" makes one lane by definition and states no number.
-        count: id === "none" ? undefined : new Set(shown.map((r) => g.key(r).id)).size,
-      }))}
-      sorters={Object.entries(SORTERS).map(([id, s]) => ({ id, label: s.label }))}
-      group={group}
-      sort={sort}
-      dir={dir}
-      onGroup={(id) => {
-        groupBy.set(id as ReturnType<typeof groupBy.get>);
-      }}
-      onSort={(id) => {
-        if (sortBy.get() === id) sortDir.set(sortDir.get() === 1 ? -1 : 1);
-        else {
-          sortBy.set(id as ReturnType<typeof sortBy.get>);
-          sortDir.set(1);
-        }
-      }}
-      onClose={() => {
-        viewSheetOpen.set(false);
-      }}
-    />
+        hint: id === "none" ? undefined : new Set(props.rows.map((r) => g.key(r).id)).size,
+      })),
+    [props.rows],
+  );
+  const Dir = dir === 1 ? SortDown : SortUp;
+  const sorters: PickerOption[] = Object.entries(SORTERS).map(([id, s]) => ({
+    id,
+    label: s.label,
+    hint: id === sort ? <Dir size={ICON_SIZE.sm} stroke={1.75} aria-hidden /> : undefined,
+  }));
+  return (
+    <>
+      <Picker
+        label={t("memory.review.groupBy")}
+        icon={GroupBy}
+        options={groupers}
+        value={group}
+        size={props.size}
+        className={props.className}
+        onChange={(id) => {
+          groupBy.set(id as ReturnType<typeof groupBy.get>);
+        }}
+      />
+      <Picker
+        label={t("memoryvault.sortBy")}
+        icon={Dir}
+        options={sorters}
+        value={sort}
+        size={props.size}
+        className={props.className}
+        onChange={(id) => {
+          if (sortBy.get() === id) sortDir.set(sortDir.get() === 1 ? -1 : 1);
+          else {
+            sortBy.set(id as ReturnType<typeof sortBy.get>);
+            sortDir.set(1);
+          }
+        }}
+      />
+    </>
   );
 }
 
