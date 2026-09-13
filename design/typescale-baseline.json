@@ -87,10 +87,6 @@
   "src/ui/Chip.css": [
     ".chip, .tag → 9.5px"
   ],
-  "src/ui/EmptyState.css": [
-    ".es-body → 12.5px",
-    ".es-title → 14px"
-  ],
   "src/ui/JsonView.css": [
     ".jn-count → 9.5px",
     ".jsonview → 11px"
