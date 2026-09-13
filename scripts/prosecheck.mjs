@@ -2,6 +2,9 @@
 // Runs Vale over the Markdown this branch changed and reports the alerts on added lines.
 
 import { execFileSync, spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const argv = process.argv.slice(2);
 const JSON_MODE = argv.includes("--json");
@@ -48,15 +51,25 @@ function vale(...args) {
  * @param {string[]} files
  * @returns {Record<string, { Line: number, Span: number[], Check: string, Severity: string, Message: string }[]>}
  */
+// Vale unpacks a package's own .vale.ini here. The Luma package carries the
+// `[*.md]` section and every rule, so without it the root .vale.ini names no
+// style and no file: Vale checks nothing, reports nothing, and exits 0.
+const PACKAGE_CONFIG = join(dirname(fileURLToPath(import.meta.url)), "..", ".vale", "styles", ".vale-config");
+
+function sync() {
+  // Syncing here rather than in `npm run prepare` keeps `npm install` working offline.
+  console.error("prosecheck: the Luma package is missing from .vale/styles, running `vale sync`");
+  const r = vale("sync");
+  if (r.status !== 0) {
+    die("`vale sync` failed, so the styles .vale.ini names are still missing.", ...lines(r.stderr || r.stdout));
+  }
+}
+
 function report(files) {
+  if (!existsSync(PACKAGE_CONFIG)) sync();
   let r = vale("--output=JSON", ...files);
   if (r.status > 1 && r.stderr.includes("StylesPath")) {
-    // Syncing here rather than in `npm run prepare` keeps `npm install` working offline.
-    console.error("prosecheck: styles missing from .vale/styles, running `vale sync`");
-    const sync = vale("sync");
-    if (sync.status !== 0) {
-      die("`vale sync` failed, so the styles .vale.ini names are still missing.", ...lines(sync.stderr || sync.stdout));
-    }
+    sync();
     r = vale("--output=JSON", ...files);
   }
   if (r.status !== 0 && r.status !== 1) {
