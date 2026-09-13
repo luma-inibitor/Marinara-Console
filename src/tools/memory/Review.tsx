@@ -41,7 +41,7 @@ import { applyDecided, applying, applyProgress, lastFailures } from "./store/app
 import { pressure } from "./store/pressure";
 import { SECTION_CAP as CAP } from "./model/caps";
 import { capPercent } from "./model/pressure";
-import { openOverlay, closeTopOverlay, useCloseThen } from "../../shell/overlays";
+import { openOverlay, closeTopOverlay } from "../../shell/overlays";
 import {
   Flag,
   AllClear,
@@ -90,6 +90,8 @@ import {
   ListGroup,
   ListItem,
   Loading,
+  Menu,
+  type MenuItem,
   Meter,
   type MeterSegment,
   MiddleTruncate,
@@ -884,45 +886,32 @@ function GroupBlock(props: {
  *  `openLabel` names which note that is. */
 function GroupMenu(props: { group: Group; kept: number; dropped: number; isNew: boolean; openLabel: string }) {
   const [open, setOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
   const g = props.group;
-  useEffect(() => {
-    if (!open) return;
-    return openOverlay(() => setOpen(false));
-  }, [open]);
-
-  const choose = useCloseThen(open);
+  const items: MenuItem[] = [];
+  if (!props.isNew) items.push({ id: "open", label: props.openLabel, onSelect: () => peekNote(g.id) });
+  if (props.kept > 0 || props.dropped > 0) {
+    items.push({
+      id: "clear",
+      label: t("memory.review.clearDecisions", { count: props.kept + props.dropped }),
+      onSelect: () => bulkDecide(g.rows, null, `${t("memory.review.reset")} ${g.label}`),
+    });
+  }
+  const label = t("memoryvault.moreActionsForValue1", { value1: g.label });
   return (
-    <span className="gmenu-wrap">
+    <>
       <button
+        ref={trigger}
         className="gib gmenu"
-        aria-label={t("memoryvault.moreActionsForValue1", { value1: g.label })}
+        aria-label={label}
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => (open ? closeTopOverlay() : setOpen(true))}
       >
         <More size={16} stroke={1.75} aria-hidden />
       </button>
-      {open && (
-        <>
-          <span className="gmenu-scrim" onClick={closeTopOverlay} />
-          <div className="gmenu-pop" role="menu">
-            {!props.isNew && (
-              <button role="menuitem" onClick={() => choose(() => peekNote(g.id))}>
-                {props.openLabel}
-              </button>
-            )}
-            {(props.kept > 0 || props.dropped > 0) && (
-              <button
-                role="menuitem"
-                onClick={() => choose(() => bulkDecide(g.rows, null, `${t("memory.review.reset")} ${g.label}`))}
-              >
-                {t("memory.review.clearDecisions", { count: props.kept + props.dropped })}
-              </button>
-            )}
-          </div>
-        </>
-      )}
-    </span>
+      <Menu open={open} anchor={trigger} label={label} align="end" items={items} onClose={() => setOpen(false)} />
+    </>
   );
 }
 
