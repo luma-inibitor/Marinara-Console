@@ -15,7 +15,7 @@ function PopoverDemo(props: { side?: Side; align?: Align; at?: "bottom" | "end";
       <button
         ref={trigger}
         type="button"
-        className="min-h-tap rounded-m border border-edge-strong px-4 text-ink"
+        className="min-h-tap rounded-md border border-edge-strong px-4 text-ink"
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => (open ? closeTopOverlay() : setOpen(true))}

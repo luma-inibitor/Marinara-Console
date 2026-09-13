@@ -10,14 +10,14 @@ import { Close, ICON_SIZE } from "./icons";
 const SCRIM = "peek-scrim fixed inset-0 z-60 bg-scrim";
 
 const PANEL =
-  "sheet fixed inset-x-0 bottom-0 z-61 max-h-[78vh] overflow-y-auto rounded-t-l border-t border-edge-strong " +
-  "bg-surface-1 p-3 split:inset-y-0 split:left-auto split:right-0 split:w-[400px] split:max-h-none " +
+  "sheet fixed inset-x-0 bottom-0 z-61 max-h-[78vh] overflow-y-auto rounded-t-lg border-t border-edge-strong " +
+  "bg-surface-1 p-3 split:inset-y-0 split:right-0 split:left-auto split:max-h-none split:w-[400px] " +
   "split:rounded-none split:border-t-0 split:border-l";
 
 // z-62 keeps a confirm raised from a sheet in front of it.
 const MODAL =
   "fixed top-1/2 left-1/2 z-62 max-h-[82vh] w-[min(460px,calc(100vw-32px))] -translate-x-1/2 -translate-y-1/2 " +
-  "overflow-y-auto rounded-l border border-edge bg-surface-1 p-3 shadow-modal";
+  "overflow-y-auto rounded-lg border border-edge bg-surface-1 p-3 shadow-modal";
 
 const HEAD =
   "sticky -top-[var(--panel-pad)] z-2 -mx-3 -mt-3 mb-2 flex items-center gap-2 border-b border-edge " +

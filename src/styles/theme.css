@@ -92,9 +92,10 @@
   }
 
   /* shape */
-  --radius-s: var(--r-s);
-  --radius-m: var(--r-m);
-  --radius-l: var(--r-l);
+  --radius-*: initial;
+  --radius-sm: var(--r-s);
+  --radius-md: var(--r-m);
+  --radius-lg: var(--r-l);
 
   /* the two semantic breakpoints (tests/e2e/README.md §1) */
   --breakpoint-stack: 720px;

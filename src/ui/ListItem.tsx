@@ -65,11 +65,11 @@ const SELECTED_ROW = "shadow-[inset_3px_0_0_var(--accent)]";
 const SIDE = "flex shrink-0 items-center";
 const PRIMARY = "flex min-h-tap min-w-0 flex-1 items-center gap-2 px-row-x py-row-y text-left";
 const PRIMARY_BUTTON =
-  "hover:bg-surface-1 transition-colors [transition-duration:var(--t-fast)] " +
-  "focus-visible:relative focus-visible:z-[1] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] " +
-  "aria-disabled:opacity-45 aria-disabled:cursor-default aria-disabled:hover:bg-transparent";
-const TITLE = "block truncate font-label text-title font-semibold leading-tight [font-variation-settings:'wdth'_102]";
-const SECONDARY = "t-data mt-1 block truncate text-data-s text-dim";
+  "transition-colors [transition-duration:var(--t-fast)] hover:bg-surface-1 " +
+  "focus-visible:relative focus-visible:z-[1] focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none " +
+  "aria-disabled:cursor-default aria-disabled:opacity-45 aria-disabled:hover:bg-transparent";
+const TITLE = "block truncate font-label text-title leading-tight font-semibold [font-variation-settings:'wdth'_102]";
+const SECONDARY = "mt-1 block truncate t-data text-data-s text-dim";
 
 export function ListItem(props: ListItemProps) {
   const { title, secondary, leading, trailing, action, onActivate, selected, disabled, rowKey, tabIndex, className } =

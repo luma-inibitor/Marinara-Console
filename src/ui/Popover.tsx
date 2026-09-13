@@ -65,7 +65,7 @@ export interface PopoverProps {
 }
 
 const SURFACE =
-  "absolute top-0 left-0 max-h-[calc(100vh-16px)] max-w-[calc(100vw-16px)] overflow-y-auto rounded-m border border-edge-strong " +
+  "absolute top-0 left-0 max-h-[calc(100vh-16px)] max-w-[calc(100vw-16px)] overflow-y-auto rounded-md border border-edge-strong " +
   "bg-surface-1 shadow-pop outline-none";
 
 /** An anchored surface over a sealed page.

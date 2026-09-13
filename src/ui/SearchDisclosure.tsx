@@ -14,12 +14,12 @@ export interface DisclosureOption {
 }
 
 const TRIGGER =
-  "hit group inline-flex min-h-[32px] max-w-[240px] max-stack:max-w-[44vw] items-center gap-[5px] rounded-s px-2 " +
-  "text-ink hover:bg-surface-2 aria-expanded:bg-surface-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]";
+  "hit group inline-flex min-h-[32px] max-w-[240px] items-center gap-[5px] rounded-sm px-2 max-stack:max-w-[44vw] " +
+  "text-ink hover:bg-surface-2 focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none aria-expanded:bg-surface-2";
 const VALUE = "min-w-0 truncate border-b border-dotted border-transparent text-prose group-hover:border-faint";
 const OPTION =
-  "flex min-h-tap items-center gap-2 rounded-s px-2 text-left text-prose text-ink hover:bg-surface-2 " +
-  "aria-[current=true]:bg-accent-wash focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]";
+  "flex min-h-tap items-center gap-2 rounded-sm px-2 text-left text-prose text-ink hover:bg-surface-2 " +
+  "focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none aria-[current=true]:bg-accent-wash";
 
 /** Choose one value from a searchable list, in a popover anchored to its own
  *  trigger. The trigger shows the current value, so the control reads as part

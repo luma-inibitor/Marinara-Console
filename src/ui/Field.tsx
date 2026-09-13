@@ -39,8 +39,8 @@ export type FieldProps = {
 
 const LABEL =
   "inline-flex items-baseline gap-2 font-label font-semibold [font-variation-settings:'wdth'_110] " +
-  "uppercase tracking-[0.12em] text-label-s text-dim";
-const MARK = "t-data font-normal normal-case tracking-normal text-data-s text-dim";
+  "text-label-s tracking-[0.12em] text-dim uppercase";
+const MARK = "t-data text-data-s font-normal tracking-normal text-dim normal-case";
 const NOTE = "m-0 font-prose text-data leading-snug";
 
 export function Field(props: FieldProps) {
@@ -78,9 +78,9 @@ export function Field(props: FieldProps) {
 }
 
 const CONTROL =
-  "w-full min-w-0 rounded-s border border-edge bg-surface-2 text-ink placeholder:text-dim " +
-  "focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] " +
-  "aria-[invalid=true]:border-danger disabled:cursor-default disabled:opacity-45";
+  "w-full min-w-0 rounded-sm border border-edge bg-surface-2 text-ink placeholder:text-dim " +
+  "focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none " +
+  "disabled:cursor-default disabled:opacity-45 aria-[invalid=true]:border-danger";
 const LINE = `${CONTROL} min-h-tap px-2 t-data`;
 const BLOCK = `${CONTROL} max-w-[var(--measure)] resize-y p-2 font-prose text-prose leading-normal`;
 

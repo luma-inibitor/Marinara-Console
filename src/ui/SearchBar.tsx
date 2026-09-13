@@ -5,7 +5,7 @@ import { t } from "../copy";
 
 // The ring goes on the box rather than the input, so the tally sits inside it.
 const BOX =
-  "flex min-h-tap min-w-0 flex-auto items-center gap-[7px] rounded-m border border-edge bg-surface-1 px-[10px] " +
+  "flex min-h-tap min-w-0 flex-auto items-center gap-[7px] rounded-md border border-edge bg-surface-1 px-[10px] " +
   "text-dim focus-within:border-accent focus-within:shadow-[var(--focus-ring)]";
 const INPUT =
   "min-h-[40px] min-w-0 flex-auto bg-transparent font-prose text-ink outline-none placeholder:text-dim " +

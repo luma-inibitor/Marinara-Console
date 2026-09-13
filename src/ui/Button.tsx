@@ -5,7 +5,7 @@ import { ICON_SIZE, Working } from "./icons";
 
 const button = cva(
   [
-    "relative inline-flex items-center justify-center rounded-m border",
+    "relative inline-flex items-center justify-center rounded-md border",
     "font-label font-semibold [font-variation-settings:'wdth'_110]",
     "text-center transition-colors [transition-duration:var(--t-fast)]",
     "focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none",
@@ -70,9 +70,9 @@ const button = cva(
 );
 
 const TIP =
-  "invisible absolute top-[calc(100%_+_6px)] left-0 z-70 w-max max-w-[260px] rounded-s border border-edge-strong " +
+  "invisible absolute top-[calc(100%_+_6px)] left-0 z-70 w-max max-w-[260px] rounded-sm border border-edge-strong " +
   "bg-surface-3 px-[9px] py-[6px] font-prose text-[11.5px] leading-[1.45] whitespace-normal text-ink shadow-pop " +
-  "group-hover:visible group-focus-within:visible";
+  "group-focus-within:visible group-hover:visible";
 
 type Styles = VariantProps<typeof button>;
 

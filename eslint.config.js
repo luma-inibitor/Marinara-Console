@@ -72,7 +72,7 @@ const BUTTON_SELECTOR = {
 };
 
 // The classes the e2e suite and the legacy stylesheets reach by name.
-const HOOK_CLASSES = ["hit"];
+const HOOK_CLASSES = ["hit", "sheet", "peek-scrim"];
 
 // A button that is not a Button, each for its own shape.
 const BUTTON_OK = [
@@ -217,6 +217,21 @@ export default [
       "better-tailwindcss/no-duplicate-classes": "error",
       "better-tailwindcss/no-unknown-classes": ["error", { ignore: HOOK_CLASSES }],
       "better-tailwindcss/enforce-consistent-class-order": "error",
+      "better-tailwindcss/no-restricted-classes": [
+        "error",
+        {
+          restrict: [
+            {
+              pattern: "^rounded-(s|e|l)$",
+              message: "A side utility, not a house radius. Use rounded-sm, rounded-md or rounded-lg.",
+            },
+            {
+              pattern: "^rounded-\\(--radius-(s|m|l)\\)$",
+              message: "The token is --radius-sm, --radius-md or --radius-lg.",
+            },
+          ],
+        },
+      ],
       "react-hooks/exhaustive-deps": "error",
       "react-hooks/rules-of-hooks": "error",
       // No module may take part in an import cycle.
@@ -281,6 +296,20 @@ export default [
       "src/ui/Term.tsx",
     ],
     rules: { "better-tailwindcss/no-unknown-classes": "off" },
+  },
+  {
+    // A primitive keeps its class lists in ALL-CAPS constants, which the default selectors skip.
+    files: ["src/ui/**/*.tsx"],
+    ignores: ["src/ui/**/*.stories.tsx"],
+    settings: {
+      "better-tailwindcss": {
+        entryPoint: "src/styles/theme.css",
+        selectors: [
+          ...getDefaultSelectors(),
+          { kind: "variable", name: "^[A-Z][A-Z_0-9]*$", match: [{ type: "strings" }] },
+        ],
+      },
+    },
   },
   ...restricted(),
   {

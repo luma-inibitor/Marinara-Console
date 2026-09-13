@@ -7,7 +7,7 @@ export { cva, type VariantProps } from "class-variance-authority";
 export const THEME = {
   text: ["label-s", "label", "data-s", "data", "data-l", "prose", "title", "head"],
   font: ["label", "data", "prose"],
-  radius: ["s", "m", "l"],
+  radius: ["sm", "md", "lg"],
   shadow: ["pop", "panel", "modal"],
   spacing: ["1", "2", "3", "4", "5", "6", "tap", "tap-2", "row-x", "row-y"],
 };

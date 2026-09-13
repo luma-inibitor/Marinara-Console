@@ -14,7 +14,7 @@ function MenuDemo() {
       <button
         ref={trigger}
         type="button"
-        className="inline-flex min-h-tap w-tap items-center justify-center rounded-s border border-edge text-dim"
+        className="inline-flex min-h-tap w-tap items-center justify-center rounded-sm border border-edge text-dim"
         aria-label="More actions for Harbour fog"
         aria-haspopup="menu"
         aria-expanded={open}
