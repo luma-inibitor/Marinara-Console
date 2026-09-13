@@ -107,9 +107,6 @@ export const Activate: Story = {
       await userEvent.keyboard("{Enter}");
       await waitFor(() => expect(within(document.body).queryByRole("menu")).toBeNull());
       await waitFor(() => expect(canvas.getByRole("status")).toHaveTextContent("clear"));
-    });
-
-    await step("closes · focus returns to the trigger", async () => {
       await waitFor(() => expect(trigger).toHaveFocus());
       await expect(trigger).toHaveAttribute("aria-expanded", "false");
     });
