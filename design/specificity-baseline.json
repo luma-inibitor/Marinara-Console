@@ -17,9 +17,5 @@
     "Expected selector \".sig svg\" to come before selector \".dock-counts > svg:last-child\"",
     "Expected selector \".sig-ok svg\" to come before selector \".dock-counts > svg:last-child\"",
     "Expected selector \".trunc svg\" to come before selector \".dock-counts > svg:last-child\""
-  ],
-  "src/styles/presets.css": [
-    "Expected selector \".fs-confirm-acts .dbtn\" to come before selector \".savebar .dbtn:disabled\"",
-    "Expected selector \".fs-confirm-box .t-label\" to come before selector \".savebar.has-conflict .t-label\""
   ]
 }
