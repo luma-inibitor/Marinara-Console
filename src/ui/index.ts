@@ -22,6 +22,9 @@ export { Meter } from "./Meter";
 export type { MeterProps, MeterSegment } from "./Meter";
 export { MiddleTruncate } from "./MiddleTruncate";
 export { MODES, ModePill } from "./ModePill";
+export { Progress } from "./Progress";
+/** @public */
+export type { ProgressProps } from "./Progress";
 export { RawJson } from "./RawJson";
 export { SaveBar } from "./SaveBar";
 export { SearchBar } from "./SearchBar";

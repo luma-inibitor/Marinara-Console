@@ -173,6 +173,9 @@ this catalog in the same change.
   error appears.
 - **Fullscreen text editor** — near-fullscreen textarea, live char/token counts
   with delta, wrap toggle, markdown symbol row.
+- **Progress** — a track with a fill for a task the user started, with a
+  count beside it when the site states one. Indeterminate while the total is
+  unknown.
 - **Tag/distribution panel** — group stats with bars, per-group Show/Select.
 - **Decision rail** — tri-state per-row judgment (undecided / keep / drop) on
   the status rail, cycled by tap or set by single keys, advancing automatically.

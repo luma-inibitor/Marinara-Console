@@ -82,6 +82,13 @@
   --spacing-tap: var(--tap);
   --spacing-tap-2: var(--tap-2);
 
+  /* motion */
+  --animate-progress: progress 1.4s ease-in-out infinite;
+  @keyframes progress {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(300%); }
+  }
+
   /* shape */
   --radius-s: var(--r-s);
   --radius-m: var(--r-m);
