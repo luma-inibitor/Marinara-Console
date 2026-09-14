@@ -1,5 +1,5 @@
-/* Presets tool: browser cards, section editor, save bar, connection banner,
-   toasts. Rows carry an ordinal rail rather than a status dot. */
+/* Presets tool: browser cards, section editor, connection banner, toasts.
+   Rows carry an ordinal rail rather than a status dot. */
 
 /* ── browser ── */
 .screen.is-narrow { max-width: 760px; }
@@ -151,30 +151,6 @@
   color: var(--text);
 }
 
-/* ── explicit save ────────────────────────────────────────────── */
-.savebar {
-  position: sticky; bottom: 0; z-index: 12;
-  display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
-  margin-top: var(--s3); padding: var(--s2) var(--s3);
-  background: color-mix(in srgb, var(--surface-1) 92%, transparent);
-  backdrop-filter: blur(10px);
-  border: var(--hairline); border-radius: var(--r-m);
-}
-.savebar.is-dirty { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
-.savebar-state { color: var(--text-dim); }
-.savebar-state .is-err { color: var(--danger); }
-.savebar-acts { display: flex; gap: var(--s2); flex: 0 0 auto; }
-.savebar .dbtn { min-height: var(--tap); padding: 0 var(--s3); }
-.savebar .dbtn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-.savebar.has-conflict {
-  display: block;
-  border-color: color-mix(in srgb, var(--warn) 55%, transparent);
-  background: var(--warn-wash);
-}
-.savebar.has-conflict .t-label { color: var(--warn); }
-.savebar.has-conflict .savebar-acts { margin-top: var(--s2); justify-content: flex-end; }
-
 /* ── field-level validation ── */
 .field-err { color: var(--danger); margin: 6px 0 0; }
 [aria-invalid="true"] { border-color: var(--danger) !important; }
@@ -221,12 +197,6 @@
 .fs-confirm-acts { display: flex; gap: var(--s2); justify-content: flex-end; margin-top: var(--s3); }
 .fs-confirm-acts .dbtn { min-height: var(--tap); padding: 0 var(--s3); }
 .fseditor { position: fixed; }
-
-@media (max-width: 899px) {
-  .savebar { flex-wrap: wrap; }
-  .savebar-acts { width: 100%; }
-  .savebar-acts .dbtn { flex: 1; }
-}
 
 /* ── connection banner ─────────────────────────────────────────── */
 .connbar {

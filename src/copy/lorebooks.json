@@ -442,6 +442,10 @@
     "text": "Delete failed: {{message}}",
     "note": "Toasted when the deferred DELETE is refused after the undo window closes, at which point the row has to come back. The catalog states the failure without a reason (sourcesworkspace.sourceCouldNotBeDeleted); here the engine's own message is the only clue, because nobody was watching when it fired."
   },
+  "lorebooks.record.saveFailed": {
+    "text": "Save failed: {{message}}",
+    "note": "The save bar's state after a rejected commit, and the toast that repeats it. Names the operation before the engine's reason so the line reads as a failure and not as a stray message. presets.saveFailed is the bare header pill and has no slot for the reason; the catalog reports failures per operation and never for a save, because upstream writes as you type."
+  },
   "lorebooks.record.undo": {
     "use": "memoryvault.undo"
   },
