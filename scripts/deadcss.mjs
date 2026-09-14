@@ -71,33 +71,27 @@ const DOMAINS = {
   "es-": ["ok", "danger"], // EmptyState tone
 };
 
-const src = [];
+const sources = [];
 (function walk(dir) {
-  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
     const p = path.join(dir, e.name);
     if (e.isDirectory()) walk(p);
-    else if (/\.(tsx|ts)$/.test(e.name)) src.push(fs.readFileSync(p, "utf8"));
+    else if (/\.(tsx|ts)$/.test(e.name)) sources.push(fs.readFileSync(p, "utf8"));
   }
 })(SCAN);
-const code = src.join("\n");
 
 const live = new Set();
 const add = (s) => {
   for (const tok of s.replace(/["'`]/g, " ").split(/[\s${}?:()|&]+/)) if (/^[a-zA-Z][\w-]*$/.test(tok)) live.add(tok);
 };
-for (const m of code.matchAll(/class(?:Name)?=(?:"([^"]*)"|\{`([^`]*)`\})/g)) add(m[1] ?? m[2]);
-for (const m of code.matchAll(/\bcls=(?:"([^"]*)"|\{`([^`]*)`\})/g)) add(m[1] ?? m[2]);
-for (const m of code.matchAll(/"([a-z][\w-]*(?: [\w-]+)*)"/g)) add(m[1]); // case 3
-// Every template literal, not only the ones sitting in a class= attribute.
-// Sheet/Modal hand their class down as `surface={`sheet ${...}`}`, and the
-// tone icon in EmptyState nests a template inside its class template, which
-// the attribute patterns above cannot see past. Over-reporting live is the
-// safe direction to be wrong in (see the header).
-for (const m of code.matchAll(/`([^`]*)`/g)) add(m[1]);
-// And the literal head of any template, matched without needing to find its
-// closing backtick — nesting one template inside another desynchronises the
-// pairing above for everything after it in the file.
-for (const m of code.matchAll(/`([^`$]+)\$\{/g)) add(m[1]);
+for (const code of sources) {
+  for (const m of code.matchAll(/class(?:Name)?=(?:"([^"]*)"|\{`([^`]*)`\})/g)) add(m[1] ?? m[2]);
+  for (const m of code.matchAll(/\bcls=(?:"([^"]*)"|\{`([^`]*)`\})/g)) add(m[1] ?? m[2]);
+  for (const m of code.matchAll(/"([^"\n]*)"/g)) add(m[1]);
+  for (const m of code.matchAll(/`([^`]*)`/g)) add(m[1]);
+  // Nested templates break the backtick pairing above.
+  for (const m of code.matchAll(/`([^`$]+)\$\{/g)) add(m[1]);
+}
 
 // ── composed prefixes, and the drift test on DOMAINS ──────────────────────
 // A prefix counts only in a class position: `className=`, `cls=`, `surface=`.
@@ -108,17 +102,18 @@ for (const m of code.matchAll(/`([^`$]+)\$\{/g)) add(m[1]);
 // `es-icon ${tone ? `es-${tone}` : ""}`, and stopping at the first inner
 // backtick loses `es-` and strands both rules.
 const classExpressions = [];
-for (const m of code.matchAll(/\b(?:className|cls|surface)=\{/g)) {
-  const start = m.index + m[0].length;
-  let i = start,
-    depth = 1;
-  while (i < code.length && depth) {
-    if (code[i] === "{") depth++;
-    else if (code[i] === "}") depth--;
-    i++;
+for (const code of sources)
+  for (const m of code.matchAll(/\b(?:className|cls|surface)=\{/g)) {
+    const start = m.index + m[0].length;
+    let i = start,
+      depth = 1;
+    while (i < code.length && depth) {
+      if (code[i] === "{") depth++;
+      else if (code[i] === "}") depth--;
+      i++;
+    }
+    classExpressions.push(code.slice(start, i - 1));
   }
-  classExpressions.push(code.slice(start, i - 1));
-}
 
 const prefixes = new Set();
 for (const expr of classExpressions) for (const m of expr.matchAll(/([a-z][\w-]*-)\$\{/g)) prefixes.add(m[1]);
