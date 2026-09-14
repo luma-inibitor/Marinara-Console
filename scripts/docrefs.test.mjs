@@ -15,7 +15,7 @@ beforeEach(() => {
   mkdirSync(join(root, "design"));
   write("scripts/real.mjs", "");
   write("package.json", JSON.stringify({ scripts: { lint: "eslint ." } }));
-  write("README.md", "Run `scripts/real.mjs` and `npm run lint`.\n");
+  write("README.md", "Run `scripts/real.mjs` and `bun run lint`.\n");
 });
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
@@ -28,9 +28,9 @@ it("reports a script the tree does not have", () => {
   expect(docRefs(root).findings).toEqual([{ doc: "design/BRIEFING.md", name: "scripts/gone.mjs" }]);
 });
 
-it("reports an npm script package.json does not have", () => {
-  write("design/DESIGN.md", "Run `npm run verify` first.\n");
-  expect(docRefs(root).findings).toEqual([{ doc: "design/DESIGN.md", name: "npm run verify" }]);
+it("reports a package script package.json does not have", () => {
+  write("design/DESIGN.md", "Run `bun run verify` first.\n");
+  expect(docRefs(root).findings).toEqual([{ doc: "design/DESIGN.md", name: "bun run verify" }]);
 });
 
 describe("what it deliberately does not read", () => {

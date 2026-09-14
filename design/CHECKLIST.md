@@ -34,7 +34,7 @@ purpose. The expensive mistake is building the wrong thing, not misaligning it.
 
 ## 2. Copy — before writing any label
 
-- [ ] **Run `npm run lint` and `npm run copycatalog`.** Every user-visible string must
+- [ ] **Run `bun run lint` and `bun run copycatalog`.** Every user-visible string must
       trace to `ltm-en.json` or appear in `OURS` with a reason.
 - [ ] **Search the catalog for the concept, not the word.** The product almost
       always already has it.
@@ -104,7 +104,7 @@ purpose. The expensive mistake is building the wrong thing, not misaligning it.
       actually drawn, or what you meant to draw?
       *(A caption promised the rail hid imported sources while the mockup showed
       them.)*
-- [ ] **Run the mechanical checks**: `npm run check`, and `npx playwright test`
+- [ ] **Run the mechanical checks**: `bun run check`, and `bun run test:e2e`
       for app code (contrast, tap targets, sideways scroll, overlay dismissal,
       keyboard).
 - [ ] **Read every comment the diff adds**, and delete the ones that fail

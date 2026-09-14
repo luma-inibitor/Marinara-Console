@@ -14,24 +14,34 @@ clone won't have it.
 
 ## Run
 
-Use the Node version in `.nvmrc`, and switch to it before you install.
+Bun is the runtime and the package manager.
+Install the version that `packageManager` in `package.json` names.
+The official script installs a pinned version, for example `curl -fsSL https://bun.com/install | bash -s "bun-v1.4.2"`.
+Nothing here needs Node.
 
 ```sh
-npm install
-npm run build
-MARINARA_URL=http://<engine-host>:7860 node server.mjs   # serves dist/ on :7872
+bun install
+bun run build
+MARINARA_URL=http://<engine-host>:7860 bun server.mjs   # serves dist/ on :7872
 # engines off loopback gate privileged routes: add MARINARA_ADMIN_SECRET=<secret>
 ```
 
-Dev loop: `node server.mjs` in one shell (API proxy), `npm run dev` in another
-(Vite hot reload on :5173, which proxies /api to :7872). `MC_PROXY_TARGET` and
-`MC_DEV_PORT` override those two defaults, so a second pair can target another
-engine:
+For the dev loop, run `bun server.mjs` in one shell as the API proxy.
+Run `bun run dev` in another shell for Vite hot reload on :5173.
+Vite proxies /api to :7872.
+`MC_PROXY_TARGET` and `MC_DEV_PORT` override those two defaults, so a second
+pair can target another engine:
 
 ```sh
-MARINARA_URL=http://100.x.y.z:7860 PORT=7874 node server.mjs
-MC_PROXY_TARGET=http://127.0.0.1:7874 MC_DEV_PORT=5174 npm run dev
+MARINARA_URL=http://100.x.y.z:7860 PORT=7874 bun server.mjs
+MC_PROXY_TARGET=http://127.0.0.1:7874 MC_DEV_PORT=5174 bun run dev
 ```
+
+## Checks
+
+`bun run check` runs the static checks, then the tests, then the build.
+`bun run test:e2e` runs the browser suite, and `bun run test:storybook` runs the Storybook suite.
+Both drive Chromium, so run `bun x --bun playwright install chromium-headless-shell` once before the first run.
 
 ## Prose
 
@@ -44,25 +54,25 @@ shared vocabulary. `.vale.ini` here names the package version, this repo's
 vocabulary and the files exempt from linting. Change a rule in the package repo
 rather than here.
 
-Treat Vale as advisory: `npm run check` doesn't run it, and the CI job never
+Treat Vale as advisory: `bun run check` doesn't run it, and the CI job never
 blocks a merge.
 
 CI annotates only the lines a pull request touches, which keeps it useful while
-the rest of the docs still carry a large backlog. `npm run prosecheck` does the
+the rest of the docs still carry a large backlog. `bun run prosecheck` does the
 same locally: it lints the Markdown your branch changed and reports the alerts on
-lines you added, so a clean run means clean annotations on the pull request. `npm
+lines you added, so a clean run means clean annotations on the pull request. `bun
 run prose` reports on the whole repo.
 
 ```sh
 brew install vale
-npm run prose
+bun run prose
 ```
 
 `.vale/styles/` holds the downloaded Luma package and the Google and Microsoft
 packages it pins. It isn't version controlled, so a fresh clone or worktree
-starts without it. `npm run prosecheck` runs `vale sync` itself when it finds
+starts without it. `bun run prosecheck` runs `vale sync` itself when it finds
 the package missing, and stops with a message naming the problem when Vale can't
-run at all. `npm run prose` and a bare `vale` need `vale sync` by hand the first
+run at all. `bun run prose` and a bare `vale` need `vale sync` by hand the first
 time.
 
 Run `vale sync` again whenever `.vale.ini` names a new package version.
@@ -96,8 +106,8 @@ and a fenced example fixes the cause rather than the symptom.
 | `src/` | the console: Vite + Preact + TS, hash routing, tokens-based CSS |
 | `tests/e2e/` | the browser suite: the definition of done, written up in `tests/e2e/README.md` — screens, contrast, tap targets, sideways scroll, overlays, keyboard, screen captures. It drives the built bundle at four viewports and answers every request from a fixture corpus |
 | `design/` | DESIGN.md, tokens rationale, vendored UI research |
-| `scripts/precompress.mjs` | Part of `npm run build`, not a check: writes a `.br` and a `.gz` beside each compressible file in `dist/` for the server to send. `npm run precompress` runs it alone |
+| `scripts/precompress.mjs` | Part of `bun run build`, not a check: writes a `.br` and a `.gz` beside each compressible file in `dist/` for the server to send. `bun run precompress` runs it alone |
 | `.vale.ini` | prose lint config: the package version, this repo's vocabulary and its exempt files. The rules live in the Luma package |
 | `.prettierrc.json` | formatter config. One setting, `printWidth`. `.prettierignore` names what Prettier stays out of and why: CSS belongs to stylelint, Markdown to Vale, and the vendored engine sources to the engine |
-| `.githooks/` | the pre-commit hook, installed by `npm run prepare` through `core.hooksPath`. It formats staged code and holds a commit whose staged Markdown carries any Vale finding |
+| `.githooks/` | the pre-commit hook, installed by `bun run prepare` through `core.hooksPath`. It formats staged code and holds a commit whose staged Markdown carries any Vale finding |
 | `scripts/` | the executable checks that run without a test runner: `components`, an inventory of what returns markup and what each one couples to, `copycatalog`, `layercheck`, `deadcss`, `typescale`, `specificity`, `ratchet`, `pkgcheck`, `prosecheck`, `domsnap`. `domsnap` drives a real browser and takes its harness from `lib/browser.mjs` |

@@ -11,7 +11,7 @@ import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from "node:f
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import * as ts from "typescript/unstable/ast";
-import { API, SymbolFlags } from "typescript/unstable/sync";
+import { API, SymbolFlags } from "typescript/unstable/async";
 import { ROOT, rel, sourceFiles } from "./lib/imports.mjs";
 
 // ── layers ────────────────────────────────────────────────────────────────
@@ -52,7 +52,7 @@ function layerOf(rel) {
 // ── the program ───────────────────────────────────────────────────────────
 // The config is generated because the fixture trees under scripts/ sit outside
 // the repo tsconfig's `include` and still have to be checked.
-function openProject(roots) {
+async function openProject(roots) {
   const dir = mkdtempSync(join(tmpdir(), "layercheck-"));
   const config = join(dir, "tsconfig.json");
   writeFileSync(
@@ -66,11 +66,11 @@ function openProject(roots) {
     }),
   );
   const api = new API({ cwd: ROOT });
-  const project = api.updateSnapshot({ openProjects: [config] }).getProjects()[0];
+  const project = (await api.updateSnapshot({ openProjects: [config] })).getProjects()[0];
   return {
     project,
-    close() {
-      api.close();
+    async close() {
+      await api.close();
       rmSync(dir, { recursive: true, force: true });
     },
   };
@@ -79,12 +79,12 @@ function openProject(roots) {
 // ── edges ─────────────────────────────────────────────────────────────────
 // A specifier survives to runtime when the checker resolves it to a value, so
 // an unmarked import of a type is no edge either.
-function makeReader(project) {
+async function makeReader(project) {
   const { checker, program } = project;
-  const realPath = new Map(program.getSourceFileNames().map((n) => [n.toLowerCase(), n]));
+  const realPath = new Map((await program.getSourceFileNames()).map((n) => [n.toLowerCase(), n]));
 
-  function resolveModule(specifier) {
-    const path = checker.getSymbolAtLocation(specifier)?.declarations?.[0]?.path;
+  async function resolveModule(specifier) {
+    const path = (await checker.getSymbolAtLocation(specifier))?.declarations?.[0]?.path;
     if (!path) return onDisk(specifier);
     const abs = realPath.get(path) ?? path;
     const r = rel(abs);
@@ -99,19 +99,19 @@ function makeReader(project) {
     return existsSync(abs) && statSync(abs).isFile() ? abs : null;
   }
 
-  function isValue(name) {
-    const symbol = checker.getSymbolAtLocation(name);
+  async function isValue(name) {
+    const symbol = await checker.getSymbolAtLocation(name);
     if (!symbol) return true;
-    const target = symbol.flags & SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
-    if (checker.isUnknownSymbol(target)) return true;
+    const target = symbol.flags & SymbolFlags.Alias ? await checker.getAliasedSymbol(symbol) : symbol;
+    if (await checker.isUnknownSymbol(target)) return true;
     return Boolean(target.flags & SymbolFlags.Value);
   }
 
-  function namesOf(clause, elements) {
+  async function namesOf(clause, elements) {
     const names = [];
-    if (clause?.name && isValue(clause.name)) names.push("default");
+    if (clause?.name && (await isValue(clause.name))) names.push("default");
     for (const el of elements ?? []) {
-      if (el.isTypeOnly || !isValue(el.name)) continue;
+      if (el.isTypeOnly || !(await isValue(el.name))) continue;
       names.push(el.propertyName?.text ?? el.name.text);
     }
     return names;
@@ -120,14 +120,14 @@ function makeReader(project) {
   return { resolveModule, namesOf };
 }
 
-function edgesOf(source, read) {
+async function edgesOf(source, read) {
   const edges = [];
-  const push = (node, specifier, kind, names, bare = false) => {
+  const push = async (node, specifier, kind, names, bare = false) => {
     if (!names.length && !bare) return;
     edges.push({
       line: source.getLineAndCharacterOfPosition(node.getStart()).line + 1,
       spec: specifier.text,
-      resolved: read.resolveModule(specifier),
+      resolved: await read.resolveModule(specifier),
       kind,
       names,
     });
@@ -137,7 +137,7 @@ function edgesOf(source, read) {
     if (ts.isImportDeclaration(node)) {
       const clause = node.importClause;
       if (!clause) {
-        push(node, node.moduleSpecifier, "imports", [], true);
+        await push(node, node.moduleSpecifier, "imports", [], true);
         continue;
       }
       // TypeScript 7's ImportClause declares `phaseModifier`, which carries
@@ -148,9 +148,9 @@ function edgesOf(source, read) {
       const bindings = clause.namedBindings;
       const names =
         bindings && ts.isNamespaceImport(bindings)
-          ? [...read.namesOf(clause, null), `* as ${bindings.name.text}`]
-          : read.namesOf(clause, bindings?.elements);
-      push(node, node.moduleSpecifier, "imports", names);
+          ? [...(await read.namesOf(clause, null)), `* as ${bindings.name.text}`]
+          : await read.namesOf(clause, bindings?.elements);
+      await push(node, node.moduleSpecifier, "imports", names);
       continue;
     }
 
@@ -161,16 +161,19 @@ function edgesOf(source, read) {
         ? ["*"]
         : ts.isNamespaceExport(clause)
           ? [`* as ${clause.name.text}`]
-          : read.namesOf(null, clause.elements);
-      push(node, node.moduleSpecifier, "re-exports", names);
+          : await read.namesOf(null, clause.elements);
+      await push(node, node.moduleSpecifier, "re-exports", names);
     }
   }
 
   // `await import("./x")` is an edge the statement loop above cannot see.
+  const calls = [];
   walk(source, (node) => {
-    if (!ts.isCallExpression(node) || !ts.isImportExpression(node.expression)) return;
+    if (ts.isCallExpression(node) && ts.isImportExpression(node.expression)) calls.push(node);
+  });
+  for (const node of calls) {
     const specifier = node.arguments?.[0];
-    if (!specifier || !ts.isStringLiteral(specifier)) return;
+    if (!specifier || !ts.isStringLiteral(specifier)) continue;
     const holder = node.parent?.kind === ts.SyntaxKind.AwaitExpression ? node.parent : node;
     const declaration = holder.parent;
     const pattern = declaration && ts.isVariableDeclaration(declaration) ? declaration.name : null;
@@ -183,8 +186,8 @@ function edgesOf(source, read) {
             return n && ts.isIdentifier(n) ? [n.text] : [];
           })
         : ["*"];
-    push(node, specifier, "imports", names);
-  });
+    await push(node, specifier, "imports", names);
+  }
 
   return edges;
 }
@@ -258,8 +261,8 @@ function fetchSites(source) {
 const paths = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const files = sourceFiles(paths);
 
-const session = openProject((paths.length ? paths : ["src"]).map((p) => resolve(ROOT, p)));
-const read = makeReader(session.project);
+const session = await openProject((paths.length ? paths : ["src"]).map((p) => resolve(ROOT, p)));
+const read = await makeReader(session.project);
 
 const perDir = new Map();
 const violations = [];
@@ -280,13 +283,15 @@ for (const abs of files) {
 
   if (layer === "unclassified") unclassified.push(from);
 
-  const source = session.project.program.getSourceFile(abs);
-  const broken = source ? session.project.program.getSyntacticDiagnostics(abs) : [{ text: "not part of the program" }];
+  const source = await session.project.program.getSourceFile(abs);
+  const broken = source
+    ? await session.project.program.getSyntacticDiagnostics(abs)
+    : [{ text: "not part of the program" }];
   if (!source || broken.length) {
     parseErrors.push(`${from}: ${broken[0].text}`);
     continue;
   }
-  const edges = edgesOf(source, read);
+  const edges = await edgesOf(source, read);
 
   // Ownership runs on every file whatever its layer: an unclassified module
   // still may not own a fetch, and that is exactly where some of them are.
@@ -328,7 +333,7 @@ for (const abs of files) {
   }
 }
 
-session.close();
+await session.close();
 
 console.log(`layercheck · ${files.length} files · ${checked} value imports resolved to a layer\n`);
 console.log("per directory:");

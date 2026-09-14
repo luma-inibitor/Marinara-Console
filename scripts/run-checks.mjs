@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Run every check named in scripts/checks.mjs. This is `npm run check:static`.
+// Run every check named in scripts/checks.mjs.
 //
-//   node scripts/run-checks.mjs
+//   bun scripts/run-checks.mjs
 //
 // ── Why this does not stop at the first failure ───────────────────────────
 // The `&&` chain it replaces stopped at the first non-zero exit, so a run that
@@ -40,7 +40,7 @@ if (!Array.isArray(checks) || !checks.length) {
   integrityFailure("scripts/checks.mjs must export a non-empty `checks` array");
 }
 if (checks.some((name) => typeof name !== "string" || !name.trim())) {
-  integrityFailure("every entry in `checks` must be a non-empty npm script name");
+  integrityFailure("every entry in `checks` must be a non-empty script name");
 }
 
 let scripts;
@@ -50,9 +50,6 @@ try {
   integrityFailure(`package.json is unreadable: ${e.message}`);
 }
 
-// A name with no script behind it is a defect in the list, not a failing tool:
-// it is what a rename looks like when one of the two edits arrives without the
-// other. `npm run` exits 1 on it, which would read as a real finding.
 const missing = checks.filter((name) => !(name in scripts));
 if (missing.length) {
   integrityFailure(...missing.map((name) => `"${name}" names no script in package.json`));
@@ -64,17 +61,13 @@ if (duplicated.length) {
   integrityFailure(...duplicated.map((name) => `"${name}" appears more than once in the list`));
 }
 
-// Use the npm that started this script — npm sets `npm_execpath` for anything
-// it runs — so `check:static` cannot reach a different npm than the rest of the
-// chain did. Falling back to PATH covers a direct `node scripts/run-checks.mjs`.
-const execpath = process.env.npm_execpath;
-const [command, prefix] = execpath ? [process.execPath, [execpath]] : ["npm", []];
+const command = process.versions.bun ? process.execPath : "bun";
 
 const results = [];
 for (const name of checks) {
   console.log(`\n── ${name} ` + "─".repeat(Math.max(0, 68 - name.length)));
   const started = Date.now();
-  const run = spawnSync(command, [...prefix, "run", name], { cwd: ROOT, stdio: "inherit" });
+  const run = spawnSync(command, ["run", name], { cwd: ROOT, stdio: "inherit" });
   if (run.error) integrityFailure(`could not run "${name}": ${run.error.message}`);
   results.push({
     name,

@@ -5,7 +5,7 @@
 //   node scripts/precompress.mjs
 //   node scripts/precompress.mjs path/to/other/dist
 //
-// `npm run build` runs this, and `vite build` empties dist/ first, so a
+// `bun run build` runs this, and `vite build` empties dist/ first, so a
 // compressed sibling cannot outlive the file it was made from.
 //
 // Reads dist/ only. vite.config.ts sets `publicDir: false`, so public/ is not

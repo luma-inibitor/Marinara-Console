@@ -1,5 +1,5 @@
 /* Mockup kit — one stylesheet for every specimen book and wireframe.
-   Built with the Tailwind CLI (npm run kit) and linked by the static mockup
+   Built with the Tailwind CLI (bun run kit) and linked by the static mockup
    HTML in public/mockups, which Vite never sees.
    
    Before this existed, every generator carried its own 200-line copy of the

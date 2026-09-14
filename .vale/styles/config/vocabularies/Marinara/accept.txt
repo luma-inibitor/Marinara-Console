@@ -2,6 +2,7 @@
 
 # Proper nouns (exact casing enforced).
 Archivo
+Bun
 JSDoc
 MiniSearch
 Mira

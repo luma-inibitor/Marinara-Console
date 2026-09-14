@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // Point git at .githooks/, so the pre-commit hook installs itself.
 //
-//   node scripts/prepare.mjs      # npm runs this after every install
+//   bun scripts/prepare.mjs
 //
 // A hook under .git/hooks/ is not version controlled and reaches only the
 // person who ran the installer. core.hooksPath moves the directory into the
 // tree, where the hook is reviewed with the code it guards and arrives with a
-// clone. The one local step is this line of config, and npm's `prepare`
-// lifecycle runs it unprompted.
+// clone. The one local step is this line of config, and `bun install`
+// runs it unprompted.
 //
 // This never fails an install. A tarball with no .git, a git too old for
 // core.hooksPath, a sandbox with no git on PATH: each means no hook, which is

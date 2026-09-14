@@ -1,4 +1,4 @@
-// The static checks, one npm script name on each line.
+// The static checks, one package script name on each line.
 //
 // This file exists to be edited BY MERGE. The tooling migration adds a tool,
 // retires a tool, or swaps one for another across fifteen pull requests, and
@@ -16,10 +16,10 @@
 //
 // ── What is deliberately not here: `test` and `build` ─────────────────────
 // Both were in the old chain, `build` on the end of it. Each now has its own
-// npm script and its own CI job (`check:test`, `check:build`) so the three run
+// package script and its own CI job (`check:test`, `check:build`) so the three run
 // in parallel on a pull request. Naming either one here would run it a second
-// time in `npm run check`, and would put the whole test suite back inside the
-// `static` job, which is the split this change exists to make. `npm run check`
+// time in `bun run check`, and would put the whole test suite back inside the
+// `static` job, which is the split this change exists to make. `bun run check`
 // still runs static, test, and build in that order, so the command means what
 // it has always meant.
 // `prose` is deliberately absent, like `test`. Vale runs advisorily on pull
@@ -31,7 +31,7 @@ export const checks = [
   "typecheck",
   "typecheck:scripts",
   // Formatting. Cheapest gate here and the one a change trips most often, so
-  // it reports before the slower tools. `npm run format` fixes every finding.
+  // it reports before the slower tools. `bun run format` fixes every finding.
   "format:check",
   // Lint, then the count of files still under a legacy disable comment
   "lint",

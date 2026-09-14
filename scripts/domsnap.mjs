@@ -229,7 +229,7 @@ fs.writeFileSync(`${SNAP_DIR}/domsnap-${tag}.json`, JSON.stringify(out, null, 1)
 const listing = fileURLToPath(new URL("components.mjs", import.meta.url));
 const spill = `${SNAP_DIR}/domsnap-${tag}-components.json`;
 const fd = fs.openSync(spill, "w");
-execFileSync("node", [listing, "--json"], { stdio: ["ignore", fd, "inherit"] });
+execFileSync(process.execPath, [listing, "--json"], { stdio: ["ignore", fd, "inherit"] });
 fs.closeSync(fd);
 const inventory = JSON.parse(fs.readFileSync(spill, "utf8")).inventory.filter((c) => c.kind === "component");
 const missed = inventory.filter((c) => !seenComponents.has(c.name));

@@ -1,6 +1,6 @@
 # Browser suite — definition of done
 
-`npx playwright test` (`npm run test:e2e`).
+Run `bun run test:e2e`.
 
 This is the verification section lifted out of `design/DESIGN.md` §7 on the
 retirement of that document, so it lives next to the specs it describes. The
@@ -83,7 +83,7 @@ for `overflow-x: auto` itself and fades its right edge to say so.
 Skipped unless `MC_SHOTS=1`:
 
 ```
-MC_SHOTS=1 MC_SHOT_URL=/#/memory/vault npx playwright test shots
+MC_SHOTS=1 MC_SHOT_URL=/#/memory/vault bun run test:e2e shots
 ```
 
 The suite resolves the address on the preview server it starts, so a bare path

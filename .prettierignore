@@ -16,7 +16,7 @@ src/lib/regex-safety.js
 src/copy/vendor/
 
 # ── CSS: stylelint owns it ───────────────────────────────────────────────
-# `npm run csslint`, plus typescale.mjs, specificity.mjs and deadcss.mjs, all
+# `bun run csslint`, plus typescale.mjs, specificity.mjs and deadcss.mjs, all
 # read these files already. Prettier would add nothing and cost a great deal:
 # the token tables are hand-aligned one-liners
 #
@@ -28,7 +28,7 @@ src/copy/vendor/
 *.css
 
 # ── Markdown: Vale owns it ───────────────────────────────────────────────
-# `npm run prosecheck`. Prettier does not reflow prose at the default
+# `bun run prosecheck`. Prettier does not reflow prose at the default
 # proseWrap, but it does rewrite *emphasis* to _emphasis_ across every
 # document — 23 files and roughly 500 lines of churn that changes no rendered
 # output, in exactly the hand-formatted rationale blocks BACKLOG.md called out.
@@ -45,5 +45,3 @@ design/*-baseline.json
 # shown; kit.css is Tailwind output.
 public/mockups/
 
-# Lockfile: npm owns its formatting.
-package-lock.json

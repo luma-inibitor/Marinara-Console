@@ -57,7 +57,7 @@ function vale(...args) {
 const PACKAGE_CONFIG = join(dirname(fileURLToPath(import.meta.url)), "..", ".vale", "styles", ".vale-config");
 
 function sync() {
-  // Syncing here rather than in `npm run prepare` keeps `npm install` working offline.
+  // Syncing here keeps `bun install` working offline.
   console.error("prosecheck: the Luma package is missing from .vale/styles, running `vale sync`");
   const r = vale("sync");
   if (r.status !== 0) {

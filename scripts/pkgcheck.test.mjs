@@ -1,5 +1,5 @@
-// Each case below is one way a deleted field, the licence, the script order or
-// the deduplicated .gitignore comes back.
+// Each case below is one way a deleted field, the licence, the script order,
+// the deduplicated .gitignore or the retired npm lockfile comes back.
 import { afterAll, describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 function run(target) {
-  const r = spawnSync("node", [join(ROOT, "scripts", "pkgcheck.mjs"), ...(target ? [target] : [])], {
+  const r = spawnSync(process.execPath, [join(ROOT, "scripts", "pkgcheck.mjs"), ...(target ? [target] : [])], {
     cwd: ROOT,
     encoding: "utf8",
   });
@@ -125,6 +125,16 @@ describe("a repeated .gitignore pattern", () => {
   it("keeps a directory pattern distinct from the bare name", () => {
     const { code } = run(fixture({ gitignore: ".decisions/\n.decisions\n" }));
     expect(code).toBe(0);
+  });
+});
+
+describe("an npm lockfile", () => {
+  it("reports package-lock.json beside package.json", () => {
+    const dir = fixture();
+    writeFileSync(join(dir, "package-lock.json"), "{}");
+    const { code, out } = run(dir);
+    expect(out).toContain("package-lock.json is present, but this repository installs with Bun");
+    expect(code).toBe(1);
   });
 });
 
