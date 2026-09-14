@@ -11,8 +11,9 @@ import "./styles/lorebooks.css";
 import "./styles/presets.css";
 import "./styles/memory.css";
 import { App } from "./shell/App";
+import { readStorage } from "./lib/storage";
 
-const savedDensity = localStorage.getItem("mc-density");
+const savedDensity = readStorage("mc-density");
 if (savedDensity) document.documentElement.dataset.density = savedDensity;
 
 createRoot(document.getElementById("app")!).render(
