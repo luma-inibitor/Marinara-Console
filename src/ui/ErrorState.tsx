@@ -1,7 +1,7 @@
-/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-raw-button -- legacy */
 import type { ReactNode } from "react";
 import { Failure } from "./icons";
 import { ApiError } from "../shell/api";
+import { Button } from "./Button";
 import { EmptyState } from "./EmptyState";
 import { t } from "../copy";
 
@@ -75,7 +75,7 @@ export function ErrorState(props: {
           {status > 0 && (
             <>
               <br />
-              <span className="dim t-data">{t("ui.error.http", { status })}</span>
+              <span className="t-data text-dim">{t("ui.error.http", { status })}</span>
             </>
           )}
         </>
@@ -84,9 +84,9 @@ export function ErrorState(props: {
         (props.onRetry || props.actions) && (
           <>
             {props.onRetry && (
-              <button className="dbtn is-primary" onClick={props.onRetry}>
+              <Button variant="primary" onClick={props.onRetry}>
                 {t("ui.error.tryAgain")}
-              </button>
+              </Button>
             )}
             {props.actions}
           </>
