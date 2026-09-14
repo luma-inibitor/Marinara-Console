@@ -99,5 +99,18 @@ and a fenced example fixes the cause rather than the symptom.
 | `scripts/precompress.mjs` | Part of `npm run build`, not a check: writes a `.br` and a `.gz` beside each compressible file in `dist/` for the server to send. `npm run precompress` runs it alone |
 | `.vale.ini` | prose lint config: the package version, this repo's vocabulary and its exempt files. The rules live in the Luma package |
 | `.prettierrc.json` | formatter config. One setting, `printWidth`. `.prettierignore` names what Prettier stays out of and why: CSS belongs to stylelint, Markdown to Vale, and the vendored engine sources to the engine |
-| `.githooks/` | the pre-commit hook, installed by `npm run prepare` through `core.hooksPath`. It formats staged code and holds a commit whose staged Markdown carries any Vale finding |
-| `scripts/` | the executable checks that run without a test runner: `components`, an inventory of what returns markup and what each one couples to, `copycatalog`, `layercheck`, `deadcss`, `typescale`, `specificity`, `ratchet`, `pkgcheck`, `prosecheck`, `domsnap`. `domsnap` drives a real browser and takes its harness from `lib/browser.mjs` |
+| `.githooks/` | the pre-commit and commit-msg hooks, installed by `npm run prepare` through `core.hooksPath`. The pre-commit hook formats staged code and holds a commit whose staged Markdown carries any Vale finding. The commit-msg hook holds the subject to Conventional Commits |
+| `scripts/` | the executable checks that run without a test runner: `components`, an inventory of what returns markup and what each one couples to, `copycatalog`, `layercheck`, `deadcss`, `typescale`, `specificity`, `ratchet`, `pkgcheck`, `prosecheck`, `commitmsg`, `prcheck`, `domsnap`. `domsnap` drives a real browser and takes its harness from `lib/browser.mjs` |
+
+## Commits and pull requests
+
+Commit subjects follow [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/). A subject reads `type(optional-scope): description`. The type is one of `feat`, `fix`, `chore`, `docs`, `refactor`, `style`, `test`, `perf`, `build` or `ci`. The `commit-msg` hook checks the subject before the commit exists. `git commit --no-verify` skips the hook. The Conventions workflow applies the same rule to every commit on the branch. A skipped hook therefore fails in CI instead.
+
+A pull request title follows the same rule, because a squash merge writes the title as the commit subject. The body opens with a paragraph of at least two sentences. That paragraph says what the problem is and what the change does about it. It names no file, code span or `#123` reference. The workflow leaves everything after that paragraph unchecked.
+
+Run both checks locally before you push.
+
+```sh
+npm run commitcheck -- --range origin/main..HEAD
+npm run prcheck -- --title "fix: …" --body "…"
+```
