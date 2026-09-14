@@ -1,6 +1,6 @@
 # Component work queue
 
-> Prose here follows the repo's Vale rules (`npm run prose`). Command text,
+> Prose here follows the repo's Vale rules (`bun run prose`). Command text,
 > file paths and tool output are literal and aren't linted.
 
 This document holds component work only.
@@ -80,8 +80,8 @@ Build `ListRow` in `src/ui/` with that structure. Then change the four screens.
 Prove each change with two commands:
 
 ```
-node scripts/domsnap.mjs before
-node scripts/domsnap.mjs after --diff
+bun run domsnap before
+bun run domsnap after --diff
 ```
 
 This is the largest item in this document.
@@ -302,7 +302,7 @@ A component effort must start in those three files.
 
 The one `violating` function is `Palette` at `src/shell/palette.tsx:85`.
 
-`scripts/components.mjs` has 505 lines. No npm script calls it.
+`scripts/components.mjs` has 505 lines. No package script calls it.
 Only text in `design/` names it.
 The tool is useful. This section is its output.
 Add it to `package.json`. Don't delete it.

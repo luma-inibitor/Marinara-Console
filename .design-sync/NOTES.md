@@ -18,7 +18,7 @@
 
 **Pass `--entry ./src/ui/index.ts`.** Without it the converter resolves the
 package as `<node-modules>/<cfg.pkg>` and dies on
-`node_modules/marinara-console/package.json: ENOENT`. This is an app, so npm
+`node_modules/marinara-console/package.json: ENOENT`. This is an app, so the package manager
 never installs it into its own node_modules. With `--entry`, the converter
 walks up from the entry to the first `package.json` carrying a `name`, which
 lands on the repo root. Don't "fix" the ENOENT by symlinking the repo into its
@@ -36,13 +36,9 @@ pane renders.
 
 ## Install
 
-**Don't run `npm ci` while other work is in flight.** It wipes `node_modules`,
-and concurrent agents build on it. Deps are already installed and
-lockfile-consistent. `npm ci` is correct for a cold clone only.
-
-npm's optional-dependency bug bit this repo once: a missing
-`@rolldown/binding-darwin-arm64` broke Vite. Fix it with
-`npm i --no-save @rolldown/binding-darwin-arm64`.
+Don't delete `node_modules` while other work is in flight.
+Concurrent agents build on it.
+Run `bun install` to bring it back in line with `bun.lock`.
 
 ## Why the graph is bigger than src/ui
 
@@ -82,7 +78,7 @@ API to build on, which is the most valuable thing in the upload.
 Fix, and it must be redone whenever component props change:
 
 ```sh
-npx tsc -p tsconfig.dts.json          # emits .ds-sync/types/ (gitignored)
+bun x --bun tsc -p tsconfig.dts.json  # emits .ds-sync/types/ (gitignored)
 ```
 
 Then regenerate `cfg.dtsPropsFor` from those declarations. `tsconfig.dts.json`

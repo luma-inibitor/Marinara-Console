@@ -8,7 +8,7 @@ luma-inibitor/vale-styles, and stay out of these lists.
 
 # Exact casing on purpose, so Vale.Terms flags "vite" -> "Vite".
 proper = """
-Archivo JSDoc Mira MiniSearch Playwright Preact Radix Rolldown Tabler
+Archivo Bun JSDoc Mira MiniSearch Playwright Preact Radix Rolldown Tabler
 Valibot Vite Vitest WCAG
 """
 

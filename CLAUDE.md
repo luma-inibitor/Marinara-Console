@@ -2,7 +2,7 @@
 
 - **Run `design/CHECKLIST.md` before showing Luma any UI, mockup, or specimen
   book.** It's built from defects that actually shipped here. The copy phase
-  is mechanical: `npm run lint` for the call sites, `npm run copycatalog` for
+  is mechanical: `bun run lint` for the call sites, `bun run copycatalog` for
   the catalog itself. It must pass, or you must justify every untraced string.
 - **Start at `design/BRIEFING.md`** for orientation: what the memory tool is for,
   what's settled, and what the memory types actually look like in the live
@@ -24,22 +24,27 @@
   binds nobody.
 - **`design/ARCHITECTURE.md`** is the code layout: the layers, which directory
   carries which, and the rules a module has to obey. Read it before adding a
-  file or deciding where one goes. `npm run layercheck` enforces the dependency
+  file or deciding where one goes. `bun run layercheck` enforces the dependency
   rule. It skips a module in no layer directory, which is a gap, not a pass.
-- Validate: `npx tsc --noEmit && npm test && npm run layercheck && npm run build`,
-  then `npx playwright test`, which is the definition of done — `tests/e2e/README.md`.
+- Bun is the runtime and the package manager. Install the version that
+  `packageManager` in `package.json` names, then run `bun install`. Use
+  `bun run <script>` for a script, and never `bun test`, which is Bun's own
+  test runner rather than Vitest.
+- Validate with `bun run typecheck && bun run test && bun run layercheck && bun run build`.
+  Then run `bun run test:e2e`, which is the definition of done.
+  `tests/e2e/README.md` describes the suite.
   It renders every screen at 390/486/768/1280. It fails on a console error or
   warning, on a page error, on a screen that scrolls sideways, and on an overlay
   that won't dismiss. A recorded baseline backs the contrast and tap-target
   checks, so each of those two fails on a new offender and passes the offenders
   already measured.
-- The pre-commit hook formats what you stage, so `npm run format` becomes a
+- The pre-commit hook formats what you stage, so `bun run format` becomes a
   thing you run when you want to rather than something to remember. It stops
   for an unformatted file carrying unstaged edits, since formatting that one
   would commit the half you didn't stage. It also runs `prosecheck` over
   staged Markdown and stops on **every** finding, warnings and suggestions
-  included. `npm run prepare` installs the hook, and npm runs that after an
-  install. `git commit --no-verify` skips it.
+  included. `bun run prepare` installs the hook, and `bun install` runs that
+  afterward. `git commit --no-verify` skips it.
 - Prettier owns `.ts`, `.tsx`, `.mjs` and the config files. `format:check`
   sits in `check:static` and fails the build. It doesn't touch CSS or
   Markdown, which belong to stylelint and Vale — see `.prettierignore`, which
@@ -56,15 +61,15 @@
     absence` reads well and says less than `colour alone isn't enough`. Cut it.
   Delete first when you revise a draft. Rewriting a sentence to satisfy a rule
   usually keeps the ornament and hides it.
-- Run `npm run prosecheck` after you edit a `.md` file. It runs Vale over the
+- Run `bun run prosecheck` after you edit a `.md` file. It runs Vale over the
   Markdown you changed. It reports only what lands on lines you added, so the
   backlog in the rest of the docs stays out of your way. It exits non-zero on an
-  error. `npm run prose` lints the whole repo, which isn't what you want here.
+  error. `bun run prose` lints the whole repo, which isn't what you want here.
 - Model code gets Vitest tests beside it. Pin every copy of a duplicated
   computation *before* merging them, and assert catalog keys rather than English
   so a copy rewording can't break a test.
 - Shared UI goes in `src/ui/`, and a new component carries no stylesheet. See
   `design/DESIGN.md` §5. Prove a refactor renders identically before you claim
-  it: `node scripts/domsnap.mjs before` then `... after --diff`.
+  it: `bun run domsnap before` then `bun run domsnap after --diff`.
 - Engine logic (keyword matching, token estimates) is vendored, never reimplemented.
 - The engine repo lives at `~/Documents/code/luma/Marinara-Engine`. UI copy should reuse its en.json vocabulary where a concept exists upstream. There is a decoy `~/code/Marinara-Engine` holding game assets only. It has a `packages/` directory, so its emptiness of engine source isn't obvious. The capability source is under `packages/server/data/capability-packages/versions/long-term-memory/`.

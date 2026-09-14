@@ -449,13 +449,13 @@ Luma is separately deciding whether to lower the primary floor from 44px, so the
   each (`memory.css` 451 → 1,779 lines), and Markdown is out because it
   rewrites `*emphasis*` to `_emphasis_` across 23 documents to no rendered
   effect. stylelint and Vale already own those two. `format:check` runs in
-  `check:static`; `npm run format` fixes.
+  `check:static`, and `bun run format` fixes every finding.
 
 ## Bugs / unverified
 
 - **Port not yet exercised against the live instance** (100.112.53.9, 45 blocked
   drafts, 251 memories). Read-only pass done for the prototype only. Needs:
-  `MARINARA_URL=… MARINARA_ADMIN_SECRET=… node server.mjs` + a browse.
+  `MARINARA_URL=… MARINARA_ADMIN_SECRET=… bun server.mjs` + a browse.
 - **Live 44× `source_stale` diagnosis unfinished** — are those drafts genuinely
   stale, or the fingerprint trap wearing the stale message? Check one draft's
   `extractionFingerprint` against its source before recommending re-extraction.

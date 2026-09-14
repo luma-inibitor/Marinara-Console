@@ -207,10 +207,10 @@ None of these are optional, and none are judgment calls:
 
 | Command | Checks |
 |---|---|
-| `npx playwright test` | Every screen at four viewports: contrast, tap targets, console errors, sideways scroll, overlay dismissal, keyboard |
-| `npm run lint` | Every user-visible string traces to the catalog or `OURS` |
-| `npm run copycatalog` | The catalog entries themselves: shape, notes, and duplicate text |
-| `node scripts/deadcss.mjs` | CSS classes nothing uses — fails when the list grows past `design/deadcss-baseline.json` |
-| `npx knip` | Symbols exported but never imported, dead re-exports included |
-| `node scripts/domsnap.mjs before` / `after --diff` | A refactor renders identically, and what it didn't reach |
-| `MC_SHOTS=1 MC_SHOT_URL=<path> npx playwright test shots` | Screen captures at 390 / 486 / 768 / 1280 |
+| `bun run test:e2e` | Every screen at four viewports: contrast, tap targets, console errors, sideways scroll, overlay dismissal, keyboard |
+| `bun run lint` | Every user-visible string traces to the catalog or `OURS` |
+| `bun run copycatalog` | The catalog entries themselves: shape, notes, and duplicate text |
+| `bun run deadcss` | CSS classes nothing uses. It fails when the list grows past `design/deadcss-baseline.json` |
+| `bun run knip` | Symbols exported but never imported, dead re-exports included |
+| `bun run domsnap before` / `after --diff` | A refactor renders identically, and what it didn't reach |
+| `MC_SHOTS=1 MC_SHOT_URL=<path> bun run test:e2e shots` | Screen captures at 390 / 486 / 768 / 1280 |

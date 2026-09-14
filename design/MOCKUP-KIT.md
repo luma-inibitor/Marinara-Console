@@ -1,7 +1,7 @@
 # Mockup kit
 
 One stylesheet for every specimen book and wireframe:
-`design/mockup-kit.css` → built to `public/mockups/kit.css` with `npm run kit`.
+`design/mockup-kit.css` → built to `public/mockups/kit.css` with `bun run kit`.
 
 The kit imports `src/styles/tokens.css` and `src/styles/theme.css`, so
 **the books and the product read the same tokens**.
@@ -13,8 +13,8 @@ The kit imports `src/styles/tokens.css` and `src/styles/theme.css`, so
 <div class="mk-page wf"> … </div>
 ```
 
-Then `npm run kit` after editing the kit or adding classes (Tailwind scans
-`public/mockups` for utility usage).
+Run `bun run kit` after you edit the kit or add classes.
+Tailwind scans `public/mockups` for utility usage.
 
 ## Primitives
 
@@ -43,7 +43,7 @@ Tailwind utilities are available too (`bg-surface-2`, `text-dim`, `font-data`,
 - **A phone frame is `wf-phone`, which is 486px** — the width Luma's device
   reports. A 300px box on a desktop page isn't a phone and proves nothing.
 - **Capture the screen with
-  `MC_SHOTS=1 MC_SHOT_URL=/mockups/<file>.html MC_SHOT_NAME=<name> npx playwright test shots`**,
+  `MC_SHOTS=1 MC_SHOT_URL=/mockups/<file>.html MC_SHOT_NAME=<name> bun run test:e2e shots`**,
   which renders at 390 / 486 / 768 / 1280 and reports horizontal overflow per
   viewport. The images land in `/tmp/shots/<name>-<viewport>.png`. A bare path
   is enough, because the suite starts its own preview server and resolves the
