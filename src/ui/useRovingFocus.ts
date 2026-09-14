@@ -1,41 +1,19 @@
 import { useMemo, useRef, type RefObject } from "react";
 
-/** Only the fields the guards read, so a list can hand this either a synthetic
- *  event from onKeyDown or a native one from a window listener. */
+/** Accepts a synthetic onKeyDown event or a native window event. */
 type KeyLike = Pick<KeyboardEvent, "key" | "metaKey" | "ctrlKey" | "altKey" | "target">;
 
 interface RovingOpts {
   listRef: RefObject<HTMLElement | null>;
-  /** The list's items, in the order the cursor walks them. */
   keys: string[];
   current: string | null;
   onFocus: (key: string) => void;
-  /** Rows whose inner buttons count as part of the list, not as controls that
-   *  own their own keys. Omit if the list has no in-row buttons. */
   rowSelector?: string;
-  /** Keys that keep working even when a control outside the list has focus. */
   navKeys?: string[];
 }
 
-/** Keyboard navigation for a list: j/k roving focus, and the guards that say
- *  which key events belong to the list at all.
- *
- *  The guards are the reason this is shared. Two lists had written this by
- *  hand and the copies had drifted: the review queue ignored events carrying
- *  a modifier, the lorebook audit did not, so Ctrl-J moved the lorebook cursor
- *  as a side effect of any OS or browser shortcut on those letters. Reproduced
- *  before this hook existed — focus a row, press Ctrl-J, watch it move.
- *
- *  Each list keeps its own key map, because their verbs genuinely differ: the
- *  queue has keep/drop/reset, the audit has open. What is shared is movement
- *  and the decision about whether an event is ours. */
 export function useRovingFocus(input: RovingOpts) {
-  // The returned object and every function on it keep one identity for the
-  // hook's lifetime, so a list can put them in a memoized handler's deps —
-  // or leave them out — without pinning a stale copy. Freshness comes from
-  // this ref instead of from re-creating the closures: each function reads
-  // `latest.current` at call time, so it always sees this render's keys,
-  // cursor and callback.
+  // A stable identity lets a list leave these out of memoized deps safely.
   const latest = useRef(input);
   latest.current = input;
 
