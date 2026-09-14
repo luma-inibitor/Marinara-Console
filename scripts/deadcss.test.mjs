@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 function run(...args) {
-  const r = spawnSync("node", [join(ROOT, "scripts", "deadcss.mjs"), ...args], {
+  const r = spawnSync(process.execPath, [join(ROOT, "scripts", "deadcss.mjs"), ...args], {
     cwd: ROOT,
     encoding: "utf8",
   });

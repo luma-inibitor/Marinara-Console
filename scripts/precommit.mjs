@@ -34,7 +34,9 @@ function different(files, write) {
   if (!files.length) return [];
   const args = ["--list-different", "--ignore-unknown", ...(write ? ["--write"] : []), "--", ...files];
   try {
-    return execFileSync(PRETTIER, args, { cwd: ROOT, encoding: "utf8" }).split("\n").filter(Boolean);
+    return execFileSync(process.execPath, [PRETTIER, ...args], { cwd: ROOT, encoding: "utf8" })
+      .split("\n")
+      .filter(Boolean);
   } catch (e) {
     // Without --write, Prettier exits 1 when a file differs and lists it on stdout.
     if (!write && e.status === 1 && e.stdout != null) return e.stdout.split("\n").filter(Boolean);

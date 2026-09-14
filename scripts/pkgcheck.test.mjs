@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 function run(target) {
-  const r = spawnSync("node", [join(ROOT, "scripts", "pkgcheck.mjs"), ...(target ? [target] : [])], {
+  const r = spawnSync(process.execPath, [join(ROOT, "scripts", "pkgcheck.mjs"), ...(target ? [target] : [])], {
     cwd: ROOT,
     encoding: "utf8",
   });

@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 function run(...args) {
-  const r = spawnSync("node", [join(ROOT, "scripts", "typescale.mjs"), ...args], {
+  const r = spawnSync(process.execPath, [join(ROOT, "scripts", "typescale.mjs"), ...args], {
     cwd: ROOT,
     encoding: "utf8",
   });
