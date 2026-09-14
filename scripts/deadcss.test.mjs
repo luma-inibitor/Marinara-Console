@@ -3,7 +3,7 @@
 // namespace and still prints clean.
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -115,6 +115,54 @@ describe("a scan of a tree outside the repository", () => {
     expect(out).toContain("NOTHING TO RECORD");
     expect(code).toBe(2);
     expect(baselines()).toEqual(before);
+  });
+});
+
+describe("the class harvest", () => {
+  function scanTree(files) {
+    const dir = mkdtempSync(join(tmpdir(), "deadcss-"));
+    for (const [name, text] of Object.entries(files)) {
+      mkdirSync(dirname(join(dir, name)), { recursive: true });
+      writeFileSync(join(dir, name), text);
+    }
+    try {
+      return run(dir);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  const summary = (out) =>
+    out
+      .split("\n")
+      .filter((l) => /classes, \d+ unused|^ {3}\S/.test(l))
+      .map((l) => l.replace(/^.*\//, ""));
+
+  it("finds a class in a Tailwind variant string", () => {
+    const { out } = scanTree({
+      "a.css": ".gexp { color: red; }\n",
+      "A.tsx": 'export const A = () => <b className={cn("gexp hover:text-ink [font-variant-ligatures:none]")} />;\n',
+    });
+    expect(out).toContain("1 classes, 0 unused");
+  });
+
+  it("ignores a stray backtick in another file", () => {
+    const { out } = scanTree({
+      "a.css": ".tpl-only { color: red; }\n",
+      "a.tsx": "// the `fseditor hook\nexport const a = 1;\n",
+      "b.tsx": "export const b = cond ? `tpl-only` : undefined;\n",
+    });
+    expect(out).toContain("1 classes, 0 unused");
+  });
+
+  it("ignores file order", () => {
+    const stray = "// the `fseditor hook\nexport const a = 1;\n";
+    const template = "export const b = cond ? `tpl-only` : undefined;\n";
+    const css = ".tpl-only { color: red; }\n.never-used { color: red; }\n";
+    const forward = scanTree({ "a.css": css, "a.tsx": stray, "b.tsx": template });
+    const reversed = scanTree({ "a.css": css, "a.tsx": template, "b.tsx": stray });
+    expect(summary(forward.out)).toEqual(["a.css: 2 classes, 1 unused", "   never-used"]);
+    expect(summary(reversed.out)).toEqual(summary(forward.out));
   });
 });
 
