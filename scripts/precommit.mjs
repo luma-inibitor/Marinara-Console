@@ -81,7 +81,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
 function main() {
   if (!existsSync(PRETTIER)) {
-    console.error("pre-commit: no Prettier in node_modules, skipping. Run `npm install`.");
+    console.error("pre-commit: no Prettier in node_modules, skipping. Run `bun install`.");
     return;
   }
 
@@ -102,7 +102,7 @@ function main() {
     console.error(`\npre-commit: ${blocked.length} file(s) are unformatted AND carry unstaged edits:`);
     for (const f of blocked) console.error(`  ${f}`);
     console.error(
-      "\nFormatting these would stage edits you did not `git add`. Run `npm run format`,\n" +
+      "\nFormatting these would stage edits you did not `git add`. Run `bun run format`,\n" +
         "stage what you meant to, and commit again — or `git commit --no-verify` to skip.",
     );
   }
@@ -113,7 +113,7 @@ function main() {
     for (const a of prose) console.error(`  ${a.file}:${a.line}:${a.col} ${a.rule} — ${a.message}`);
     console.error(
       "\nFix every one, the warnings and suggestions included — CI's prose job is\n" +
-        "advisory, so this is the only place they get read. `npm run prosecheck -- --all`\n" +
+        "advisory, so this is the only place they get read. `bun run prosecheck --all`\n" +
         "shows everything in the changed files. `git commit --no-verify` skips.",
     );
   }

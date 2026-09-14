@@ -13,5 +13,5 @@
     "public/mockups/kit.css"
   ],
   "ignoreBinaries": ["vale"],
-  "ignoreDependencies": ["@babel/preset-typescript"]
+  "ignoreDependencies": ["@babel/preset-typescript", "eslint-import-resolver-node"]
 }

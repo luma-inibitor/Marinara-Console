@@ -51,7 +51,7 @@ export default defineConfig({
     })),
   ],
   webServer: {
-    command: `npm run build && npm run preview -- --host 127.0.0.1 --port ${PORT} --strictPort`,
+    command: `bun run build && bun run preview --host 127.0.0.1 --port ${PORT} --strictPort`,
     url: `http://127.0.0.1:${PORT}`,
     reuseExistingServer: !process.env.CI,
     // A cold `vite build` is most of this; the preview server itself is instant.

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Every script and npm script the instructing documents name must exist.
+// Every script and package script the instructing documents name must exist.
 //
 //   node scripts/docrefs.mjs
 //
@@ -35,8 +35,8 @@ export function docRefs(root = ROOT) {
     for (const [, file] of text.matchAll(/`?(scripts\/[a-z0-9-]+\.mjs)`?/g)) {
       if (!existsSync(join(root, file))) findings.push({ doc, name: file });
     }
-    for (const [, task] of text.matchAll(/`npm run ([a-z][a-z0-9:-]*)`/g)) {
-      if (!scripts.includes(task)) findings.push({ doc, name: `npm run ${task}` });
+    for (const [, task] of text.matchAll(/`bun run ([a-z][a-z0-9:-]*)`/g)) {
+      if (!scripts.includes(task)) findings.push({ doc, name: `bun run ${task}` });
     }
   }
   return { findings, docs, integrity: [] };

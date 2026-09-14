@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 // Package hygiene: the npm-init placeholder fields stay deleted, the licence
-// stays UNLICENSED, the scripts stay in alphabetical order, and .gitignore
-// lists each pattern once.
+// stays UNLICENSED, the scripts stay in alphabetical order, .gitignore lists
+// each pattern once, and no npm lockfile sits beside bun.lock.
 //
 //   node scripts/pkgcheck.mjs
 //   node scripts/pkgcheck.mjs path/to/other/root
 //
 // Exit codes: 0 clean · 1 a finding · 2 the check itself could not read its
 // inputs, which must never read as a pass.
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -54,6 +54,10 @@ for (let i = 1; i < names.length; i++) {
   if (names[i - 1] > names[i]) {
     findings.push(`package.json lists script "${names[i]}" after "${names[i - 1]}", out of alphabetical order`);
   }
+}
+
+if (existsSync(join(ROOT, "package-lock.json"))) {
+  findings.push("package-lock.json is present, but this repository installs with Bun");
 }
 
 const patterns = read(".gitignore")
