@@ -150,6 +150,47 @@
     "text": "{{pct}}% of budget",
     "note": "The value's share of a token budget the caller supplies. The catalog names budgets as settings (memorysettings.recallBudgetTokens) but never reports consumption against one, because nothing upstream edits a value while showing its cost."
   },
+  "ui.editor.symbols": {
+    "text": "Markdown symbols",
+    "note": "Names the editor's row of insert buttons as a group, so a screen reader announces what the glyphs are before reading them. The catalog has no markdown editing surface and so no word for its toolbar."
+  },
+  "ui.editor.md.heading1": {
+    "text": "Heading",
+    "note": "The accessible name of the button that inserts a level-one markdown heading mark, whose visible text is the # glyph alone. The catalog has no markdown editing surface and no heading vocabulary."
+  },
+  "ui.editor.md.heading2": {
+    "text": "Subheading",
+    "note": "The accessible name of the button that inserts a level-two markdown heading mark, whose visible text is the ## glyph alone. The catalog has no markdown editing surface and no heading vocabulary."
+  },
+  "ui.editor.md.bold": {
+    "text": "Bold",
+    "note": "The accessible name of the button that inserts the ** bold mark. The catalog has no markdown editing surface and never names a text style."
+  },
+  "ui.editor.md.italic": {
+    "text": "Italic",
+    "note": "The accessible name of the button that inserts the _ italic mark. The catalog has no markdown editing surface and never names a text style."
+  },
+  "ui.editor.md.bullet": {
+    "text": "Bullet",
+    "note": "The accessible name of the button that inserts a markdown list bullet. The catalog has no markdown editing surface and never names a list mark."
+  },
+  "ui.editor.md.quote": {
+    "text": "Quote",
+    "note": "The accessible name of the button that inserts the > blockquote mark. The catalog uses 'quote' only for a grounding quote in the review queue, never for a text style."
+  },
+  "ui.editor.md.code": {
+    "text": "Code",
+    "note": "The accessible name of the button that inserts a backtick code mark. The catalog has no markdown editing surface and never names a text style."
+  },
+  "ui.editor.md.link": {
+    "text": "Link",
+    "despite": "memoryvault.link",
+    "note": "The accessible name of the button that inserts the [] link brackets. The catalog's 'Link' is the verb that links two memories in the vault, a different action, so mirroring it would tie the editor's markdown mark to memory linking."
+  },
+  "ui.editor.md.newline": {
+    "text": "New line",
+    "note": "The accessible name of the button that inserts a line break, whose visible text is the ↵ glyph alone. The catalog has no markdown editing surface and never names a line break."
+  },
 
   "ui.list.filteredTitle": {
     "text": "No {{what}} match these filters",

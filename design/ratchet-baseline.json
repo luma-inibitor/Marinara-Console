@@ -1,5 +1,5 @@
 {
-  "better-tailwindcss/no-unknown-classes": 22,
-  "local/no-class-strings": 15,
-  "local/no-raw-button": 16
+  "better-tailwindcss/no-unknown-classes": 21,
+  "local/no-class-strings": 14,
+  "local/no-raw-button": 15
 }

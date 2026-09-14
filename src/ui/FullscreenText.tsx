@@ -1,19 +1,30 @@
-/* eslint-disable better-tailwindcss/no-unknown-classes, local/no-class-strings, local/no-raw-button -- legacy */
-// Fullscreen text editor — component catalog (DESIGN.md §4). Live char/token counts
-// with delta, wrap toggle, markdown symbol row. Generic: callers supply the
-// title/subtitle and receive the final value on Done.
-//
-// It owns its own Escape, offers Cancel, guards a dirty discard, and registers
-// with the overlay stack, so neither Escape nor the Android back gesture can
-// reach the list behind it and silently discard the edit.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { tokensOf } from "../shell/api";
-import { openOverlay } from "../shell/overlays";
+import { closeTopOverlay, openOverlay } from "../shell/overlays";
+import { Button } from "./Button";
 import { Chip } from "./Chip";
-import { t } from "../copy";
+import { cn } from "./cn";
+import { t, type Key } from "../copy";
 
-const MD_TOKENS = ["# ", "## ", "**", "_", "- ", "> ", "`", "[]", "\n"];
+/** A markdown symbol the footer row inserts at the caret, named for a screen reader. */
+const MD: ReadonlyArray<{ tok: string; key: Key }> = [
+  { tok: "# ", key: "ui.editor.md.heading1" },
+  { tok: "## ", key: "ui.editor.md.heading2" },
+  { tok: "**", key: "ui.editor.md.bold" },
+  { tok: "_", key: "ui.editor.md.italic" },
+  { tok: "- ", key: "ui.editor.md.bullet" },
+  { tok: "> ", key: "ui.editor.md.quote" },
+  { tok: "`", key: "ui.editor.md.code" },
+  { tok: "[]", key: "ui.editor.md.link" },
+  { tok: "\n", key: "ui.editor.md.newline" },
+];
 
+// A mono meta line with · separators, under the title and above the textarea.
+const META =
+  "font-data text-data-s text-dim [font-variant-ligatures:none] " +
+  "[&>*+*]:before:mx-[6px] [&>*+*]:before:text-edge-strong [&>*+*]:before:content-['·']";
+
+/** A full-screen text editor with live counts, a wrap toggle and a markdown symbol row. */
 export function FullscreenText(props: {
   title: string;
   subtitle: string;
@@ -21,15 +32,16 @@ export function FullscreenText(props: {
   /** When set, shows the value's share of this token budget. */
   budget?: number;
   onDone: (value: string) => void;
-  /** Close without applying. Required — an editor with no exit loses work. */
+  /** Close without applying. Required, since an editor with no exit loses work. */
   onCancel: () => void;
 }) {
   const [value, setValue] = useState(props.initial);
   const [wrap, setWrap] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const startTokens = useMemo(() => tokensOf(props.initial), [props.initial]);
-  const restoreTo = useRef<HTMLElement | null>(null);
   const root = useRef<HTMLDivElement>(null);
+  const ta = useRef<HTMLTextAreaElement>(null);
+  const titleId = useId();
 
   const ch = value.length,
     tk = tokensOf(value);
@@ -38,77 +50,57 @@ export function FullscreenText(props: {
   const dirty = value !== props.initial;
   const sign = (n: number) => (n > 0 ? `+${n.toLocaleString()}` : n.toLocaleString());
 
-  const cancel = () => {
-    if (dirty && !confirming) setConfirming(true);
-    else props.onCancel();
+  // Read during render, before the focus effect moves focus into the textarea.
+  const opener = useRef<HTMLElement | null>(null);
+  if (opener.current === null) opener.current = document.activeElement as HTMLElement | null;
+
+  // The stack's closer reads live state through refs, not a render closure.
+  const live = useRef({ value, dirty, confirming, onDone: props.onDone, onCancel: props.onCancel });
+  live.current = { value, dirty, confirming, onDone: props.onDone, onCancel: props.onCancel };
+  const pending = useRef<(() => void) | null>(null);
+
+  // A close that applies or discards goes through the stack.
+  const finish = (action: () => void) => {
+    pending.current = action;
+    closeTopOverlay();
   };
 
-  // The key handler reads live state through a ref, not a render closure.
-  // Escape pressed in the same tick as a keystroke would otherwise see the
-  // pre-render `dirty` and discard the edit without asking.
-  const live = useRef({ value, dirty, confirming });
-  live.current = { value, dirty, confirming };
+  // Focus returns to the opener only when the editor leaves.
+  const leave = (action: () => void) => {
+    action();
+    if (opener.current?.isConnected) opener.current.focus();
+  };
 
-  // Own Escape at the capture phase so it never reaches the list behind us.
   useEffect(() => {
-    restoreTo.current = document.activeElement as HTMLElement | null;
-    const onKey = (ev: KeyboardEvent) => {
-      const st = live.current;
-      if (ev.key === "Escape") {
-        ev.preventDefault();
-        ev.stopPropagation();
-        if (st.confirming) setConfirming(false);
-        else if (st.dirty) setConfirming(true);
-        else props.onCancel();
-      } else if (ev.key === "Enter" && (ev.metaKey || ev.ctrlKey)) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        props.onDone(st.value);
-      }
-    };
-    window.addEventListener("keydown", onKey, true);
-    document.getElementById("fs-ta")?.focus();
-    return () => {
-      window.removeEventListener("keydown", onKey, true);
-      restoreTo.current?.focus?.();
-    };
-    // Mount-only: one listener for the editor's lifetime, and the restore in
-    // the cleanup must be the element focused at mount. Editor state is read
-    // through `live.current` for exactly this reason, but onCancel/onDone are
-    // captured here as they were at mount — safe only while callers pass
-    // callbacks that do not change identity-with-behaviour mid-edit.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!confirming) ta.current?.focus();
+  }, [confirming]);
 
-  // One overlay entry, owned by the stack, so the phone's back gesture closes
-  // the editor rather than unwinding to the list behind it with the edit
-  // dropped. This effect must stay AFTER the one above: the focus the stack
-  // captures for restore is whatever is focused at registration time, and by
-  // then that is our own textarea — which is gone by the time a real close
-  // restores, so the stack's restore goes inert and the `restoreTo` above
-  // wins. After a back the editor stays open, the textarea is still there,
-  // and the stack puts focus back into it, which is what we want anyway.
+  // One overlay entry, owned by the stack, so Escape, back and Cancel share one path.
   useEffect(() => {
     let alive = true;
     let dispose: (() => void) | null = null;
     const register = () => {
       dispose = openOverlay(
         () => {
-          dispose = null; // the stack already removed this entry before closing us
-          if (!live.current.dirty) {
-            props.onCancel();
+          dispose = null;
+          const action = pending.current;
+          pending.current = null;
+          if (action) {
+            leave(action);
             return;
           }
-          setConfirming(true);
-          // Staying open spends the entry, so the editor needs a fresh one or the
-          // next back escapes to the list. Re-register off a microtask: the
-          // stack's hashchange teardown drains synchronously, and pushing back
-          // into that drain would loop forever.
+          const st = live.current;
+          if (!st.confirming && !st.dirty) {
+            leave(st.onCancel);
+            return;
+          }
+          setConfirming(!st.confirming);
+          // A fresh entry, registered after the stack's synchronous drain has finished.
           queueMicrotask(() => {
             if (alive && !dispose) register();
           });
         },
-        { surface: root.current },
+        { restoreFocus: null, surface: root.current },
       );
     };
     register();
@@ -117,47 +109,55 @@ export function FullscreenText(props: {
       dispose?.();
       dispose = null;
     };
-    // Mount-only: re-running would spend and re-push overlay entries mid-edit.
-    // Dirtiness is read through `live.current`; props.onCancel is not, so it is
-    // the one captured at mount — safe only while the parent passes a stable
-    // callback.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const insert = (tok: string) => {
-    const ta = document.getElementById("fs-ta") as HTMLTextAreaElement | null;
-    if (!ta) return;
-    const a = ta.selectionStart,
-      b = ta.selectionEnd;
-    const next = value.slice(0, a) + tok + value.slice(b);
-    setValue(next);
+    const el = ta.current;
+    if (!el) return;
+    const a = el.selectionStart,
+      b = el.selectionEnd;
+    setValue(value.slice(0, a) + tok + value.slice(b));
     requestAnimationFrame(() => {
-      ta.selectionStart = ta.selectionEnd = a + tok.length;
-      ta.focus();
+      el.selectionStart = el.selectionEnd = a + tok.length;
+      el.focus();
     });
   };
 
   return (
-    <div className="fseditor" ref={root} role="dialog" aria-modal="true" aria-label={props.title}>
-      <div className="fs-head">
-        <div className="fs-title-wrap">
-          <div className="t-label">{props.title}</div>
-          <div className="meta">
+    // `fseditor` stays as a bare hook for tests/e2e/overlays.spec.ts and scripts/domsnap.mjs.
+    <div
+      className="fseditor fixed inset-0 z-60 flex flex-col bg-canvas"
+      ref={root}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      onKeyDown={(ev) => {
+        if (ev.key !== "Enter" || !(ev.metaKey || ev.ctrlKey)) return;
+        ev.preventDefault();
+        finish(() => live.current.onDone(live.current.value));
+      }}
+    >
+      <div className="flex items-center gap-2 border-b border-edge px-3 py-2">
+        <div className="min-w-0 flex-1">
+          <div id={titleId} className="t-label">
+            {props.title}
+          </div>
+          <div className={META}>
             <span>{props.subtitle}</span>
-            {dirty && <span className="is-dirty-dot">{t("ui.editor.unsaved")}</span>}
+            {dirty && <span className="text-accent">{t("ui.editor.unsaved")}</span>}
           </div>
         </div>
         <Chip pressed={wrap} onClick={() => setWrap(!wrap)}>
           {t("ui.editor.wrap")}
         </Chip>
-        <button className="dbtn" onClick={cancel}>
+        <Button variant="ghost" onClick={closeTopOverlay}>
           {t("ui.editor.cancel")}
-        </button>
-        <button className="dbtn is-primary" onClick={() => props.onDone(value)}>
+        </Button>
+        <Button variant="primary" onClick={() => finish(() => live.current.onDone(live.current.value))}>
           {t("ui.editor.done")}
-        </button>
+        </Button>
       </div>
-      <div className="fs-counts meta">
+      <div className={cn(META, "border-b border-edge bg-surface-1 px-3 py-[6px]")}>
         <span>
           <b className="t-num">{ch.toLocaleString()}</b> {t("ui.editor.charUnit")}
         </span>
@@ -168,41 +168,58 @@ export function FullscreenText(props: {
           <span>{t("ui.editor.ofBudget", { pct: ((tk / props.budget) * 100).toFixed(1) })}</span>
         )}
         {(dTk !== 0 || dCh !== 0) && (
-          <span className={`delta ${dTk > 0 ? "is-up" : dTk < 0 ? "is-down" : ""}`}>
+          <span className={cn("font-bold", dTk > 0 && "text-flag", dTk < 0 && "text-ok")}>
             {sign(dCh)} {t("ui.editor.charUnit")} · {sign(dTk)} {t("ui.editor.tokenUnit")}
           </span>
         )}
       </div>
-      <div className="fs-body">
+      <div className="min-h-0 flex-1 px-3 py-2">
         <textarea
-          id="fs-ta"
-          className={wrap ? "" : "is-nowrap"}
+          ref={ta}
+          className={cn(
+            "size-full resize-none border-0 bg-transparent font-data text-prose leading-[1.65] text-ink outline-none [font-variant-ligatures:none]",
+            !wrap && "overflow-x-auto whitespace-pre",
+          )}
+          aria-labelledby={titleId}
           spellCheck={false}
           value={value}
           onInput={(ev) => setValue(ev.currentTarget.value)}
         />
       </div>
-      <div className="fs-foot">
-        {MD_TOKENS.map((t) => (
-          <button key={t} className="mdb t-data" onClick={() => insert(t)}>
-            {t.trim() || "↵"}
-          </button>
+      <div
+        role="group"
+        aria-label={t("ui.editor.symbols")}
+        className="flex [scrollbar-width:none] gap-[5px] overflow-x-auto border-t border-edge px-3 pt-2 pb-[calc(var(--spacing-2)_+_env(safe-area-inset-bottom))] [&::-webkit-scrollbar]:hidden"
+      >
+        {MD.map((m) => (
+          <Button
+            key={m.tok}
+            labelCase="sentence"
+            label={t(m.key)}
+            className="flex-none font-data"
+            onClick={() => insert(m.tok)}
+          >
+            {m.tok.trim() || "↵"}
+          </Button>
         ))}
       </div>
 
       {confirming && (
-        // Verb buttons naming the outcome — never Yes/No (forms doc §4).
-        <div className="fs-confirm" role="alertdialog" aria-label={t("ui.editor.discardTitle")}>
-          <div className="fs-confirm-box">
-            <p className="t-label">{t("ui.editor.discardTitle")}</p>
-            <p className="prose-note">{t("ui.editor.discardBody", { delta: sign(dCh) })}</p>
-            <div className="fs-confirm-acts">
-              <button className="dbtn" onClick={() => setConfirming(false)}>
-                {t("ui.editor.keepEditing")}
-              </button>
-              <button className="dbtn is-danger" onClick={props.onCancel}>
+        <div
+          role="alertdialog"
+          aria-label={t("ui.editor.discardTitle")}
+          className="absolute inset-0 z-5 grid place-items-center bg-[color-mix(in_srgb,var(--canvas)_78%,transparent)] p-4"
+        >
+          <div className="max-w-[420px] rounded-lg border border-edge bg-surface-1 p-4">
+            <p className="m-0 t-label text-ink">{t("ui.editor.discardTitle")}</p>
+            <p className="m-0 font-prose text-prose leading-[1.5] text-dim">
+              {t("ui.editor.discardBody", { delta: sign(dCh) })}
+            </p>
+            <div className="mt-3 flex justify-end gap-2">
+              <Button onClick={() => setConfirming(false)}>{t("ui.editor.keepEditing")}</Button>
+              <Button tone="danger" autoFocus onClick={() => finish(() => live.current.onCancel())}>
                 {t("ui.editor.discard")}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

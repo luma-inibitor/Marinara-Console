@@ -182,22 +182,6 @@
 .is-flag { color: var(--flag); }
 .linkish { color: var(--accent); cursor: pointer; text-decoration: underline; }
 
-/* fullscreen editor: unsaved marker + discard confirmation */
-.is-dirty-dot { color: var(--accent); }
-.dbtn.is-danger { background: var(--danger-wash); border-color: var(--danger); color: var(--danger); }
-.fs-confirm {
-  position: absolute; inset: 0; z-index: 5; display: grid; place-items: center;
-  background: color-mix(in srgb, var(--canvas) 78%, transparent); padding: var(--s4);
-}
-.fs-confirm-box {
-  max-width: 420px; background: var(--surface-1); border: var(--hairline);
-  border-radius: var(--r-l); padding: var(--s4);
-}
-.fs-confirm-box .t-label { color: var(--text); }
-.fs-confirm-acts { display: flex; gap: var(--s2); justify-content: flex-end; margin-top: var(--s3); }
-.fs-confirm-acts .dbtn { min-height: var(--tap); padding: 0 var(--s3); }
-.fseditor { position: fixed; }
-
 /* ── connection banner ─────────────────────────────────────────── */
 .connbar {
   position: fixed; left: 0; right: 0; top: 0; z-index: 80;

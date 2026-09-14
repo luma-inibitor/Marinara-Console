@@ -95,6 +95,19 @@ const SURFACES: Surface[] = [
     dismiss: ["escape", "back"],
   },
   {
+    // Full-screen, with no scrim to tap. Opened from a record's content field.
+    name: "fullscreen editor",
+    project: "desktop",
+    screen: screen("lorebook-audit"),
+    open: async (page) => {
+      await page.locator(".row-summary").first().click();
+      await page.locator(".drawer .sub").nth(1).locator(".sub-head").click();
+      await page.locator(".drawer .fieldbar button").first().click();
+    },
+    sel: ".fseditor",
+    dismiss: ["escape", "back"],
+  },
+  {
     name: "command palette",
     project: "desktop",
     screen: screen("memory-review"),
