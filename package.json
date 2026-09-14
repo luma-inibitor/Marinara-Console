@@ -23,6 +23,7 @@
     "layercheck": "node scripts/layercheck.mjs",
     "linkcheck": "markdown-link-check -q -c .markdown-link-check.json README.md CLAUDE.md BACKLOG.md design/*.md",
     "lint": "eslint src scripts",
+    "notracked": "node scripts/notracked.mjs",
     "pkgcheck": "node scripts/pkgcheck.mjs",
     "precompress": "node scripts/precompress.mjs",
     "prepare": "node scripts/prepare.mjs",

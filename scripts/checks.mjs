@@ -53,6 +53,8 @@ export const checks = [
   "specificity",
   // Package metadata and .gitignore
   "pkgcheck",
+  // The index holds no build artifact or scratch file
+  "notracked",
   // Docs: Markdown links resolve, and named scripts exist
   "linkcheck",
   "docrefs",
