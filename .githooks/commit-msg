@@ -1,0 +1,10 @@
+#!/bin/sh
+# npm run prepare installs this hook through core.hooksPath.
+
+# A client without node on PATH gets a warning instead of a block.
+if ! command -v node >/dev/null 2>&1; then
+	echo "commit-msg hook: no node on PATH, commit message not checked (CI still will)." >&2
+	exit 0
+fi
+
+exec node "$(dirname "$0")/../scripts/commitmsg.mjs" "$1"
