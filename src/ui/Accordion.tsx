@@ -15,6 +15,8 @@ export function Accordion(props: {
   onToggle: () => void;
   tip?: string;
   error?: boolean;
+  /** Colours the summary when its value can stop the thing it describes; the text still says what. */
+  summaryTone?: "flag" | "danger";
   /** Keeps the header reachable and closed; the summary says why. */
   unavailable?: boolean;
   children: ReactNode;
@@ -62,7 +64,14 @@ export function Accordion(props: {
               ●
             </span>
           )}
-          <span className="ml-auto min-w-0 truncate pl-2 text-right t-data text-data-s text-dim">{props.summary}</span>
+          <span
+            className={cn(
+              "ml-auto min-w-0 truncate pl-2 text-right t-data text-data-s",
+              props.summaryTone === "flag" ? "text-flag" : props.summaryTone === "danger" ? "text-danger" : "text-dim",
+            )}
+          >
+            {props.summary}
+          </span>
         </button>
         {props.tip && <HelpTip tip={props.tip} subject={props.label} align="end" />}
       </div>

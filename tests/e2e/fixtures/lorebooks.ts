@@ -81,6 +81,9 @@ const ATLAS: Entry[] = [
   entry({
     id: "e-tidebell",
     name: "Tide bell",
+    probability: 60,
+    decisionMode: "require",
+    decisionStatement: "A boat is coming in or has wrecked.",
     tag: "places",
     order: 30,
     keys: ["bell", "tide bell"],

@@ -6,6 +6,8 @@ export interface Segment<T extends string | number> {
   label: string;
   /** The accessible name when the visible label is an abbreviation. */
   name?: string;
+  /** The status hue a pressed segment takes in place of the accent; its label carries the meaning too. */
+  tone?: "ok" | "warn" | "danger";
   /** Keeps the segment focusable and says why it cannot be chosen. */
   disabledReason?: string;
 }
@@ -26,6 +28,7 @@ export function SegmentedControl<T extends string | number>(props: {
           key={String(s.id)}
           size="sm"
           labelCase={props.labelCase}
+          tone={props.value === s.id ? s.tone : undefined}
           pressed={props.value === s.id}
           label={s.name}
           disabled={s.disabledReason != null}

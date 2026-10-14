@@ -150,8 +150,8 @@ export function EntryEditor(props: {
             label={t("lorebooks.entry.type")}
             value={e.constant ? "constant" : "normal"}
             segments={[
-              { id: "normal", label: t("lorebooks.status.normal") },
-              { id: "constant", label: t("lorebooks.status.constant") },
+              { id: "normal", label: t("lorebooks.status.normal"), tone: "ok" },
+              { id: "constant", label: t("lorebooks.status.constant"), tone: "warn" },
             ]}
             onChange={(v) =>
               merge(
@@ -223,9 +223,12 @@ export function EntryEditor(props: {
         tip={t("lorebooks.entry.keysTip")}
         error={!!err("keys")}
         unavailable={e.constant}
+        summaryTone={!e.constant && e.keys.length === 0 ? "danger" : undefined}
         summary={
           e.constant ? (
             t("lorebooks.row.alwaysInjected")
+          ) : e.keys.length === 0 ? (
+            t("lorebooks.row.noKeys")
           ) : (
             <>
               <b className="text-ink">{e.keys.length}</b> {t("lorebooks.field.keys")}
@@ -299,6 +302,7 @@ export function EntryEditor(props: {
             placeholder={t("lorebooks.entry.probabilityPlaceholder")}
             unit="%"
             wide
+            flag={e.probability != null && e.probability < 100}
             onChange={(v) => set("probability", v == null || v >= 100 ? null : Math.max(0, v))}
           />
         </SettingRow>
@@ -364,6 +368,7 @@ export function EntryEditor(props: {
       <Accordion
         {...section("filters")}
         label={t("lorebooks.entry.filters")}
+        summaryTone={activeFilters.length ? "flag" : undefined}
         summary={activeFilters.length ? activeFilters.join(" · ") : t("lorebooks.mode.any")}
       >
         <FilterRow
@@ -408,6 +413,7 @@ export function EntryEditor(props: {
         {...section("timing")}
         label={t("lorebooks.entry.timing")}
         tip={t("lorebooks.entry.timingTip")}
+        summaryTone={timingSet.some((f) => f !== "sticky") ? "flag" : undefined}
         summary={
           timingSet.length
             ? timingSet.map((f) => `${t(`lorebooks.timing.${f}`)} ${e[f]}`).join(" · ")
@@ -436,6 +442,7 @@ export function EntryEditor(props: {
         {...section("decision")}
         label={t("lorebooks.entry.decision")}
         tip={t("lorebooks.entry.decisionTip")}
+        summaryTone={decision === "require" ? "flag" : undefined}
         summary={decision === "off" ? t("lorebooks.entry.off") : t(`lorebooks.decision.${decision}`)}
       >
         <SegmentedControl
@@ -553,12 +560,20 @@ function Head(props: {
   ];
   return (
     <div className="flex items-center gap-2 border-b border-edge px-3 py-2">
+      <span
+        aria-hidden
+        className={cn(
+          "size-2.5 shrink-0 rounded-full",
+          !e.enabled ? "border-[1.5px] border-off" : e.constant ? "bg-warn" : "bg-ok",
+        )}
+      />
       <Chip pressed={e.enabled} onClick={() => set("enabled", !e.enabled)}>
         {t("lorebooks.entry.enabled")}
       </Chip>
       <input
         className={cn(
-          "min-h-tap min-w-0 flex-1 rounded-sm border border-transparent bg-transparent px-2 font-prose text-title text-ink",
+          "min-h-tap min-w-0 flex-1 rounded-sm border border-transparent bg-transparent px-2 font-prose text-title",
+          e.enabled ? "text-ink" : "text-dim",
           "placeholder:text-dim hover:border-edge focus-visible:border-edge focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none",
         )}
         value={e.name}
@@ -640,12 +655,14 @@ function NumberInput(props: {
   unit?: string;
   /** Room for a word placeholder such as "Blank = always". */
   wide?: boolean;
+  /** The value can stop the entry from firing. */
+  flag?: boolean;
   onChange: (v: number | null) => void;
 }) {
   return (
     <span className={cn("flex items-center gap-1", props.wide ? "w-44" : "w-24")}>
       <Input
-        className="text-right tabular-nums"
+        className={cn("text-right tabular-nums", props.flag && "border-flag! text-flag!")}
         inputMode="numeric"
         aria-label={props.label}
         value={fmt(props.value)}

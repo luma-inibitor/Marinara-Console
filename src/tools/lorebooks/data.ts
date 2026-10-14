@@ -70,7 +70,7 @@ export interface Entry {
   [extra: string]: unknown;
 }
 
-export type EntryStatus = "normal" | "constant" | "selective" | "disabled";
+export type EntryStatus = "normal" | "constant" | "disabled";
 
 /** Engine position code -> the name its copy keys are filed under. */
 const POS_NAME: Record<number, string> = { 0: "beforeChar", 1: "afterChar", 2: "depth", 7: "outlet" };
@@ -123,10 +123,8 @@ export const SELECTIVE_LOGICS = ["and", "and_all", "not", "not_all"] as const sa
 /** The four timing fields, in the order the engine help names them. */
 export const TIMING_FIELDS = ["sticky", "cooldown", "delay", "ephemeral"] as const;
 
-/** The engine reads `selective` only to switch secondary keys on, so the editor
- *  offers two types and derives the third from the secondary-keys switch. */
-export const statusOf = (e: Entry): EntryStatus =>
-  !e.enabled ? "disabled" : e.constant ? "constant" : e.selective ? "selective" : "normal";
+/** `selective` only switches secondary keys on, so it is not a status of its own. */
+export const statusOf = (e: Entry): EntryStatus => (!e.enabled ? "disabled" : e.constant ? "constant" : "normal");
 
 export const entryTokens = (e: Entry) => tokensOf(e.content);
 

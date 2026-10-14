@@ -16,7 +16,7 @@ const button = cva(
   {
     variants: {
       variant: { primary: "", secondary: "", ghost: "border-transparent" },
-      tone: { neutral: "", danger: "", ok: "" },
+      tone: { neutral: "", danger: "", ok: "", warn: "" },
       size: { md: "min-h-tap gap-2", sm: "min-h-tap-2 gap-[6px]", xs: "min-h-6 gap-1" },
       shape: { label: "", icon: "" },
       align: { center: "justify-center text-center", start: "justify-start text-left" },
@@ -40,6 +40,7 @@ const button = cva(
       { pressed: false, variant: "primary", tone: "neutral", className: "border-accent bg-accent text-accent-ink" },
       { pressed: false, variant: "primary", tone: "danger", className: "border-danger bg-danger text-danger-ink" },
       { pressed: false, variant: "primary", tone: "ok", className: "border-ok bg-ok text-ok-ink" },
+      { pressed: false, variant: "primary", tone: "warn", className: "border-warn bg-warn text-warn-ink" },
       { pressed: false, variant: "secondary", tone: "neutral", className: "border-edge-strong text-ink" },
       {
         pressed: false,
@@ -53,12 +54,20 @@ const button = cva(
         tone: "ok",
         className: "border-[color-mix(in_srgb,var(--ok)_45%,transparent)] text-ok",
       },
+      {
+        pressed: false,
+        variant: "secondary",
+        tone: "warn",
+        className: "border-[color-mix(in_srgb,var(--warn)_45%,transparent)] text-warn",
+      },
       { pressed: false, variant: "ghost", tone: "neutral", className: "text-dim" },
       { pressed: false, variant: "ghost", tone: "danger", className: "text-danger" },
       { pressed: false, variant: "ghost", tone: "ok", className: "text-ok" },
+      { pressed: false, variant: "ghost", tone: "warn", className: "text-warn" },
       { pressed: true, tone: "neutral", className: "border-accent bg-accent-wash text-accent" },
       { pressed: true, tone: "danger", className: "border-danger bg-danger-wash text-danger" },
       { pressed: true, tone: "ok", className: "border-ok bg-ok-wash text-ok" },
+      { pressed: true, tone: "warn", className: "border-warn bg-warn-wash text-warn" },
       { pressed: false, inert: false, variant: "primary", className: "hover:brightness-[1.08]" },
       { pressed: false, inert: false, variant: "secondary", className: "hover:border-faint" },
       { pressed: false, inert: false, variant: "ghost", className: "hover:text-ink" },
@@ -86,7 +95,7 @@ type Styles = VariantProps<typeof button>;
 type Common = {
   variant?: NonNullable<Styles["variant"]>;
   /** Category, not rank. Composes with every variant. */
-  tone?: "danger" | "ok";
+  tone?: "danger" | "ok" | "warn";
   size?: NonNullable<Styles["size"]>;
   /** The source string stays sentence case, so the accessible name is unaffected. */
   labelCase?: NonNullable<Styles["labelCase"]>;
