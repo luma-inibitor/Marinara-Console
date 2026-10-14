@@ -6,7 +6,9 @@
 [data-s="disabled"] { --sc: var(--off); }
 
 /* ══ layout: mobile single column; ≥900px master-detail ══ */
-.audit { height: 100%; position: relative; display: grid; }
+.audit { height: 100%; position: relative; display: grid; grid-template-columns: minmax(0, 1fr); }
+.audit.is-desktop { grid-template-columns: minmax(400px, 560px) minmax(0, 1fr); }
+.audit.is-desktop.is-capped { grid-template-columns: minmax(400px, 1fr) minmax(0, 720px); }
 .audit-list { min-width: 0; overflow-y: auto; display: flex; flex-direction: column; }
 .audit-detail {
   border-left: var(--hairline);

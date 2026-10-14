@@ -435,12 +435,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     : null;
 
   return (
-    <div
-      className={cn(
-        "audit",
-        desktop ? "is-desktop grid-cols-[minmax(400px,1fr)_minmax(0,720px)]" : "grid-cols-[minmax(0,1fr)]",
-      )}
-    >
+    <div className={cn("audit", desktop && "is-desktop is-capped")}>
       <div className="audit-list" ref={listRef} onKeyDown={onListKey}>
         <header className="console">
           <div className="hrow">
