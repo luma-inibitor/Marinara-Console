@@ -43,6 +43,7 @@ import {
   useRovingFocus,
 } from "../../ui";
 import { t, tAny } from "../../copy";
+import { cn } from "../../ui/cn";
 import { Add, Back, ICON_SIZE, SelectMode, Tags } from "../../ui/icons";
 
 type SortKey = "tokens" | "order" | "keys" | "name" | "updated";
@@ -434,7 +435,12 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     : null;
 
   return (
-    <div className={`audit ${desktop ? "is-desktop" : ""}`}>
+    <div
+      className={cn(
+        "audit",
+        desktop ? "is-desktop grid-cols-[minmax(400px,1fr)_minmax(0,720px)]" : "grid-cols-[minmax(0,1fr)]",
+      )}
+    >
       <div className="audit-list" ref={listRef} onKeyDown={onListKey}>
         <header className="console">
           <div className="hrow">

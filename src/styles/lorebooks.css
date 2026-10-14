@@ -6,9 +6,8 @@
 [data-s="disabled"] { --sc: var(--off); }
 
 /* ══ layout: mobile single column; ≥900px master-detail ══ */
-.audit { height: 100%; position: relative; display: grid; grid-template-columns: minmax(0, 1fr); }
+.audit { height: 100%; position: relative; display: grid; }
 .audit-list { min-width: 0; overflow-y: auto; display: flex; flex-direction: column; }
-.audit.is-desktop { grid-template-columns: minmax(400px, 560px) minmax(0, 1fr); }
 .audit-detail {
   border-left: var(--hairline);
   overflow-y: auto;
