@@ -169,6 +169,8 @@ this catalog in the same change.
 - **Segmented control** — 2-5 exclusive modes (Find/Test pattern).
   `src/ui/SegmentedControl.tsx`.
 - **Stepper** — ± for numerics on touch, direct input on desktop.
+- **Switch** — an on/off setting that applies at once, such as an entry's
+  Enabled state. `src/ui/Switch.tsx`.
 - **Chip editor** — keys/tags: add, delete, highlight-on-match.
   `src/ui/ChipEditor.tsx`.
 - **Help tip** — the information icon beside a heading. Its text shows on
