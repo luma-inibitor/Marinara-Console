@@ -154,29 +154,9 @@
 /* ── field-level validation ── */
 .field-err { color: var(--danger); margin: 6px 0 0; }
 [aria-invalid="true"] { border-color: var(--danger) !important; }
-.err-dot { color: var(--danger); margin-left: 5px; font-size: 9px; vertical-align: middle; }
-.sub.has-error > .sub-head { box-shadow: inset 2px 0 0 var(--danger); }
 
 /* per-field dirty marking */
 .ta.is-dirty, .tin.is-dirty { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
-
-/* inline key entry */
-.kadd-in {
-  min-height: var(--tap-2); min-width: 92px; flex: 0 0 auto;
-  background: var(--canvas); border: 1px dashed var(--edge-strong);
-  border-radius: var(--r-s); color: var(--text); padding: 0 var(--s2);
-  font-family: var(--font-data); font-size: var(--fs-data);
-}
-.kadd-in:focus { border-style: solid; border-color: var(--accent); outline: none; }
-
-/* inline order entry */
-.ordin {
-  width: 100%; background: transparent; border: 0; color: var(--text);
-  font-family: var(--font-data); font-size: 15px; font-weight: 700;
-  text-align: center; -moz-appearance: textfield;
-}
-.ordin::-webkit-outer-spin-button, .ordin::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.ordin:focus { outline: 1px solid var(--accent); border-radius: var(--r-s); }
 
 /* picker: a stat that failed to load, and its retry */
 .is-flag { color: var(--flag); }

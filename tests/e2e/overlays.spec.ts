@@ -101,8 +101,7 @@ const SURFACES: Surface[] = [
     screen: screen("lorebook-audit"),
     open: async (page) => {
       await page.locator(".row-summary").first().click();
-      await page.locator(".drawer .sub").nth(1).locator(".sub-head").click();
-      await page.locator(".drawer .fieldbar button").first().click();
+      await page.getByRole("button", { name: "Edit in full screen" }).first().click();
     },
     sel: ".fseditor",
     dismiss: ["escape", "back"],

@@ -19,6 +19,8 @@ import {
   tagStats,
   fetchBooks,
   fetchEntries,
+  fetchCharacters,
+  type CharacterOption,
   patchEntry,
   createEntry,
   deleteEntry,
@@ -26,7 +28,7 @@ import {
   POS_COMPACT,
   UNTAGGED,
 } from "./data";
-import { EntryDrawer, type FullscreenCtx } from "./entries";
+import { EntryEditor, type FullscreenCtx } from "./entries";
 import { useDraft } from "../../shell/draft";
 import { FullscreenText } from "../../ui/FullscreenText";
 import {
@@ -59,6 +61,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
   const desktop = useIsDesktop();
   const [book, setBook] = useState<Lorebook | null>(null);
   const [entries, setEntries] = useState<Entry[] | null>(null);
+  const [characters, setCharacters] = useState<CharacterOption[]>([]);
   const [error, setError] = useState<unknown>(null);
   const [missing, setMissing] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -101,7 +104,12 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
     setMissing(false);
     (async () => {
       try {
-        const [books, es] = await Promise.all([fetchBooks(), fetchEntries(bookId)]);
+        // The filter pickers can live without names; the entries cannot.
+        const [books, es, chars] = await Promise.all([
+          fetchBooks(),
+          fetchEntries(bookId),
+          fetchCharacters().catch(() => [] as CharacterOption[]),
+        ]);
         if (!alive) return;
         const b = books.find((x) => x.id === bookId);
         if (!b) {
@@ -110,6 +118,7 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
         } // the entries endpoint 200s with [] for an unknown id
         setBook(b);
         setEntries(es);
+        setCharacters(chars);
       } catch (e) {
         if (alive) setError(e);
       }
@@ -396,10 +405,11 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
         }}
         drawer={
           !desktop && open.has(e.id) ? (
-            <EntryDrawer
+            <EntryEditor
               entry={e.id === editingId ? draft.value : e}
+              book={book}
+              characters={characters}
               draft={e.id === editingId ? draft : null}
-              kp90={kp90}
               evHits={evals.get(e.id)?.hits ?? []}
               onBeginEdit={() => beginEdit(e.id)}
               onSave={saveDraft}
@@ -615,10 +625,11 @@ export function BookAudit({ bookId, initialEntryId }: { bookId: string; initialE
       {desktop && (
         <aside className="audit-detail">
           {focused ? (
-            <EntryDrawer
+            <EntryEditor
               entry={focused.id === editingId ? draft.value : focused}
+              book={book}
+              characters={characters}
               draft={focused.id === editingId ? draft : null}
-              kp90={kp90}
               evHits={evals.get(focused.id)?.hits ?? []}
               onBeginEdit={() => beginEdit(focused.id)}
               onSave={saveDraft}

@@ -13,7 +13,16 @@ export interface Lorebook {
   name: string;
   tokenBudget: number;
   enabled: boolean;
+  /** Messages scanned for keys; an entry's null `scanDepth` inherits it. */
+  scanDepth?: number;
+  /** Off makes every recursion field on every entry inert. */
+  recursiveScanning?: boolean;
+  /** On forces `excludeFromVectorization` on every entry (engine storage). */
+  excludeFromVectorization?: boolean;
 }
+
+export type FilterMode = "any" | "include" | "exclude";
+export type DecisionMode = "off" | "require" | "trigger";
 
 /** Fields the tool reads/writes. Everything else passes through untouched. */
 export interface Entry {
@@ -35,6 +44,27 @@ export interface Entry {
   depth: number;
   order: number;
   tag: string;
+  probability?: number | null;
+  scanDepth?: number | null;
+  role?: "system" | "user" | "assistant";
+  sticky?: number | null;
+  cooldown?: number | null;
+  delay?: number | null;
+  ephemeral?: number | null;
+  group?: string;
+  groupWeight?: number | null;
+  locked?: boolean;
+  preventRecursion?: boolean;
+  excludeFromVectorization?: boolean;
+  characterFilterMode?: FilterMode;
+  characterFilterIds?: string[];
+  characterTagFilterMode?: FilterMode;
+  characterTagFilters?: string[];
+  generationTriggerFilterMode?: FilterMode;
+  generationTriggerFilters?: string[];
+  additionalMatchingSources?: string[];
+  decisionMode?: DecisionMode;
+  decisionStatement?: string;
   hasEmbedding?: boolean;
   updatedAt?: string;
   [extra: string]: unknown;
@@ -42,53 +72,59 @@ export interface Entry {
 
 export type EntryStatus = "normal" | "constant" | "selective" | "disabled";
 
-// Engine vocabulary — deriveStatus()/STATUS_LABEL in LorebookEntryRow.tsx upstream.
-const STATUSES: EntryStatus[] = ["normal", "constant", "selective", "disabled"];
-
-const byStatus = (key: (s: EntryStatus) => string): Record<EntryStatus, string> =>
-  Object.fromEntries(STATUSES.map((s) => [s, tAny(key(s))])) as Record<EntryStatus, string>;
-
-export const STATUS_LABEL = byStatus((s) => `lorebooks.status.${s}`);
-export const STATUS_HINT = byStatus((s) => `lorebooks.statusHint.${s}`);
-
 /** Engine position code -> the name its copy keys are filed under. */
 const POS_NAME: Record<number, string> = { 0: "beforeChar", 1: "afterChar", 2: "depth", 7: "outlet" };
 
-const byPosition = (key: (name: string) => string): Record<number, string> =>
-  Object.fromEntries(Object.entries(POS_NAME).map(([p, name]) => [Number(p), tAny(key(name))]));
-
-export const POS_COMPACT = byPosition((name) => `lorebooks.pos.${name}.compact`);
+export const POSITIONS = [0, 1, 2, 7] as const;
+export const POS_COMPACT: Record<number, string> = Object.fromEntries(
+  Object.entries(POS_NAME).map(([p, name]) => [Number(p), tAny(`lorebooks.pos.${name}.compact`)]),
+);
 // `outlet` reads the same at both densities, and one string may hold only one
-// key (scripts/copycatalog.mjs), so the full table borrows the compact label there
-// rather than registering a second entry with identical text.
-export const POS_FULL = byPosition((name) =>
-  name === "outlet" ? "lorebooks.pos.outlet.compact" : `lorebooks.pos.${name}.full`,
+// key (scripts/copycatalog.mjs), so the full table borrows the compact label.
+export const POS_FULL: Record<number, string> = Object.fromEntries(
+  Object.entries(POS_NAME).map(([p, name]) => [
+    Number(p),
+    tAny(name === "outlet" ? "lorebooks.pos.outlet.compact" : `lorebooks.pos.${name}.full`),
+  ]),
 );
 
-export const ADVANCED_FIELDS: Array<[string, unknown]> = [
-  ["selectiveLogic", "and"],
-  ["probability", null],
-  ["scanDepth", null],
-  ["matchWholeWords", false],
-  ["caseSensitive", false],
-  ["useRegex", false],
-  ["sticky", null],
-  ["cooldown", null],
-  ["delay", null],
-  ["ephemeral", null],
-  ["group", ""],
-  ["groupWeight", null],
-  ["locked", false],
-  ["preventRecursion", false],
-  ["excludeRecursion", false],
-  ["delayUntilRecursion", false],
-  ["excludeFromVectorization", false],
-  ["role", "system"],
-  ["characterFilterMode", "any"],
-  ["characterTagFilterMode", "any"],
-  ["generationTriggerFilterMode", "any"],
-];
+// Option ids are the engine's (LorebookEntryRow.tsx FILTER_MODE_LABEL,
+// MATCHING_SOURCE_OPTIONS, GENERATION_TRIGGER_OPTIONS), labels are its copy.
+export const FILTER_MODES: FilterMode[] = ["any", "include", "exclude"];
+export const MATCHING_SOURCES = [
+  "character_name",
+  "character_description",
+  "character_personality",
+  "character_scenario",
+  "character_tags",
+  "persona_description",
+  "persona_tags",
+] as const;
+export const GENERATION_TRIGGERS = [
+  "conversation",
+  "roleplay",
+  "game",
+  "chat",
+  "continue",
+  "autonomous",
+  "swipe",
+  "impersonate",
+  "prompt_preview",
+  "test_scan",
+  "game_setup",
+  "lorebook_assistant",
+  "noodle",
+  "slurp",
+] as const;
+export const ROLES = ["system", "user", "assistant"] as const;
+export const DECISION_MODES: DecisionMode[] = ["off", "require", "trigger"];
+export const SELECTIVE_LOGICS = ["and", "and_all", "not", "not_all"] as const satisfies readonly SelectiveLogic[];
 
+/** The four timing fields, in the order the engine help names them. */
+export const TIMING_FIELDS = ["sticky", "cooldown", "delay", "ephemeral"] as const;
+
+/** The engine reads `selective` only to switch secondary keys on, so the editor
+ *  offers two types and derives the third from the secondary-keys switch. */
 export const statusOf = (e: Entry): EntryStatus =>
   !e.enabled ? "disabled" : e.constant ? "constant" : e.selective ? "selective" : "normal";
 
@@ -159,7 +195,35 @@ export function tagStats(entries: Entry[]): TagStat[] {
   return [...m.values()].sort((a, b) => b.n - a.n);
 }
 
+export interface CharacterOption {
+  id: string;
+  name: string;
+  tags: string[];
+}
+
+interface CharacterRow {
+  id: string;
+  name?: string;
+  data?: string;
+}
+
+/** The card JSON arrives as a string; an unreadable card keeps its id as its name. */
+function characterOption(row: CharacterRow): CharacterOption {
+  let card: { name?: string; tags?: unknown } = {};
+  try {
+    card = JSON.parse(row.data ?? "{}") as typeof card;
+  } catch {
+    card = {};
+  }
+  const tags = Array.isArray(card.tags) ? card.tags.filter((x): x is string => typeof x === "string") : [];
+  return { id: row.id, name: row.name || card.name || row.id, tags };
+}
+
 // ── API ──
+export const fetchCharacters = async (): Promise<CharacterOption[]> => {
+  const rows = await api<CharacterRow[]>("/characters");
+  return Array.isArray(rows) ? rows.map(characterOption).sort((a, b) => a.name.localeCompare(b.name)) : [];
+};
 export const fetchBooks = () => api<Lorebook[]>("/lorebooks");
 export const fetchEntries = (bookId: string) => api<Entry[]>(`/lorebooks/${bookId}/entries`);
 export const patchEntry = (bookId: string, id: string, patch: Record<string, unknown>) =>

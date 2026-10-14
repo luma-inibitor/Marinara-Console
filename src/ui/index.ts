@@ -4,15 +4,18 @@
 // Components are styled with Tailwind utilities in the JSX (DESIGN.md §5). The
 // co-located stylesheets still here are legacy — rewrite one as utilities when
 // the work already has you editing it.
+export { Accordion } from "./Accordion";
 export { Button } from "./Button";
 /** @public */
 export type { ButtonProps } from "./Button";
 export { Chip, Tag } from "./Chip";
+export { ChipEditor } from "./ChipEditor";
 export { CopyableText } from "./CopyableText";
 export { DetailSection } from "./DetailSection";
 export { Edu } from "./Edu";
 export { EmptyState } from "./EmptyState";
 export { ErrorState } from "./ErrorState";
+export { HelpTip } from "./HelpTip";
 export { FacetDrawer, FacetGroup, FacetTally, FacetToggle, facetSelected } from "./FacetDrawer";
 /** @public */
 export type { FacetGroupModel, FacetValue } from "./FacetDrawer";
@@ -48,6 +51,7 @@ export { Progress } from "./Progress";
 export type { ProgressProps } from "./Progress";
 export { RawJson } from "./RawJson";
 export { SaveBar } from "./SaveBar";
+export { SegmentedControl } from "./SegmentedControl";
 export { SearchBar } from "./SearchBar";
 export { SearchDisclosure } from "./SearchDisclosure";
 export { SectionKey } from "./SectionKey";

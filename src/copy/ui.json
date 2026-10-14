@@ -1,6 +1,5 @@
 {
   "_readme": "ui area copy: the strings the SHARED components in src/ui own. A string a caller supplies stays a prop. Anything here is a component's own fallback, its own structural label, or a sentence it assembles around a caller's noun. See src/copy/index.ts for the entry shapes and scripts/copycatalog.mjs for what is enforced. Keys beginning with an underscore are metadata and are never copy.",
-
   "ui.copy.copied": {
     "use": "activityview.copied"
   },
@@ -32,7 +31,6 @@
     "text": "root",
     "note": "Stands in for the node name in the fold control's accessible name when the node is the top of the document and therefore has no key. A JSON structural term the product never renders, because it never shows a JSON tree."
   },
-
   "ui.group.expand": {
     "text": "Expand {{label}} ({{count}})",
     "note": "Accessible name of a collapsed group header, in ListGroup and in JsonView's folds. Both say the same sentence about the same gesture, so they share one key. The catalog has no expand/collapse control at all; reviewqueue.moreConflicts uses 'expand' as a verb in running prose, not as a label."
@@ -41,7 +39,6 @@
     "text": "Collapse {{label}} ({{count}})",
     "note": "The counterpart to ui.group.expand, on an open group header and on JsonView's closing brace. Same absence upstream: the catalog contains the word 'collapse' in no key and no value."
   },
-
   "ui.error.tryAgain": {
     "use": "activityview.retry",
     "note": "Was 'Try again'. The catalog does hold that exact wording, but as `errors.tryAgain`, which sits outside the `ui.longTermMemory.` namespace the console can address — a mirror cannot point at it and a coinage of the same bytes is refused. So this points at the catalog's other retry affordance, which is also what the connection banner already renders (shell.conn.retry), and the two now agree."
@@ -82,7 +79,6 @@
     "text": "HTTP {{status}}",
     "note": "The numeric status, printed under the cause so a report can quote it. A protocol readout the product has no reason to own — upstream never surfaces a transport status to a reader."
   },
-
   "ui.facets.title": {
     "text": "Facets",
     "note": "The filter drawer's heading and its sheet's accessible name. The catalog has no occurrence of 'facet' in any key or value: it filters by named dimension (status, mode, scope) and has no word for the set of dimensions itself."
@@ -102,11 +98,9 @@
   "ui.facets.done": {
     "use": "memoryvault.done"
   },
-
   "ui.sheet.close": {
     "use": "memoryvault.close"
   },
-
   "ui.editor.cancel": {
     "use": "memoryvault.cancel"
   },
@@ -191,7 +185,6 @@
     "text": "New line",
     "note": "The accessible name of the button that inserts a line break, whose visible text is the ↵ glyph alone. The catalog has no markdown editing surface and never names a line break."
   },
-
   "ui.list.filteredTitle": {
     "text": "No {{what}} match these filters",
     "note": "ListEmpty's filtered heading. The catalog says this only about its own one noun (memoryvault.noMemoriesMatchTheseFilters, activityview.noActivityMatchesThisFilter); this component is shared across every list in the console, so the noun has to be the caller's."
@@ -220,7 +213,6 @@
     "text": "This is where {{what}} appear once you add them.",
     "note": "Says what the empty region is for rather than what is missing from it. The catalog's equivalent sentences instruct (‘Import a character… or create a memory manually’); this one describes, because the action is a button the caller supplies and repeating it in prose would say it twice."
   },
-
   "ui.loading.subject": {
     "text": "this view",
     "note": "Stands in for the noun in Loading's sentence when the caller names none. The catalog never loads an unnamed thing — every one of its fourteen loading strings names its subject — so it has no generic stand-in."
@@ -240,7 +232,6 @@
     "text": "The engine hasn’t responded in twelve seconds. It may be asleep, or the connection may have dropped.",
     "note": "Names both causes that actually occur here: the engine sleeps on its host, and the link to it can drop. Both are facts about this deployment, and the catalog has neither 'asleep' nor any string about a request that never came back."
   },
-
   "ui.mode.conversation": {
     "use": "sourcesworkspace.conversation"
   },
@@ -262,7 +253,6 @@
     "text": "none",
     "note": "Fills ui.mode.readout when no mode is lit, so the pill announces an empty set rather than a dangling label. The catalog has no bare 'none' — its absences are always a full sentence about a specific missing thing."
   },
-
   "ui.notfound.title": {
     "text": "{{what}} not found",
     "note": "NotFound's heading, naming the kind of record the link pointed at. The catalog's missing-record strings are per subject and phrased as availability ('The requested memory is no longer available'), never as a heading with the noun as a hole."
@@ -279,7 +269,6 @@
     "text": "Back to lorebooks",
     "note": "The default destination when a caller names none, in the catalog's own 'Back to {destination}' shape (longtermmemorydetail.backToAgents). The destination is a console tool, which upstream has no equivalent of."
   },
-
   "ui.rawjson.label": {
     "text": "Raw record",
     "note": "The summary of the fold that hides the underlying object. The catalog's 'record' is a memory's provenance panel (memoryvault.recordInfo) rather than the serialized object behind it, and it never offers the object itself."
@@ -289,7 +278,6 @@
     "other": "{{count}} lines",
     "note": "How much the raw fold is hiding, shown on the closed summary so a fold never reads as missing content. The catalog measures sources in entries and chunks and has no line count, because it never shows serialized text."
   },
-
   "ui.search.what": {
     "text": "Search {{what}}",
     "note": "The search field inside a disclosure, named after whatever the disclosure chooses. The catalog has eight 'Search {noun}' strings (searchMemories, searchChats, searchStatuses…) and no parameterised one; a shared control cannot pick among them."
@@ -299,29 +287,28 @@
     "other": "{{count}} matches",
     "note": "The tally inside the search field, shown only while there is a query. The catalog counts results per subject in prose (reviewqueue.rejectedCount, sourcesworkspace.value1LorebooksValue2Entries…) and has no bare match count for a search box to carry."
   },
-
   "ui.sections": {
     "text": "sections",
     "note": "The sections noun: the presets browser's section count and its sort chip, the memory detail card's heading over a memory's section list, and the subject the presets editor hands to its empty state ('No sections yet'). The catalog's memorySections is a memory's own detail list and renders as \"Memory details\" — a different thing under a colliding key name. Lowercase because the label call sites uppercase in CSS and the empty state wants it in prose."
   },
-
   "ui.moreCount": {
     "text": "+{{count}} more",
     "note": "How many items a clamped run is holding back — the keyword rail and each relation's link run on the memory detail card. The catalog folds hidden conflicts (moreConflicts) in a full sentence; this is a counter that has to fit at the end of the run it belongs to. Not plural-selected: it only ever shows above one."
   },
-
   "ui.showFewer": {
     "text": "show fewer",
     "note": "Refolds a clamped run to its one-line form; the counterpart to ui.moreCount. The catalog has no expandable run and so no word for closing one."
   },
-
   "ui.field.required": {
     "text": "required",
     "note": "Field's marker beside a label whose control must hold a value before the form saves. The catalog states every requirement as a full sentence about one field (memoryvault.memoryTitleRequired, memoryvault.detailNameRequired) and has no one-word marker to set beside a label."
   },
-
   "ui.field.optional": {
     "text": "optional",
     "note": "Field's marker beside a label whose control may stay empty. The catalog never marks a field as optional; every field it names is either required in a sentence or left unmarked, so there is no word to reuse."
+  },
+  "ui.accordion.hasError": {
+    "text": "has an error",
+    "note": "Accessible name of the dot badged onto a collapsed accordion header whose field failed validation, so the marker is not sighted-only. The catalog validates inline beside the field and has nothing to say about a fault hidden behind a closed section. Moved to ui.json when the accordion became a shared component; it names the error mark on any collapsed section header."
   }
 }
