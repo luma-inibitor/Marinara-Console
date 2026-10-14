@@ -1,5 +1,5 @@
-// The entry editor: a header, the text, then one accordion per question the
-// engine asks of an entry. Fields stage into a draft and only Save writes them.
+// The entry editor: a header, the text, then settings cards whose rows share
+// one label column. Fields stage into a draft and only Save writes them.
 import type { ReactNode } from "react";
 import { useRef, useState } from "react";
 import { tokensOf } from "../../shell/api";
@@ -29,13 +29,13 @@ import {
   Accordion,
   Chip,
   ChipEditor,
-  Field,
   HelpTip,
   Input,
   Menu,
   Picker,
   SaveBar,
   SegmentedControl,
+  Switch,
   Textarea,
 } from "../../ui";
 import type { MenuItem, PickerOption } from "../../ui";
@@ -77,7 +77,8 @@ const fmt = (n: number | null | undefined) => (n == null ? "" : String(n));
 /** The engine reads `or` as `and` and offers only these four. */
 const logicLabel = (l: Entry["selectiveLogic"]) => t(`lorebooks.logic.${l === "or" ? "and" : l}`);
 
-const LABEL = "t-label t-label-s text-dim";
+/** A settings card's label column, shared by rows and accordion headers. */
+const COLUMNS = "grid items-center gap-x-3 gap-y-2 @md:grid-cols-[12rem_minmax(0,1fr)]";
 
 export function EntryEditor(props: {
   entry: Entry;
@@ -131,9 +132,10 @@ export function EntryEditor(props: {
     .filter(([, mode, names]) => mode && mode !== "any" && names.length)
     .map(([label, mode, names]) => `${label}: ${filterValue(mode!, names)}`);
   const timingSet = TIMING_FIELDS.filter((f) => e[f] != null && e[f] !== 0);
+  const noKeys = !e.constant && e.keys.length === 0;
 
   return (
-    <div className="flex flex-col bg-surface-2">
+    <div className="@container flex flex-col bg-canvas">
       <Head
         entry={e}
         recursionLive={!!book.recursiveScanning}
@@ -142,60 +144,40 @@ export function EntryEditor(props: {
         onDelete={props.onDelete}
       />
 
-      <div className="flex flex-col gap-4 border-b border-edge px-3 pt-3 pb-4">
-        <div className="flex items-center gap-2">
-          <span className={LABEL}>{t("lorebooks.entry.type")}</span>
-          <SegmentedControl
-            className="ml-auto"
-            label={t("lorebooks.entry.type")}
-            value={e.constant ? "constant" : "normal"}
-            segments={[
-              { id: "normal", label: t("lorebooks.status.normal"), tone: "ok" },
-              { id: "constant", label: t("lorebooks.status.constant"), tone: "warn" },
-            ]}
-            onChange={(v) =>
-              merge(
-                v === "constant"
-                  ? { constant: true, ...(decision === "trigger" ? { decisionMode: "require" as const } : {}) }
-                  : { constant: false },
-              )
-            }
-          />
-        </div>
+      <div className="flex flex-col gap-4 p-4">
+        <Card>
+          <div className="flex flex-col gap-2 px-4 pt-3 pb-4">
+            <div className="flex min-h-tap-2 items-center gap-2">
+              <span className="t-label text-ink">{t("lorebooks.entry.subContent")}</span>
+              <HelpTip tip={t("lorebooks.entry.contentTip")} subject={t("lorebooks.entry.subContent")} />
+              <span className="ml-auto t-data text-data-s text-dim">
+                <b className="text-ink">{(e.content ?? "").length}</b> {t("ui.editor.charUnit")} ·{" "}
+                <b className="text-ink">{entryTokens(e)}</b> {t("lorebooks.unitTokens")}
+              </span>
+              <ExpandChip onClick={() => props.onExpand("content")} />
+            </div>
+            <Textarea
+              className="max-w-none"
+              rows={9}
+              value={e.content}
+              aria-label={t("lorebooks.entry.subContent")}
+              aria-invalid={err("content") ? true : undefined}
+              onInput={(ev) => set("content", ev.currentTarget.value)}
+            />
+            {err("content") && <FieldError text={err("content")!} />}
+          </div>
+        </Card>
 
-        <TextBlock
-          label={t("lorebooks.entry.subContent")}
-          tip={t("lorebooks.entry.contentTip")}
-          meta={
-            <>
-              <b className="text-ink">{(e.content ?? "").length}</b> {t("ui.editor.charUnit")} ·{" "}
-              <b className="text-ink">{entryTokens(e)}</b> {t("lorebooks.unitTokens")}
-            </>
-          }
-          onExpand={() => props.onExpand("content")}
-        >
-          <Textarea
-            className="max-w-none"
-            rows={8}
-            value={e.content}
-            aria-label={t("lorebooks.entry.subContent")}
-            aria-invalid={err("content") ? true : undefined}
-            onInput={(ev) => set("content", ev.currentTarget.value)}
-          />
-          {err("content") && <FieldError text={err("content")!} />}
-        </TextBlock>
-
-        <div className="grid items-start gap-4 min-[720px]:grid-cols-[minmax(0,1fr)_minmax(0,12rem)]">
-          <TextBlock
-            label={t("lorebooks.entry.subDescription")}
-            tip={t("lorebooks.entry.descriptionTip")}
-            meta={
-              <>
+        <Card>
+          <div className="flex flex-col gap-2 px-4 pt-3 pb-4">
+            <div className="flex min-h-tap-2 items-center gap-2">
+              <span className="t-label text-ink">{t("lorebooks.entry.subDescription")}</span>
+              <HelpTip tip={t("lorebooks.entry.descriptionTip")} subject={t("lorebooks.entry.subDescription")} />
+              <span className="ml-auto t-data text-data-s text-dim">
                 <b className="text-ink">{tokensOf(e.description)}</b> {t("lorebooks.unitTokens")}
-              </>
-            }
-            onExpand={() => props.onExpand("description")}
-          >
+              </span>
+              <ExpandChip onClick={() => props.onExpand("description")} />
+            </div>
             <Textarea
               className="max-w-none"
               rows={2}
@@ -205,294 +187,322 @@ export function EntryEditor(props: {
               aria-invalid={err("description") ? true : undefined}
               onInput={(ev) => set("description", ev.currentTarget.value)}
             />
-          </TextBlock>
-          <TextBlock label={t("lorebooks.entry.tag")}>
+          </div>
+          <Row label={t("lorebooks.entry.tag")}>
             <Input
+              className="max-w-80"
               value={e.tag ?? ""}
               placeholder={t("lorebooks.entry.tagPlaceholder")}
               aria-label={t("lorebooks.entry.tag")}
               onInput={(ev) => set("tag", ev.currentTarget.value)}
             />
-          </TextBlock>
-        </div>
-      </div>
+          </Row>
+        </Card>
 
-      <Accordion
-        {...section("keys")}
-        label={t("lorebooks.entry.subKeys")}
-        tip={t("lorebooks.entry.keysTip")}
-        error={!!err("keys")}
-        unavailable={e.constant}
-        summaryTone={!e.constant && e.keys.length === 0 ? "danger" : undefined}
-        summary={
-          e.constant ? (
-            t("lorebooks.row.alwaysInjected")
-          ) : e.keys.length === 0 ? (
-            t("lorebooks.row.noKeys")
-          ) : (
-            <>
-              <b className="text-ink">{e.keys.length}</b> {t("lorebooks.field.keys")}
-              {e.selective && e.secondaryKeys.length > 0 && (
+        <Card>
+          <Row label={t("lorebooks.entry.type")}>
+            <SegmentedControl
+              label={t("lorebooks.entry.type")}
+              value={e.constant ? "constant" : "normal"}
+              segments={[
+                { id: "normal", label: t("lorebooks.status.normal"), tone: "ok" },
+                { id: "constant", label: t("lorebooks.status.constant"), tone: "warn" },
+              ]}
+              onChange={(v) =>
+                merge(
+                  v === "constant"
+                    ? { constant: true, ...(decision === "trigger" ? { decisionMode: "require" as const } : {}) }
+                    : { constant: false },
+                )
+              }
+            />
+          </Row>
+
+          <Accordion
+            {...section("keys")}
+            label={t("lorebooks.entry.subKeys")}
+            tip={t("lorebooks.entry.keysTip")}
+            error={!!err("keys")}
+            unavailable={e.constant}
+            summaryTone={noKeys ? "danger" : e.constant ? undefined : "set"}
+            summary={
+              e.constant ? (
+                t("lorebooks.row.alwaysInjected")
+              ) : noKeys ? (
+                t("lorebooks.row.noKeys")
+              ) : (
                 <>
-                  {" "}
-                  · {logicLabel(e.selectiveLogic)} <b className="text-ink">{e.secondaryKeys.length}</b>
+                  {e.keys.length} {t("lorebooks.field.keys")}
+                  {e.selective && e.secondaryKeys.length > 0 && (
+                    <>
+                      {" "}
+                      · {logicLabel(e.selectiveLogic)} {e.secondaryKeys.length}
+                    </>
+                  )}
                 </>
-              )}
-            </>
-          )
-        }
-      >
-        <ChipEditor
-          values={e.keys}
-          highlight={props.evHits}
-          label={t("lorebooks.entry.subKeys")}
-          placeholder={t("lorebooks.entry.addKeyPlaceholder")}
-          onChange={(keys) => set("keys", keys)}
-        />
-        <div className="flex flex-wrap items-center gap-2">
-          <Chip pressed={!!e.matchWholeWords} onClick={() => set("matchWholeWords", !e.matchWholeWords)}>
-            {t("lorebooks.entry.wholeWords")}
-          </Chip>
-          <Chip pressed={!!e.caseSensitive} onClick={() => set("caseSensitive", !e.caseSensitive)}>
-            {t("lorebooks.entry.caseSensitive")}
-          </Chip>
-          <Chip pressed={!!e.useRegex} onClick={() => set("useRegex", !e.useRegex)}>
-            {t("lorebooks.entry.regex")}
-          </Chip>
-        </div>
-        <SettingRow label={t("lorebooks.entry.scanDepth")} tip={t("lorebooks.entry.scanDepthTip", { value: bookScan })}>
-          <NumberInput
-            label={t("lorebooks.entry.scanDepth")}
-            value={e.scanDepth}
-            placeholder={String(bookScan)}
-            onChange={(v) => set("scanDepth", v == null ? null : Math.max(0, Math.floor(v)))}
-          />
-        </SettingRow>
-        <div className="flex flex-col gap-3 border-t border-edge pt-3">
-          <SettingRow label={t("lorebooks.entry.secondaryKeys")} tip={t("lorebooks.entry.secondaryTip")}>
+              )
+            }
+          >
+            <ChipEditor
+              values={e.keys}
+              highlight={props.evHits}
+              label={t("lorebooks.entry.subKeys")}
+              placeholder={t("lorebooks.entry.addKeyPlaceholder")}
+              onChange={(keys) => set("keys", keys)}
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <Chip pressed={!!e.matchWholeWords} onClick={() => set("matchWholeWords", !e.matchWholeWords)}>
+                {t("lorebooks.entry.wholeWords")}
+              </Chip>
+              <Chip pressed={!!e.caseSensitive} onClick={() => set("caseSensitive", !e.caseSensitive)}>
+                {t("lorebooks.entry.caseSensitive")}
+              </Chip>
+              <Chip pressed={!!e.useRegex} onClick={() => set("useRegex", !e.useRegex)}>
+                {t("lorebooks.entry.regex")}
+              </Chip>
+            </div>
+            <SubRow label={t("lorebooks.entry.scanDepth")} tip={t("lorebooks.entry.scanDepthTip", { value: bookScan })}>
+              <NumberInput
+                label={t("lorebooks.entry.scanDepth")}
+                value={e.scanDepth}
+                placeholder={String(bookScan)}
+                onChange={(v) => set("scanDepth", v == null ? null : Math.max(0, Math.floor(v)))}
+              />
+            </SubRow>
+            <SubRow label={t("lorebooks.entry.secondaryKeys")} tip={t("lorebooks.entry.secondaryTip")}>
+              <div className="flex flex-wrap items-center gap-2">
+                <Switch
+                  checked={e.selective}
+                  label={t("lorebooks.entry.secondaryKeys")}
+                  onChange={(on) => set("selective", on)}
+                />
+                {e.selective && (
+                  <Picker
+                    label={t("lorebooks.entry.logic")}
+                    value={e.selectiveLogic === "or" ? "and" : e.selectiveLogic}
+                    options={SELECTIVE_LOGICS.map((l) => ({ id: l, label: logicLabel(l) }))}
+                    onChange={(v) => set("selectiveLogic", v as Entry["selectiveLogic"])}
+                  />
+                )}
+              </div>
+            </SubRow>
             {e.selective && (
-              <Picker
-                label={t("lorebooks.entry.logic")}
-                value={e.selectiveLogic === "or" ? "and" : e.selectiveLogic}
-                options={SELECTIVE_LOGICS.map((l) => ({ id: l, label: logicLabel(l) }))}
-                onChange={(v) => set("selectiveLogic", v as Entry["selectiveLogic"])}
+              <ChipEditor
+                values={e.secondaryKeys}
+                highlight={props.evHits}
+                label={t("lorebooks.entry.secondaryKeys")}
+                placeholder={t("lorebooks.entry.addKeyPlaceholder")}
+                onChange={(keys) => set("secondaryKeys", keys)}
               />
             )}
-            <Chip pressed={e.selective} onClick={() => set("selective", !e.selective)}>
-              {e.selective ? t("lorebooks.entry.enabled") : t("lorebooks.entry.off")}
-            </Chip>
-          </SettingRow>
-          {e.selective && (
-            <ChipEditor
-              values={e.secondaryKeys}
-              highlight={props.evHits}
-              label={t("lorebooks.entry.secondaryKeys")}
-              placeholder={t("lorebooks.entry.addKeyPlaceholder")}
-              onChange={(keys) => set("secondaryKeys", keys)}
-            />
-          )}
-        </div>
-      </Accordion>
+          </Accordion>
 
-      <div className="border-b border-edge px-3 py-1">
-        <SettingRow label={t("lorebooks.entry.probability")} tip={t("lorebooks.entry.probabilityTip")}>
-          <NumberInput
-            label={t("lorebooks.entry.probability")}
-            value={e.probability}
-            placeholder={t("lorebooks.entry.probabilityPlaceholder")}
-            unit="%"
-            wide
-            flag={e.probability != null && e.probability < 100}
-            onChange={(v) => set("probability", v == null || v >= 100 ? null : Math.max(0, v))}
-          />
-        </SettingRow>
-      </div>
-
-      <Accordion
-        {...section("position")}
-        label={t("presets.position")}
-        tip={t("lorebooks.entry.positionTip")}
-        summary={
-          <>
-            {POS_FULL[e.position] ?? ""}
-            {e.position === 2 && ` ${e.depth}`} · {t("lorebooks.field.order")} <b className="text-ink">{e.order}</b>
-          </>
-        }
-      >
-        <SegmentedControl
-          label={t("presets.position")}
-          labelCase="sentence"
-          value={e.position}
-          segments={POSITIONS.map((p) => ({ id: p, label: POS_COMPACT[p] ?? "", name: POS_FULL[p] }))}
-          onChange={(p) => set("position", p)}
-        />
-        {e.position === 2 && (
-          <>
-            <SettingRow label={t("lorebooks.entry.depth")} tip={t("lorebooks.entry.depthTip")}>
-              <NumberInput
-                label={t("lorebooks.entry.depth")}
-                value={e.depth}
-                placeholder="4"
-                onChange={(v) => set("depth", v == null ? 4 : Math.max(0, Math.floor(v)))}
-              />
-            </SettingRow>
-            <SettingRow label={t("presets.role")} tip={t("lorebooks.entry.roleTip")}>
-              <Picker
-                label={t("presets.role")}
-                value={e.role ?? "system"}
-                options={ROLES.map((r) => ({ id: r, label: t(`lorebooks.role.${r}`) }))}
-                onChange={(v) => set("role", v as Entry["role"])}
-              />
-            </SettingRow>
-          </>
-        )}
-        {e.position === 7 && (
-          <Field label={t("lorebooks.entry.outletName")}>
-            <Input
-              value={e.outletName}
-              placeholder={t("lorebooks.entry.outletPlaceholder")}
-              onInput={(ev) => set("outletName", ev.currentTarget.value)}
-            />
-          </Field>
-        )}
-        <SettingRow label={t("lorebooks.field.order")} tip={t("lorebooks.entry.orderTip")}>
-          <NumberInput
-            label={t("lorebooks.field.order")}
-            value={e.order}
-            placeholder="100"
-            onChange={(v) => set("order", v ?? 100)}
-          />
-        </SettingRow>
-      </Accordion>
-
-      <Accordion
-        {...section("filters")}
-        label={t("lorebooks.entry.filters")}
-        summaryTone={activeFilters.length ? "flag" : undefined}
-        summary={activeFilters.length ? activeFilters.join(" · ") : t("lorebooks.mode.any")}
-      >
-        <FilterRow
-          label={t("lorebooks.entry.characters")}
-          mode={e.characterFilterMode ?? "any"}
-          value={e.characterFilterIds ?? []}
-          options={props.characters.map((c) => ({ id: c.id, label: c.name }))}
-          onChange={(mode, ids) => merge({ characterFilterMode: mode, characterFilterIds: ids })}
-        />
-        <FilterRow
-          label={t("lorebooks.entry.characterTags")}
-          mode={e.characterTagFilterMode ?? "any"}
-          value={e.characterTagFilters ?? []}
-          options={characterTagOptions(props.characters, e.characterTagFilters ?? [])}
-          onChange={(mode, tags) => merge({ characterTagFilterMode: mode, characterTagFilters: tags })}
-        />
-        <FilterRow
-          label={t("lorebooks.entry.generation")}
-          mode={e.generationTriggerFilterMode ?? "any"}
-          value={e.generationTriggerFilters ?? []}
-          options={GENERATION_TRIGGERS.map((g) => ({ id: g, label: tAny(`lorebooks.trigger.${g}`) }))}
-          onChange={(mode, ids) => merge({ generationTriggerFilterMode: mode, generationTriggerFilters: ids })}
-        />
-        <div className="border-t border-edge pt-3">
-          <SettingRow label={t("lorebooks.entry.sources")} tip={t("lorebooks.entry.sourcesTip")}>
-            <Picker
-              multi
-              label={t("lorebooks.entry.sources")}
-              noneLabel={t("ui.mode.none")}
-              value={e.additionalMatchingSources ?? []}
-              options={MATCHING_SOURCES.map((s) => ({
-                id: s,
-                label: s === "character_tags" ? t("lorebooks.entry.characterTags") : tAny(`lorebooks.source.${s}`),
-              }))}
-              onChange={(ids) => set("additionalMatchingSources", ids)}
-            />
-          </SettingRow>
-        </div>
-      </Accordion>
-
-      <Accordion
-        {...section("timing")}
-        label={t("lorebooks.entry.timing")}
-        tip={t("lorebooks.entry.timingTip")}
-        summaryTone={timingSet.some((f) => f !== "sticky") ? "flag" : undefined}
-        summary={
-          timingSet.length
-            ? timingSet.map((f) => `${t(`lorebooks.timing.${f}`)} ${e[f]}`).join(" · ")
-            : t("lorebooks.entry.off")
-        }
-      >
-        <div className="grid grid-cols-2 gap-3 min-[720px]:grid-cols-4">
-          {TIMING_FIELDS.map((f) => (
-            <Field key={f} label={t(`lorebooks.timing.${f}`)}>
-              <Input
-                className="text-right tabular-nums"
-                inputMode="numeric"
-                value={fmt(e[f])}
-                placeholder={t("lorebooks.entry.off")}
-                onInput={(ev) => {
-                  const v = numberOrNull(ev.currentTarget.value);
-                  set(f, v == null || v <= 0 ? null : Math.floor(v));
-                }}
-              />
-            </Field>
-          ))}
-        </div>
-      </Accordion>
-
-      <Accordion
-        {...section("decision")}
-        label={t("lorebooks.entry.decision")}
-        tip={t("lorebooks.entry.decisionTip")}
-        summaryTone={decision === "require" ? "flag" : undefined}
-        summary={decision === "off" ? t("lorebooks.entry.off") : t(`lorebooks.decision.${decision}`)}
-      >
-        <SegmentedControl
-          label={t("lorebooks.entry.decision")}
-          value={decision}
-          segments={DECISION_MODES.map((m) => ({
-            id: m,
-            label: m === "off" ? t("lorebooks.entry.off") : t(`lorebooks.decision.${m}`),
-            disabledReason: m === "trigger" && e.constant ? t("lorebooks.entry.triggerConstant") : undefined,
-          }))}
-          onChange={(m) => set("decisionMode", m as DecisionMode)}
-        />
-        {decision !== "off" && (
-          <TextBlock
-            label={t("lorebooks.entry.decisionStatement")}
-            tip={decision === "require" ? t("lorebooks.entry.requireHint") : t("lorebooks.entry.triggerHint")}
-          >
-            <Textarea
-              className="max-w-none"
-              rows={2}
-              value={e.decisionStatement ?? ""}
-              placeholder={t("lorebooks.entry.decisionPlaceholder")}
-              aria-label={t("lorebooks.entry.decisionStatement")}
-              onInput={(ev) => set("decisionStatement", ev.currentTarget.value)}
-            />
-          </TextBlock>
-        )}
-      </Accordion>
-
-      <Accordion
-        {...section("group")}
-        label={t("memory.review.group")}
-        tip={t("lorebooks.entry.groupTip")}
-        summary={e.group ? `${e.group}${e.groupWeight != null ? ` · ${e.groupWeight}` : ""}` : t("ui.mode.none")}
-      >
-        <div className="grid grid-cols-[minmax(0,1fr)_6rem] gap-3">
-          <Field label={t("lorebooks.entry.groupName")}>
-            <Input value={e.group ?? ""} onInput={(ev) => set("group", ev.currentTarget.value)} />
-          </Field>
-          <Field label={t("lorebooks.entry.groupWeight")}>
-            <Input
-              className="text-right tabular-nums"
-              inputMode="numeric"
-              value={fmt(e.groupWeight)}
+          <Row label={t("lorebooks.entry.probability")} tip={t("lorebooks.entry.probabilityTip")}>
+            <NumberInput
+              label={t("lorebooks.entry.probability")}
+              value={e.probability}
               placeholder="100"
-              onInput={(ev) => set("groupWeight", numberOrNull(ev.currentTarget.value))}
+              unit="%"
+              flag={e.probability != null && e.probability < 100}
+              onChange={(v) => set("probability", v == null || v >= 100 ? null : Math.max(0, v))}
             />
-          </Field>
-        </div>
-      </Accordion>
+          </Row>
+
+          <Accordion
+            {...section("filters")}
+            label={t("lorebooks.entry.filters")}
+            summaryTone={activeFilters.length ? "flag" : undefined}
+            summary={activeFilters.length ? activeFilters.join(" · ") : t("lorebooks.mode.any")}
+          >
+            <FilterRow
+              label={t("lorebooks.entry.characters")}
+              mode={e.characterFilterMode ?? "any"}
+              value={e.characterFilterIds ?? []}
+              options={props.characters.map((c) => ({ id: c.id, label: c.name }))}
+              onChange={(mode, ids) => merge({ characterFilterMode: mode, characterFilterIds: ids })}
+            />
+            <FilterRow
+              label={t("lorebooks.entry.characterTags")}
+              mode={e.characterTagFilterMode ?? "any"}
+              value={e.characterTagFilters ?? []}
+              options={characterTagOptions(props.characters, e.characterTagFilters ?? [])}
+              onChange={(mode, tags) => merge({ characterTagFilterMode: mode, characterTagFilters: tags })}
+            />
+            <FilterRow
+              label={t("lorebooks.entry.generation")}
+              mode={e.generationTriggerFilterMode ?? "any"}
+              value={e.generationTriggerFilters ?? []}
+              options={GENERATION_TRIGGERS.map((g) => ({ id: g, label: tAny(`lorebooks.trigger.${g}`) }))}
+              onChange={(mode, ids) => merge({ generationTriggerFilterMode: mode, generationTriggerFilters: ids })}
+            />
+            <SubRow label={t("lorebooks.entry.sources")} tip={t("lorebooks.entry.sourcesTip")}>
+              <Picker
+                multi
+                label={t("lorebooks.entry.sources")}
+                noneLabel={t("ui.mode.none")}
+                value={e.additionalMatchingSources ?? []}
+                options={MATCHING_SOURCES.map((s) => ({
+                  id: s,
+                  label: s === "character_tags" ? t("lorebooks.entry.characterTags") : tAny(`lorebooks.source.${s}`),
+                }))}
+                onChange={(ids) => set("additionalMatchingSources", ids)}
+              />
+            </SubRow>
+          </Accordion>
+
+          <Accordion
+            {...section("timing")}
+            label={t("lorebooks.entry.timing")}
+            tip={t("lorebooks.entry.timingTip")}
+            summaryTone={timingSet.some((f) => f !== "sticky") ? "flag" : timingSet.length ? "set" : undefined}
+            summary={
+              timingSet.length
+                ? timingSet.map((f) => `${t(`lorebooks.timing.${f}`)} ${e[f]}`).join(" · ")
+                : t("lorebooks.entry.off")
+            }
+          >
+            <div className="grid max-w-xl grid-cols-2 gap-3 @xl:grid-cols-4">
+              {TIMING_FIELDS.map((f) => (
+                <label key={f} className="flex flex-col gap-1">
+                  <span className="t-label text-dim">{t(`lorebooks.timing.${f}`)}</span>
+                  <Input
+                    className="text-right tabular-nums"
+                    inputMode="numeric"
+                    value={fmt(e[f])}
+                    placeholder={t("lorebooks.entry.off")}
+                    onInput={(ev) => {
+                      const v = numberOrNull(ev.currentTarget.value);
+                      set(f, v == null || v <= 0 ? null : Math.floor(v));
+                    }}
+                  />
+                </label>
+              ))}
+            </div>
+          </Accordion>
+
+          <Accordion
+            {...section("decision")}
+            label={t("lorebooks.entry.decision")}
+            tip={t("lorebooks.entry.decisionTip")}
+            summaryTone={decision === "require" ? "flag" : decision === "trigger" ? "set" : undefined}
+            summary={decision === "off" ? t("lorebooks.entry.off") : t(`lorebooks.decision.${decision}`)}
+          >
+            <SegmentedControl
+              label={t("lorebooks.entry.decision")}
+              value={decision}
+              segments={DECISION_MODES.map((m) => ({
+                id: m,
+                label: m === "off" ? t("lorebooks.entry.off") : t(`lorebooks.decision.${m}`),
+                disabledReason: m === "trigger" && e.constant ? t("lorebooks.entry.triggerConstant") : undefined,
+              }))}
+              onChange={(m) => set("decisionMode", m as DecisionMode)}
+            />
+            {decision !== "off" && (
+              <SubRow
+                label={t("lorebooks.entry.decisionStatement")}
+                tip={decision === "require" ? t("lorebooks.entry.requireHint") : t("lorebooks.entry.triggerHint")}
+                top
+              >
+                <Textarea
+                  className="max-w-none"
+                  rows={2}
+                  value={e.decisionStatement ?? ""}
+                  placeholder={t("lorebooks.entry.decisionPlaceholder")}
+                  aria-label={t("lorebooks.entry.decisionStatement")}
+                  onInput={(ev) => set("decisionStatement", ev.currentTarget.value)}
+                />
+              </SubRow>
+            )}
+          </Accordion>
+        </Card>
+
+        <Card>
+          <Accordion
+            {...section("position")}
+            label={t("presets.position")}
+            tip={t("lorebooks.entry.positionTip")}
+            summaryTone={e.position !== 0 || e.order !== 100 ? "set" : undefined}
+            summary={
+              <>
+                {POS_FULL[e.position] ?? ""}
+                {e.position === 2 && ` ${e.depth}`} · {t("lorebooks.field.order")} {e.order}
+              </>
+            }
+          >
+            <SegmentedControl
+              label={t("presets.position")}
+              labelCase="sentence"
+              value={e.position}
+              segments={POSITIONS.map((p) => ({ id: p, label: POS_COMPACT[p] ?? "", name: POS_FULL[p] }))}
+              onChange={(p) => set("position", p)}
+            />
+            {e.position === 2 && (
+              <>
+                <SubRow label={t("lorebooks.entry.depth")} tip={t("lorebooks.entry.depthTip")}>
+                  <NumberInput
+                    label={t("lorebooks.entry.depth")}
+                    value={e.depth}
+                    placeholder="4"
+                    onChange={(v) => set("depth", v == null ? 4 : Math.max(0, Math.floor(v)))}
+                  />
+                </SubRow>
+                <SubRow label={t("presets.role")} tip={t("lorebooks.entry.roleTip")}>
+                  <Picker
+                    label={t("presets.role")}
+                    value={e.role ?? "system"}
+                    options={ROLES.map((r) => ({ id: r, label: t(`lorebooks.role.${r}`) }))}
+                    onChange={(v) => set("role", v as Entry["role"])}
+                  />
+                </SubRow>
+              </>
+            )}
+            {e.position === 7 && (
+              <SubRow label={t("lorebooks.entry.outletName")}>
+                <Input
+                  className="max-w-80"
+                  value={e.outletName}
+                  placeholder={t("lorebooks.entry.outletPlaceholder")}
+                  aria-label={t("lorebooks.entry.outletName")}
+                  onInput={(ev) => set("outletName", ev.currentTarget.value)}
+                />
+              </SubRow>
+            )}
+            <SubRow label={t("lorebooks.field.order")} tip={t("lorebooks.entry.orderTip")}>
+              <NumberInput
+                label={t("lorebooks.field.order")}
+                value={e.order}
+                placeholder="100"
+                onChange={(v) => set("order", v ?? 100)}
+              />
+            </SubRow>
+          </Accordion>
+
+          <Accordion
+            {...section("group")}
+            label={t("memory.review.group")}
+            tip={t("lorebooks.entry.groupTip")}
+            summaryTone={e.group ? "set" : undefined}
+            summary={e.group ? `${e.group}${e.groupWeight != null ? ` · ${e.groupWeight}` : ""}` : t("ui.mode.none")}
+          >
+            <SubRow label={t("lorebooks.entry.groupName")}>
+              <Input
+                className="max-w-80"
+                value={e.group ?? ""}
+                aria-label={t("lorebooks.entry.groupName")}
+                onInput={(ev) => set("group", ev.currentTarget.value)}
+              />
+            </SubRow>
+            <SubRow label={t("lorebooks.entry.groupWeight")}>
+              <NumberInput
+                label={t("lorebooks.entry.groupWeight")}
+                value={e.groupWeight}
+                placeholder="100"
+                onChange={(v) => set("groupWeight", v)}
+              />
+            </SubRow>
+          </Accordion>
+        </Card>
+      </div>
 
       {draft && <SaveBar draft={draft} onSave={props.onSave} conflictBody="lorebooks.entry.conflictBody" />}
     </div>
@@ -559,29 +569,42 @@ function Head(props: {
     { id: "delete", label: t("lorebooks.entry.delete"), onSelect: props.onDelete },
   ];
   return (
-    <div className="flex items-center gap-2 border-b border-edge px-3 py-2">
+    <div className="flex items-center gap-2 border-b border-edge bg-surface-1 px-3 py-2">
+      <Switch checked={e.enabled} label={t("lorebooks.entry.enabled")} onChange={(on) => set("enabled", on)} />
       <span
         aria-hidden
         className={cn(
           "size-2.5 shrink-0 rounded-full",
-          !e.enabled ? "border-[1.5px] border-off" : e.constant ? "bg-warn" : "bg-ok",
+          !e.enabled ? "border-[1.5px] border-edge-control" : e.constant ? "bg-warn" : "bg-ok",
         )}
       />
-      <Chip pressed={e.enabled} onClick={() => set("enabled", !e.enabled)}>
-        {t("lorebooks.entry.enabled")}
-      </Chip>
-      <input
-        className={cn(
-          "min-h-tap min-w-0 flex-1 rounded-sm border border-transparent bg-transparent px-2 font-prose text-title",
-          e.enabled ? "text-ink" : "text-dim",
-          "placeholder:text-dim hover:border-edge focus-visible:border-edge focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none",
-        )}
-        value={e.name}
-        placeholder={t("lorebooks.entry.untitled")}
-        aria-label={t("lorebooks.entry.nameLabel")}
-        onInput={(ev) => set("name", ev.currentTarget.value)}
-      />
-      {e.locked && <span className="t-label t-label-s text-dim">{t("lorebooks.entry.locked")}</span>}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <input
+          className={cn(
+            "min-h-tap w-full min-w-0 rounded-sm border border-transparent bg-transparent px-2 font-prose text-head font-semibold",
+            e.enabled ? "text-ink" : "text-dim",
+            "placeholder:text-dim hover:border-edge-control focus-visible:border-edge-control",
+            "focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none",
+          )}
+          value={e.name}
+          placeholder={t("lorebooks.entry.untitled")}
+          aria-label={t("lorebooks.entry.nameLabel")}
+          onInput={(ev) => set("name", ev.currentTarget.value)}
+        />
+        <span
+          className={cn(
+            "truncate px-2 t-data text-data-s",
+            !e.constant && e.keys.length === 0 ? "text-danger" : "text-dim",
+          )}
+        >
+          {e.constant
+            ? t("lorebooks.row.alwaysInjected")
+            : e.keys.length
+              ? e.keys.join(" · ")
+              : t("lorebooks.row.noKeys")}
+        </span>
+      </div>
+      {e.locked && <span className="t-label text-dim">{t("lorebooks.entry.locked")}</span>}
       {/* eslint-disable-next-line local/no-raw-button -- the Menu needs the trigger element as its anchor */}
       <button
         ref={anchor}
@@ -611,40 +634,44 @@ function Head(props: {
 
 // ── parts ──
 
-/** A labelled block of text with its counts and the full-screen editor. */
-function TextBlock(props: {
-  label: string;
-  tip?: string;
-  meta?: ReactNode;
-  onExpand?: () => void;
-  children: ReactNode;
-}) {
+function Card(props: { children: ReactNode }) {
+  return <section className="overflow-hidden rounded-lg border border-edge bg-surface-1">{props.children}</section>;
+}
+
+/** A card row: label and help in the label column, the control in the value column. */
+function Row(props: { label: string; tip?: string; top?: boolean; children: ReactNode }) {
   return (
-    <div className="flex min-w-0 flex-col gap-2">
-      <div className="flex min-h-tap-2 items-center gap-2">
-        <span className={LABEL}>{props.label}</span>
+    <div
+      className={cn(COLUMNS, "min-h-tap border-t border-edge px-4 py-2 first:border-t-0", props.top && "items-start")}
+    >
+      <span className={cn("flex items-center gap-2", props.top && "@md:pt-2")}>
+        <span className="t-label text-ink">{props.label}</span>
         {props.tip && <HelpTip tip={props.tip} subject={props.label} />}
-        {props.meta && <span className="ml-auto t-data text-data-s text-dim">{props.meta}</span>}
-        {props.onExpand && (
-          <Chip onClick={props.onExpand} title={t("lorebooks.record.editFullscreen")}>
-            <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />
-            <span className="sr-only">{t("lorebooks.record.editFullscreen")}</span>
-          </Chip>
-        )}
-      </div>
-      {props.children}
+      </span>
+      <div className="min-w-0">{props.children}</div>
     </div>
   );
 }
 
-/** A label and its help on the left, the control on the right. */
-function SettingRow(props: { label: string; tip: string; children: ReactNode }) {
+/** A row inside an open accordion, one step down in the hierarchy. */
+function SubRow(props: { label: string; tip?: string; top?: boolean; children: ReactNode }) {
   return (
-    <div className="flex min-h-tap flex-wrap items-center gap-2">
-      <span className={LABEL}>{props.label}</span>
-      <HelpTip tip={props.tip} subject={props.label} />
-      <span className="ml-auto flex items-center gap-2">{props.children}</span>
+    <div className={cn(COLUMNS, props.top && "items-start")}>
+      <span className={cn("flex items-center gap-2", props.top && "@md:pt-2")}>
+        <span className="t-label text-dim">{props.label}</span>
+        {props.tip && <HelpTip tip={props.tip} subject={props.label} />}
+      </span>
+      <div className="min-w-0">{props.children}</div>
     </div>
+  );
+}
+
+function ExpandChip(props: { onClick: () => void }) {
+  return (
+    <Chip onClick={props.onClick} title={t("lorebooks.record.editFullscreen")}>
+      <Fullscreen size={ICON_SIZE.sm} stroke={2} aria-hidden />
+      <span className="sr-only">{t("lorebooks.record.editFullscreen")}</span>
+    </Chip>
   );
 }
 
@@ -653,14 +680,12 @@ function NumberInput(props: {
   value: number | null | undefined;
   placeholder: string;
   unit?: string;
-  /** Room for a word placeholder such as "Blank = always". */
-  wide?: boolean;
   /** The value can stop the entry from firing. */
   flag?: boolean;
   onChange: (v: number | null) => void;
 }) {
   return (
-    <span className={cn("flex items-center gap-1", props.wide ? "w-44" : "w-24")}>
+    <span className="flex w-32 items-center gap-2">
       <Input
         className={cn("text-right tabular-nums", props.flag && "border-flag! text-flag!")}
         inputMode="numeric"
@@ -690,25 +715,26 @@ function FilterRow(props: {
   onChange: (mode: FilterMode, value: string[]) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className={cn(LABEL, "w-32 shrink-0")}>{props.label}</span>
-      <Picker
-        label={props.label}
-        value={props.mode}
-        options={FILTER_MODES.map((m) => ({ id: m, label: t(`lorebooks.mode.${m}`) }))}
-        onChange={(m) => props.onChange(m as FilterMode, props.value)}
-      />
-      {props.mode !== "any" && (
+    <SubRow label={props.label}>
+      <div className="flex flex-wrap items-center gap-2">
         <Picker
-          multi
-          className="min-w-0 flex-1"
           label={props.label}
-          noneLabel={t("ui.mode.none")}
-          value={props.value}
-          options={props.options}
-          onChange={(ids) => props.onChange(props.mode, ids)}
+          value={props.mode}
+          options={FILTER_MODES.map((m) => ({ id: m, label: t(`lorebooks.mode.${m}`) }))}
+          onChange={(m) => props.onChange(m as FilterMode, props.value)}
         />
-      )}
-    </div>
+        {props.mode !== "any" && (
+          <Picker
+            multi
+            className="min-w-0 flex-1"
+            label={props.label}
+            noneLabel={t("ui.mode.none")}
+            value={props.value}
+            options={props.options}
+            onChange={(ids) => props.onChange(props.mode, ids)}
+          />
+        )}
+      </div>
+    </SubRow>
   );
 }

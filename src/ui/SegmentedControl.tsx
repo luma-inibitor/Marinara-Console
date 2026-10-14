@@ -22,11 +22,19 @@ export function SegmentedControl<T extends string | number>(props: {
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-wrap gap-1", props.className)} role="group" aria-label={props.label}>
+    <div
+      className={cn(
+        "inline-flex w-fit flex-wrap gap-0.5 rounded-md border border-edge-control bg-canvas p-0.5",
+        props.className,
+      )}
+      role="group"
+      aria-label={props.label}
+    >
       {props.segments.map((s) => (
         <Button
           key={String(s.id)}
           size="sm"
+          variant="ghost"
           labelCase={props.labelCase}
           tone={props.value === s.id ? s.tone : undefined}
           pressed={props.value === s.id}

@@ -10,7 +10,7 @@ import { closeTopOverlay } from "../shell/overlays";
 
 const trigger = cva(
   [
-    "inline-flex items-center gap-1.5 rounded-md border border-edge bg-surface-1 t-label",
+    "inline-flex items-center gap-1.5 rounded-md border border-edge-control bg-surface-1 t-label",
     "transition-colors hover:border-faint hover:text-ink aria-expanded:bg-surface-2 aria-expanded:text-ink",
     "focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none",
   ],

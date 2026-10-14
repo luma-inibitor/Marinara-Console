@@ -52,6 +52,7 @@ export type { ProgressProps } from "./Progress";
 export { RawJson } from "./RawJson";
 export { SaveBar } from "./SaveBar";
 export { SegmentedControl } from "./SegmentedControl";
+export { Switch } from "./Switch";
 export { SearchBar } from "./SearchBar";
 export { SearchDisclosure } from "./SearchDisclosure";
 export { SectionKey } from "./SectionKey";

@@ -34,7 +34,7 @@ export const Default: Story = {
     const header = within(canvasElement).getByRole("button", { name: /^Timing/ });
     await step("the closed header carries its value", async () => {
       await expect(header).toHaveAttribute("aria-expanded", "false");
-      await expect(header).toHaveTextContent("Sticky 2 · Cooldown 3");
+      await expect(header).toHaveAccessibleName("Timing Sticky 2 · Cooldown 3");
     });
     await step("Enter opens it", async () => {
       header.focus();

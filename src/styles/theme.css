@@ -19,6 +19,7 @@
   --color-surface-3: var(--surface-3);
   --color-edge: var(--edge);
   --color-edge-strong: var(--edge-strong);
+  --color-edge-control: var(--edge-control);
 
   /* text */
   --color-ink: var(--text);

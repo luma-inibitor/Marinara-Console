@@ -79,7 +79,7 @@ export function Field(props: FieldProps) {
 }
 
 const CONTROL =
-  "w-full min-w-0 rounded-sm border border-edge bg-surface-2 text-ink placeholder:text-dim " +
+  "w-full min-w-0 rounded-sm border border-edge-control bg-canvas text-ink placeholder:text-dim " +
   "focus-visible:shadow-[var(--focus-ring)] focus-visible:outline-none " +
   "disabled:cursor-default disabled:opacity-45 aria-[invalid=true]:border-danger";
 const LINE = `${CONTROL} min-h-tap px-2 t-data`;

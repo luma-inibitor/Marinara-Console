@@ -456,10 +456,6 @@
     "text": "Probability",
     "note": "Engine en.json ui.lorebooks.lorebookentryrow.probability, verbatim."
   },
-  "lorebooks.entry.probabilityPlaceholder": {
-    "text": "Blank = always",
-    "note": "Engine en.json lorebook.editor.bulk.probabilityPlaceholder, verbatim."
-  },
   "lorebooks.entry.probabilityTip": {
     "text": "Trigger probability (0–100%). 100% always fires when keys match. A Constant entry rolls it too.",
     "note": "Engine ui.lorebooks.lorebookentryrow.triggerProbability0100100AlwaysFiresWhenKeys plus one sentence: keyword-scanner.ts rolls probability for constant entries as well, which the engine's text leaves out."

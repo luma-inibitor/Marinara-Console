@@ -5,8 +5,8 @@ import { cn } from "./cn";
 import { ICON_SIZE, Remove } from "./icons";
 
 const INPUT =
-  "min-h-tap-2 min-w-32 flex-1 rounded-md border border-dashed border-edge-strong bg-transparent px-2.5 " +
-  "t-data text-data text-ink placeholder:text-dim focus-visible:border-solid focus-visible:border-accent focus-visible:outline-none";
+  "min-h-tap-2 min-w-32 flex-1 rounded-md border border-edge-control bg-canvas px-2.5 " +
+  "t-data text-data text-ink placeholder:text-dim focus-visible:border-accent focus-visible:outline-none";
 
 /** Values as removable chips with an inline field; a paste splits on commas and newlines. */
 export function ChipEditor(props: {

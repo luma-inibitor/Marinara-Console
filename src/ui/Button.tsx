@@ -41,7 +41,7 @@ const button = cva(
       { pressed: false, variant: "primary", tone: "danger", className: "border-danger bg-danger text-danger-ink" },
       { pressed: false, variant: "primary", tone: "ok", className: "border-ok bg-ok text-ok-ink" },
       { pressed: false, variant: "primary", tone: "warn", className: "border-warn bg-warn text-warn-ink" },
-      { pressed: false, variant: "secondary", tone: "neutral", className: "border-edge-strong text-ink" },
+      { pressed: false, variant: "secondary", tone: "neutral", className: "border-edge-control text-ink" },
       {
         pressed: false,
         variant: "secondary",

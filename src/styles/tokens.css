@@ -10,6 +10,7 @@
   --surface-3: #232b37;
   --edge: #232a38;
   --edge-strong: #33405a;
+  --edge-control: #64728c; /* a control's outline: ≥3:1 on canvas, surface-1 and surface-2 */
 
   /* ── text ── */
   --text: #e2e8f1;
