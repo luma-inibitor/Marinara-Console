@@ -157,7 +157,8 @@ this catalog in the same change.
   lorebook tool.
 - **Accordion** — data-bearing summary header, chevron, multi-expand, state
   persists across navigation. Badge errors on collapsed headers, and expand
-  automatically on error.
+  automatically on error. `src/ui/Accordion.tsx`, which the lorebook entry editor
+  uses.
 - **Console header** — sticky. Title row · probe/search field · meter bar · chip
   rail (sort/filter). Meters show budget/aggregate as data, one line.
 - **Master-detail** — desktop split (list keyboard-navigable, detail in place),
@@ -166,8 +167,15 @@ this catalog in the same change.
   (teaches them), local-state fast.
 - **Dock** (mobile) / **toolbar** (desktop) — 2-3 primary actions, labeled.
 - **Segmented control** — 2-5 exclusive modes (Find/Test pattern).
+  `src/ui/SegmentedControl.tsx`.
 - **Stepper** — ± for numerics on touch, direct input on desktop.
+- **Switch** — an on/off setting that applies at once, such as an entry's
+  Enabled state. `src/ui/Switch.tsx`.
 - **Chip editor** — keys/tags: add, delete, highlight-on-match.
+  `src/ui/ChipEditor.tsx`.
+- **Help tip** — the information icon beside a heading. Its text shows on
+  hover, focus or tap, and it can line up with either edge so a tip near the
+  right edge of a panel stays on screen. `src/ui/HelpTip.tsx`.
 - **Save pill** — autosave state per record.
 - **Toast** — transient confirmation + undo carrier. Never the only place an
   error appears.

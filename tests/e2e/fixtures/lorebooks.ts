@@ -17,7 +17,15 @@ import type { Entry, Lorebook } from "../../../src/tools/lorebooks/data";
 export const BOOK_ID = "lb-atlas";
 
 export const BOOKS: Lorebook[] = [
-  { id: BOOK_ID, name: "Atlas of the Harbour", tokenBudget: 2000, enabled: true },
+  {
+    id: BOOK_ID,
+    name: "Atlas of the Harbour",
+    tokenBudget: 2000,
+    enabled: true,
+    scanDepth: 4,
+    recursiveScanning: false,
+    excludeFromVectorization: true,
+  },
   { id: "lb-cast", name: "Standing Cast", tokenBudget: 1200, enabled: true },
   { id: "lb-rules", name: "House Rules", tokenBudget: 600, enabled: false },
 ];
@@ -65,11 +73,17 @@ const ATLAS: Entry[] = [
     keys: ["fog", "mist"],
     selective: true,
     secondaryKeys: ["morning"],
+    characterFilterMode: "include",
+    characterFilterIds: ["char-mira", "char-tolley"],
+    sticky: 2,
     content: "Past the fog line the lamps are useless and the bell is the only navigation.",
   }),
   entry({
     id: "e-tidebell",
     name: "Tide bell",
+    probability: 60,
+    decisionMode: "require",
+    decisionStatement: "A boat is coming in or has wrecked.",
     tag: "places",
     order: 30,
     keys: ["bell", "tide bell"],

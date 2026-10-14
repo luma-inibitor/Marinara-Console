@@ -28,14 +28,6 @@
   "lorebooks.retry": {
     "use": "activityview.retry"
   },
-  "lorebooks.valueYes": {
-    "text": "yes",
-    "note": "The advanced pane prints engine booleans as words, and this is the true half — the vector row, meaning an embedding is stored for this entry. The product renders booleans as switches that announce themselves and never prints one as a word."
-  },
-  "lorebooks.valueNo": {
-    "text": "no",
-    "note": "The false half of lorebooks.valueYes. Written 'no' rather than 'none' because the shared mode pill already owns the bare 'none' (ui.mode.none) and one string may have only one key; 'no' is also the truer answer to a yes/no field."
-  },
   "lorebooks.untagged": {
     "text": "untagged",
     "note": "Stands in for the tag on an entry that has none, in the row's tag slot and as a group heading. Lorebook entry tags are an engine field the memory agent never reads, so the catalog has no name for an entry that lacks one; its own 'tags' (memoryvault.tags) are System labels on a memory."
@@ -51,30 +43,6 @@
   "lorebooks.status.constant": {
     "text": "Constant",
     "note": "Engine vocabulary: an entry injected on every activation regardless of keys. The word appears nowhere in the vendored catalog — the memory agent has no always-on record, because recall is by definition conditional on the message."
-  },
-  "lorebooks.status.selective": {
-    "text": "Selective",
-    "note": "Engine vocabulary: an entry whose primary keys must also satisfy the secondary-key logic. Same absence as lorebooks.status.constant — the catalog's matching lanes are scored and fused, never gated by a second key set the author wrote."
-  },
-  "lorebooks.status.disabled": {
-    "text": "Disabled",
-    "note": "Engine vocabulary: an entry switched off and never injected. The catalog uses 'disabling' once, about chat modes (memoryvault.lastModeRequired), and has no state noun for a record that is present but inert."
-  },
-  "lorebooks.statusHint.normal": {
-    "text": "Triggers when primary keys match the scanned text.",
-    "note": "Explains the Normal status under the segmented control. Describes lorebook keyword scanning, which the catalog only ever describes for memories ('Keyword matching checks the compact keywords saved with each memory') — a different mechanism over different data."
-  },
-  "lorebooks.statusHint.constant": {
-    "text": "Injects every time this lorebook is active.",
-    "note": "Explains the Constant status. The catalog's injection strings are all retrospective reports about one recall (lastinjectionsummary.*); it has no forward statement of an unconditional rule, because it has no unconditional records."
-  },
-  "lorebooks.statusHint.selective": {
-    "text": "Primary keys must match with the secondary-key logic.",
-    "note": "Explains the Selective status. Primary and secondary keys are lorebook engine fields; the catalog has one flat keyword list per memory and therefore no vocabulary for a two-tier key test."
-  },
-  "lorebooks.statusHint.disabled": {
-    "text": "Never injected while disabled.",
-    "note": "Explains the Disabled status. Same absence as lorebooks.status.disabled: nothing upstream can be present in the store and excluded from every recall by an author's switch."
   },
   "lorebooks.pos.beforeChar.compact": {
     "text": "↑Char",
@@ -223,10 +191,6 @@
     "text": "Content",
     "note": "Accordion label for the entry text that is actually injected. The catalog's nearest nouns are bound to a phrase — memorysettings.contentToAdd, reviewqueue.proposedContent, memoryvault.importedContent — and none is the bare field name."
   },
-  "lorebooks.entry.subTrigger": {
-    "text": "Trigger & Position",
-    "note": "Accordion label over the status control, the position control and the order stepper: when the entry fires and where it lands. Both halves are lorebook engine concepts the memory agent has no access to, so the pairing cannot be borrowed."
-  },
   "lorebooks.entry.subAdvanced": {
     "text": "Advanced",
     "note": "Accordion label over the read-only dump of the twenty-odd engine fields this tool does not edit. The catalog says 'advanced' only inside sentences (extractiondetails.advancedExtractionDetails, and the placement note); it has no section named for the fields it declines to explain."
@@ -234,58 +198,17 @@
   "lorebooks.entry.nameLabel": {
     "use": "extractionprompttemplates.name"
   },
-  "lorebooks.entry.hasError": {
-    "text": "has an error",
-    "note": "Accessible name of the dot badged onto a collapsed accordion header whose field failed validation, so the marker is not sighted-only. The catalog validates inline beside the field and has nothing to say about a fault hidden behind a closed section."
-  },
-  "lorebooks.entry.removeKey": {
-    "use": "pill.removeValue1",
-    "note": "Accessible name of the × on one key chip. The catalog's own chip already names what it removes, so the key chip borrows it verbatim rather than coining a second 'Remove {x}'."
-  },
-  "lorebooks.entry.addKeyLabel": {
-    "text": "Add key",
-    "note": "Accessible name of the inline key input, which replaced a window.prompt. Deliberately not memoryvault.addKeyword: a lorebook key is a literal trigger string the engine scans for, not a keyword extracted for recall scoring, and the engine's own field is called keys."
-  },
   "lorebooks.entry.addKeyPlaceholder": {
     "text": "+ key",
     "note": "Visible placeholder of the same input, sized to sit in the chip row as one more chip. The catalog's add affordances are all full-size buttons with a verb phrase; it has no control shaped like the items it appends to."
-  },
-  "lorebooks.entry.keysNone": {
-    "text": "no keys",
-    "note": "The primary-key accordion's collapsed summary when the entry has none — the one condition in this pane that is always a mistake, so it is stated rather than left blank. The row-level lorebooks.row.noKeys spells out the consequence; this is the same fact in a summary slot two words wide."
   },
   "lorebooks.entry.descriptionPlaceholder": {
     "text": "Brief summary for routing.",
     "note": "Placeholder of the description textarea, saying what the field is for: the engine shows it to the model when deciding whether the entry is relevant. Upstream has no such field and so no guidance about filling one."
   },
-  "lorebooks.entry.lowerOrder": {
-    "text": "Lower order",
-    "note": "Accessible name of the − step on the order control. The catalog has no author-assigned ordering (see lorebooks.field.order) and therefore no verbs for moving a record within one."
-  },
-  "lorebooks.entry.raiseOrder": {
-    "text": "Raise order",
-    "note": "Accessible name of the + step, paired with lorebooks.entry.lowerOrder. Same absence upstream; sourceoperation.move is a transfer between scopes, not a change of rank."
-  },
-  "lorebooks.entry.advChanged": {
-    "text": "changed",
-    "note": "Summarises the advanced pane on its collapsed header: how many of the untouched engine fields differ from their defaults. The catalog's 'changed' always names what changed (sourcesworkspace.contextChanged, reviewqueue.editedChange) and never counts fields against a default set."
-  },
   "lorebooks.entry.advAllDefault": {
     "text": "all default",
     "note": "The same summary when nothing differs, which is the reassuring case and worth stating rather than leaving blank. The catalog talks about defaults as settings you may return to (memorysettings.resetMemorySettingsDescription) and never as a property a record currently has."
-  },
-  "lorebooks.entry.fieldVector": {
-    "text": "vector",
-    "note": "Row name in the advanced dump for whether the engine has an embedding stored for this entry. The catalog says 'embedding' in prose about the recall lanes and never labels the fact as a field, because a reader upstream cannot see per-record index state."
-  },
-  "lorebooks.entry.fieldUpdated": {
-    "text": "updated",
-    "despite": "memoryvault.updated",
-    "note": "Row name in the advanced dump for the entry's modification time. The catalog has the word as memoryvault.updated, but capitalized as a metadata heading; this row sits in a column of literal engine field names (selectiveLogic, groupWeight, excludeRecursion) and a capital would read as the only prose in a table of identifiers."
-  },
-  "lorebooks.entry.updatedAtUtc": {
-    "text": "{{timestamp}} UTC",
-    "note": "The modification time itself, stamped with its zone because the value comes off the engine unconverted and a local-looking time that is not local is worse than none. The catalog's one timestamp (lastinjectionsummary.recalledAt) is host-formatted and carries no zone."
   },
   "lorebooks.entry.delete": {
     "text": "Delete entry",
@@ -452,5 +375,356 @@
   "lorebooks.record.backToBooks": {
     "text": "Back to the lorebook list",
     "note": "Accessible name of the audit screen's back control. Deliberately worded away from ui.notfound.back ('Back to lorebooks'), which is the recovery button on a dead link and belongs to the shared component; this is ordinary upward navigation and scripts/copycatalog.mjs allows each string exactly one key."
+  },
+  "lorebooks.entry.enabled": {
+    "text": "Enabled",
+    "note": "The engine draws a bare switch whose title is ui.lorebooks.lorebookentryrow.entryEnabled 'Entry enabled'. A pressed chip needs a visible word, and the entry is already the subject of the panel."
+  },
+  "lorebooks.entry.type": {
+    "text": "Entry type",
+    "note": "Engine ui.lorebooks.lorebookentryrow.entryTypeValue1ChooseEntryType reads 'Entry type: {{value1}}', the accessible name of its hidden status menu. Here the control is visible and needs that same label without the value."
+  },
+  "lorebooks.entry.contentTip": {
+    "text": "What the AI is told when this entry activates. Write it the way you'd want the AI to know it.",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.theTextThatGetsInjectedIntoTheAiS, verbatim."
+  },
+  "lorebooks.entry.descriptionTip": {
+    "text": "A short note on what this entry is about. Knowledge Router reads it to decide whether to use the entry; the main AI never sees it.",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.briefSummaryOfWhatThisEntryIsAboutUsed, verbatim."
+  },
+  "lorebooks.entry.tag": {
+    "text": "Tag",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.tag, verbatim."
+  },
+  "lorebooks.entry.tagPlaceholder": {
+    "text": "e.g. location, item, lore",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.eGLocationItemLore, verbatim."
+  },
+  "lorebooks.entry.keysTip": {
+    "text": "When any of these words come up in the chat, the AI gets this entry's content.",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.keywordsThatTriggerThisEntryWhenAnyOfThese, verbatim."
+  },
+  "lorebooks.entry.secondaryKeys": {
+    "text": "Secondary Keys",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.secondaryKeys, verbatim. The switch that turns them on is the engine's `selective` flag."
+  },
+  "lorebooks.entry.secondaryTip": {
+    "text": "Additional keywords used with SillyTavern-style selective logic. Any means at least one secondary key; All means every secondary key.",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.additionalKeywordsUsedWithSillytavernStyleSelectiveLogicAny, verbatim."
+  },
+  "lorebooks.entry.logic": {
+    "text": "Logic",
+    "note": "Engine ui.lorebooks.expandeddrawer.logic is 'Logic:'. The colon belongs to its inline layout; here it labels a picker, which supplies its own separator."
+  },
+  "lorebooks.logic.and": {
+    "text": "AND Any",
+    "note": "Engine LorebookEntryRow.tsx SELECTIVE_LOGIC_OPTIONS, a hardcoded label with no en.json key. Mirrored so the four options read as the engine shows them."
+  },
+  "lorebooks.logic.and_all": {
+    "text": "AND All",
+    "note": "Engine LorebookEntryRow.tsx SELECTIVE_LOGIC_OPTIONS, a hardcoded label with no en.json key. Mirrored so the four options read as the engine shows them."
+  },
+  "lorebooks.logic.not": {
+    "text": "NOT Any",
+    "note": "Engine LorebookEntryRow.tsx SELECTIVE_LOGIC_OPTIONS, a hardcoded label with no en.json key. Mirrored so the four options read as the engine shows them."
+  },
+  "lorebooks.logic.not_all": {
+    "text": "NOT All",
+    "note": "Engine LorebookEntryRow.tsx SELECTIVE_LOGIC_OPTIONS, a hardcoded label with no en.json key. Mirrored so the four options read as the engine shows them."
+  },
+  "lorebooks.entry.wholeWords": {
+    "text": "Whole Words",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.wholeWords, verbatim."
+  },
+  "lorebooks.entry.caseSensitive": {
+    "text": "Case Sensitive",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.caseSensitive, verbatim."
+  },
+  "lorebooks.entry.regex": {
+    "text": "Regex",
+    "note": "The engine toggles regex from an icon titled ui.lorebooks.lorebookentryrow.enableRegexKeyMatching 'Enable regex key matching'. Beside Whole Words and Case Sensitive it needs a visible label of the same length."
+  },
+  "lorebooks.entry.scanDepth": {
+    "text": "Scan Depth",
+    "note": "Engine en.json ui.lorebooks.lorebookeditor.scanDepth, verbatim. The engine sets it per lorebook only; the entry field `scanDepth` has no control upstream and inherits the book's value when blank."
+  },
+  "lorebooks.entry.scanDepthTip": {
+    "text": "How many recent messages are searched for keys. Leave it blank to use this lorebook's Scan Depth of {{value}}.",
+    "note": "The entry-level scanDepth field has no control or help text upstream. The sentence states the engine's fallback (lorebook/index.ts) and the inherited number, since a keyword entry that never fires is most often scanning too few messages."
+  },
+  "lorebooks.entry.probability": {
+    "text": "Probability",
+    "note": "Engine en.json ui.lorebooks.lorebookentryrow.probability, verbatim."
+  },
+  "lorebooks.entry.probabilityTip": {
+    "text": "Trigger probability (0–100%). 100% always fires when keys match. A Constant entry rolls it too.",
+    "note": "Engine ui.lorebooks.lorebookentryrow.triggerProbability0100100AlwaysFiresWhenKeys plus one sentence: keyword-scanner.ts rolls probability for constant entries as well, which the engine's text leaves out."
+  },
+  "lorebooks.entry.positionTip": {
+    "text": "Where the entry goes in the prompt: Before Character Definitions, After Character Definitions, @ Depth (inside the chat history), or Outlet (only where an Outlet macro with its name is used).",
+    "note": "Engine en.json ui.lorebooks.lorebookentryrow.positionInThePromptBeforeCharacterAfterCharacterOr, verbatim."
+  },
+  "lorebooks.entry.depth": {
+    "text": "Depth",
+    "note": "Engine en.json ui.lorebooks.lorebookentryrow.depth, verbatim."
+  },
+  "lorebooks.entry.depthTip": {
+    "text": "Depth (messages back from the latest) where this entry is injected.",
+    "note": "Engine en.json ui.lorebooks.lorebookentryrow.depthMessagesBackFromTheLatestWhereThisEntry, verbatim."
+  },
+  "lorebooks.entry.roleTip": {
+    "text": "Who the entry's text appears to come from in the prompt. Only matters for @ Depth entries.",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.whichRoleThisEntrySContentIsAttributedTo, verbatim."
+  },
+  "lorebooks.role.system": {
+    "text": "System",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.system, verbatim."
+  },
+  "lorebooks.role.user": {
+    "text": "User",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.user, verbatim."
+  },
+  "lorebooks.role.assistant": {
+    "text": "Assistant",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.assistant, verbatim."
+  },
+  "lorebooks.entry.outletName": {
+    "text": "Outlet name",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.outletName, verbatim."
+  },
+  "lorebooks.entry.outletPlaceholder": {
+    "text": "e.g. character_rules",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.outletNamePlaceholder, verbatim."
+  },
+  "lorebooks.entry.orderTip": {
+    "text": "Insertion order when multiple entries activate (lower = earlier in prompt).",
+    "note": "Engine en.json ui.lorebooks.lorebookentryrow.insertionOrderWhenMultipleEntriesActivateLowerEarlierIn, verbatim."
+  },
+  "lorebooks.entry.filters": {
+    "text": "Context filters & matching sources",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.contextFiltersMatchingSources, verbatim."
+  },
+  "lorebooks.entry.characters": {
+    "use": "memoryvault.characters"
+  },
+  "lorebooks.entry.characterTags": {
+    "text": "Character tags",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.characterTags, verbatim."
+  },
+  "lorebooks.entry.generation": {
+    "text": "Generation",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.generation, verbatim."
+  },
+  "lorebooks.entry.sources": {
+    "text": "Additional matching sources",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.additionalMatchingSources, verbatim."
+  },
+  "lorebooks.entry.sourcesTip": {
+    "text": "Optional card fields to scan for this entry's keywords in addition to recent chat.",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.optionalCardFieldsToScanForThisEntryS, verbatim."
+  },
+  "lorebooks.mode.any": {
+    "text": "Any",
+    "note": "Engine LorebookEntryRow.tsx FILTER_MODE_LABEL.any, hardcoded with no en.json key. It is also the collapsed summary of a filter that lets everything through."
+  },
+  "lorebooks.mode.include": {
+    "text": "Only",
+    "note": "Engine LorebookEntryRow.tsx FILTER_MODE_LABEL.include, hardcoded with no en.json key. The stored value is `include`; the engine shows it as Only."
+  },
+  "lorebooks.mode.exclude": {
+    "text": "Exclude",
+    "note": "Engine LorebookEntryRow.tsx FILTER_MODE_LABEL.exclude, hardcoded with no en.json key. Mirrored so the console and the engine name the mode alike."
+  },
+  "lorebooks.entry.filterSummary": {
+    "use": "longtermmemorydetail.value1Value2",
+    "note": "The collapsed summary of one filter, mode then names: 'Only Evan, Newland Ark'."
+  },
+  "lorebooks.entry.timing": {
+    "text": "Timing",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.timing, verbatim."
+  },
+  "lorebooks.entry.timingTip": {
+    "text": "Sticky stays active for N generations after triggering. Cooldown waits N generations before it can trigger again. Delay waits N generations before the first activation. Ephemeral turns the entry off in a chat after N activations. Blank means off.",
+    "note": "Engine ui.lorebooks.expandeddrawer.stickyStaysActiveForNMessagesAfterTriggeringCooldown says messages and '0 = unlimited'. keyword-scanner.ts counts scans, one per generation, per chat, and the UI saves 0 as null, so the engine's wording is untrue here."
+  },
+  "lorebooks.timing.sticky": {
+    "text": "Sticky",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.sticky, verbatim."
+  },
+  "lorebooks.timing.cooldown": {
+    "text": "Cooldown",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.cooldown, verbatim."
+  },
+  "lorebooks.timing.delay": {
+    "text": "Delay",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.delay, verbatim."
+  },
+  "lorebooks.timing.ephemeral": {
+    "text": "Ephemeral",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.ephemeral, verbatim."
+  },
+  "lorebooks.entry.off": {
+    "use": "memorysettings.off"
+  },
+  "lorebooks.entry.decision": {
+    "text": "Decision",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.decision, verbatim."
+  },
+  "lorebooks.entry.decisionTip": {
+    "text": "Let the Decision model decide whether this entry applies, from a statement about the recent chat.",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.decisionHelp, verbatim."
+  },
+  "lorebooks.decision.require": {
+    "text": "Require",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.decisionModeRequire, verbatim."
+  },
+  "lorebooks.decision.trigger": {
+    "text": "Trigger",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.decisionModeTrigger, verbatim."
+  },
+  "lorebooks.entry.decisionStatement": {
+    "text": "Decision statement",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.decisionStatement, verbatim."
+  },
+  "lorebooks.entry.decisionPlaceholder": {
+    "text": "In the latest message, a dragon is physically present.",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.decisionStatementPlaceholder, verbatim."
+  },
+  "lorebooks.entry.requireHint": {
+    "text": "The entry activates as usual, but only if this statement is also true. It's only asked on turns when the entry would activate anyway: by keyword, by meaning, as a Constant, or from a map location.",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.decisionRequireHint, verbatim."
+  },
+  "lorebooks.entry.triggerHint": {
+    "text": "This statement can activate the entry on its own, without its keywords. Asked every turn while this lorebook is active.",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.decisionTriggerHint, verbatim."
+  },
+  "lorebooks.entry.triggerConstant": {
+    "text": "A Constant entry already activates every turn, so Trigger adds nothing.",
+    "note": "keyword-scanner.ts only consults a trigger statement on the keyword path, which a constant entry never takes. The engine still offers Trigger there and says nothing; the console disables it and says why."
+  },
+  "lorebooks.entry.groupName": {
+    "text": "Group name",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.groupName, verbatim."
+  },
+  "lorebooks.entry.groupTip": {
+    "text": "Group entries together so only one from the group activates at a time. The weight sets its chance of being picked; blank counts as 100.",
+    "note": "Engine ui.lorebooks.expandeddrawer.groupEntriesTogetherSoOnlyOneFromTheGroup, whose second sentence is about tags, which the console shows beside Description. groupWeight has no control upstream, so its sentence is new (keyword-scanner.ts: null is 100)."
+  },
+  "lorebooks.entry.groupWeight": {
+    "text": "Weight",
+    "note": "The entry field `groupWeight` has no control in the engine's entry editor, only in its batch editor, which has no string for it. One word, because it sits beside Group name."
+  },
+  "lorebooks.entry.controls": {
+    "text": "Entry controls",
+    "note": "Engine en.json ui.lorebooks.lorebookentryrow.entryControls, verbatim."
+  },
+  "lorebooks.entry.locked": {
+    "text": "Locked",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.locked, verbatim."
+  },
+  "lorebooks.entry.recursion": {
+    "text": "Recursion",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.recursion, verbatim."
+  },
+  "lorebooks.entry.recursionOff": {
+    "text": "Recursive is off for this lorebook, so this setting does nothing.",
+    "note": "The engine shows the toggle live even when the book's recursiveScanning is off (lorebook/index.ts skips non-recursive books). 'Recursive' is the book setting's own label, ui.lorebooks.lorebookeditor.recursive."
+  },
+  "lorebooks.entry.noVector": {
+    "text": "No Vector",
+    "note": "Engine en.json ui.lorebooks.expandeddrawer.noVector, verbatim."
+  },
+  "lorebooks.entry.noVectorForced": {
+    "text": "Vectors is off for this lorebook, so every entry is skipped.",
+    "note": "lorebooks.storage.ts forces excludeFromVectorization on every entry of a book with the flag set; the engine's entry toggle still looks live. 'Vectors' is the book setting's own label, ui.lorebooks.lorebookeditor.vectors."
+  },
+  "lorebooks.entry.copyId": {
+    "text": "Copy entry ID",
+    "note": "Engine en.json ui.lorebooks.lorebookentryrow.copyEntryId, verbatim."
+  },
+  "lorebooks.entry.idCopied": {
+    "text": "Entry ID copied",
+    "note": "Engine en.json ui.lorebooks.lorebookentryrow.entryIdCopied, verbatim."
+  },
+  "lorebooks.entry.copyIdFailed": {
+    "text": "Could not copy the entry ID",
+    "note": "Engine en.json ui.lorebooks.lorebookentryrow.couldNotCopyEntryId, verbatim."
+  },
+  "lorebooks.source.character_name": {
+    "text": "Character name",
+    "note": "Engine LorebookEntryRow.tsx MATCHING_SOURCE_OPTIONS, a hardcoded label with no en.json key. Mirrored so the options read as the engine shows them."
+  },
+  "lorebooks.source.character_description": {
+    "text": "Character description",
+    "note": "Engine LorebookEntryRow.tsx MATCHING_SOURCE_OPTIONS, a hardcoded label with no en.json key. Mirrored so the options read as the engine shows them."
+  },
+  "lorebooks.source.character_personality": {
+    "text": "Personality",
+    "note": "Engine LorebookEntryRow.tsx MATCHING_SOURCE_OPTIONS, a hardcoded label with no en.json key. Mirrored so the options read as the engine shows them."
+  },
+  "lorebooks.source.character_scenario": {
+    "text": "Scenario",
+    "note": "Engine LorebookEntryRow.tsx MATCHING_SOURCE_OPTIONS, a hardcoded label with no en.json key. Mirrored so the options read as the engine shows them."
+  },
+  "lorebooks.source.persona_description": {
+    "text": "Persona description",
+    "note": "Engine LorebookEntryRow.tsx MATCHING_SOURCE_OPTIONS, a hardcoded label with no en.json key. Mirrored so the options read as the engine shows them."
+  },
+  "lorebooks.source.persona_tags": {
+    "text": "Persona tags",
+    "note": "Engine LorebookEntryRow.tsx MATCHING_SOURCE_OPTIONS, a hardcoded label with no en.json key. Mirrored so the options read as the engine shows them."
+  },
+  "lorebooks.trigger.conversation": {
+    "use": "sourcesworkspace.conversation"
+  },
+  "lorebooks.trigger.roleplay": {
+    "use": "sourcesworkspace.roleplay"
+  },
+  "lorebooks.trigger.game": {
+    "use": "sourcesworkspace.game"
+  },
+  "lorebooks.trigger.chat": {
+    "text": "Chat reply",
+    "note": "Engine LorebookEntryRow.tsx GENERATION_TRIGGER_OPTIONS (or PACKAGE_GENERATION_TRIGGER_OPTIONS), a hardcoded label with no en.json key."
+  },
+  "lorebooks.trigger.continue": {
+    "text": "Continue",
+    "note": "Engine LorebookEntryRow.tsx GENERATION_TRIGGER_OPTIONS (or PACKAGE_GENERATION_TRIGGER_OPTIONS), a hardcoded label with no en.json key."
+  },
+  "lorebooks.trigger.autonomous": {
+    "text": "Autonomous",
+    "note": "Engine LorebookEntryRow.tsx GENERATION_TRIGGER_OPTIONS (or PACKAGE_GENERATION_TRIGGER_OPTIONS), a hardcoded label with no en.json key."
+  },
+  "lorebooks.trigger.swipe": {
+    "text": "Swipe",
+    "note": "Engine LorebookEntryRow.tsx GENERATION_TRIGGER_OPTIONS (or PACKAGE_GENERATION_TRIGGER_OPTIONS), a hardcoded label with no en.json key."
+  },
+  "lorebooks.trigger.impersonate": {
+    "text": "Impersonate",
+    "note": "Engine LorebookEntryRow.tsx GENERATION_TRIGGER_OPTIONS (or PACKAGE_GENERATION_TRIGGER_OPTIONS), a hardcoded label with no en.json key."
+  },
+  "lorebooks.trigger.prompt_preview": {
+    "text": "Prompt preview",
+    "note": "Engine LorebookEntryRow.tsx GENERATION_TRIGGER_OPTIONS (or PACKAGE_GENERATION_TRIGGER_OPTIONS), a hardcoded label with no en.json key."
+  },
+  "lorebooks.trigger.test_scan": {
+    "text": "Test scan",
+    "note": "Engine LorebookEntryRow.tsx GENERATION_TRIGGER_OPTIONS (or PACKAGE_GENERATION_TRIGGER_OPTIONS), a hardcoded label with no en.json key."
+  },
+  "lorebooks.trigger.game_setup": {
+    "text": "Game setup",
+    "note": "Engine LorebookEntryRow.tsx GENERATION_TRIGGER_OPTIONS (or PACKAGE_GENERATION_TRIGGER_OPTIONS), a hardcoded label with no en.json key."
+  },
+  "lorebooks.trigger.lorebook_assistant": {
+    "text": "Lorebook Assistant",
+    "note": "Engine LorebookEntryRow.tsx GENERATION_TRIGGER_OPTIONS (or PACKAGE_GENERATION_TRIGGER_OPTIONS), a hardcoded label with no en.json key."
+  },
+  "lorebooks.trigger.noodle": {
+    "text": "Noodle",
+    "note": "Engine LorebookEntryRow.tsx GENERATION_TRIGGER_OPTIONS (or PACKAGE_GENERATION_TRIGGER_OPTIONS), a hardcoded label with no en.json key."
+  },
+  "lorebooks.trigger.slurp": {
+    "text": "Slurp",
+    "note": "Engine LorebookEntryRow.tsx GENERATION_TRIGGER_OPTIONS (or PACKAGE_GENERATION_TRIGGER_OPTIONS), a hardcoded label with no en.json key."
   }
 }

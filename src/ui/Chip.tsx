@@ -11,7 +11,7 @@ const chip = cva(
   {
     variants: {
       pressable: {
-        true: "chip disabled:cursor-default disabled:opacity-45 aria-pressed:bg-surface-2 [&_.ar]:text-accent",
+        true: "chip border-edge-control disabled:cursor-default disabled:opacity-45 aria-pressed:bg-surface-2 [&_.ar]:text-accent",
         false: "tag tabular-nums",
       },
       hue: { accent: "", flag: "" },
